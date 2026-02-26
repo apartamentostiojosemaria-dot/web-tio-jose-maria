@@ -132,11 +132,11 @@ const ApartmentsManager = () => {
         setIsSaving(true);
         try {
             const count = await syncApartmentDates(apt);
-            alert(`Sincronización completada: ${count} periodos bloqueados.`);
-            fetchApartments();
+            alert(`Sincronización completada. ${count} fechas actualizadas y archivo iCal generado.`);
+            // No recargamos todo para no perder el estado, pero fetchApartments refrescaría la UI si hace falta
         } catch (error) {
-            console.error('Error in sync:', error);
-            alert('Error al sincronizar: ' + error.message);
+            alert(`Error en la sincronización: ${error.message}`);
+            console.error(error);
         } finally {
             setIsSaving(false);
         }

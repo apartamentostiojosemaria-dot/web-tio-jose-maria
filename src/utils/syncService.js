@@ -84,15 +84,23 @@ export const syncApartmentDates = async (apt) => {
         const icsText = ical.join('\r\n');
 
         // Subir a Supabase Storage (Sobrescribir siempre)
-        await supabase.storage
+        const { error: uploadError } = await supabase.storage
             .from('calendars')
             .upload(`${apt.slug}.ics`, icsText, {
                 contentType: 'text/calendar',
                 upsert: true
             });
 
+        if (uploadError) {
+            console.error('Error detail uploading to storage:', uploadError);
+            throw new Error(`Error al subir calendario: ${uploadError.message}. ¿Has creado el bucket "calendars" en Supabase?`);
+        } else {
+            console.log(`Calendario para ${apt.slug} subido correctamente.`);
+        }
+
     } catch (error) {
-        console.error('Error uploading ical to storage:', error);
+        console.error('Critical sync error:', error);
+        throw error;
     }
 
     return syncCount;
