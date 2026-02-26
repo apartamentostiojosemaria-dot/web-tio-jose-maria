@@ -128,12 +128,12 @@ const ApartmentsManager = () => {
             alert('Por favor, añade al menos un enlace de iCal (Airbnb o Booking) primero.');
             return;
         }
-
         setIsSaving(true);
         try {
-            const count = await syncApartmentDates(apt);
-            alert(`Sincronización completada. ${count} fechas actualizadas y archivo iCal generado.`);
-            // No recargamos todo para no perder el estado, pero fetchApartments refrescaría la UI si hace falta
+            const result = await syncApartmentDates(apt);
+            alert(`Sincronización finalizada:\n${result.message}\n\nTotal reservas en base de datos: ${result.count}`);
+            // Recargar para ver los cambios en el listado si estamos en AvailabilityManager
+            if (typeof fetchBlockedDates === 'function') fetchBlockedDates(apt.id);
         } catch (error) {
             alert(`Error en la sincronización: ${error.message}`);
             console.error(error);
@@ -337,6 +337,14 @@ const ApartmentsManager = () => {
                                         </div>
                                         <p className="text-[10px] text-amber-600 italic">Pega este enlace en la sección "Importar Calendario" de las otras plataformas.</p>
                                     </div>
+                                    <button
+                                        onClick={() => handleSync(editingApt)}
+                                        disabled={isSaving}
+                                        className="w-full py-3 bg-rural-100 text-rural-700 rounded-2xl font-bold text-xs hover:bg-rural-200 transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <RefreshCw size={14} className={isSaving ? 'animate-spin' : ''} />
+                                        Sincronizar ahora (Importar de Airbnb/Booking)
+                                    </button>
                                 </section>
 
                                 <section className="space-y-4">

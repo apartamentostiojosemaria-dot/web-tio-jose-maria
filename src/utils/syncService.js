@@ -1,8 +1,10 @@
 import { supabase } from '../lib/supabase';
 
 export const syncApartmentDates = async (apt) => {
-    // 1. Intentar sincronización desde Airbnb/Booking
     let syncCount = 0;
+    let diagnosticMsg = '';
+
+    // 1. Intentar sincronización desde Airbnb/Booking/Holidu
     if (apt.airbnb_ical_url || apt.booking_ical_url) {
         try {
             const allBlockedDates = [];
@@ -12,24 +14,38 @@ export const syncApartmentDates = async (apt) => {
             ].filter(item => item.url);
 
             for (const { url, source } of urls) {
-                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                // Probamos con un proxy más robusto o directo si es posible
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
                 const response = await fetch(proxyUrl);
-                if (!response.ok) continue;
 
-                const icsText = await response.text();
+                if (!response.ok) {
+                    diagnosticMsg += `\n- Fallo al conectar con ${source} (Error ${response.status})`;
+                    continue;
+                }
 
-                // Parser robusto: dividimos en eventos primero
-                const events = icsText.split('BEGIN:VEVENT');
-                events.shift(); // Quitamos la cabecera del calendario
+                const json = await response.json();
+                const icsText = json.contents;
 
-                events.forEach(event => {
-                    // Extraer DTSTART (puede tener ;VALUE=DATE o TZID o nada) - m: multiline para ^
-                    const startMatch = event.match(/^DTSTART(?:;[^:]*)?:(\d{8})/m);
-                    const endMatch = event.match(/^DTEND(?:;[^:]*)?:(\d{8})/m);
+                if (!icsText || !icsText.includes('BEGIN:VCALENDAR')) {
+                    diagnosticMsg += `\n- El enlace de ${source} no devolvió un calendario válido.`;
+                    continue;
+                }
+
+                // Parser universal: extraemos todos los VEVENTs
+                const eventRegex = /BEGIN:VEVENT([\s\S]*?)END:VEVENT/gi;
+                let eventMatch;
+                let sourceCount = 0;
+
+                while ((eventMatch = eventRegex.exec(icsText)) !== null) {
+                    const eventContent = eventMatch[1];
+
+                    // Extraer DTSTART y DTEND (soportamos YYYYMMDD y YYYYMMDDTHHMMSS)
+                    const startMatch = eventContent.match(/DTSTART(?:;[^:]*)?:(\d{8})/i);
+                    const endMatch = eventContent.match(/DTEND(?:;[^:]*)?:(\d{8})/i);
 
                     if (startMatch && endMatch) {
                         const startStr = startMatch[1];
-                        const endStr = endMatch[1]; // endMatch[1] es correcto (primer grupo de ese match)
+                        const endStr = endMatch[1];
 
                         allBlockedDates.push({
                             apartment_id: apt.id,
@@ -37,25 +53,30 @@ export const syncApartmentDates = async (apt) => {
                             end_date: `${endStr.slice(0, 4)}-${endStr.slice(4, 6)}-${endStr.slice(6, 8)}`,
                             source
                         });
+                        sourceCount++;
                     }
-                });
+                }
+                diagnosticMsg += `\n- ${source}: ${sourceCount} reservas encontradas.`;
             }
 
+            // Limpiar y guardar
             await supabase.from('blocked_dates').delete().eq('apartment_id', apt.id).neq('source', 'manual');
             if (allBlockedDates.length > 0) {
-                await supabase.from('blocked_dates').insert(allBlockedDates);
+                const { error: insErr } = await supabase.from('blocked_dates').insert(allBlockedDates);
+                if (insErr) throw new Error(`Error DB: ${insErr.message}`);
             }
             syncCount = allBlockedDates.length;
         } catch (error) {
             console.error('Error in sync logic:', error);
+            diagnosticMsg += `\n- Error crítico: ${error.message}`;
         }
     }
 
-    // 2. Generar y subir nuevo iCal exportable (para que Airbnb/Booking nos lean)
+    // 2. Generar y subir nuevo iCal exportable
     try {
         const { data: allBlocks } = await supabase.from('blocked_dates').select('*').eq('apartment_id', apt.id);
-
         const now = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
         let ical = [
             'BEGIN:VCALENDAR',
             'VERSION:2.0',
@@ -83,7 +104,6 @@ export const syncApartmentDates = async (apt) => {
         ical.push('END:VCALENDAR');
         const icsText = ical.join('\r\n');
 
-        // Subir a Supabase Storage (Sobrescribir siempre)
         const { error: uploadError } = await supabase.storage
             .from('calendars')
             .upload(`${apt.slug}.ics`, icsText, {
@@ -92,16 +112,14 @@ export const syncApartmentDates = async (apt) => {
             });
 
         if (uploadError) {
-            console.error('Error detail uploading to storage:', uploadError);
-            throw new Error(`Error al subir calendario: ${uploadError.message}. ¿Has creado el bucket "calendars" en Supabase?`);
+            diagnosticMsg += `\n- Error Exportación: ${uploadError.message}`;
         } else {
-            console.log(`Calendario para ${apt.slug} subido correctamente.`);
+            diagnosticMsg += `\n- Archivo de exportación generado correctamente.`;
         }
-
     } catch (error) {
         console.error('Critical sync error:', error);
-        throw error;
+        diagnosticMsg += `\n- Error Exportación Crítico: ${error.message}`;
     }
 
-    return syncCount;
+    return { count: syncCount, message: diagnosticMsg };
 };
