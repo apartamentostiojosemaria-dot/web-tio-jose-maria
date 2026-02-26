@@ -474,8 +474,8 @@ const CreateGuestModal = ({ onClose }) => {
         if (!name || !email) return;
         setLoading(true);
 
-        // Generar un ID temporal para el registro inicial
-        const userId = `guest_${Math.random().toString(36).substr(2, 9)}`;
+        // Generar un UUID válido para el registro inicial
+        const userId = self.crypto.randomUUID();
 
         const { error } = await supabase
             .from('profiles')
