@@ -7,7 +7,8 @@ import LocalPlacesManager from './LocalPlacesManager';
 import DocumentsManager from './DocumentsManager';
 import AvailabilityManager from './AvailabilityManager';
 import SeasonsManager from './SeasonsManager';
-import { LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar, Star } from 'lucide-react';
+import { ClientAreaContent } from '../client/ClientArea';
+import { LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar, Star, Eye } from 'lucide-react';
 
 const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -75,6 +76,14 @@ const AdminDashboard = () => {
                         active={activeTab === 'documentos'}
                         onClick={() => setActiveTab('documentos')}
                     />
+                    <div className="pt-4 mt-4 border-t border-gray-50">
+                        <SidebarLink
+                            icon={<Eye size={18} />}
+                            label="Vista Huésped"
+                            active={activeTab === 'vista_huesped'}
+                            onClick={() => setActiveTab('vista_huesped')}
+                        />
+                    </div>
                     <SidebarLink
                         icon={<Settings size={18} />}
                         label="Configuración"
@@ -117,6 +126,17 @@ const AdminDashboard = () => {
                 {activeTab === 'entorno' && <LocalPlacesManager />}
                 {activeTab === 'documentos' && <DocumentsManager />}
                 {activeTab === 'configuracion' && <WebConfigManager />}
+                {activeTab === 'vista_huesped' && (
+                    <div className="max-w-4xl mx-auto">
+                        <div className="mb-6 flex items-center justify-between p-4 bg-amber-50 rounded-2xl border border-amber-100">
+                            <div className="flex items-center gap-3 text-amber-900">
+                                <Eye size={20} />
+                                <span className="font-bold text-sm">Modo Vista Previa: Estás viendo lo mismo que vería un cliente.</span>
+                            </div>
+                        </div>
+                        <ClientAreaContent docs={[]} />
+                    </div>
+                )}
             </main>
         </div>
     );

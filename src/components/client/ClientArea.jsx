@@ -18,8 +18,6 @@ const ClientArea = () => {
             const { data: { user } } = await supabase.auth.getUser();
             setUser(user);
 
-            // Fetch public docs + private docs
-            // Note: RLS should handle visibility automatically if configured
             const { data } = await supabase.from('documents').select('*').order('created_at', { ascending: false });
             if (data) setDocs(data);
             setLoading(false);
@@ -52,103 +50,111 @@ const ClientArea = () => {
             </header>
 
             <main className="max-w-5xl mx-auto px-6 py-10">
-                {/* Intro Card */}
-                <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 mb-10 overflow-hidden relative">
-                    <div className="absolute top-0 right-0 w-32 h-32 opacity-5 translate-x-10 -translate-y-10">
-                        <MapPin size={120} />
-                    </div>
-                    <h3 className="text-2xl font-serif font-bold mb-4" style={{ color: COLORS.text }}>¡Hola de nuevo!</h3>
-                    <p className="text-gray-500 max-w-xl leading-relaxed">
-                        Aquí tienes acceso a toda la documentación de tu estancia en <strong style={{ color: COLORS.primary }}>Tío José María</strong>. Descarga tus facturas, contratos o consulta nuestra guía exclusiva del huésped.
-                    </p>
+                <ClientAreaContent docs={docs} userEmail={user?.email} />
+            </main>
+        </div>
+    );
+};
+
+export const ClientAreaContent = ({ docs = [], userEmail = 'invitado@ejemplo.com' }) => {
+    return (
+        <div className="space-y-10">
+            {/* Intro Card */}
+            <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-32 h-32 opacity-5 translate-x-10 -translate-y-10">
+                    <MapPin size={120} />
                 </div>
+                <h3 className="text-2xl font-serif font-bold mb-4" style={{ color: COLORS.text }}>¡Hola de nuevo!</h3>
+                <p className="text-gray-500 max-w-xl leading-relaxed">
+                    Aquí tienes acceso a toda la documentación de tu estancia en <strong style={{ color: COLORS.primary }}>Tío José María</strong>. Descarga tus facturas, contratos o consulta nuestra guía exclusiva del huésped.
+                </p>
+            </div>
 
-                {/* Guest Guide Section */}
-                <div className="mb-14">
-                    <h3 className="text-2xl font-serif font-bold mb-8 flex items-center gap-3" style={{ color: COLORS.text }}>
-                        <Map size={24} style={{ color: COLORS.primary }} /> Guía Exclusiva del Huésped
-                    </h3>
+            {/* Guest Guide Section */}
+            <div>
+                <h3 className="text-2xl font-serif font-bold mb-8 flex items-center gap-3" style={{ color: COLORS.text }}>
+                    <Map size={24} style={{ color: COLORS.primary }} /> Guía Exclusiva del Huésped
+                </h3>
 
-                    <GuestGuide />
-                </div>
+                <GuestGuide />
+            </div>
 
-                {/* Documents Grid */}
-                <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                        <h4 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-gray-400 mb-6 px-2">
-                            <FileText size={16} /> Documentación de Interés
-                        </h4>
-                        <div className="space-y-4">
-                            {docs.map(doc => (
-                                <div key={doc.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between group hover:border-rural-200 transition-all">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-lg bg-rural-50 flex items-center justify-center text-rural-600" style={{ color: COLORS.primary, backgroundColor: COLORS.bgWarm }}>
-                                            <FileText size={20} />
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-gray-800 text-sm">{doc.title}</p>
-                                            <p className="text-[10px] text-gray-400 font-bold uppercase">{doc.category || 'General'}</p>
-                                        </div>
+            {/* Documents Grid */}
+            <div className="grid md:grid-cols-2 gap-10">
+                <div>
+                    <h4 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-gray-400 mb-6 px-2">
+                        <FileText size={16} /> Documentación de Interés
+                    </h4>
+                    <div className="space-y-4">
+                        {docs.map(doc => (
+                            <div key={doc.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between group hover:border-rural-200 transition-all">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-lg bg-rural-50 flex items-center justify-center text-rural-600" style={{ color: COLORS.primary, backgroundColor: COLORS.bgWarm }}>
+                                        <FileText size={20} />
                                     </div>
-                                    <a
-                                        href={doc.file_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-50 text-gray-400 group-hover:bg-rural-600 group-hover:text-white transition-all shadow-sm"
-                                        style={{ backgroundColor: 'transparent', border: '1px solid #f3f4f6' }}
-                                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = COLORS.primary; e.currentTarget.style.color = 'white'; }}
-                                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#9ca3af'; }}
-                                    >
-                                        <Download size={18} />
-                                    </a>
+                                    <div>
+                                        <p className="font-bold text-gray-800 text-sm">{doc.title}</p>
+                                        <p className="text-[10px] text-gray-400 font-bold uppercase">{doc.category || 'General'}</p>
+                                    </div>
                                 </div>
-                            ))}
-                            {docs.length === 0 && (
-                                <div className="text-center p-10 bg-white rounded-3xl border border-dashed border-gray-200 text-gray-400 italic font-serif text-sm">
-                                    No hay documentos disponibles para descargar aún.
-                                </div>
-                            )}
-                        </div>
+                                <a
+                                    href={doc.file_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-50 text-gray-400 group-hover:bg-rural-600 group-hover:text-white transition-all shadow-sm"
+                                    style={{ backgroundColor: 'transparent', border: '1px solid #f3f4f6' }}
+                                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = COLORS.primary; e.currentTarget.style.color = 'white'; }}
+                                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#9ca3af'; }}
+                                >
+                                    <Download size={18} />
+                                </a>
+                            </div>
+                        ))}
+                        {docs.length === 0 && (
+                            <div className="text-center p-10 bg-white rounded-3xl border border-dashed border-gray-200 text-gray-400 italic font-serif text-sm">
+                                No hay documentos disponibles para descargar aún.
+                            </div>
+                        )}
                     </div>
+                </div>
 
-                    <div className="space-y-6">
-                        <h4 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-gray-400 mb-6 px-2">
-                            Información de Reserva
-                        </h4>
-                        <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6">
-                            <div className="flex items-start gap-4">
-                                <MapPin className="text-rural-400 mt-1" size={20} style={{ color: COLORS.accent }} />
-                                <div>
-                                    <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Ubicación</p>
-                                    <p className="font-bold text-gray-700">Calle Baja 1, Hinojares, Jaén</p>
-                                    <a href="https://maps.app.goo.gl/EPzh8j2HivLfqUeN8" target="_blank" rel="noopener noreferrer" className="text-xs flex items-center gap-1 mt-1 font-bold hover:underline" style={{ color: COLORS.primary }}>
-                                        Abrir en Maps <ExternalLink size={10} />
-                                    </a>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start gap-4">
-                                <Calendar className="text-rural-400 mt-1" size={20} style={{ color: COLORS.accent }} />
-                                <div>
-                                    <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Check-in / Check-out</p>
-                                    <p className="font-bold text-gray-700">Entrada: 16:00 / Salida: 12:00</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Help link */}
-                        <div className="bg-rural-900 rounded-3xl p-8 text-white relative overflow-hidden" style={{ backgroundColor: COLORS.primaryDark }}>
-                            <div className="relative z-10">
-                                <h5 className="font-bold mb-2">¿Necesitas ayuda?</h5>
-                                <p className="text-xs opacity-70 mb-4">Estamos a tu disposición para cualquier duda durante tu estancia.</p>
-                                <a href="https://wa.me/34676344675" target="_blank" rel="noopener noreferrer" className="inline-block px-6 py-2 bg-white text-rural-900 rounded-full text-xs font-bold transition-transform hover:scale-105" style={{ color: COLORS.primaryDark }}>
-                                    Contactar por WhatsApp
+                <div className="space-y-6">
+                    <h4 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-gray-400 mb-6 px-2">
+                        Información de Reserva
+                    </h4>
+                    <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6">
+                        <div className="flex items-start gap-4">
+                            <MapPin className="text-rural-400 mt-1" size={20} style={{ color: COLORS.accent }} />
+                            <div>
+                                <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Ubicación</p>
+                                <p className="font-bold text-gray-700">Calle Baja 1, Hinojares, Jaén</p>
+                                <a href="https://maps.app.goo.gl/EPzh8j2HivLfqUeN8" target="_blank" rel="noopener noreferrer" className="text-xs flex items-center gap-1 mt-1 font-bold hover:underline" style={{ color: COLORS.primary }}>
+                                    Abrir en Maps <ExternalLink size={10} />
                                 </a>
                             </div>
                         </div>
+
+                        <div className="flex items-start gap-4">
+                            <Calendar className="text-rural-400 mt-1" size={20} style={{ color: COLORS.accent }} />
+                            <div>
+                                <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Check-in / Check-out</p>
+                                <p className="font-bold text-gray-700">Entrada: 16:00 / Salida: 12:00</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Help link */}
+                    <div className="bg-rural-900 rounded-3xl p-8 text-white relative overflow-hidden" style={{ backgroundColor: COLORS.primaryDark }}>
+                        <div className="relative z-10">
+                            <h5 className="font-bold mb-2">¿Necesitas ayuda?</h5>
+                            <p className="text-xs opacity-70 mb-4">Estamos a tu disposición para cualquier duda durante tu estancia.</p>
+                            <a href="https://wa.me/34676344675" target="_blank" rel="noopener noreferrer" className="inline-block px-6 py-2 bg-white text-rural-900 rounded-full text-xs font-bold transition-transform hover:scale-105" style={{ color: COLORS.primaryDark }}>
+                                Contactar por WhatsApp
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </main>
+            </div>
         </div>
     );
 };
