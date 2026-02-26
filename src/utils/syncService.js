@@ -112,8 +112,11 @@ export const syncApartmentDates = async (apt) => {
             });
 
         if (uploadError) {
-            diagnosticMsg += `\n- Error Exportación: ${uploadError.message}`;
+            console.error('Error detail uploading to storage:', uploadError);
+            const isBucketMissing = uploadError.message?.includes('not found') || uploadError.status === 400;
+            diagnosticMsg += `\n- Error Exportación: ${uploadError.message} ${isBucketMissing ? '(¿Has creado el bucket "calendars" en Supabase?)' : ''}`;
         } else {
+            console.log(`Calendario para ${apt.slug} subido correctamente.`);
             diagnosticMsg += `\n- Archivo de exportación generado correctamente.`;
         }
     } catch (error) {
