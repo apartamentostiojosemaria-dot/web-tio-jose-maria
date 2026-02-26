@@ -151,7 +151,14 @@ const ApartmentsManager = () => {
         });
     };
 
+    const getICalUrl = (slug) => {
+        if (!slug) return '';
+        const { data } = supabase.storage.from('calendars').getPublicUrl(`${slug}.ics`);
+        return data.publicUrl;
+    };
+
     const copyToClipboard = (text) => {
+        if (!text) return;
         navigator.clipboard.writeText(text);
         alert('Copiado al portapapeles');
     };
@@ -319,10 +326,10 @@ const ApartmentsManager = () => {
                                             <input
                                                 readOnly
                                                 className="flex-grow p-3 bg-white border border-amber-200 rounded-xl text-[10px] font-mono"
-                                                value={editingApt.slug ? `${window.location.origin}/ical/${editingApt.slug}` : 'Guarda primero el apartamento'}
+                                                value={editingApt.slug ? getICalUrl(editingApt.slug) : 'Guarda primero el apartamento'}
                                             />
                                             <button
-                                                onClick={() => copyToClipboard(`${window.location.origin}/ical/${editingApt.slug}`)}
+                                                onClick={() => copyToClipboard(getICalUrl(editingApt.slug))}
                                                 className="p-3 bg-amber-600 text-white rounded-xl hover:bg-amber-700 transition-all"
                                             >
                                                 <Copy size={16} />
