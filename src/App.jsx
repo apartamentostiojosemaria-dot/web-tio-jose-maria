@@ -47,7 +47,7 @@ const Navigation = () => {
     const links = [
         { label: 'Apartamentos', href: '#apartamentos' },
         { label: 'El Entorno', href: '#entorno' },
-        { label: 'Guía Secreta', href: '#guia' },
+        { label: 'Documentos', href: '/clientes' },
         { label: 'Contacto', href: '#contacto' },
     ];
 
@@ -551,8 +551,13 @@ const Footer = () => (
                 </a>
             </div>
         </div>
-        <div className="border-t border-white/10 pt-8 text-center text-white/40 text-sm">
-            © 2025 Apartamentos Tío José María. Diseñado con cariño.
+        <div className="border-t border-white/10 pt-8 text-center text-white/40 text-sm flex flex-col md:flex-row justify-center items-center gap-4">
+            <span>© 2025 Apartamentos Tío José María.</span>
+            <div className="flex gap-4">
+                <a href="/admin" className="hover:text-white transition-colors">Acceso Administración</a>
+                <span className="opacity-20">|</span>
+                <a href="/clientes" className="hover:text-white transition-colors">Área Clientes</a>
+            </div>
         </div>
     </footer>
 );
