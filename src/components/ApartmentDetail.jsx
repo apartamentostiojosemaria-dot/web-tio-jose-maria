@@ -208,7 +208,7 @@ const ApartmentDetail = () => {
                                 <span className="opacity-20">|</span>
                                 <span className="flex items-center gap-1"><ShieldCheck size={14} /> {apartment.registration_number || 'A/JA/00060'}</span>
                             </div>
-                            <h1 className="text-5xl md:text-6xl font-serif font-bold text-rural-900 mb-6 leading-tight">
+                            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-rural-900 mb-6 leading-tight">
                                 {apartment.name}
                             </h1>
                             <div className="flex items-center gap-2 text-gray-500 mb-8">
@@ -216,15 +216,15 @@ const ApartmentDetail = () => {
                                 <span className="text-lg">Hinojares, Jaén · {apartment.bathrooms || 1} Baño privado</span>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4 mb-8">
-                                <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100 text-center space-y-1">
+                            <div className="grid sm:grid-cols-2 gap-4 mb-8">
+                                <div className="p-4 md:p-6 bg-gray-50 rounded-3xl border border-gray-100 text-center space-y-1">
                                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Temporada Baja</p>
-                                    <p className="text-4xl font-serif font-bold text-rural-800">{apartment.price_low || 60}<span className="text-lg">€</span></p>
+                                    <p className="text-3xl md:text-4xl font-serif font-bold text-rural-800">{apartment.price_low || 60}<span className="text-lg">€</span></p>
                                     <p className="text-[10px] text-gray-400 leading-none italic">/ por noche</p>
                                 </div>
-                                <div className="p-6 bg-rural-50 rounded-3xl border border-rural-100 text-center space-y-1">
+                                <div className="p-4 md:p-6 bg-rural-50 rounded-3xl border border-rural-100 text-center space-y-1">
                                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-rural-600">Temporada Alta</p>
-                                    <p className="text-4xl font-serif font-bold text-rural-800">{apartment.price_high || 70}<span className="text-lg">€</span></p>
+                                    <p className="text-3xl md:text-4xl font-serif font-bold text-rural-800">{apartment.price_high || 70}<span className="text-lg">€</span></p>
                                     <p className="text-[10px] text-rural-400 leading-none italic">Navidad, S. Santa y Puentes</p>
                                 </div>
                             </div>
@@ -240,16 +240,16 @@ const ApartmentDetail = () => {
                                 </div>
                             </div>
 
-                            <div className="p-4 bg-rural-900 text-white rounded-3xl flex items-center justify-between group">
-                                <div className="pl-4">
-                                    <p className="text-xs opacity-60">Consultar disponibilidad</p>
-                                    <p className="font-bold">WhatsApp Directo</p>
+                            <div className="p-4 bg-rural-900 text-white rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4 group">
+                                <div className="text-center sm:text-left sm:pl-4">
+                                    <p className="text-[10px] opacity-60">Consultar disponibilidad</p>
+                                    <p className="font-bold text-lg">WhatsApp Directo</p>
                                 </div>
                                 <a
                                     href={`https://api.whatsapp.com/send?phone=34676344675&text=Hola,%20me%20gustaría%20consultar%20disponibilidad%20para%20el%20apartamento%20${apartment.name}.`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="px-8 py-4 bg-white text-rural-900 rounded-2xl font-bold hover:bg-rural-50 transition-all flex items-center gap-2"
+                                    className="w-full sm:w-auto px-8 py-4 bg-white text-rural-900 rounded-2xl font-bold hover:bg-rural-50 transition-all flex items-center justify-center gap-2 shadow-lg"
                                 >
                                     <Calendar size={18} /> Reservar
                                 </a>

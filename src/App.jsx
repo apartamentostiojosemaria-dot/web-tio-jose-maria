@@ -55,7 +55,7 @@ const Navigation = () => {
     return (
         <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-6xl">
             <div
-                className="flex items-center justify-between px-6 py-3 rounded-2xl shadow-xl transition-all duration-500"
+                className="flex items-center justify-between px-4 md:px-6 py-2 md:py-3 rounded-2xl shadow-xl transition-all duration-500"
                 style={{
                     backgroundColor: isScrolled ? 'rgba(252, 251, 249, 0.85)' : 'rgba(252, 251, 249, 0.5)',
                     backdropFilter: 'blur(24px)',
@@ -68,7 +68,7 @@ const Navigation = () => {
                     <img
                         src="/assets/logo.jpg"
                         alt="Logo Tío José María Apartamentos Rurales"
-                        className="h-10 object-contain"
+                        className="h-8 md:h-10 object-contain"
                     />
                 </a>
 
@@ -156,8 +156,8 @@ const HeroSection = ({ title, subtitle }) => (
             className="relative z-10 text-center px-6 max-w-4xl"
         >
             <p className="text-white/70 uppercase tracking-[0.3em] text-sm mb-5 font-sans">Hinojares, Jaén</p>
-            <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl text-white font-bold mb-6 leading-tight">
-                {title.split(' en ')[0]} <br /> en <span style={{ color: COLORS.accent }}>{title.split(' en ')[1] || 'Cazorla'}</span>
+            <h1 className="font-serif text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl text-white font-bold mb-6 leading-tight">
+                {title.split(' en ')[0]} <br className="hidden md:block" /> en <span style={{ color: COLORS.accent }}>{title.split(' en ')[1] || 'Cazorla'}</span>
             </h1>
             <p className="text-white/80 text-lg md:text-xl mb-10 max-w-2xl mx-auto font-light leading-relaxed">
                 {subtitle}
@@ -193,7 +193,7 @@ const IntroSection = ({ text }) => (
                     <img
                         src={`${WP}/2018/12/slide5.jpg`}
                         alt="Interior rústico de los apartamentos Tío José María"
-                        className="rounded-2xl shadow-2xl w-full h-[500px] object-cover"
+                        className="rounded-2xl shadow-2xl w-full h-[300px] md:h-[500px] object-cover"
                     />
                     <div className="absolute -bottom-6 -right-6 p-6 rounded-xl shadow-lg hidden md:block" style={{ backgroundColor: COLORS.bgWarm }}>
                         <div className="flex items-center gap-2 mb-1">
@@ -206,8 +206,8 @@ const IntroSection = ({ text }) => (
             </FadeInUp>
             <FadeInUp delay={0.2}>
                 <div>
-                    <h2 className="font-serif text-4xl md:text-5xl mb-6" style={{ color: COLORS.text }}>
-                        Más que una casa rural, <br /><span style={{ color: COLORS.primary }} className="italic">es historia viva.</span>
+                    <h2 className="font-serif text-3xl md:text-5xl mb-6" style={{ color: COLORS.text }}>
+                        Más que una casa rural, <br className="hidden md:block" /><span style={{ color: COLORS.primary }} className="italic">es historia viva.</span>
                     </h2>
                     <p className="text-lg mb-8 leading-relaxed whitespace-pre-line" style={{ color: COLORS.secondary }}>
                         {text || `Bienvenidos a Tío José María. Ubicados en el sur del Parque Natural de Cazorla, nuestros 4 apartamentos combinan la arquitectura tradicional andaluza con el confort moderno.\n\nMuros de piedra, techos de vigas de madera y el calor de la chimenea te esperan. Ideal para parejas que buscan intimidad o familias que desean reconectar con la naturaleza.`}
@@ -255,16 +255,16 @@ const ReviewsSection = ({ reviews }) => {
     return (
         <section className="py-24 px-6 bg-rural-100/30 overflow-hidden">
             <div className="max-w-7xl mx-auto">
-                <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 md:mb-16 gap-6">
                     <div>
-                        <span className="uppercase tracking-[0.2em] text-xs font-bold" style={{ color: COLORS.primary }}>Opiniones Reales</span>
-                        <h2 className="font-serif text-4xl md:text-5xl font-bold mt-3" style={{ color: COLORS.text }}>Lo que dicen nuestros huéspedes</h2>
+                        <span className="uppercase tracking-[0.2em] text-[10px] md:text-xs font-bold" style={{ color: COLORS.primary }}>Opiniones Reales</span>
+                        <h2 className="font-serif text-3xl md:text-5xl font-bold mt-3" style={{ color: COLORS.text }}>Lo que dicen nuestros huéspedes</h2>
                     </div>
-                    <a href="https://www.booking.com/hotel/es/casa-rural-tio-jose-maria.es.html#tab-reviews" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 bg-white px-6 py-3 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/b/be/Booking.com_logo.svg" alt="Booking.com" className="h-5" />
+                    <a href="https://www.booking.com/hotel/es/casa-rural-tio-jose-maria.es.html#tab-reviews" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 bg-white px-4 md:px-6 py-3 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/b/be/Booking.com_logo.svg" alt="Booking.com" className="h-4 md:h-5" />
                         <div className="text-right">
-                            <p className="text-sm font-bold leading-none">9.5/10</p>
-                            <p className="text-[10px] opacity-60">Puntuación Excepcional</p>
+                            <p className="text-xs md:text-sm font-bold leading-none">9.5/10</p>
+                            <p className="text-[9px] md:text-[10px] opacity-60">Puntuación Excepcional</p>
                         </div>
                     </a>
                 </div>
@@ -322,9 +322,9 @@ const ServicesGrid = ({ apartments }) => {
         <section id="apartamentos" className="py-28 px-6" style={{ background: `linear-gradient(180deg, ${COLORS.bgWarm} 0%, ${COLORS.bg} 100%)` }}>
             <div className="max-w-7xl mx-auto">
                 <FadeInUp>
-                    <div className="text-center mb-20">
-                        <span className="uppercase tracking-[0.2em] text-xs font-bold" style={{ color: COLORS.primary }}>Nuestros Alojamientos</span>
-                        <h2 className="font-serif text-4xl md:text-5xl font-bold mt-3" style={{ color: COLORS.text }}>Elige tu rincón favorito</h2>
+                    <div className="text-center mb-12 md:mb-20">
+                        <span className="uppercase tracking-[0.2em] text-[10px] md:text-xs font-bold" style={{ color: COLORS.primary }}>Nuestros Alojamientos</span>
+                        <h2 className="font-serif text-3xl md:text-5xl font-bold mt-3" style={{ color: COLORS.text }}>Elige tu rincón favorito</h2>
                     </div>
                 </FadeInUp>
 
@@ -344,12 +344,12 @@ const ServicesGrid = ({ apartments }) => {
                                             {apt.tag}
                                         </div>
                                     </div>
-                                    <div className="p-8">
+                                    <div className="p-6 md:p-8">
                                         <div className="flex justify-between items-baseline mb-3">
-                                            <h3 className="font-serif text-2xl font-bold" style={{ color: COLORS.text }}>{apt.name}</h3>
-                                            <span className="text-sm" style={{ color: COLORS.secondary }}>{apt.capacity}</span>
+                                            <h3 className="font-serif text-xl md:text-2xl font-bold" style={{ color: COLORS.text }}>{apt.name}</h3>
+                                            <span className="text-xs md:text-sm" style={{ color: COLORS.secondary }}>{apt.capacity}</span>
                                         </div>
-                                        <p className="text-sm leading-relaxed mb-6" style={{ color: COLORS.secondary }}>{apt.desc}</p>
+                                        <p className="text-xs md:text-sm leading-relaxed mb-6" style={{ color: COLORS.secondary }}>{apt.desc}</p>
                                         <div className="flex items-center justify-between">
                                             <div className="flex gap-3">
                                                 {apt.icons.map((Icon, i) => (
@@ -388,11 +388,11 @@ const EntornoSection = ({ places, routes }) => {
     return (
         <section id="entorno" className="py-24 px-6 bg-white overflow-hidden">
             <div className="max-w-7xl mx-auto">
-                <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
+                <div className="grid lg:grid-cols-2 gap-10 md:gap-16 items-center mb-12 md:mb-20">
                     <FadeInUp>
-                        <span className="uppercase tracking-[0.2em] text-xs font-bold" style={{ color: COLORS.primary }}>Hinojares y el Valle del Turrilla</span>
-                        <h2 className="font-serif text-4xl md:text-5xl font-bold mt-3 mb-8" style={{ color: COLORS.text }}>Un paraíso de contrastes entre desierto y pinar</h2>
-                        <p className="text-lg leading-relaxed mb-6" style={{ color: COLORS.secondary }}>
+                        <span className="uppercase tracking-[0.2em] text-[10px] md:text-xs font-bold" style={{ color: COLORS.primary }}>Hinojares y el Valle del Turrilla</span>
+                        <h2 className="font-serif text-3xl md:text-5xl font-bold mt-3 mb-6 md:mb-8" style={{ color: COLORS.text }}>Un paraíso de contrastes entre desierto y pinar</h2>
+                        <p className="text-base md:text-lg leading-relaxed mb-6" style={{ color: COLORS.secondary }}>
                             Tío José María se ubica en <strong>Hinojares</strong>, un pueblo mágico de gredas blancas al sur del <strong>Parque Natural de la Sierra de Cazorla</strong>. Es un destino donde el agua de los ríos y embalses se funde con paisajes semidesérticos y bosques vírgenes.
                         </p>
                         <div className="grid grid-cols-2 gap-6 mt-10">
@@ -414,18 +414,18 @@ const EntornoSection = ({ places, routes }) => {
                             </div>
                         </div>
                     </FadeInUp>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-3 md:gap-4 md:mt-0">
                         <FadeInUp delay={0.2}>
-                            <img src={places[0]?.image_url || "https://www.tiojosemaria.com/wp-content/uploads/2018/12/hinojaresPueblo.jpg"} alt="Entorno Local" className="rounded-2xl shadow-lg w-full h-64 object-cover mt-8" />
+                            <img src={places[0]?.image_url || "https://www.tiojosemaria.com/wp-content/uploads/2018/12/hinojaresPueblo.jpg"} alt="Entorno Local" className="rounded-2xl shadow-lg w-full h-40 md:h-64 object-cover md:mt-8" />
                         </FadeInUp>
                         <FadeInUp delay={0.3}>
-                            <img src={routes[0]?.image_url || "https://www.tiojosemaria.com/wp-content/uploads/2018/12/MG_9540-1024x561.jpg"} alt="Rutas Sierra" className="rounded-2xl shadow-lg w-full h-80 object-cover" />
+                            <img src={routes[0]?.image_url || "https://www.tiojosemaria.com/wp-content/uploads/2018/12/MG_9540-1024x561.jpg"} alt="Rutas Sierra" className="rounded-2xl shadow-lg w-full h-48 md:h-80 object-cover" />
                         </FadeInUp>
                         <FadeInUp delay={0.4}>
-                            <img src={places[1]?.image_url || "https://www.tiojosemaria.com/wp-content/uploads/2019/01/chuletas-de-cordero-al-horno2-1024x724.jpg"} alt="Gastronomía" className="rounded-2xl shadow-lg w-full h-64 object-cover -mt-16" />
+                            <img src={places[1]?.image_url || "https://www.tiojosemaria.com/wp-content/uploads/2019/01/chuletas-de-cordero-al-horno2-1024x724.jpg"} alt="Gastronomía" className="rounded-2xl shadow-lg w-full h-40 md:h-64 object-cover md:-mt-16" />
                         </FadeInUp>
                         <FadeInUp delay={0.5}>
-                            <img src={routes[1]?.image_url || "https://www.tiojosemaria.com/wp-content/uploads/2018/12/10-1024x768.jpg"} alt="Actividades" className="rounded-2xl shadow-lg w-full h-64 object-cover mt-4" />
+                            <img src={routes[1]?.image_url || "https://www.tiojosemaria.com/wp-content/uploads/2018/12/10-1024x768.jpg"} alt="Actividades" className="rounded-2xl shadow-lg w-full h-40 md:h-64 object-cover mt-4" />
                         </FadeInUp>
                     </div>
                 </div>
@@ -466,9 +466,9 @@ const GuiaSection = () => (
         </div>
         <div className="max-w-3xl mx-auto px-6 relative z-10 text-center">
             <FadeInUp>
-                <p className="text-5xl mb-6">🗺️</p>
-                <h2 className="font-serif text-3xl md:text-5xl font-bold mb-5">Descubre el Cazorla que no sale en las guías</h2>
-                <p className="text-lg mb-10 opacity-90 leading-relaxed" style={{ color: COLORS.accent }}>
+                <p className="text-4xl md:text-5xl mb-6">🗺️</p>
+                <h2 className="font-serif text-2xl md:text-5xl font-bold mb-5">Descubre el Cazorla <br className="md:hidden" /> que no sale en las guías</h2>
+                <p className="text-base md:text-lg mb-8 md:text-lg mb-10 opacity-90 leading-relaxed" style={{ color: COLORS.accent }}>
                     Hemos preparado una guía exclusiva con nuestras rutas favoritas, los mejores sitios para comer en Hinojares y secretos locales.
                 </p>
                 <form
@@ -498,8 +498,8 @@ const GuiaSection = () => (
 
 // --- FOOTER ---
 const Footer = () => (
-    <footer id="contacto" className="py-20 px-6 text-white" style={{ backgroundColor: '#111827' }}>
-        <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-16 mb-14">
+    <footer id="contacto" className="py-16 md:py-20 px-6 text-white" style={{ backgroundColor: '#111827' }}>
+        <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-10 md:gap-16 mb-14">
             <div>
                 <h3 className="font-serif text-2xl font-bold mb-6">Tío José María</h3>
                 <p className="text-white/50 text-sm leading-relaxed max-w-xs mb-6">
