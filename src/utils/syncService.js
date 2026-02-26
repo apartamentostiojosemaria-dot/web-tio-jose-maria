@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 export const syncApartmentDates = async (apt) => {
     let syncCount = 0;
     let diagnosticMsg = '';
-    console.log('--- iCal Sync Service v2.2 Activated (Multi-Proxy) ---');
+    console.log('--- iCal Sync Service v2.3 Activated (Verified Proxies) ---');
 
     // 1. Intentar sincronización desde Airbnb/Booking/Holidu
     if (apt.airbnb_ical_url || apt.booking_ical_url) {
@@ -15,9 +15,12 @@ export const syncApartmentDates = async (apt) => {
             ].filter(item => item.url);
 
             const proxyFactories = [
-                (u) => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
-                (u) => `https://thingproxy.freeboard.io/fetch/${u}`,
-                (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`
+                // 1. CodeTabs (Raw text - Very reliable)
+                (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+                // 2. AllOrigins Raw (Raw text)
+                (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+                // 3. AllOrigins Get (JSON with potential base64)
+                (u) => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`
             ];
 
             for (const { url, source } of urls) {
@@ -36,19 +39,27 @@ export const syncApartmentDates = async (apt) => {
                             continue;
                         }
 
-                        if (i === 0) { // AllOrigins returns JSON
+                        if (i === 2) { // AllOrigins Get returns JSON
                             const json = await response.json();
-                            icsText = json.contents;
+                            const raw = json.contents;
+                            if (raw && raw.startsWith('data:')) {
+                                // Decode base64 if AllOrigins wrapped it
+                                const base64 = raw.split(',')[1];
+                                icsText = atob(base64);
+                            } else {
+                                icsText = raw;
+                            }
                         } else {
+                            // Raw text proxies
                             icsText = await response.text();
                         }
 
                         if (icsText && icsText.includes('BEGIN:VCALENDAR')) {
                             success = true;
-                            console.log(`Proxy ${i + 1} succeeded for ${source}`);
+                            console.log(`Proxy ${i + 1} succeeded for ${source}. Content starts with: ${icsText.substring(0, 50)}...`);
                             break;
                         } else {
-                            console.warn(`Proxy ${i + 1} did not return a valid iCal string`);
+                            console.warn(`Proxy ${i + 1} did not return a valid iCal string. Recieved: ${icsText?.substring(0, 50)}`);
                         }
                     } catch (e) {
                         console.warn(`Proxy ${i + 1} failed for ${source}:`, e);
@@ -56,7 +67,7 @@ export const syncApartmentDates = async (apt) => {
                 }
 
                 if (!success) {
-                    diagnosticMsg += `\n- ${source}: Fallaron todos los servidores de conexión.`;
+                    diagnosticMsg += `\n- ${source}: Fallaron todos los servidores de conexión (AllOrigins/CodeTabs).`;
                     continue;
                 }
 
@@ -67,6 +78,7 @@ export const syncApartmentDates = async (apt) => {
 
                 while ((eventMatch = eventRegex.exec(icsText)) !== null) {
                     const eventContent = eventMatch[1];
+                    // Extraer DTSTART y DTEND (YYYYMMDD)
                     const startMatch = eventContent.match(/DTSTART(?:;[^:]*)?:(\d{8})/i);
                     const endMatch = eventContent.match(/DTEND(?:;[^:]*)?:(\d{8})/i);
 
@@ -139,10 +151,8 @@ export const syncApartmentDates = async (apt) => {
 
         if (uploadError) {
             console.error('Error detail uploading to storage:', uploadError);
-            const isBucketMissing = uploadError.message?.includes('not found') || uploadError.status === 400;
-            diagnosticMsg += `\n- Error Exportación: ${uploadError.message} ${isBucketMissing ? '(¿Has creado el bucket "calendars" en Supabase?)' : ''}`;
+            diagnosticMsg += `\n- Error Exportación: ${uploadError.message}`;
         } else {
-            console.log(`Calendario para ${apt.slug} subido correctamente.`);
             diagnosticMsg += `\n- Archivo de exportación generado correctamente.`;
         }
     } catch (error) {
