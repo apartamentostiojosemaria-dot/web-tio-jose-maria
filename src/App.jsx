@@ -397,21 +397,23 @@ const EntornoSection = ({ places, routes }) => {
                         <p className="text-base md:text-lg leading-relaxed mb-6" style={{ color: COLORS.secondary }}>
                             Tío José María se ubica en <strong>Hinojares</strong>, un pueblo mágico de gredas blancas al sur del <strong>Parque Natural de la Sierra de Cazorla</strong>. Es un destino donde el agua de los ríos y embalses se funde con paisajes semidesérticos y bosques vírgenes.
                         </p>
-                        <div className="grid grid-cols-2 gap-6 mt-10">
-                            <div className="p-5 rounded-xl border border-rural-100 bg-rural-50">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-10">
+                            <div className="p-6 rounded-2xl border border-rural-100 bg-rural-50 hover:bg-white hover:shadow-xl transition-all group">
+                                <span className="text-2xl mb-2 block">🐎</span>
                                 <h4 className="font-serif text-xl font-bold mb-2" style={{ color: COLORS.primary }}>
-                                    {starActivity[0]?.title || 'Rutas a Caballo'}
+                                    Actividades Estrella
                                 </h4>
                                 <p className="text-sm opacity-80" style={{ color: COLORS.text }}>
-                                    {starActivity[0]?.duration || 'La actividad estrella para recorrer los senderos del parque.'}
+                                    Desde rutas a caballo en el pueblo hasta kayak y parapente en los embalses cercanos.
                                 </p>
                             </div>
-                            <div className="p-5 rounded-xl border border-rural-100 bg-rural-50">
+                            <div className="p-6 rounded-2xl border border-rural-100 bg-rural-50 hover:bg-white hover:shadow-xl transition-all">
+                                <span className="text-2xl mb-2 block">🥘</span>
                                 <h4 className="font-serif text-xl font-bold mb-2" style={{ color: COLORS.primary }}>
-                                    {gastronomy[0]?.name || 'Gastronomía'}
+                                    Sabor Tradicional
                                 </h4>
                                 <p className="text-sm opacity-80" style={{ color: COLORS.text }}>
-                                    {gastronomy[0]?.description || 'No puedes irte sin probar el cordero al horno tradicional.'}
+                                    Prueba el cordero segureño y los platos típicos de la comarca, un placer para los sentidos.
                                 </p>
                             </div>
                         </div>

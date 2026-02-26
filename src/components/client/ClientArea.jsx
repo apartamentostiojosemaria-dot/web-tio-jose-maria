@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { COLORS } from '../../App';
-import { FileText, Download, LogOut, User, MapPin, Calendar, ExternalLink } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+    FileText, Download, LogOut, User, MapPin,
+    Calendar, ExternalLink, Map, Utensils,
+    Tent, Mountain, ChefHat, Info, ChevronRight
+} from 'lucide-react';
 
 const ClientArea = () => {
     const [docs, setDocs] = useState([]);
@@ -54,8 +59,17 @@ const ClientArea = () => {
                     </div>
                     <h3 className="text-2xl font-serif font-bold mb-4" style={{ color: COLORS.text }}>¡Hola de nuevo!</h3>
                     <p className="text-gray-500 max-w-xl leading-relaxed">
-                        Aquí tienes acceso a toda la documentación de tu estancia en <strong style={{ color: COLORS.primary }}>Tío José María</strong>. Descarga tus facturas, contratos o guías locales personalizadas.
+                        Aquí tienes acceso a toda la documentación de tu estancia en <strong style={{ color: COLORS.primary }}>Tío José María</strong>. Descarga tus facturas, contratos o consulta nuestra guía exclusiva del huésped.
                     </p>
+                </div>
+
+                {/* Guest Guide Section */}
+                <div className="mb-14">
+                    <h3 className="text-2xl font-serif font-bold mb-8 flex items-center gap-3" style={{ color: COLORS.text }}>
+                        <Map size={24} style={{ color: COLORS.primary }} /> Guía Exclusiva del Huésped
+                    </h3>
+
+                    <GuestGuide />
                 </div>
 
                 {/* Documents Grid */}
@@ -135,6 +149,90 @@ const ClientArea = () => {
                     </div>
                 </div>
             </main>
+        </div>
+    );
+};
+
+const GuestGuide = () => {
+    const [activeTab, setActiveTab] = useState('rutas');
+
+    const sections = {
+        rutas: {
+            icon: Mountain,
+            title: 'Rutas y Paisajes',
+            items: [
+                { title: 'Cueva del Agua', desc: 'Visita el Santuario de Tíscar y la impresionante Cueva del Agua, un paraje natural único en el sur del parque.' },
+                { title: 'Cerrada del Río Castril', desc: 'Una pasarela sobre el río y puentes colgantes en uno de los senderos más espectaculares de la zona.' },
+                { title: 'Nacimiento del Guadalquivir', desc: 'Descubre los enclaves más bellos donde nace el gran río de Andalucía, rodeado de bosques vírgenes.' },
+                { title: 'Lago del Altiplano', desc: 'Ruta por los embalses del Negratín y la Bolera, conocidos por sus aguas color turquesa y paisajes casi desérticos.' },
+                { title: 'Patrimonio de la Humanidad', desc: 'A poca distancia se encuentran Úbeda y Baeza, joyas del Renacimiento español declaradas por la UNESCO.' }
+            ]
+        },
+        gastronomia: {
+            icon: ChefHat,
+            title: 'Sabores Locales',
+            items: [
+                { title: 'Cordero Segureño', desc: 'Nuestra especialidad estrella. Carne tierna y sabrosa, criada en los pastos de la sierra.' },
+                { title: 'Gachas y Migas', desc: 'Platos tradicionales de cuchara, ideales para los días de invierno junto a la chimenea.' },
+                { title: 'Repostería Tradicional', desc: 'No te vayas sin probar los Roscos Fritos, las Natillas caseras o nuestros famosos Papajotes.' }
+            ]
+        },
+        actividades: {
+            icon: Tent,
+            title: 'Aventura y Ocio',
+            items: [
+                { title: 'Rutas a Caballo', desc: 'Apto para todas las edades. Varias yeguas dóciles listas para paseos por el pueblo de Hinojares.' },
+                { title: 'Vuelo en Parapente', desc: 'Siente la libertad de volar sobre el Cerro Jabalcón con vistas increíbles al embalse del Negratín.' },
+                { title: 'Pesca y Kayak', desc: 'Disfruta de la tranquilidad del agua en los embalses de la Bolera o el Negratín.' }
+            ]
+        }
+    };
+
+    return (
+        <div className="space-y-6">
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                {Object.entries(sections).map(([key, section]) => {
+                    const Icon = section.icon;
+                    const isActive = activeTab === key;
+                    return (
+                        <button
+                            key={key}
+                            onClick={() => setActiveTab(key)}
+                            className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold whitespace-nowrap transition-all ${isActive
+                                ? 'text-white shadow-lg'
+                                : 'bg-white text-gray-500 border border-gray-100 hover:border-rural-200 shadow-sm'
+                                }`}
+                            style={isActive ? { backgroundColor: COLORS.primary } : {}}
+                        >
+                            <Icon size={18} />
+                            {section.title}
+                        </button>
+                    );
+                })}
+            </div>
+
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={activeTab}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                    className="grid gap-4 md:grid-cols-2"
+                >
+                    {sections[activeTab].items.map((item, i) => (
+                        <div key={i} className="bg-white p-6 rounded-2xl border border-gray-50 shadow-sm group hover:border-rural-100 transition-all">
+                            <h4 className="font-bold text-rural-900 mb-2 flex items-center gap-2 group-hover:translate-x-1 transition-transform">
+                                <ChevronRight size={14} style={{ color: COLORS.accent }} />
+                                {item.title}
+                            </h4>
+                            <p className="text-sm text-gray-500 leading-relaxed">
+                                {item.desc}
+                            </p>
+                        </div>
+                    ))}
+                </motion.div>
+            </AnimatePresence>
         </div>
     );
 };
