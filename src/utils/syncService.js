@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 export const syncApartmentDates = async (apt) => {
     let syncCount = 0;
     let diagnosticMsg = '';
+    console.log('--- iCal Sync Service v2.1 Activated ---');
 
     // 1. Intentar sincronización desde Airbnb/Booking/Holidu
     if (apt.airbnb_ical_url || apt.booking_ical_url) {
@@ -14,8 +15,11 @@ export const syncApartmentDates = async (apt) => {
             ].filter(item => item.url);
 
             for (const { url, source } of urls) {
-                // Probamos con un proxy más robusto o directo si es posible
-                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+                // Forzamos bypass de cache añadiendo un timestamp al final del enlace original
+                const cacheBusterUrl = `${url}${url.includes('?') ? '&' : '?'}t=${Date.now()}`;
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(cacheBusterUrl)}`;
+
+                console.log(`Connecting to ${source} via ${proxyUrl}`);
                 const response = await fetch(proxyUrl);
 
                 if (!response.ok) {
