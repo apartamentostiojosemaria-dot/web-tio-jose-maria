@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { COLORS } from '../../App';
 import { useGuestGuides } from '../../hooks/useDatabase';
+import WeatherWidget from '../WeatherWidget';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     FileText, Download, LogOut, User, MapPin,
