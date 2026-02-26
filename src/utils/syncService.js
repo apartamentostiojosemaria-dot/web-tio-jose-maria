@@ -17,18 +17,28 @@ export const syncApartmentDates = async (apt) => {
                 if (!response.ok) continue;
 
                 const icsText = await response.text();
-                const regex = /BEGIN:VEVENT[\s\S]*?DTSTART;VALUE=DATE:(\d{8})[\s\S]*?DTEND;VALUE=DATE:(\d{8})[\s\S]*?END:VEVENT/g;
-                let match;
-                while ((match = regex.exec(icsText)) !== null) {
-                    const startStr = match[1];
-                    const endStr = match[2];
-                    allBlockedDates.push({
-                        apartment_id: apt.id,
-                        start_date: `${startStr.slice(0, 4)}-${startStr.slice(4, 6)}-${startStr.slice(6, 8)}`,
-                        end_date: `${endStr.slice(0, 4)}-${endStr.slice(4, 6)}-${endStr.slice(6, 8)}`,
-                        source
-                    });
-                }
+
+                // Parser robusto: dividimos en eventos primero
+                const events = icsText.split('BEGIN:VEVENT');
+                events.shift(); // Quitamos la cabecera del calendario
+
+                events.forEach(event => {
+                    // Extraer DTSTART (puede tener ;VALUE=DATE o TZID o nada) - m: multiline para ^
+                    const startMatch = event.match(/^DTSTART(?:;[^:]*)?:(\d{8})/m);
+                    const endMatch = event.match(/^DTEND(?:;[^:]*)?:(\d{8})/m);
+
+                    if (startMatch && endMatch) {
+                        const startStr = startMatch[1];
+                        const endStr = endMatch[1]; // endMatch[1] es correcto (primer grupo de ese match)
+
+                        allBlockedDates.push({
+                            apartment_id: apt.id,
+                            start_date: `${startStr.slice(0, 4)}-${startStr.slice(4, 6)}-${startStr.slice(6, 8)}`,
+                            end_date: `${endStr.slice(0, 4)}-${endStr.slice(4, 6)}-${endStr.slice(6, 8)}`,
+                            source
+                        });
+                    }
+                });
             }
 
             await supabase.from('blocked_dates').delete().eq('apartment_id', apt.id).neq('source', 'manual');

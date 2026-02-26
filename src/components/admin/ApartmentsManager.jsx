@@ -292,7 +292,7 @@ const ApartmentsManager = () => {
                             <div className="space-y-8">
                                 <section className="space-y-4">
                                     <h5 className="font-bold flex items-center gap-2 text-rural-700 uppercase tracking-widest text-xs">
-                                        <LinkIcon size={16} /> Sincronización Importación (BOOKING/AIRBNB)
+                                        <LinkIcon size={16} /> Sincronización Importación (AIRBNB, BOOKING, HOLIDU...)
                                     </h5>
                                     <div className="space-y-4 bg-rural-50 p-6 rounded-3xl border border-rural-100">
                                         <div>
