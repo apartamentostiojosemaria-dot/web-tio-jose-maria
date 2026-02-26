@@ -153,11 +153,11 @@ const HeroSection = ({ title, subtitle }) => (
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, ease: 'easeOut' }}
-            className="relative z-10 text-center px-6 max-w-4xl"
+            className="relative z-10 text-center px-6 max-w-5xl pt-20"
         >
             <p className="text-white/70 uppercase tracking-[0.3em] text-sm mb-5 font-sans">Hinojares, Jaén</p>
-            <h1 className="font-serif text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl text-white font-bold mb-6 leading-tight">
-                {title.split(' en ')[0]} <br className="hidden md:block" /> en <span style={{ color: COLORS.accent }}>{title.split(' en ')[1] || 'Cazorla'}</span>
+            <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white font-bold mb-6 leading-tight">
+                {title.split(' en ')[0]} <br className="hidden lg:block" /> en <span style={{ color: COLORS.accent }}>{title.split(' en ')[1] || 'Cazorla'}</span>
             </h1>
             <p className="text-white/80 text-lg md:text-xl mb-10 max-w-2xl mx-auto font-light leading-relaxed">
                 {subtitle}
