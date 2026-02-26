@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 export const syncApartmentDates = async (apt) => {
     let syncCount = 0;
     let diagnosticMsg = '';
-    console.log('--- iCal Sync Service v2.1 Activated ---');
+    console.log('--- iCal Sync Service v2.2 Activated (Multi-Proxy) ---');
 
     // 1. Intentar sincronización desde Airbnb/Booking/Holidu
     if (apt.airbnb_ical_url || apt.booking_ical_url) {
@@ -14,24 +14,49 @@ export const syncApartmentDates = async (apt) => {
                 { url: apt.booking_ical_url, source: 'booking' }
             ].filter(item => item.url);
 
+            const proxyFactories = [
+                (u) => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+                (u) => `https://thingproxy.freeboard.io/fetch/${u}`,
+                (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`
+            ];
+
             for (const { url, source } of urls) {
-                // Forzamos bypass de cache añadiendo un timestamp al final del enlace original
                 const cacheBusterUrl = `${url}${url.includes('?') ? '&' : '?'}t=${Date.now()}`;
-                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(cacheBusterUrl)}`;
+                let icsText = null;
+                let success = false;
 
-                console.log(`Connecting to ${source} via ${proxyUrl}`);
-                const response = await fetch(proxyUrl);
+                for (let i = 0; i < proxyFactories.length; i++) {
+                    try {
+                        const proxyUrl = proxyFactories[i](cacheBusterUrl);
+                        console.log(`Trying proxy ${i + 1} for ${source}: ${proxyUrl}`);
+                        const response = await fetch(proxyUrl);
 
-                if (!response.ok) {
-                    diagnosticMsg += `\n- Fallo al conectar con ${source} (Error ${response.status})`;
-                    continue;
+                        if (!response.ok) {
+                            console.warn(`Proxy ${i + 1} returned status ${response.status}`);
+                            continue;
+                        }
+
+                        if (i === 0) { // AllOrigins returns JSON
+                            const json = await response.json();
+                            icsText = json.contents;
+                        } else {
+                            icsText = await response.text();
+                        }
+
+                        if (icsText && icsText.includes('BEGIN:VCALENDAR')) {
+                            success = true;
+                            console.log(`Proxy ${i + 1} succeeded for ${source}`);
+                            break;
+                        } else {
+                            console.warn(`Proxy ${i + 1} did not return a valid iCal string`);
+                        }
+                    } catch (e) {
+                        console.warn(`Proxy ${i + 1} failed for ${source}:`, e);
+                    }
                 }
 
-                const json = await response.json();
-                const icsText = json.contents;
-
-                if (!icsText || !icsText.includes('BEGIN:VCALENDAR')) {
-                    diagnosticMsg += `\n- El enlace de ${source} no devolvió un calendario válido.`;
+                if (!success) {
+                    diagnosticMsg += `\n- ${source}: Fallaron todos los servidores de conexión.`;
                     continue;
                 }
 
@@ -42,15 +67,12 @@ export const syncApartmentDates = async (apt) => {
 
                 while ((eventMatch = eventRegex.exec(icsText)) !== null) {
                     const eventContent = eventMatch[1];
-
-                    // Extraer DTSTART y DTEND (soportamos YYYYMMDD y YYYYMMDDTHHMMSS)
                     const startMatch = eventContent.match(/DTSTART(?:;[^:]*)?:(\d{8})/i);
                     const endMatch = eventContent.match(/DTEND(?:;[^:]*)?:(\d{8})/i);
 
                     if (startMatch && endMatch) {
                         const startStr = startMatch[1];
                         const endStr = endMatch[1];
-
                         allBlockedDates.push({
                             apartment_id: apt.id,
                             start_date: `${startStr.slice(0, 4)}-${startStr.slice(4, 6)}-${startStr.slice(6, 8)}`,
