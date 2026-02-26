@@ -1,0 +1,686 @@
+﻿<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tío José María | Apartamentos Rurales en Hinojares, Cazorla</title>
+    <meta name="description"
+        content="Reserva en Apartamentos Rurales Tío José María. Alojamiento con encanto en Hinojares, Sierra de Cazorla. Historia, confort y chimenea en una casona del S.XIX.">
+
+    <!-- Meta SEO Adicional -->
+    <meta name="keywords"
+        content="casa rural hinojares, apartamentos rurales cazorla, alojamiento sierra de cazorla, turismo rural jaen, tio jose maria hinojares">
+    <link rel="canonical" href="https://tiojosemaria.com/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tiojosemaria.com/">
+    <meta property="og:title" content="Tío José María | Apartamentos Rurales en Hinojares, Cazorla">
+    <meta property="og:description"
+        content="Alojamiento rural con alma en el sur de Cazorla. 4 apartamentos exclusivos en una casona del S.XIX restaurada.">
+    <meta property="og:image" content="https://www.tiojosemaria.com/wp-content/uploads/2018/12/slide3.jpg">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://tiojosemaria.com/">
+    <meta property="twitter:title" content="Tío José María | Apartamentos Rurales en Hinojares, Cazorla">
+    <meta property="twitter:description"
+        content="Alojamiento rural con alma en el sur de Cazorla. 4 apartamentos exclusivos en una casona del S.XIX restaurada.">
+    <meta property="twitter:image" content="https://www.tiojosemaria.com/wp-content/uploads/2018/12/slide3.jpg">
+
+    <!-- Google Fonts: Playfair Display (Elegante) & Lato (Lectura) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+
+    <!-- Tailwind CSS (Estilos modernos) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        rural: {
+                            50: '#fcfbf9',
+                            100: '#f5f2ea', // Beige claro fondo
+                            300: '#d6ceb8',
+                            500: '#8c8468', // Tierra medio
+                            700: '#556B2F', // Verde Oliva (Color principal)
+                            800: '#3b4a20',
+                            900: '#2c3319',
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['"Lato"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Pequeños ajustes personalizados */
+        .hero-overlay {
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.6) 100%);
+        }
+
+        .text-shadow {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+
+<body class="bg-rural-50 text-gray-700 font-sans antialiased selection:bg-rural-700 selection:text-white">
+
+
+    <!-- NAVBAR -->
+    <nav id="navbar" class="fixed w-full z-50 transition-all duration-300 py-4 text-white bg-transparent">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <!-- Logo / Nombre -->
+            <a href="#" class="font-serif text-2xl font-semibold tracking-wider">
+                Tío José María
+            </a>
+
+
+            <!-- Menú Desktop -->
+            <div class="hidden md:flex space-x-8 items-center">
+                <a href="#apartamentos" class="hover:text-rural-300 transition">Apartamentos</a>
+                <a href="#entorno" class="hover:text-rural-300 transition">El Entorno</a>
+                <a href="#guia" class="hover:text-rural-300 transition">Guía Secreta</a>
+                <a href="#contacto"
+                    class="px-5 py-2 bg-rural-700 hover:bg-rural-800 rounded-full transition shadow-lg font-semibold">
+                    Reservar
+                </a>
+            </div>
+
+
+            <!-- Menú Móvil Botón -->
+            <button id="mobile-menu-btn" class="md:hidden text-2xl focus:outline-none">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+
+        <!-- Menú Móvil Desplegable -->
+        <div id="mobile-menu" class="hidden bg-white text-gray-800 absolute top-full left-0 w-full shadow-xl border-t">
+            <div class="flex flex-col p-6 space-y-4 font-serif text-lg text-center">
+                <a href="#apartamentos" class="mobile-link">Apartamentos</a>
+                <a href="#entorno" class="mobile-link">El Entorno</a>
+                <a href="#contacto" class="mobile-link text-rural-700 font-bold">Reservar ahora</a>
+            </div>
+        </div>
+    </nav>
+
+
+    <!-- HERO SECTION -->
+    <header class="relative h-screen min-h-[600px] flex items-center justify-center text-center text-white">
+        <!-- Imagen de fondo (Placeholder de alta calidad de Unsplash) -->
+        <div class="absolute inset-0 w-full h-full overflow-hidden">
+            <img src="https://www.tiojosemaria.com/wp-content/uploads/2018/12/slide3.jpg"
+                alt="Vistas del Valle del Turrilla"
+                class="w-full h-full object-cover transform hover:scale-105 transition duration-[20s]">
+        </div>
+        <div class="absolute inset-0 hero-overlay"></div>
+
+
+        <div class="relative z-10 px-6 max-w-4xl mx-auto animate-fade-in-up">
+            <p class="text-lg md:text-xl mb-4 font-light tracking-[0.2em] uppercase text-rural-100">Hinojares, Jaén</p>
+            <h1 class="font-serif text-5xl md:text-7xl font-bold mb-6 leading-tight text-shadow text-white">
+                Apartamentos Rurales <br /> <span class="text-rural-300">Tío José María</span>
+            </h1>
+            <p class="text-lg md:text-2xl mb-10 font-light opacity-90 max-w-2xl mx-auto">
+                Una casona del S.XIX restaurada con alma. Chimenea, silencio y vistas infinitas al Valle del Turrilla.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="#apartamentos"
+                    class="px-8 py-4 bg-rural-700 hover:bg-rural-800 text-white rounded-full transition shadow-xl font-semibold text-lg">
+                    Ver Apartamentos
+                </a>
+                <!-- Botón WhatsApp Cabecera CORREGIDO -->
+                <a href="https://api.whatsapp.com/send?phone=34676344675&text=Hola,%20estoy%20viendo%20la%20web%20y%20quería%20consultar%20una%20duda."
+                    target="_blank"
+                    class="px-8 py-4 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white border border-white/30 rounded-full transition shadow-xl font-semibold text-lg flex items-center justify-center gap-2">
+                    <i class="fab fa-whatsapp"></i> Consultar Dudas
+                </a>
+            </div>
+        </div>
+    </header>
+
+
+    <!-- INTRODUCCIÓN -->
+    <section class="py-20 bg-white">
+        <div class="container mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
+            <div class="order-2 md:order-1">
+                <div class="relative">
+                    <img src="https://www.tiojosemaria.com/wp-content/uploads/2018/12/slide5.jpg" alt="Interior rústico"
+                        class="rounded-lg shadow-2xl w-full h-[500px] object-cover">
+                    <div
+                        class="absolute -bottom-6 -right-6 bg-rural-100 p-6 rounded-lg shadow-lg hidden md:block border-2 border-white">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="font-serif text-4xl text-rural-700 font-bold">9.5</span>
+                            <span class="text-xl text-gray-400">/10</span>
+                        </div>
+                        <p class="text-sm text-gray-600 uppercase tracking-wider font-bold">Excepcional en Booking</p>
+                    </div>
+                </div>
+            </div>
+            <div class="order-1 md:order-2">
+                <h2 class="font-serif text-4xl md:text-5xl text-gray-800 mb-6">Más que una casa rural, <br /><span
+                        class="text-rural-700 italic">es historia viva.</span></h2>
+                <p class="text-lg text-gray-600 mb-6 leading-relaxed">
+                    Bienvenidos a <strong>Tío José María</strong>. Ubicados en el sur del Parque Natural de Cazorla,
+                    nuestros 4 apartamentos combinan la arquitectura tradicional andaluza con el confort moderno.
+                </p>
+                <p class="text-lg text-gray-600 mb-8 leading-relaxed">
+                    Muros de piedra, techos de vigas de madera y el calor de la chimenea te esperan. Ideal para parejas
+                    que buscan intimidad o familias que desean reconectar con la naturaleza.
+                </p>
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-center gap-3 text-gray-700">
+                        <i class="fas fa-check text-rural-700"></i> Ubicación privilegiada en Hinojares
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-700">
+                        <i class="fas fa-check text-rural-700"></i> Chimenea de leña en todos los apartamentos
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-700">
+                        <i class="fas fa-check text-rural-700"></i> WiFi gratuito y mascotas bienvenidas
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- TESTIMONIOS BOOKING -->
+    <section class="py-24 bg-rural-50">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+                <div>
+                    <span
+                        class="text-rural-700 font-bold underline decoration-rural-300 underline-offset-8 uppercase tracking-widest text-xs">Opiniones
+                        Reales</span>
+                    <h2 class="font-serif text-4xl md:text-5xl text-gray-800 mt-6">Lo que dicen nuestros huéspedes</h2>
+                </div>
+                <a href="https://www.booking.com/hotel/es/casa-rural-tio-jose-maria.es.html#tab-reviews" target="_blank"
+                    class="flex items-center gap-4 bg-white px-6 py-4 rounded-2xl shadow-sm hover:shadow-md transition group">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/be/Booking.com_logo.svg"
+                        alt="Booking.com" class="h-6">
+                    <div class="text-right border-l pl-4 border-gray-100">
+                        <p class="text-lg font-bold text-gray-900 leading-none">9.5 / 10</p>
+                        <p class="text-xs text-gray-500 mt-1">Puntuación Excepcional</p>
+                    </div>
+                </a>
+            </div>
+
+            <div id="reviews-container" class="grid md:grid-cols-2 lg:grid-cols-4 gap-8 min-h-[350px]">
+                <!-- Review 1 -->
+                <div
+                    class="bg-white p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100 group">
+                    <div class="flex text-yellow-400 mb-6 group-hover:scale-110 transition-transform origin-left">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                            class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="text-gray-600 italic mb-8 leading-relaxed">"Apartamento acogedor. El alojamiento estaba
+                        genial. Era una apartamento muy acogedor y bien equipado."</p>
+                    <div class="pt-6 border-t border-gray-50 flex justify-between items-center">
+                        <span class="font-bold text-gray-900">Alejandro</span>
+                        <span class="bg-rural-100 text-rural-700 px-3 py-1 rounded-full text-xs font-bold">10/10</span>
+                    </div>
+                </div>
+                <!-- Review 2 -->
+                <div
+                    class="bg-white p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100 group">
+                    <div class="flex text-yellow-400 mb-6 group-hover:scale-110 transition-transform origin-left">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                            class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="text-gray-600 italic mb-8 leading-relaxed">"Estancia en una casa acogedora. ¡Forman parte
+                        de una casa con más de 300 años! Todo muy limpio y equipado."</p>
+                    <div class="pt-6 border-t border-gray-50 flex justify-between items-center">
+                        <span class="font-bold text-gray-900">M.</span>
+                        <span class="bg-rural-100 text-rural-700 px-3 py-1 rounded-full text-xs font-bold">10/10</span>
+                    </div>
+                </div>
+                <!-- Review 3 -->
+                <div
+                    class="bg-white p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100 group">
+                    <div class="flex text-yellow-400 mb-6 group-hover:scale-110 transition-transform origin-left">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                            class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="text-gray-600 italic mb-8 leading-relaxed">"Acogedor y tranquilo. Muy limpio todo y el
+                        trato excelente por parte de los propietarios."</p>
+                    <div class="pt-6 border-t border-gray-50 flex justify-between items-center">
+                        <span class="font-bold text-gray-900">Antonio</span>
+                        <span class="bg-rural-100 text-rural-700 px-3 py-1 rounded-full text-xs font-bold">10/10</span>
+                    </div>
+                </div>
+                <!-- Review 4 -->
+                <div
+                    class="bg-white p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100 group">
+                    <div class="flex text-yellow-400 mb-6 group-hover:scale-110 transition-transform origin-left">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                            class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="text-gray-600 italic mb-8 leading-relaxed">"El apartamento es estupendo, muy acogedor. Las
+                        camas cómodas y detalles muy cuidados."</p>
+                    <div class="pt-6 border-t border-gray-50 flex justify-between items-center">
+                        <span class="font-bold text-gray-900">Cristina</span>
+                        <span class="bg-rural-100 text-rural-700 px-3 py-1 rounded-full text-xs font-bold">10/10</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- APARTAMENTOS (GRID) -->
+    <section id="apartamentos" class="py-20 bg-rural-100">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <span class="text-rural-700 font-bold tracking-widest uppercase text-sm">Nuestros Alojamientos</span>
+                <h2 class="font-serif text-4xl md:text-5xl text-gray-800 mt-2">Elige tu rincón favorito</h2>
+            </div>
+
+
+            <!-- Grid 2x2 -->
+            <div class="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+
+                <!-- Card 1: Albahaca -->
+                <div
+                    class="bg-white rounded-xl overflow-hidden shadow-lg group hover:shadow-2xl transition duration-300">
+                    <div class="relative h-64 overflow-hidden">
+                        <img src="https://www.tiojosemaria.com/wp-content/uploads/2018/12/ALBAHACA-1.jpg"
+                            alt="Apartamento Albahaca"
+                            class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                        <div
+                            class="absolute top-4 right-4 bg-rural-700/90 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
+                            Romántico
+                        </div>
+                    </div>
+                    <div class="p-8">
+                        <div class="flex justify-between items-baseline mb-2">
+                            <h3 class="font-serif text-2xl font-bold text-gray-800">Albahaca</h3>
+                            <span class="text-sm text-gray-500"><i class="fas fa-user-group"></i> 2 plazas</span>
+                        </div>
+                        <p class="text-gray-600 mb-6 text-sm line-clamp-3">
+                            Íntimo y acogedor. Diseñado para parejas. Disfruta de una cena romántica frente a la
+                            chimenea después de una ruta por el parque.
+                        </p>
+                        <div class="flex items-center gap-4 mb-6 text-gray-400 text-sm">
+                            <span title="Chimenea"><i class="fas fa-fire"></i></span>
+                            <span title="Cama Grande"><i class="fas fa-bed"></i></span>
+                            <span title="TV"><i class="fas fa-tv"></i></span>
+                        </div>
+                        <a href="albahaca.html"
+                            class="block w-full text-center py-3 bg-rural-700 text-white font-semibold rounded-lg hover:bg-rural-800 transition shadow-md">
+                            Ver Fotos y Detalles
+                        </a>
+                    </div>
+                </div>
+
+
+                <!-- Card 2: Tomillo -->
+                <div
+                    class="bg-white rounded-xl overflow-hidden shadow-lg group hover:shadow-2xl transition duration-300">
+                    <div class="relative h-64 overflow-hidden">
+                        <img src="https://www.tiojosemaria.com/wp-content/uploads/2018/12/TOMILLOHOME1.jpg"
+                            alt="Apartamento Tomillo"
+                            class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                        <div
+                            class="absolute top-4 right-4 bg-white/90 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide text-rural-800">
+                            Con Vistas
+                        </div>
+                    </div>
+                    <div class="p-8">
+                        <div class="flex justify-between items-baseline mb-2">
+                            <h3 class="font-serif text-2xl font-bold text-gray-800">Tomillo</h3>
+                            <span class="text-sm text-gray-500"><i class="fas fa-user-group"></i> 2 plazas</span>
+                        </div>
+                        <p class="text-gray-600 mb-6 text-sm line-clamp-3">
+                            Ubicado en la segunda planta con balcón y vistas al valle. Techos de madera abuhardillados
+                            que le dan un encanto especial.
+                        </p>
+                        <div class="flex items-center gap-4 mb-6 text-gray-400 text-sm">
+                            <span title="Vistas"><i class="fas fa-binoculars"></i></span>
+                            <span title="Balcón"><i class="fas fa-wind"></i></span>
+                            <span title="WiFi"><i class="fas fa-wifi"></i></span>
+                        </div>
+                        <a href="tomillo.html"
+                            class="block w-full text-center py-3 bg-rural-700 text-white font-semibold rounded-lg hover:bg-rural-800 transition shadow-md">
+                            Ver Fotos y Detalles
+                        </a>
+                    </div>
+                </div>
+
+
+                <!-- Card 3: Lavanda -->
+                <div
+                    class="bg-white rounded-xl overflow-hidden shadow-lg group hover:shadow-2xl transition duration-300">
+                    <div class="relative h-64 overflow-hidden">
+                        <img src="https://www.tiojosemaria.com/wp-content/uploads/2018/12/LAVANDAHOME1.jpg"
+                            alt="Apartamento Lavanda"
+                            class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                        <div
+                            class="absolute top-4 right-4 bg-white/90 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide text-rural-800">
+                            Familiar
+                        </div>
+                    </div>
+                    <div class="p-8">
+                        <div class="flex justify-between items-baseline mb-2">
+                            <h3 class="font-serif text-2xl font-bold text-gray-800">Lavanda</h3>
+                            <span class="text-sm text-gray-500"><i class="fas fa-user-group"></i> 4 plazas</span>
+                        </div>
+                        <p class="text-gray-600 mb-6 text-sm line-clamp-3">
+                            Espacioso y luminoso. Cuenta con salón con chimenea, cocina completa, un dormitorio de
+                            matrimonio y otro doble. Ideal para familias.
+                        </p>
+                        <div class="flex items-center gap-4 mb-6 text-gray-400 text-sm">
+                            <span title="Chimenea"><i class="fas fa-fire"></i></span>
+                            <span title="Cocina"><i class="fas fa-utensils"></i></span>
+                            <span title="Familiar"><i class="fas fa-child"></i></span>
+                        </div>
+                        <a href="lavanda.html"
+                            class="block w-full text-center py-3 bg-rural-700 text-white font-semibold rounded-lg hover:bg-rural-800 transition shadow-md">
+                            Ver Fotos y Detalles
+                        </a>
+                    </div>
+                </div>
+
+
+                <!-- Card 4: Romero -->
+                <div
+                    class="bg-white rounded-xl overflow-hidden shadow-lg group hover:shadow-2xl transition duration-300">
+                    <div class="relative h-64 overflow-hidden">
+                        <img src="https://www.tiojosemaria.com/wp-content/uploads/2018/12/ROMEROHOME1.jpg"
+                            alt="Apartamento Romero"
+                            class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                        <div
+                            class="absolute top-4 right-4 bg-white/90 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide text-rural-800">
+                            Familiar
+                        </div>
+                    </div>
+                    <div class="p-8">
+                        <div class="flex justify-between items-baseline mb-2">
+                            <h3 class="font-serif text-2xl font-bold text-gray-800">Romero</h3>
+                            <span class="text-sm text-gray-500"><i class="fas fa-user-group"></i> 4 plazas</span>
+                        </div>
+                        <p class="text-gray-600 mb-6 text-sm line-clamp-3">
+                            Confort rústico con todas las comodidades. Salón con chimenea para las noches de invierno y
+                            dos dormitorios independientes.
+                        </p>
+                        <div class="flex items-center gap-4 mb-6 text-gray-400 text-sm">
+                            <span title="Chimenea"><i class="fas fa-fire"></i></span>
+                            <span title="Cocina"><i class="fas fa-utensils"></i></span>
+                            <span title="Tranquilidad"><i class="fas fa-coffee"></i></span>
+                        </div>
+                        <a href="romero.html"
+                            class="block w-full text-center py-3 bg-rural-700 text-white font-semibold rounded-lg hover:bg-rural-800 transition shadow-md">
+                            Ver Fotos y Detalles
+                        </a>
+                    </div>
+                </div>
+
+
+            </div>
+
+            <div class="text-center mt-12">
+                <p class="text-gray-600 mb-4 italic">Todos nuestros apartamentos están equipados con ropa de cama,
+                    toallas y menaje de cocina.</p>
+                <a href="https://wa.me/34676344675"
+                    class="inline-block text-rural-700 font-bold hover:underline">¿Tienes dudas sobre cuál elegir?
+                    Escríbenos <i class="fas fa-arrow-right ml-1"></i></a>
+            </div>
+        </div>
+    </section>
+
+    <!-- EL ENTORNO -->
+    <section id="entorno" class="py-24 bg-white">
+        <div class="container mx-auto px-6">
+            <div class="grid lg:grid-cols-2 gap-16 items-center mb-16">
+                <div>
+                    <span class="text-rural-700 font-bold tracking-widest uppercase text-sm">Hinojares y el Valle del
+                        Turrilla</span>
+                    <h2 class="font-serif text-4xl md:text-5xl text-gray-800 mt-2 mb-8">Un paraíso de contrastes entre
+                        desierto y pinar</h2>
+                    <p class="text-lg text-gray-600 leading-relaxed mb-6">
+                        Tío José María se ubica en <strong>Hinojares</strong>, un pueblo mágico de gredas blancas al sur
+                        del <strong>Parque Natural de la Sierra de Cazorla</strong>. Es un destino donde el agua de los
+                        ríos y embalses se funde con paisajes semidesérticos y bosques vírgenes.
+                    </p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
+                        <div class="p-4 rounded-xl border border-rural-100 bg-rural-50">
+                            <h4 class="font-serif text-xl font-bold text-rural-700 mb-1">Rutas a Caballo</h4>
+                            <p class="text-sm text-gray-500">La actividad estrella para recorrer los senderos del
+                                parque.</p>
+                        </div>
+                        <div class="p-4 rounded-xl border border-rural-100 bg-rural-50">
+                            <h4 class="font-serif text-xl font-bold text-rural-700 mb-1">Gastronomía</h4>
+                            <p class="text-sm text-gray-500">No puedes irte sin probar el cordero al horno tradicional.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <img src="https://www.tiojosemaria.com/wp-content/uploads/2018/12/hinojaresPueblo.jpg"
+                        class="rounded-xl shadow-lg w-full h-64 object-cover mt-8" alt="Hinojares">
+                    <img src="https://www.tiojosemaria.com/wp-content/uploads/2018/12/MG_9540-1024x561.jpg"
+                        class="rounded-xl shadow-lg w-full h-80 object-cover" alt="Cascada">
+                    <img src="https://www.tiojosemaria.com/wp-content/uploads/2019/01/chuletas-de-cordero-al-horno2-1024x724.jpg"
+                        class="rounded-xl shadow-lg w-full h-64 object-cover -mt-16" alt="Cordero">
+                    <img src="https://www.tiojosemaria.com/wp-content/uploads/2018/12/10-1024x768.jpg"
+                        class="rounded-xl shadow-lg w-full h-64 object-cover mt-4" alt="Entorno">
+                </div>
+            </div>
+
+            <div
+                class="bg-rural-700 rounded-3xl p-10 md:p-16 text-center text-white relative overflow-hidden shadow-2xl">
+                <div class="absolute inset-0 opacity-10">
+                    <img src="https://www.tiojosemaria.com/wp-content/uploads/2018/12/slide3.jpg"
+                        class="w-full h-full object-cover">
+                </div>
+                <div class="relative z-10">
+                    <h3 class="font-serif text-3xl md:text-5xl font-bold mb-6">¿Preparado para tu desconexión?</h3>
+                    <p class="text-lg opacity-90 max-w-2xl mx-auto mb-10 leading-relaxed">
+                        Estamos en Calle Baja 1, Hinojares. Te facilitamos el camino para que solo tengas que
+                        preocuparte de disfrutar.
+                    </p>
+                    <a href="https://maps.app.goo.gl/EPzh8j2HivLfqUeN8" target="_blank"
+                        class="inline-flex items-center gap-2 px-10 py-4 bg-white text-rural-700 rounded-full text-lg font-bold transition hover:shadow-xl hover:-translate-y-1">
+                        <i class="fas fa-map-marker-alt"></i> Cómo llegar al alojamiento
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- LEAD MAGNET / GUIA -->
+    <section id="guia" class="py-20 relative bg-rural-800 text-white overflow-hidden">
+        <div class="absolute inset-0 opacity-20">
+            <img src="https://www.tiojosemaria.com/wp-content/uploads/2018/12/GR-247-Cazorla-ET-2.jpg"
+                class="w-full h-full object-cover grayscale">
+        </div>
+        <div class="container mx-auto px-6 relative z-10 text-center">
+            <i class="fas fa-map-marked-alt text-5xl text-rural-300 mb-6"></i>
+            <h2 class="font-serif text-3xl md:text-5xl font-bold mb-4">Descubre el Cazorla que no sale en las guías</h2>
+            <p class="text-xl text-rural-100 mb-8 max-w-2xl mx-auto">
+                Hemos preparado una guía exclusiva con nuestras rutas favoritas, los mejores sitios para comer en
+                Hinojares y secretos locales.
+            </p>
+            <form class="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto"
+                onsubmit="event.preventDefault(); alert('¡Gracias! Pronto recibirás nuestra guía.')">
+                <input type="email" placeholder="Tu correo electrónico" required
+                    class="px-6 py-4 rounded-full text-gray-900 focus:outline-none focus:ring-2 focus:ring-rural-300 flex-grow">
+                <button type="submit"
+                    class="px-8 py-4 bg-rural-300 text-rural-900 font-bold rounded-full hover:bg-white transition shadow-lg">
+                    Enviar Guía
+                </button>
+            </form>
+            <p class="text-xs text-rural-300 mt-4 opacity-80">Prometemos no enviar spam. Solo cosas bonitas del campo.
+            </p>
+        </div>
+    </section>
+
+
+    <!-- FOOTER -->
+    <footer id="contacto" class="bg-gray-900 text-white pt-16 pb-8">
+        <div class="container mx-auto px-6 grid md:grid-cols-3 gap-12 mb-12">
+
+            <div>
+                <h3 class="font-serif text-2xl font-bold mb-6">Tío José María</h3>
+                <p class="text-gray-400 mb-6">
+                    Vivienda turística de Alojamiento Rural registrada en la Junta de Andalucía (VTAR/JA/00044). Tu casa
+                    en Hinojares.
+                </p>
+                <div class="flex space-x-4">
+                    <a href="#"
+                        class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-rural-700 transition"><i
+                            class="fab fa-facebook-f"></i></a>
+                    <a href="#"
+                        class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-rural-700 transition"><i
+                            class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+            <div>
+                <h3 class="font-serif text-xl font-bold mb-6 text-rural-300">Contacto</h3>
+                <ul class="space-y-4 text-gray-400">
+                    <li class="flex items-start gap-3">
+                        <i class="fas fa-map-marker-alt mt-1 text-rural-700"></i>
+                        <a href="https://maps.app.goo.gl/EPzh8j2HivLfqUeN8" target="_blank"
+                            class="hover:text-white transition">
+                            Calle Baja 1,<br>23486 Hinojares, Jaén
+                        </a>
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <i class="fas fa-phone text-rural-700"></i>
+                        <!-- Número Actualizado en Footer -->
+                        <a href="tel:+34676344675" class="hover:text-white transition">676 34 46 75</a>
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <i class="fas fa-envelope text-rural-700"></i>
+                        <a href="mailto:info@tiojosemaria.com"
+                            class="hover:text-white transition">info@tiojosemaria.com</a>
+                    </li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="font-serif text-xl font-bold mb-6 text-rural-300">¿Dónde estamos?</h3>
+                <a href="https://maps.app.goo.gl/EPzh8j2HivLfqUeN8" target="_blank"
+                    class="block rounded-lg overflow-hidden h-48 bg-gray-800 relative group cursor-pointer">
+                    <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                        class="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition">
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="bg-white text-gray-900 px-4 py-2 rounded-full text-sm font-bold shadow-lg">Ver en
+                            Google Maps</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
+            &copy; 2024 Apartamentos Tío José María. Diseñado con cariño.
+        </div>
+    </footer>
+
+
+    <!-- WHATSAPP FLOTANTE CORREGIDO -->
+    <a href="https://api.whatsapp.com/send?phone=34676344675&text=Hola,%20tengo%20una%20pregunta%20sobre%20los%20apartamentos."
+        target="_blank"
+        class="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white rounded-full p-4 shadow-2xl z-50 transition transform hover:scale-110 flex items-center gap-2 group">
+        <i class="fab fa-whatsapp text-3xl"></i>
+        <span
+            class="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-500 ease-in-out whitespace-nowrap font-bold">¡Pregúntanos!</span>
+    </a>
+
+
+    <!-- SCRIPTS PARA INTERACTIVIDAD -->
+    <script>
+        // Cambio de estilo del Navbar al hacer scroll
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.remove('bg-transparent', 'py-4', 'text-white');
+                navbar.classList.add('bg-white', 'py-2', 'shadow-md', 'text-gray-800');
+            } else {
+                navbar.classList.add('bg-transparent', 'py-4', 'text-white');
+                navbar.classList.remove('bg-white', 'py-2', 'shadow-md', 'text-gray-800');
+            }
+        });
+
+
+        // Menú Móvil
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+        const links = document.querySelectorAll('.mobile-link');
+
+
+        // Reviews data
+        const allReviews = [
+            { name: 'Alejandro', text: 'El alojamiento estaba genial. Era una apartamento muy acogedor y bien equipado.', score: '10' },
+            { name: 'Antonio', text: 'Acogedor y tranquilo. Muy limpio.', score: '10' },
+            { name: 'Rubén', text: 'Casa del siglo XVII reformada 😍. Nos encantó el pueblo, muy tranquilo.', score: '10' },
+            { name: 'Sebastián', text: 'El trato de los anfitriones. El apartamento es muy bonito, acogedor y todo estaba muy limpio.', score: '10' },
+            { name: 'Begoña', text: 'Mari Carmen es encantadora y su marido también y la casa súper bonita.', score: '10' },
+            { name: 'M.', text: 'Estuvimos muy cómodos. ¡Los apartamentos forman parte de una casa con más de 300 años!', score: '10' },
+            { name: 'Ñico153', text: 'La limpieza, la tranquilidad y la amabilidad del anfitrión. La decoración es preciosa.', score: '10' },
+            { name: 'Joaquin', text: 'La amabilidad de los anfitriones y la limpieza. Todo bien equipado.', score: '10' },
+            { name: 'Jose Miguel', text: 'La ubicación excelente, el trato con los propietarios de 10. Para repetir sin duda.', score: '10' },
+            { name: 'Encarna', text: 'Un apartamento muy bonito, limpio y con una ubicación perfecta. Altamente recomendable.', score: '10' }
+        ];
+
+        let currentReviewIndex = 0;
+        const container = document.getElementById('reviews-container');
+
+        function updateReviews() {
+            container.style.opacity = '0';
+
+            setTimeout(() => {
+                container.innerHTML = '';
+                for (let i = 0; i < 4; i++) {
+                    const rev = allReviews[(currentReviewIndex + i) % allReviews.length];
+                    const card = `
+                        <div class="bg-white p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100 group animate-fade-in">
+                            <div class="flex text-yellow-400 mb-6 group-hover:scale-110 transition-transform origin-left text-xs">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                            </div>
+                            <p class="text-gray-600 italic mb-8 leading-relaxed text-sm">"${rev.text}"</p>
+                            <div class="pt-6 border-t border-gray-50 flex justify-between items-center">
+                                <span class="font-bold text-gray-900 text-sm">${rev.name}</span>
+                                <span class="bg-rural-100 text-rural-700 px-3 py-1 rounded-full text-[10px] font-bold">${rev.score}/10</span>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += card;
+                }
+                container.style.opacity = '1';
+                currentReviewIndex = (currentReviewIndex + 1) % allReviews.length;
+            }, 500);
+        }
+
+        // Initialize Reviews and Set Interval
+        updateReviews();
+        setInterval(updateReviews, 6000);
+
+        // Mobile Menu Event Listener
+        btn.addEventListener('click', () => {
+            menu.classList.toggle('hidden');
+        });
+
+        // Close menu on link click
+        links.forEach(link => {
+            link.addEventListener('click', () => {
+                menu.classList.add('hidden');
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,194 @@
+﻿<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apartamento Albahaca | Casa Rural Tío José María</title>
+
+    <!-- Estilos y Fuentes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        rural: {
+                            50: '#fcfbf9',
+                            100: '#f5f2ea',
+                            300: '#d6ceb8',
+                            500: '#8c8468',
+                            700: '#556B2F',
+                            800: '#3b4a20',
+                            900: '#2c3319',
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['"Lato"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-rural-50 text-gray-700 font-sans antialiased">
+
+
+    <!-- NAVBAR SIMPLIFICADO -->
+    <nav class="fixed w-full z-50 bg-white shadow-md py-4 text-gray-800">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <a href="index.html"
+                class="font-serif text-xl font-semibold tracking-wider hover:text-rural-700 transition">
+                <i class="fas fa-arrow-left mr-2"></i> Volver al inicio
+            </a>
+            <a href="https://wa.me/34676344675?text=Hola,%20me%20interesa%20reservar%20el%20apartamento%20Albahaca"
+                class="px-5 py-2 bg-rural-700 text-white hover:bg-rural-800 rounded-full transition shadow-lg font-semibold text-sm">
+                <i class="fab fa-whatsapp mr-2"></i> Reservar ahora
+            </a>
+        </div>
+    </nav>
+
+
+    <!-- CABECERA DE FOTOS (LAYOUT PARA 5 FOTOS) -->
+    <header class="pt-24 pb-10 container mx-auto px-6">
+        <div class="mb-6">
+            <span class="text-rural-700 font-bold uppercase tracking-widest text-xs">Ideal Parejas</span>
+            <h1 class="font-serif text-4xl md:text-6xl text-gray-900 mt-2">Apartamento Albahaca</h1>
+            <p class="text-gray-500 mt-2 flex items-center gap-4 text-sm">
+                <span><i class="fas fa-user-group mr-1"></i> 2 Personas</span>
+                <span><i class="fas fa-ruler-combined mr-1"></i> 45m²</span>
+                <span><i class="fas fa-bed mr-1"></i> 1 Cama Matrimonio</span>
+            </p>
+        </div>
+
+
+        <!-- GRID DE 5 FOTOS (1 GRANDE + 4 PEQUEÑAS) -->
+        <div class="grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-4 h-[500px] rounded-2xl overflow-hidden shadow-xl">
+
+            <!-- FOTO 1: LA PRINCIPAL (Ocupa la mitad izquierda) -->
+            <div class="md:col-span-2 md:row-span-2 relative group cursor-pointer">
+                <img src="https://www.tiojosemaria.com/wp-content/uploads/2018/12/ALBAHACA-1.jpg"
+                    class="w-full h-full object-cover transition duration-700 group-hover:scale-105"
+                    alt="Vista general del salón Albahaca">
+            </div>
+
+            <!-- FOTO 2: Detalle (Arriba centro) -->
+            <div class="relative group cursor-pointer">
+                <img src="https://www.tiojosemaria.com/wp-content/uploads/2019/01/saladeestar_albahaca.jpg"
+                    class="w-full h-full object-cover transition duration-700 group-hover:scale-105"
+                    alt="Salón de Albahaca">
+            </div>
+
+            <!-- FOTO 3: Cocina (Arriba derecha) -->
+            <div class="relative group cursor-pointer">
+                <img src="https://www.tiojosemaria.com/wp-content/uploads/2019/01/cocina_albahaca.jpg"
+                    class="w-full h-full object-cover transition duration-700 group-hover:scale-105"
+                    alt="Cocina de Albahaca">
+            </div>
+
+            <!-- FOTO 4: Dormitorio (Abajo centro) -->
+            <div class="relative group cursor-pointer">
+                <img src="https://www.tiojosemaria.com/wp-content/uploads/2019/01/dormitorio_albahaca.jpg"
+                    class="w-full h-full object-cover transition duration-700 group-hover:scale-105"
+                    alt="Dormitorio de Albahaca">
+            </div>
+
+            <!-- FOTO 5: Plano (Abajo derecha) -->
+            <div class="relative group cursor-pointer">
+                <img src="https://www.tiojosemaria.com/wp-content/uploads/2019/01/PLANO-APARTAMENTO-RURAL-2-PERSONAS_-albahaca.jpg"
+                    class="w-full h-full object-cover transition duration-700 group-hover:scale-105"
+                    alt="Plano de Albahaca">
+            </div>
+        </div>
+    </header>
+
+
+    <!-- CONTENIDO -->
+    <div class="container mx-auto px-6 grid md:grid-cols-3 gap-12 pb-20">
+        <!-- Texto descriptivo -->
+        <div class="md:col-span-2 space-y-12">
+            <section>
+                <h2 class="font-serif text-2xl font-bold mb-4 text-gray-800">Sobre este alojamiento</h2>
+                <p class="text-gray-600 leading-relaxed mb-4">
+                    El apartamento <strong>Albahaca</strong> es nuestro rincón más íntimo, diseñado pensando en las
+                    parejas que buscan desconectar. Situado en la planta baja, tiene ese encanto especial de las casas
+                    antiguas con muros gruesos que protegen tu descanso.
+                </p>
+                <p class="text-gray-600 leading-relaxed">
+                    La joya de la casa es su salón con chimenea de leña, donde podrás disfrutar de una copa de vino
+                    local mientras el fuego crepita. La cocina está totalmente equipada para que no eches nada en falta
+                    si decides cocinar, y el dormitorio ofrece el silencio absoluto del Valle del Turrilla.
+                </p>
+            </section>
+
+
+            <section class="border-t border-gray-200 pt-8">
+                <h2 class="font-serif text-2xl font-bold mb-6 text-gray-800">Equipamiento</h2>
+                <div class="grid grid-cols-2 gap-4 text-gray-600">
+                    <div class="flex items-center gap-3"><i class="fas fa-fire text-rural-700 w-6"></i> Chimenea de leña
+                    </div>
+                    <div class="flex items-center gap-3"><i class="fas fa-wifi text-rural-700 w-6"></i> Wifi gratis
+                    </div>
+                    <div class="flex items-center gap-3"><i class="fas fa-tv text-rural-700 w-6"></i> TV plana</div>
+                    <div class="flex items-center gap-3"><i class="fas fa-snowflake text-rural-700 w-6"></i> Aire
+                        Acondicionado</div>
+                    <div class="flex items-center gap-3"><i class="fas fa-utensils text-rural-700 w-6"></i> Cocina
+                        completa</div>
+                    <div class="flex items-center gap-3"><i class="fas fa-bed text-rural-700 w-6"></i> Ropa de cama
+                        incl.</div>
+                    <div class="flex items-center gap-3"><i class="fas fa-shower text-rural-700 w-6"></i> Toallas y
+                        secador</div>
+                    <div class="flex items-center gap-3"><i class="fas fa-dog text-rural-700 w-6"></i> Mascotas
+                        (consultar)</div>
+                </div>
+            </section>
+        </div>
+
+
+        <!-- Tarjeta Flotante de Precio/Reserva -->
+        <div class="relative hidden md:block">
+            <div class="sticky top-28 bg-white border border-gray-200 rounded-xl shadow-2xl p-6">
+                <div class="flex justify-between items-end mb-6">
+                    <div>
+                        <span class="text-3xl font-serif font-bold text-rural-700">Consultar</span>
+                    </div>
+                    <div class="text-xs text-gray-400">Precio según temporada</div>
+                </div>
+
+
+                <div class="space-y-4 mb-6">
+                    <div class="bg-rural-50 p-3 rounded-lg border border-rural-100">
+                        <p class="text-xs text-gray-500 uppercase font-bold mb-1">Disponibilidad</p>
+                        <p class="text-sm text-rural-800">Escríbenos por WhatsApp para confirmación inmediata de fechas.
+                        </p>
+                    </div>
+                </div>
+
+
+                <a href="https://wa.me/34676344675?text=Hola,%20me%20gustaría%20reservar%20el%20apartamento%20Albahaca"
+                    target="_blank"
+                    class="block w-full bg-rural-700 hover:bg-rural-800 text-white text-center font-bold py-3 rounded-lg transition shadow-lg mb-3 flex items-center justify-center gap-2">
+                    <i class="fab fa-whatsapp"></i> Solicitar Reserva
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+    <footer class="bg-gray-900 text-white py-8 text-center border-t border-gray-800">
+        <p class="text-gray-500 text-sm">&copy; 2024 Casa Rural Tío José María. <a href="index.html"
+                class="underline text-rural-300">Volver al inicio</a></p>
+    </footer>
+
+
+</body>
+
+</html>

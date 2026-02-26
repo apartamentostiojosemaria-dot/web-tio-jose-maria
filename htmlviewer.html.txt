@@ -1,0 +1,1947 @@
+<!doctype html>
+<html lang="es" class="stm-site-loader">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="profile" href="https://gmpg.org/xfn/11">
+    <link rel="pingback" href="https://www.tiojosemaria.com/xmlrpc.php">
+    <meta name='robots' content='index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' />
+    <!-- This site is optimized with the Yoast SEO plugin v17.5 - https://yoast.com/wordpress/plugins/seo/ -->
+    <title>Apartamentos Tío José María - www.tiojosemaria.com</title>
+    <meta name="description" content="Tío José María son alojamientos rurales del siglo XVII, preciosamente restaurados, que conservan la solidez, el encanto y la arquitectura andaluza." />
+    <link rel="canonical" href="https://www.tiojosemaria.com/" />
+    <meta property="og:locale" content="es_ES" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Apartamentos Tío José María - www.tiojosemaria.com" />
+    <meta property="og:description" content="Tío José María son alojamientos rurales del siglo XVII, preciosamente restaurados, que conservan la solidez, el encanto y la arquitectura andaluza." />
+    <meta property="og:url" content="https://www.tiojosemaria.com/" />
+    <meta property="og:site_name" content="www.tiojosemaria.com" />
+    <meta property="article:modified_time" content="2023-10-03T09:14:53+00:00" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json" class="yoast-schema-graph">
+      {
+        "@context": "https://schema.org",
+        "@graph": [{
+          "@type": "WebSite",
+          "@id": "https://www.tiojosemaria.com/#website",
+          "url": "https://www.tiojosemaria.com/",
+          "name": "www.tiojosemaria.com",
+          "description": "Otro sitio realizado con WordPress",
+          "potentialAction": [{
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://www.tiojosemaria.com/?s={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }],
+          "inLanguage": "es"
+        }, {
+          "@type": "WebPage",
+          "@id": "https://www.tiojosemaria.com/#webpage",
+          "url": "https://www.tiojosemaria.com/",
+          "name": "Apartamentos T\u00edo Jos\u00e9 Mar\u00eda - www.tiojosemaria.com",
+          "isPartOf": {
+            "@id": "https://www.tiojosemaria.com/#website"
+          },
+          "datePublished": "2018-05-25T04:39:02+00:00",
+          "dateModified": "2023-10-03T09:14:53+00:00",
+          "description": "T\u00edo Jos\u00e9 Mar\u00eda son alojamientos rurales del siglo XVII, preciosamente restaurados, que conservan la solidez, el encanto y la arquitectura andaluza.",
+          "breadcrumb": {
+            "@id": "https://www.tiojosemaria.com/#breadcrumb"
+          },
+          "inLanguage": "es",
+          "potentialAction": [{
+            "@type": "ReadAction",
+            "target": ["https://www.tiojosemaria.com/"]
+          }]
+        }, {
+          "@type": "BreadcrumbList",
+          "@id": "https://www.tiojosemaria.com/#breadcrumb",
+          "itemListElement": [{
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Portada"
+          }]
+        }]
+      }
+    </script>
+    <!-- / Yoast SEO plugin. -->
+    <link rel='dns-prefetch' href='//fonts.googleapis.com' />
+    <link rel='dns-prefetch' href='//s.w.org' />
+    <link rel="alternate" type="application/rss+xml" title="www.tiojosemaria.com &raquo; Feed" href="https://www.tiojosemaria.com/feed/" />
+    <link rel="alternate" type="application/rss+xml" title="www.tiojosemaria.com &raquo; Feed de los comentarios" href="https://www.tiojosemaria.com/comments/feed/" />
+    <script type="text/javascript">
+      window._wpemojiSettings = {
+        "baseUrl": "https:\/\/s.w.org\/images\/core\/emoji\/13.1.0\/72x72\/",
+        "ext": ".png",
+        "svgUrl": "https:\/\/s.w.org\/images\/core\/emoji\/13.1.0\/svg\/",
+        "svgExt": ".svg",
+        "source": {
+          "concatemoji": "https:\/\/www.tiojosemaria.com\/wp-includes\/js\/wp-emoji-release.min.js?ver=5.9.12"
+        }
+      };
+      /*! This file is auto-generated */
+      ! function(e, a, t) {
+        var n, r, o, i = a.createElement("canvas"),
+          p = i.getContext && i.getContext("2d");
+
+        function s(e, t) {
+          var a = String.fromCharCode;
+          p.clearRect(0, 0, i.width, i.height), p.fillText(a.apply(this, e), 0, 0);
+          e = i.toDataURL();
+          return p.clearRect(0, 0, i.width, i.height), p.fillText(a.apply(this, t), 0, 0), e === i.toDataURL()
+        }
+
+        function c(e) {
+          var t = a.createElement("script");
+          t.src = e, t.defer = t.type = "text/javascript", a.getElementsByTagName("head")[0].appendChild(t)
+        }
+        for (o = Array("flag", "emoji"), t.supports = {
+            everything: !0,
+            everythingExceptFlag: !0
+          }, r = 0; r < o.length; r++) t.supports[o[r]] = function(e) {
+          if (!p || !p.fillText) return !1;
+          switch (p.textBaseline = "top", p.font = "600 32px Arial", e) {
+            case "flag":
+              return s([127987, 65039, 8205, 9895, 65039], [127987, 65039, 8203, 9895, 65039]) ? !1 : !s([55356, 56826, 55356, 56819], [55356, 56826, 8203, 55356, 56819]) && !s([55356, 57332, 56128, 56423, 56128, 56418, 56128, 56421, 56128, 56430, 56128, 56423, 56128, 56447], [55356, 57332, 8203, 56128, 56423, 8203, 56128, 56418, 8203, 56128, 56421, 8203, 56128, 56430, 8203, 56128, 56423, 8203, 56128, 56447]);
+            case "emoji":
+              return !s([10084, 65039, 8205, 55357, 56613], [10084, 65039, 8203, 55357, 56613])
+          }
+          return !1
+        }(o[r]), t.supports.everything = t.supports.everything && t.supports[o[r]], "flag" !== o[r] && (t.supports.everythingExceptFlag = t.supports.everythingExceptFlag && t.supports[o[r]]);
+        t.supports.everythingExceptFlag = t.supports.everythingExceptFlag && !t.supports.flag, t.DOMReady = !1, t.readyCallback = function() {
+          t.DOMReady = !0
+        }, t.supports.everything || (n = function() {
+          t.readyCallback()
+        }, a.addEventListener ? (a.addEventListener("DOMContentLoaded", n, !1), e.addEventListener("load", n, !1)) : (e.attachEvent("onload", n), a.attachEvent("onreadystatechange", function() {
+          "complete" === a.readyState && t.readyCallback()
+        })), (n = t.source || {}).concatemoji ? c(n.concatemoji) : n.wpemoji && n.twemoji && (c(n.twemoji), c(n.wpemoji)))
+      }(window, document, window._wpemojiSettings);
+    </script>
+    <style type="text/css">
+      img.wp-smiley,
+      img.emoji {
+        display: inline !important;
+        border: none !important;
+        box-shadow: none !important;
+        height: 1em !important;
+        width: 1em !important;
+        margin: 0 0.07em !important;
+        vertical-align: -0.1em !important;
+        background: none !important;
+        padding: 0 !important;
+      }
+    </style>
+    <link rel='stylesheet' id='sbi_styles-css' href='https://www.tiojosemaria.com/wp-content/plugins/instagram-feed/css/sbi-styles.min.css?ver=6.10.0' type='text/css' media='all' />
+    <link rel='stylesheet' id='hotello-style-css' href='https://www.tiojosemaria.com/wp-content/themes/hotello/style.css?ver=5.9.12' type='text/css' media='all' />
+    <link rel='stylesheet' id='hotello-app-css' href='https://www.tiojosemaria.com/wp-content/themes/hotello/public/css/app.css?ver=1.2.4' type='text/css' media='all' />
+    <link rel='stylesheet' id='font-awesome-css' href='https://www.tiojosemaria.com/wp-content/plugins/js_composer/assets/lib/bower/font-awesome/css/font-awesome.min.css?ver=5.6' type='text/css' media='all' />
+    <link rel='stylesheet' id='material-icons-css' href='//fonts.googleapis.com/icon?family=Material+Icons&#038;ver=1.2.4' type='text/css' media='all' />
+    <link rel='stylesheet' id='hotello-theme-custom-styles-css' href='https://www.tiojosemaria.com/wp-content/uploads/stm_uploads/skin-custom.css?ver=211' type='text/css' media='all' />
+    <link rel='stylesheet' id='stm_default_google_font-css' href='https://fonts.googleapis.com/css?family=Open+Sans%3A300%2C400%2C400i%2C500%2C600%2C700%2C800%2C900%7CRubik%3A300%2C400%2C400i%2C500%2C600%2C700%2C800%2C900&#038;ver=1.2.4#038;subset=latin%2Clatin-ext' type='text/css' media='all' />
+    <link rel='stylesheet' id='hotello-post-style-css' href='https://www.tiojosemaria.com/wp-content/themes/hotello/public/css/post/style_1.css?ver=1.2.4' type='text/css' media='all' />
+    <link rel='stylesheet' id='hotello-titlebox-style-css' href='https://www.tiojosemaria.com/wp-content/themes/hotello/public/css/titlebox/style_1.css?ver=1.2.4' type='text/css' media='all' />
+    <link rel='stylesheet' id='hotello-forms-style-css' href='https://www.tiojosemaria.com/wp-content/themes/hotello/public/css/forms/frankfurt.css?ver=1.2.4' type='text/css' media='all' />
+    <link rel='stylesheet' id='hotello-buttons-style-css' href='https://www.tiojosemaria.com/wp-content/themes/hotello/public/css/buttons/frankfurt.css?ver=1.2.4' type='text/css' media='all' />
+    <link rel='stylesheet' id='stm_hotelier-css' href='https://www.tiojosemaria.com/wp-content/themes/hotello/public/css/vendors/hotelier/alpen/hotelier.css?ver=1.2.4' type='text/css' media='all' />
+    <link rel='stylesheet' id='hotello-header-style-css' href='https://www.tiojosemaria.com/wp-content/themes/hotello/public/css/header/styles/style_1.css?ver=1.2.4' type='text/css' media='all' />
+    <link rel='stylesheet' id='stm-stmicons-css' href='https://www.tiojosemaria.com/wp-content/themes/hotello/public/fonts/stmicons/stmicons.css?ver=1.2.4' type='text/css' media='all' />
+    <link rel='stylesheet' id='wp-block-library-css' href='https://www.tiojosemaria.com/wp-includes/css/dist/block-library/style.min.css?ver=5.9.12' type='text/css' media='all' />
+    <style id='global-styles-inline-css' type='text/css'>
+      body {
+        --wp--preset--color--black: #000000;
+        --wp--preset--color--cyan-bluish-gray: #abb8c3;
+        --wp--preset--color--white: #ffffff;
+        --wp--preset--color--pale-pink: #f78da7;
+        --wp--preset--color--vivid-red: #cf2e2e;
+        --wp--preset--color--luminous-vivid-orange: #ff6900;
+        --wp--preset--color--luminous-vivid-amber: #fcb900;
+        --wp--preset--color--light-green-cyan: #7bdcb5;
+        --wp--preset--color--vivid-green-cyan: #00d084;
+        --wp--preset--color--pale-cyan-blue: #8ed1fc;
+        --wp--preset--color--vivid-cyan-blue: #0693e3;
+        --wp--preset--color--vivid-purple: #9b51e0;
+        --wp--preset--gradient--vivid-cyan-blue-to-vivid-purple: linear-gradient(135deg, rgba(6, 147, 227, 1) 0%, rgb(155, 81, 224) 100%);
+        --wp--preset--gradient--light-green-cyan-to-vivid-green-cyan: linear-gradient(135deg, rgb(122, 220, 180) 0%, rgb(0, 208, 130) 100%);
+        --wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange: linear-gradient(135deg, rgba(252, 185, 0, 1) 0%, rgba(255, 105, 0, 1) 100%);
+        --wp--preset--gradient--luminous-vivid-orange-to-vivid-red: linear-gradient(135deg, rgba(255, 105, 0, 1) 0%, rgb(207, 46, 46) 100%);
+        --wp--preset--gradient--very-light-gray-to-cyan-bluish-gray: linear-gradient(135deg, rgb(238, 238, 238) 0%, rgb(169, 184, 195) 100%);
+        --wp--preset--gradient--cool-to-warm-spectrum: linear-gradient(135deg, rgb(74, 234, 220) 0%, rgb(151, 120, 209) 20%, rgb(207, 42, 186) 40%, rgb(238, 44, 130) 60%, rgb(251, 105, 98) 80%, rgb(254, 248, 76) 100%);
+        --wp--preset--gradient--blush-light-purple: linear-gradient(135deg, rgb(255, 206, 236) 0%, rgb(152, 150, 240) 100%);
+        --wp--preset--gradient--blush-bordeaux: linear-gradient(135deg, rgb(254, 205, 165) 0%, rgb(254, 45, 45) 50%, rgb(107, 0, 62) 100%);
+        --wp--preset--gradient--luminous-dusk: linear-gradient(135deg, rgb(255, 203, 112) 0%, rgb(199, 81, 192) 50%, rgb(65, 88, 208) 100%);
+        --wp--preset--gradient--pale-ocean: linear-gradient(135deg, rgb(255, 245, 203) 0%, rgb(182, 227, 212) 50%, rgb(51, 167, 181) 100%);
+        --wp--preset--gradient--electric-grass: linear-gradient(135deg, rgb(202, 248, 128) 0%, rgb(113, 206, 126) 100%);
+        --wp--preset--gradient--midnight: linear-gradient(135deg, rgb(2, 3, 129) 0%, rgb(40, 116, 252) 100%);
+        --wp--preset--duotone--dark-grayscale: url('#wp-duotone-dark-grayscale');
+        --wp--preset--duotone--grayscale: url('#wp-duotone-grayscale');
+        --wp--preset--duotone--purple-yellow: url('#wp-duotone-purple-yellow');
+        --wp--preset--duotone--blue-red: url('#wp-duotone-blue-red');
+        --wp--preset--duotone--midnight: url('#wp-duotone-midnight');
+        --wp--preset--duotone--magenta-yellow: url('#wp-duotone-magenta-yellow');
+        --wp--preset--duotone--purple-green: url('#wp-duotone-purple-green');
+        --wp--preset--duotone--blue-orange: url('#wp-duotone-blue-orange');
+        --wp--preset--font-size--small: 13px;
+        --wp--preset--font-size--medium: 20px;
+        --wp--preset--font-size--large: 36px;
+        --wp--preset--font-size--x-large: 42px;
+      }
+
+      .has-black-color {
+        color: var(--wp--preset--color--black) !important;
+      }
+
+      .has-cyan-bluish-gray-color {
+        color: var(--wp--preset--color--cyan-bluish-gray) !important;
+      }
+
+      .has-white-color {
+        color: var(--wp--preset--color--white) !important;
+      }
+
+      .has-pale-pink-color {
+        color: var(--wp--preset--color--pale-pink) !important;
+      }
+
+      .has-vivid-red-color {
+        color: var(--wp--preset--color--vivid-red) !important;
+      }
+
+      .has-luminous-vivid-orange-color {
+        color: var(--wp--preset--color--luminous-vivid-orange) !important;
+      }
+
+      .has-luminous-vivid-amber-color {
+        color: var(--wp--preset--color--luminous-vivid-amber) !important;
+      }
+
+      .has-light-green-cyan-color {
+        color: var(--wp--preset--color--light-green-cyan) !important;
+      }
+
+      .has-vivid-green-cyan-color {
+        color: var(--wp--preset--color--vivid-green-cyan) !important;
+      }
+
+      .has-pale-cyan-blue-color {
+        color: var(--wp--preset--color--pale-cyan-blue) !important;
+      }
+
+      .has-vivid-cyan-blue-color {
+        color: var(--wp--preset--color--vivid-cyan-blue) !important;
+      }
+
+      .has-vivid-purple-color {
+        color: var(--wp--preset--color--vivid-purple) !important;
+      }
+
+      .has-black-background-color {
+        background-color: var(--wp--preset--color--black) !important;
+      }
+
+      .has-cyan-bluish-gray-background-color {
+        background-color: var(--wp--preset--color--cyan-bluish-gray) !important;
+      }
+
+      .has-white-background-color {
+        background-color: var(--wp--preset--color--white) !important;
+      }
+
+      .has-pale-pink-background-color {
+        background-color: var(--wp--preset--color--pale-pink) !important;
+      }
+
+      .has-vivid-red-background-color {
+        background-color: var(--wp--preset--color--vivid-red) !important;
+      }
+
+      .has-luminous-vivid-orange-background-color {
+        background-color: var(--wp--preset--color--luminous-vivid-orange) !important;
+      }
+
+      .has-luminous-vivid-amber-background-color {
+        background-color: var(--wp--preset--color--luminous-vivid-amber) !important;
+      }
+
+      .has-light-green-cyan-background-color {
+        background-color: var(--wp--preset--color--light-green-cyan) !important;
+      }
+
+      .has-vivid-green-cyan-background-color {
+        background-color: var(--wp--preset--color--vivid-green-cyan) !important;
+      }
+
+      .has-pale-cyan-blue-background-color {
+        background-color: var(--wp--preset--color--pale-cyan-blue) !important;
+      }
+
+      .has-vivid-cyan-blue-background-color {
+        background-color: var(--wp--preset--color--vivid-cyan-blue) !important;
+      }
+
+      .has-vivid-purple-background-color {
+        background-color: var(--wp--preset--color--vivid-purple) !important;
+      }
+
+      .has-black-border-color {
+        border-color: var(--wp--preset--color--black) !important;
+      }
+
+      .has-cyan-bluish-gray-border-color {
+        border-color: var(--wp--preset--color--cyan-bluish-gray) !important;
+      }
+
+      .has-white-border-color {
+        border-color: var(--wp--preset--color--white) !important;
+      }
+
+      .has-pale-pink-border-color {
+        border-color: var(--wp--preset--color--pale-pink) !important;
+      }
+
+      .has-vivid-red-border-color {
+        border-color: var(--wp--preset--color--vivid-red) !important;
+      }
+
+      .has-luminous-vivid-orange-border-color {
+        border-color: var(--wp--preset--color--luminous-vivid-orange) !important;
+      }
+
+      .has-luminous-vivid-amber-border-color {
+        border-color: var(--wp--preset--color--luminous-vivid-amber) !important;
+      }
+
+      .has-light-green-cyan-border-color {
+        border-color: var(--wp--preset--color--light-green-cyan) !important;
+      }
+
+      .has-vivid-green-cyan-border-color {
+        border-color: var(--wp--preset--color--vivid-green-cyan) !important;
+      }
+
+      .has-pale-cyan-blue-border-color {
+        border-color: var(--wp--preset--color--pale-cyan-blue) !important;
+      }
+
+      .has-vivid-cyan-blue-border-color {
+        border-color: var(--wp--preset--color--vivid-cyan-blue) !important;
+      }
+
+      .has-vivid-purple-border-color {
+        border-color: var(--wp--preset--color--vivid-purple) !important;
+      }
+
+      .has-vivid-cyan-blue-to-vivid-purple-gradient-background {
+        background: var(--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple) !important;
+      }
+
+      .has-light-green-cyan-to-vivid-green-cyan-gradient-background {
+        background: var(--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan) !important;
+      }
+
+      .has-luminous-vivid-amber-to-luminous-vivid-orange-gradient-background {
+        background: var(--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange) !important;
+      }
+
+      .has-luminous-vivid-orange-to-vivid-red-gradient-background {
+        background: var(--wp--preset--gradient--luminous-vivid-orange-to-vivid-red) !important;
+      }
+
+      .has-very-light-gray-to-cyan-bluish-gray-gradient-background {
+        background: var(--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray) !important;
+      }
+
+      .has-cool-to-warm-spectrum-gradient-background {
+        background: var(--wp--preset--gradient--cool-to-warm-spectrum) !important;
+      }
+
+      .has-blush-light-purple-gradient-background {
+        background: var(--wp--preset--gradient--blush-light-purple) !important;
+      }
+
+      .has-blush-bordeaux-gradient-background {
+        background: var(--wp--preset--gradient--blush-bordeaux) !important;
+      }
+
+      .has-luminous-dusk-gradient-background {
+        background: var(--wp--preset--gradient--luminous-dusk) !important;
+      }
+
+      .has-pale-ocean-gradient-background {
+        background: var(--wp--preset--gradient--pale-ocean) !important;
+      }
+
+      .has-electric-grass-gradient-background {
+        background: var(--wp--preset--gradient--electric-grass) !important;
+      }
+
+      .has-midnight-gradient-background {
+        background: var(--wp--preset--gradient--midnight) !important;
+      }
+
+      .has-small-font-size {
+        font-size: var(--wp--preset--font-size--small) !important;
+      }
+
+      .has-medium-font-size {
+        font-size: var(--wp--preset--font-size--medium) !important;
+      }
+
+      .has-large-font-size {
+        font-size: var(--wp--preset--font-size--large) !important;
+      }
+
+      .has-x-large-font-size {
+        font-size: var(--wp--preset--font-size--x-large) !important;
+      }
+    </style>
+    <link rel='stylesheet' id='cookie-law-info-css' href='https://www.tiojosemaria.com/wp-content/plugins/cookie-law-info/legacy/public/css/cookie-law-info-public.css?ver=3.4.0' type='text/css' media='all' />
+    <link rel='stylesheet' id='cookie-law-info-gdpr-css' href='https://www.tiojosemaria.com/wp-content/plugins/cookie-law-info/legacy/public/css/cookie-law-info-gdpr.css?ver=3.4.0' type='text/css' media='all' />
+    <link rel='stylesheet' id='rs-plugin-settings-css' href='https://www.tiojosemaria.com/wp-content/plugins/revslider/public/assets/css/settings.css?ver=5.4.8.1' type='text/css' media='all' />
+    <style id='rs-plugin-settings-inline-css' type='text/css'>
+      #rs-demo-id {}
+    </style>
+    <link rel='stylesheet' id='hotelier-css-css' href='https://www.tiojosemaria.com/wp-content/plugins/wp-hotelier/assets/css/frontend/hotelier.css?ver=2.18.2' type='text/css' media='all' />
+    <link rel='stylesheet' id='sticky-style-css' href='https://www.tiojosemaria.com/wp-content/themes/hotello/inc/admin/theme_options/sticky_header/assets/sticky.css?ver=5.9.12' type='text/css' media='all' />
+    <link rel='stylesheet' id='js_composer_front-css' href='https://www.tiojosemaria.com/wp-content/plugins/js_composer/assets/css/js_composer.min.css?ver=5.6' type='text/css' media='all' />
+    <script type='text/javascript' src='https://www.tiojosemaria.com/wp-includes/js/jquery/jquery.min.js?ver=3.6.0' id='jquery-core-js'></script>
+    <script type='text/javascript' src='https://www.tiojosemaria.com/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.3.2' id='jquery-migrate-js'></script>
+    <script type='text/javascript' id='cookie-law-info-js-extra'>
+      /* 
+		<![CDATA[ */
+      var Cli_Data = {
+        "nn_cookie_ids": [],
+        "cookielist": [],
+        "non_necessary_cookies": [],
+        "ccpaEnabled": "",
+        "ccpaRegionBased": "",
+        "ccpaBarEnabled": "",
+        "strictlyEnabled": ["necessary", "obligatoire"],
+        "ccpaType": "gdpr",
+        "js_blocking": "1",
+        "custom_integration": "",
+        "triggerDomRefresh": "",
+        "secure_cookies": ""
+      };
+      var cli_cookiebar_settings = {
+        "animate_speed_hide": "500",
+        "animate_speed_show": "500",
+        "background": "#FFF",
+        "border": "#b1a6a6c2",
+        "border_on": "",
+        "button_1_button_colour": "#61a229",
+        "button_1_button_hover": "#4e8221",
+        "button_1_link_colour": "#fff",
+        "button_1_as_button": "1",
+        "button_1_new_win": "",
+        "button_2_button_colour": "#333",
+        "button_2_button_hover": "#292929",
+        "button_2_link_colour": "#444",
+        "button_2_as_button": "",
+        "button_2_hidebar": "",
+        "button_3_button_colour": "#dd3333",
+        "button_3_button_hover": "#b12929",
+        "button_3_link_colour": "#fff",
+        "button_3_as_button": "1",
+        "button_3_new_win": "",
+        "button_4_button_colour": "#000",
+        "button_4_button_hover": "#000000",
+        "button_4_link_colour": "#333333",
+        "button_4_as_button": "",
+        "button_7_button_colour": "#61a229",
+        "button_7_button_hover": "#4e8221",
+        "button_7_link_colour": "#fff",
+        "button_7_as_button": "1",
+        "button_7_new_win": "",
+        "font_family": "inherit",
+        "header_fix": "",
+        "notify_animate_hide": "1",
+        "notify_animate_show": "",
+        "notify_div_id": "#cookie-law-info-bar",
+        "notify_position_horizontal": "right",
+        "notify_position_vertical": "bottom",
+        "scroll_close": "",
+        "scroll_close_reload": "",
+        "accept_close_reload": "",
+        "reject_close_reload": "",
+        "showagain_tab": "",
+        "showagain_background": "#fff",
+        "showagain_border": "#000",
+        "showagain_div_id": "#cookie-law-info-again",
+        "showagain_x_position": "100px",
+        "text": "#333333",
+        "show_once_yn": "",
+        "show_once": "10000",
+        "logging_on": "",
+        "as_popup": "",
+        "popup_overlay": "1",
+        "bar_heading_text": "",
+        "cookie_bar_as": "popup",
+        "popup_showagain_position": "bottom-right",
+        "widget_position": "left"
+      };
+      var log_object = {
+        "ajax_url": "https:\/\/www.tiojosemaria.com\/wp-admin\/admin-ajax.php"
+      };
+      /* ]]> */
+    </script>
+    <script type='text/javascript' src='https://www.tiojosemaria.com/wp-content/plugins/cookie-law-info/legacy/public/js/cookie-law-info-public.js?ver=3.4.0' id='cookie-law-info-js'></script>
+    <script type='text/javascript' src='https://www.tiojosemaria.com/wp-content/plugins/revslider/public/assets/js/jquery.themepunch.tools.min.js?ver=5.4.8.1' id='tp-tools-js'></script>
+    <script type='text/javascript' src='https://www.tiojosemaria.com/wp-content/plugins/revslider/public/assets/js/jquery.themepunch.revolution.min.js?ver=5.4.8.1' id='revmin-js'></script>
+    <link rel="https://api.w.org/" href="https://www.tiojosemaria.com/wp-json/" />
+    <link rel="alternate" type="application/json" href="https://www.tiojosemaria.com/wp-json/wp/v2/pages/7" />
+    <link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://www.tiojosemaria.com/xmlrpc.php?rsd" />
+    <link rel="wlwmanifest" type="application/wlwmanifest+xml" href="https://www.tiojosemaria.com/wp-includes/wlwmanifest.xml" />
+    <meta name="generator" content="WordPress 5.9.12" />
+    <meta name="generator" content="WP Hotelier 2.18.2" />
+    <link rel='shortlink' href='https://www.tiojosemaria.com/' />
+    <link rel="alternate" type="application/json+oembed" href="https://www.tiojosemaria.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fwww.tiojosemaria.com%2F" />
+    <link rel="alternate" type="text/xml+oembed" href="https://www.tiojosemaria.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fwww.tiojosemaria.com%2F&#038;format=xml" />
+    <script>
+      window.stm_data = {
+        "stm_ajax_add_zipped_font": "2d13dd58e3",
+        "stm_icons_load": "ef1a9adcbf"
+      };
+    </script>
+    <script>
+      var stm_ajaxurl = 'https://www.tiojosemaria.com/wp-admin/admin-ajax.php';
+      var stm_site_paddings = 0;
+      if (window.innerWidth < 1300) stm_site_paddings = 0;
+      var stm_sticky = 'center';
+      window.wp_data = {
+        "hotello_ajax_check_room_availability": "fab2b9bfe1",
+        "hotello_ajax_book_room": "1d52a4a1d9",
+        "hotello_install_plugin": "12bb8e61d2",
+        "hotello_get_thumbnail": "bccc36ed26",
+        "hotello_save_settings": "2d5d8f72e1",
+        "hotello_ajax_get_image_by_id": "4191dedd38",
+        "hotello_update_custom_styles_admin": "34681c8640",
+        "stm_demo_import_content": "84aa03ca30"
+      };
+    </script>
+    <script>
+      var hotelier_booking_url = '';
+    </script>
+    <meta name="generator" content="Powered by WPBakery Page Builder - drag and drop page builder for WordPress." />
+    <!--[if lte IE 9]>
+	<link rel="stylesheet" type="text/css" href="https://www.tiojosemaria.com/wp-content/plugins/js_composer/assets/css/vc_lte_ie9.min.css" media="screen">
+		<![endif]-->
+    <meta name="generator" content="Powered by Slider Revolution 5.4.8.1 - responsive, Mobile-Friendly Slider Plugin for WordPress with comfortable drag and drop interface." />
+    <link rel="icon" href="https://www.tiojosemaria.com/wp-content/uploads/2021/11/cropped-ico-32x32.png" sizes="32x32" />
+    <link rel="icon" href="https://www.tiojosemaria.com/wp-content/uploads/2021/11/cropped-ico-192x192.png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="https://www.tiojosemaria.com/wp-content/uploads/2021/11/cropped-ico-180x180.png" />
+    <meta name="msapplication-TileImage" content="https://www.tiojosemaria.com/wp-content/uploads/2021/11/cropped-ico-270x270.png" />
+    <script type="text/javascript">
+      function setREVStartSize(e) {
+        try {
+          e.c = jQuery(e.c);
+          var i = jQuery(window).width(),
+            t = 9999,
+            r = 0,
+            n = 0,
+            l = 0,
+            f = 0,
+            s = 0,
+            h = 0;
+          if (e.responsiveLevels && (jQuery.each(e.responsiveLevels, function(e, f) {
+              f > i && (t = r = f, l = e), i > f && f > r && (r = f, n = e)
+            }), t > r && (l = n)), f = e.gridheight[l] || e.gridheight[0] || e.gridheight, s = e.gridwidth[l] || e.gridwidth[0] || e.gridwidth, h = i / s, h = h > 1 ? 1 : h, f = Math.round(h * f), "fullscreen" == e.sliderLayout) {
+            var u = (e.c.width(), jQuery(window).height());
+            if (void 0 != e.fullScreenOffsetContainer) {
+              var c = e.fullScreenOffsetContainer.split(",");
+              if (c) jQuery.each(c, function(e, i) {
+                u = jQuery(i).length > 0 ? u - jQuery(i).outerHeight(!0) : u
+              }), e.fullScreenOffset.split("%").length > 1 && void 0 != e.fullScreenOffset && e.fullScreenOffset.length > 0 ? u -= jQuery(window).height() * parseInt(e.fullScreenOffset, 0) / 100 : void 0 != e.fullScreenOffset && e.fullScreenOffset.length > 0 && (u -= parseInt(e.fullScreenOffset, 0))
+            }
+            f = u
+          } else void 0 != e.minHeight && f < e.minHeight && (f = e.minHeight);
+          e.c.closest(".rev_slider_wrapper").css({
+            height: f
+          })
+        } catch (d) {
+          console.log("Failure at Presize of Slider:" + d)
+        }
+      };
+    </script>
+    <style type="text/css" data-type="vc_shortcodes-custom-css">
+      .vc_custom_1544608147246 {
+        padding-top: 56px !important;
+        padding-bottom: 76px !important;
+        background-color: #212a42 !important;
+      }
+
+      .vc_custom_1539758021945 {
+        background-position: 0 0 !important;
+        background-repeat: repeat !important;
+      }
+
+      .vc_custom_1547143398596 {
+        background-color: #132f50 !important;
+      }
+
+      .vc_custom_1545324238284 {
+        margin-bottom: -100px !important;
+      }
+
+      .vc_custom_1696320245594 {
+        border-radius: 35px !important;
+      }
+    </style>
+    <noscript>
+      <style type="text/css">
+        .wpb_animate_when_almost_visible {
+          opacity: 1;
+        }
+      </style>
+    </noscript>
+  </head>
+  <body data-rsssl=1 class="home page-template-default page page-id-7 stm_hotel_theme stm_header_transparent stm_layout_alpen stm_header_style_1 stm_post_style_1 stm_buttons_style_2 no-sidebar wpb-js-composer js-comp-ver-5.6 vc_responsive">
+    <div class="stm-site">
+      <a class="skip-link screen-reader-text" href="#content">Skip to content</a>
+      <header class="site-header">
+        <div class="stm-header">
+          <div class="stm-header__row_color stm-header__row_color_center">
+            <div class="fullwidth-header-part">
+              <div class="stm-header__row stm-header__row_center">
+                <div class="stm-header__cell stm-header__cell_left">
+                  <div class="stm-header__element stm_header_element_5b34c79cd2156 stm-header__element_">
+                    <div class="stm-logo">
+                      <a href="https://www.tiojosemaria.com" title="">
+                        <img width="513" height="164" src="https://www.tiojosemaria.com/wp-content/uploads/2018/12/LOGO.png" class="attachment-full size-full" alt="" loading="lazy" style="width:200px" />
+                      </a>
+                      <br>
+                      <!-- GTranslate: https://gtranslate.io/ -->
+                      <a href="#" onclick="doGTranslate('es|es');return false;" title="Spanish" class="glink nturl notranslate">
+                        <img src="//www.tiojosemaria.com/wp-content/plugins/gtranslate/flags/24/es.png" height="24" width="24" alt="Spanish" />
+                      </a>
+                      <a href="#" onclick="doGTranslate('es|en');return false;" title="English" class="glink nturl notranslate">
+                        <img src="//www.tiojosemaria.com/wp-content/plugins/gtranslate/flags/24/en.png" height="24" width="24" alt="English" />
+                      </a>
+                      <a href="#" onclick="doGTranslate('es|fr');return false;" title="French" class="glink nturl notranslate">
+                        <img src="//www.tiojosemaria.com/wp-content/plugins/gtranslate/flags/24/fr.png" height="24" width="24" alt="French" />
+                      </a>
+                      <a href="#" onclick="doGTranslate('es|pt');return false;" title="Portuguese" class="glink nturl notranslate">
+                        <img src="//www.tiojosemaria.com/wp-content/plugins/gtranslate/flags/24/pt.png" height="24" width="24" alt="Portuguese" />
+                      </a>
+                      <a href="#" onclick="doGTranslate('es|de');return false;" title="German" class="glink nturl notranslate">
+                        <img src="//www.tiojosemaria.com/wp-content/plugins/gtranslate/flags/24/de.png" height="24" width="24" alt="German" />
+                      </a>
+                      <a href="#" onclick="doGTranslate('es|ar');return false;" title="Arabic" class="glink nturl notranslate">
+                        <img src="//www.tiojosemaria.com/wp-content/plugins/gtranslate/flags/24/ar.png" height="24" width="24" alt="Arabic" />
+                      </a>
+                      <a href="#" onclick="doGTranslate('es|zh-CN');return false;" title="Chinese (Simplified)" class="glink nturl notranslate">
+                        <img src="//www.tiojosemaria.com/wp-content/plugins/gtranslate/flags/24/zh-CN.png" height="24" width="24" alt="Chinese (Simplified)" />
+                      </a>
+                      <a href="#" onclick="doGTranslate('es|ja');return false;" title="Japanese" class="glink nturl notranslate">
+                        <img src="//www.tiojosemaria.com/wp-content/plugins/gtranslate/flags/24/ja.png" height="24" width="24" alt="Japanese" />
+                      </a>
+                      <style type="text/css">
+                        #goog-gt-tt {
+                          display: none !important;
+                        }
+
+                        .goog-te-banner-frame {
+                          display: none !important;
+                        }
+
+                        .goog-te-menu-value:hover {
+                          text-decoration: none !important;
+                        }
+
+                        .goog-text-highlight {
+                          background-color: transparent !important;
+                          box-shadow: none !important;
+                        }
+
+                        body {
+                          top: 0 !important;
+                        }
+
+                        #google_translate_element2 {
+                          display: none !important;
+                        }
+                      </style>
+                      <div id="google_translate_element2"></div>
+                      <script type="text/javascript">
+                        function googleTranslateElementInit2() {
+                          new google.translate.TranslateElement({
+                            pageLanguage: 'es',
+                            autoDisplay: false
+                          }, 'google_translate_element2');
+                        }
+                      </script>
+                      <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit2"></script>
+                      <script type="text/javascript">
+                        function GTranslateGetCurrentLang() {
+                          var keyValue = document['cookie'].match('(^|;) ?googtrans=([^;]*)(;|$)');
+                          return keyValue ? keyValue[2].split('/')[2] : null;
+                        }
+
+                        function GTranslateFireEvent(element, event) {
+                          try {
+                            if (document.createEventObject) {
+                              var evt = document.createEventObject();
+                              element.fireEvent('on' + event, evt)
+                            } else {
+                              var evt = document.createEvent('HTMLEvents');
+                              evt.initEvent(event, true, true);
+                              element.dispatchEvent(evt)
+                            }
+                          } catch (e) {}
+                        }
+
+                        function doGTranslate(lang_pair) {
+                          if (lang_pair.value) lang_pair = lang_pair.value;
+                          if (lang_pair == '') return;
+                          var lang = lang_pair.split('|')[1];
+                          if (GTranslateGetCurrentLang() == null && lang == lang_pair.split('|')[0]) return;
+                          var teCombo;
+                          var sel = document.getElementsByTagName('select');
+                          for (var i = 0; i < sel.length; i++)
+                            if (/goog-te-combo/.test(sel[i].className)) {
+                              teCombo = sel[i];
+                              break;
+                            } if (document.getElementById('google_translate_element2') == null || document.getElementById('google_translate_element2').innerHTML.length == 0 || teCombo.length == 0 || teCombo.innerHTML.length == 0) {
+                            setTimeout(function() {
+                              doGTranslate(lang_pair)
+                            }, 500)
+                          } else {
+                            teCombo.value = lang;
+                            GTranslateFireEvent(teCombo, 'change');
+                            GTranslateFireEvent(teCombo, 'change')
+                          }
+                        }
+                      </script>
+                    </div>
+                  </div>
+                </div>
+                <div class="stm-header__cell stm-header__cell_right">
+                  <div class="stm-header__element stm_header_element_5b34c79cd2162 stm-header__element_default">
+                    <div class="stm-navigation heading_font fsz_20 stm-navigation__default stm-navigation__default stm-navigation__none stm-navigation__fwm" style="line-height:20px;">
+                      <ul>
+                        <li id="menu-item-1211" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-home current-menu-item page_item page-item-7 current_page_item menu-item-1211">
+                          <a href="https://www.tiojosemaria.com/" aria-current="page">Tío José María</a>
+                        </li>
+                        <li id="menu-item-1859" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-1859">
+                          <a href="https://www.tiojosemaria.com/apartamentos-rurales/">Apartamentos Rurales</a>
+                          <ul class="sub-menu">
+                            <li id="menu-item-1758" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1758">
+                              <a href="https://www.tiojosemaria.com/apartamentos-rurales/tomillo/">Apartamento Tomillo</a>
+                            </li>
+                            <li id="menu-item-1759" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1759">
+                              <a href="https://www.tiojosemaria.com/apartamentos-rurales/romero/">Apartamento Romero</a>
+                            </li>
+                            <li id="menu-item-1761" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1761">
+                              <a href="https://www.tiojosemaria.com/apartamentos-rurales/albahaca/">Apartamento Albahaca</a>
+                            </li>
+                            <li id="menu-item-1760" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1760">
+                              <a href="https://www.tiojosemaria.com/apartamentos-rurales/lavanda/">Apartamento Lavanda</a>
+                            </li>
+                          </ul>
+                        </li>
+                        <li id="menu-item-1842" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-1842">
+                          <a href="https://www.tiojosemaria.com/hinojares/">Hinojares</a>
+                          <ul class="sub-menu">
+                            <li id="menu-item-2047" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2047">
+                              <a href="https://www.tiojosemaria.com/hinojares/callejero/">Callejero</a>
+                            </li>
+                            <li id="menu-item-2046" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2046">
+                              <a href="https://www.tiojosemaria.com/hinojares/telefonos-de-interes/">Teléfonos de Interés</a>
+                            </li>
+                          </ul>
+                        </li>
+                        <li id="menu-item-1897" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-1897">
+                          <a href="https://www.tiojosemaria.com/entorno/">Entorno</a>
+                          <ul class="sub-menu">
+                            <li id="menu-item-2108" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2108">
+                              <a href="https://www.tiojosemaria.com/entorno/actividades/">Actividades</a>
+                            </li>
+                            <li id="menu-item-2415" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2415">
+                              <a href="https://www.tiojosemaria.com/entorno/gastronomia/">Gastronomía</a>
+                            </li>
+                            <li id="menu-item-2109" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-2109">
+                              <a href="https://www.tiojosemaria.com/entorno/rutas/">Rutas</a>
+                              <ul class="sub-menu">
+                                <li id="menu-item-2138" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2138">
+                                  <a href="https://www.tiojosemaria.com/entorno/rutas/cueva-del-agua/">Ruta Cueva del Agua</a>
+                                </li>
+                                <li id="menu-item-2137" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2137">
+                                  <a href="https://www.tiojosemaria.com/entorno/rutas/castril/">Ruta Castril</a>
+                                </li>
+                                <li id="menu-item-2136" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2136">
+                                  <a href="https://www.tiojosemaria.com/entorno/rutas/lago-del-altiplano/">Ruta Lago del Altiplano</a>
+                                </li>
+                                <li id="menu-item-2135" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2135">
+                                  <a href="https://www.tiojosemaria.com/entorno/rutas/nacimiento-del-guadalquivir/">Ruta Nacimiento del Guadalquivir</a>
+                                </li>
+                                <li id="menu-item-2134" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2134">
+                                  <a href="https://www.tiojosemaria.com/entorno/rutas/patrimonio-de-la-humanidad/">Ruta Patrimonio de la Humanidad</a>
+                                </li>
+                                <li id="menu-item-2132" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-2132">
+                                  <a href="https://www.tiojosemaria.com/entorno/rutas/senderismo/">Ruta Senderismo</a>
+                                </li>
+                              </ul>
+                            </li>
+                          </ul>
+                        </li>
+                        <li id="menu-item-434" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-434">
+                          <a href="https://www.tiojosemaria.com/contacto/">Contacto</a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div class="stm-header__element stm_header_element_5b433f2c59fc4 stm-header__element_icon_only hidden-mobile hidden-tablet">
+                    <div class="stm-socials">
+                      <a href="https://www.facebook.com/TioJoseMariaCasaRural/" class="stm-socials__icon icon_16px stm-socials__icon_icon_only" target="_blank" title="Social item">
+                        <i class="fa fa-facebook"></i>
+                      </a>
+                      <a href="#inst" class="stm-socials__icon icon_16px stm-socials__icon_icon_only" target="_blank" title="Social item">
+                        <i class="fa fa-instagram"></i>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="stm-header__overlay"></div>
+        <div class="stm_mobile__header">
+          <div class="container">
+            <div class="stm_flex stm_flex_center stm_flex_last stm_flex_nowrap">
+              <div class="stm_mobile__logo">
+                <a href="https://www.tiojosemaria.com/" title="Home">
+                  <img src="https://www.tiojosemaria.com/wp-content/uploads/2018/12/LOGO.png" alt="Site Logo" />
+                </a>
+                <br>
+                <!-- GTranslate: https://gtranslate.io/ -->
+                <a href="#" onclick="doGTranslate('es|es');return false;" title="Spanish" class="glink nturl notranslate">
+                  <img src="//www.tiojosemaria.com/wp-content/plugins/gtranslate/flags/24/es.png" height="24" width="22" alt="Spanish" />
+                </a>
+                <a href="#" onclick="doGTranslate('es|en');return false;" title="English" class="glink nturl notranslate">
+                  <img src="//www.tiojosemaria.com/wp-content/plugins/gtranslate/flags/24/en.png" height="24" width="22" alt="English" />
+                </a>
+                <a href="#" onclick="doGTranslate('es|fr');return false;" title="French" class="glink nturl notranslate">
+                  <img src="//www.tiojosemaria.com/wp-content/plugins/gtranslate/flags/24/fr.png" height="24" width="22" alt="French" />
+                </a>
+                <a href="#" onclick="doGTranslate('es|pt');return false;" title="Portuguese" class="glink nturl notranslate">
+                  <img src="//www.tiojosemaria.com/wp-content/plugins/gtranslate/flags/24/pt.png" height="24" width="22" alt="Portuguese" />
+                </a>
+                <a href="#" onclick="doGTranslate('es|de');return false;" title="German" class="glink nturl notranslate">
+                  <img src="//www.tiojosemaria.com/wp-content/plugins/gtranslate/flags/24/de.png" height="24" width="22" alt="German" />
+                </a>
+                <a href="#" onclick="doGTranslate('es|ar');return false;" title="Arabic" class="glink nturl notranslate">
+                  <img src="//www.tiojosemaria.com/wp-content/plugins/gtranslate/flags/24/ar.png" height="24" width="22" alt="Arabic" />
+                </a>
+                <a href="#" onclick="doGTranslate('es|zh-CN');return false;" title="Chinese (Simplified)" class="glink nturl notranslate">
+                  <img src="//www.tiojosemaria.com/wp-content/plugins/gtranslate/flags/24/zh-CN.png" height="24" width="22" alt="Chinese (Simplified)" />
+                </a>
+                <a href="#" onclick="doGTranslate('es|ja');return false;" title="Japanese" class="glink nturl notranslate">
+                  <img src="//www.tiojosemaria.com/wp-content/plugins/gtranslate/flags/24/ja.png" height="24" width="24" alt="Japanese" />
+                </a>
+                <div class="clearisheader" id="clearisheader" style="display: block;width: 100%;text-align: center;color: #96b600;padding: 10px;font-size: 16px;z-index:99;">
+                  <i class="stmicon-phone-call" style="margin-right:10px;"></i>
+                  <b> Tel.: 676 344 675</b>
+                </div>
+                <style type="text/css">
+                  #goog-gt-tt {
+                    display: none !important;
+                  }
+
+                  .goog-te-banner-frame {
+                    display: none !important;
+                  }
+
+                  .goog-te-menu-value:hover {
+                    text-decoration: none !important;
+                  }
+
+                  .goog-text-highlight {
+                    background-color: transparent !important;
+                    box-shadow: none !important;
+                  }
+
+                  body {
+                    top: 0 !important;
+                  }
+
+                  #google_translate_element2 {
+                    display: none !important;
+                  }
+                </style>
+                <div id="google_translate_element2"></div>
+                <script type="text/javascript">
+                  function googleTranslateElementInit2() {
+                    new google.translate.TranslateElement({
+                      pageLanguage: 'es',
+                      autoDisplay: false
+                    }, 'google_translate_element2');
+                  }
+                </script>
+                <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit2"></script>
+                <script type="text/javascript">
+                  function GTranslateGetCurrentLang() {
+                    var keyValue = document['cookie'].match('(^|;) ?googtrans=([^;]*)(;|$)');
+                    return keyValue ? keyValue[2].split('/')[2] : null;
+                  }
+
+                  function GTranslateFireEvent(element, event) {
+                    try {
+                      if (document.createEventObject) {
+                        var evt = document.createEventObject();
+                        element.fireEvent('on' + event, evt)
+                      } else {
+                        var evt = document.createEvent('HTMLEvents');
+                        evt.initEvent(event, true, true);
+                        element.dispatchEvent(evt)
+                      }
+                    } catch (e) {}
+                  }
+
+                  function doGTranslate(lang_pair) {
+                    if (lang_pair.value) lang_pair = lang_pair.value;
+                    if (lang_pair == '') return;
+                    var lang = lang_pair.split('|')[1];
+                    if (GTranslateGetCurrentLang() == null && lang == lang_pair.split('|')[0]) return;
+                    var teCombo;
+                    var sel = document.getElementsByTagName('select');
+                    for (var i = 0; i < sel.length; i++)
+                      if (/goog-te-combo/.test(sel[i].className)) {
+                        teCombo = sel[i];
+                        break;
+                      } if (document.getElementById('google_translate_element2') == null || document.getElementById('google_translate_element2').innerHTML.length == 0 || teCombo.length == 0 || teCombo.innerHTML.length == 0) {
+                      setTimeout(function() {
+                        doGTranslate(lang_pair)
+                      }, 500)
+                    } else {
+                      teCombo.value = lang;
+                      GTranslateFireEvent(teCombo, 'change');
+                      GTranslateFireEvent(teCombo, 'change')
+                    }
+                  }
+                </script>
+              </div>
+              <div class="stm_mobile__switcher stm_flex_last js_trigger__click" data-element=".stm-header, .stm-header__overlay" data-toggle="false">
+                <span class="mbc"></span>
+                <span class="mbc"></span>
+                <span class="mbc"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+      <!-- #masthead -->
+      <div id="content" class="site-content">
+        <div class="">
+          <!--Title box-->
+          <!--Breadcrumbs-->
+          <div class="post-content">
+            <div class="">
+              <div class="stm_markup stm_markup_full">
+                <div class="stm_markup__content">
+                  <div class="container-fluid vc_container-fluid  overlap  ">
+                    <div class="vc_row wpb_row vc_row-fluid">
+                      <div class="container-fluid stm_no_side_pd">
+                        <div class="row">
+                          <div class="wpb_column vc_column_container vc_col-sm-12 vc_col-xs-12">
+                            <div class="vc_column-inner ">
+                              <div class="wpb_wrapper">
+                                <div class="wpb_revslider_element wpb_content_element">
+                                  <div id="rev_slider_1_1_wrapper" class="rev_slider_wrapper fullwidthbanner-container" data-source="gallery" style="margin:0px auto;background:transparent;padding:0px;margin-top:0px;margin-bottom:0px;">
+                                    <!-- START REVOLUTION SLIDER 5.4.8.1 fullwidth mode -->
+                                    <div id="rev_slider_1_1" class="rev_slider fullwidthabanner" style="display:none;" data-version="5.4.8.1">
+                                      <ul>
+                                        <!-- SLIDE  -->
+                                        <li data-index="rs-1" data-transition="fade" data-slotamount="default" data-hideafterloop="0" data-hideslideonmobile="off" data-easein="default" data-easeout="default" data-masterspeed="300" data-rotate="0" data-saveperformance="off" data-title="Slide" data-param1="" data-param2="" data-param3="" data-param4="" data-param5="" data-param6="" data-param7="" data-param8="" data-param9="" data-param10="" data-description="">
+                                          <!-- MAIN IMAGE -->
+                                          <img src="https://www.tiojosemaria.com/wp-content/uploads/2018/12/slide1.jpg" alt="" title="slide1" width="2542" height="867" data-bgposition="center center" data-bgfit="cover" data-bgrepeat="no-repeat" class="rev-slidebg" data-no-retina>
+                                          <!-- LAYERS -->
+                                        </li>
+                                        <!-- SLIDE  -->
+                                        <li data-index="rs-3" data-transition="fade" data-slotamount="default" data-hideafterloop="0" data-hideslideonmobile="off" data-easein="default" data-easeout="default" data-masterspeed="300" data-rotate="0" data-saveperformance="off" data-title="Slide" data-param1="" data-param2="" data-param3="" data-param4="" data-param5="" data-param6="" data-param7="" data-param8="" data-param9="" data-param10="" data-description="">
+                                          <!-- MAIN IMAGE -->
+                                          <img src="https://www.tiojosemaria.com/wp-content/uploads/2018/12/slide5.jpg" alt="" title="slide5" width="2542" height="867" data-bgposition="center center" data-bgfit="cover" data-bgrepeat="no-repeat" class="rev-slidebg" data-no-retina>
+                                          <!-- LAYERS -->
+                                        </li>
+                                        <!-- SLIDE  -->
+                                        <li data-index="rs-2" data-transition="fade" data-slotamount="default" data-hideafterloop="0" data-hideslideonmobile="off" data-easein="default" data-easeout="default" data-masterspeed="300" data-rotate="0" data-saveperformance="off" data-title="Slide" data-param1="" data-param2="" data-param3="" data-param4="" data-param5="" data-param6="" data-param7="" data-param8="" data-param9="" data-param10="" data-description="">
+                                          <!-- MAIN IMAGE -->
+                                          <img src="https://www.tiojosemaria.com/wp-content/uploads/2023/07/slide-1.jpg" alt="" title="slide" width="2542" height="867" data-bgposition="center center" data-bgfit="cover" data-bgrepeat="no-repeat" class="rev-slidebg" data-no-retina>
+                                          <!-- LAYERS -->
+                                        </li>
+                                      </ul>
+                                      <div class="tp-bannertimer tp-bottom" style="visibility: hidden !important;"></div>
+                                    </div>
+                                    <script>
+                                      var htmlDiv = document.getElementById("rs-plugin-settings-inline-css");
+                                      var htmlDivCss = "";
+                                      if (htmlDiv) {
+                                        htmlDiv.innerHTML = htmlDiv.innerHTML + htmlDivCss;
+                                      } else {
+                                        var htmlDiv = document.createElement("div");
+                                        htmlDiv.innerHTML = " < style > " + htmlDivCss + " < /style>";
+                                        document.getElementsByTagName("head")[0].appendChild(htmlDiv.childNodes[0]);
+                                      }
+                                    </script>
+                                    <script type="text/javascript">
+                                      if (setREVStartSize !== undefined) setREVStartSize({
+                                        c: '#rev_slider_1_1',
+                                        responsiveLevels: [1240, 1024, 778, 480],
+                                        gridwidth: [1240, 1024, 778, 480],
+                                        gridheight: [868, 700, 600, 200],
+                                        sliderLayout: 'fullwidth'
+                                      });
+                                      var revapi1,
+                                        tpj;
+                                      (function() {
+                                        if (!/loaded|interactive|complete/.test(document.readyState)) document.addEventListener("DOMContentLoaded", onLoad);
+                                        else onLoad();
+
+                                        function onLoad() {
+                                          if (tpj === undefined) {
+                                            tpj = jQuery;
+                                            if ("off" == "on") tpj.noConflict();
+                                          }
+                                          if (tpj("#rev_slider_1_1").revolution == undefined) {
+                                            revslider_showDoubleJqueryError("#rev_slider_1_1");
+                                          } else {
+                                            revapi1 = tpj("#rev_slider_1_1").show().revolution({
+                                              sliderType: "standard",
+                                              jsFileLocation: "//www.tiojosemaria.com/wp-content/plugins/revslider/public/assets/js/",
+                                              sliderLayout: "fullwidth",
+                                              dottedOverlay: "none",
+                                              delay: 9000,
+                                              navigation: {
+                                                onHoverStop: "off",
+                                              },
+                                              responsiveLevels: [1240, 1024, 778, 480],
+                                              visibilityLevels: [1240, 1024, 778, 480],
+                                              gridwidth: [1240, 1024, 778, 480],
+                                              gridheight: [868, 700, 600, 200],
+                                              lazyType: "none",
+                                              shadow: 0,
+                                              spinner: "spinner0",
+                                              stopLoop: "off",
+                                              stopAfterLoops: -1,
+                                              stopAtSlide: -1,
+                                              shuffle: "off",
+                                              autoHeight: "off",
+                                              disableProgressBar: "on",
+                                              hideThumbsOnMobile: "off",
+                                              hideSliderAtLimit: 0,
+                                              hideCaptionAtLimit: 0,
+                                              hideAllCaptionAtLilmit: 0,
+                                              debugMode: false,
+                                              fallbacks: {
+                                                simplifyAll: "off",
+                                                nextSlideOnWindowFocus: "off",
+                                                disableFocusListener: false,
+                                              }
+                                            });
+                                          }; /* END OF revapi call */
+                                        }; /* END OF ON LOAD FUNCTION */
+                                      }()); /* END OF WRAPPING FUNCTION */
+                                    </script>
+                                  </div>
+                                  <!-- END REVOLUTION SLIDER -->
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <section class="vc_section vc_custom_1539758021945 vc_section-has-fill">
+                    <div class="container vc_container   ">
+                      <div class="vc_row wpb_row vc_row-fluid">
+                        <div class="wpb_column vc_column_container vc_col-sm-12">
+                          <div class="vc_column-inner ">
+                            <div class="wpb_wrapper">
+                              <div class="stm_spacer ">
+                                <div class="visible-lg" style="height: 30px;"></div>
+                                <div class="visible-md" style="height: 30px;"></div>
+                                <div class="visible-sm" style="height: 20px;"></div>
+                                <div class="visible-xs" style="height: 20px;"></div>
+                              </div>
+                              <h2 style="text-align: center" class="vc_custom_heading   text-center">Apartamentos Rurales <br /> "Tío José María" </h2>
+                              <h4 style="text-align: center" class="vc_custom_heading   text-center">Un lujo de alojamientos, en un lujo de contrastes</h4>
+                              <div class="stm_spacer ">
+                                <div class="visible-lg" style="height: 50px;"></div>
+                                <div class="visible-md" style="height: 50px;"></div>
+                                <div class="visible-sm" style="height: 50px;"></div>
+                                <div class="visible-xs" style="height: 40px;"></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="container vc_container   ">
+                      <div class="vc_row wpb_row vc_row-fluid">
+                        <div class="wpb_column vc_column_container vc_col-sm-6">
+                          <div class="vc_column-inner ">
+                            <div class="wpb_wrapper">
+                              <div class="vc-hoverbox-wrapper  vc-hoverbox-shape--rounded vc-hoverbox-align--center vc-hoverbox-direction--default vc-hoverbox-width--100">
+                                <div class="vc-hoverbox">
+                                  <div class="vc-hoverbox-inner">
+                                    <div class="vc-hoverbox-block vc-hoverbox-front" style="background-image: url(https://www.tiojosemaria.com/wp-content/uploads/2018/12/ROMEROHOME1.jpg);">
+                                      <div class="vc-hoverbox-block-inner vc-hoverbox-front-inner">
+                                        <h2 style="font-size: 60px;color: #ffffff;text-align: center;font-family:La Belle Aurore;font-weight:400;font-style:normal" class="vc_custom_heading   text-center">
+                                          <a href="https://www.tiojosemaria.com/apartamentos/romero/">Romero</a>
+                                        </h2>
+                                      </div>
+                                    </div>
+                                    <div class="vc-hoverbox-block vc-hoverbox-back" style="background-color: #ebebeb;">
+                                      <div class="vc-hoverbox-block-inner vc-hoverbox-back-inner">
+                                        <h2 style="font-size: 50px;text-align: center;font-family:La Belle Aurore;font-weight:400;font-style:normal" class="vc_custom_heading   text-center">
+                                          <a href="https://www.tiojosemaria.com/apartamentos/romero/">Romero</a>
+                                        </h2>
+                                        <p>
+                                          <strong>
+                                            <span style="color: #333333;">APARTAMENTO PARA 4 PERSONAS &#8211; 2ª PLANTA</span>
+                                          </strong>
+                                        </p>
+                                        <div class="vc_btn3-container vc_btn3-inline">
+                                          <a class="vc_general vc_btn3 vc_btn3-size-lg vc_btn3-shape-rounded vc_btn3-style-flat vc_btn3-color-success" href="https://www.tiojosemaria.com/apartamentos/romero/" title="">VISÍTALO</a>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="vc_empty_space" style="height: 32px">
+                                <span class="vc_empty_space_inner"></span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="wpb_column vc_column_container vc_col-sm-6">
+                          <div class="vc_column-inner ">
+                            <div class="wpb_wrapper">
+                              <div class="vc-hoverbox-wrapper  vc-hoverbox-shape--rounded vc-hoverbox-align--center vc-hoverbox-direction--default vc-hoverbox-width--100">
+                                <div class="vc-hoverbox">
+                                  <div class="vc-hoverbox-inner">
+                                    <div class="vc-hoverbox-block vc-hoverbox-front" style="background-image: url(https://www.tiojosemaria.com/wp-content/uploads/2018/12/TOMILLOHOME1.jpg);">
+                                      <div class="vc-hoverbox-block-inner vc-hoverbox-front-inner">
+                                        <h2 style="font-size: 60px;color: #ffffff;text-align: center;font-family:La Belle Aurore;font-weight:400;font-style:normal" class="vc_custom_heading   text-center">
+                                          <a href="https://www.tiojosemaria.com/apartamentos/tomillo/">Tomillo</a>
+                                        </h2>
+                                      </div>
+                                    </div>
+                                    <div class="vc-hoverbox-block vc-hoverbox-back" style="background-color: #f1f1f1;">
+                                      <div class="vc-hoverbox-block-inner vc-hoverbox-back-inner">
+                                        <h2 style="text-align: center;font-family:La Belle Aurore;font-weight:400;font-style:normal" class="vc_custom_heading   text-center">
+                                          <a href="https://www.tiojosemaria.com/apartamentos/tomillo/">Tomillo</a>
+                                        </h2>
+                                        <p>
+                                          <span style="color: #333333;">
+                                            <strong>APARTAMENTO PARA 2 PERSONAS &#8211; 2ª PLANTA</strong>
+                                          </span>
+                                        </p>
+                                        <div class="vc_btn3-container vc_btn3-center">
+                                          <a class="vc_general vc_btn3 vc_btn3-size-lg vc_btn3-shape-rounded vc_btn3-style-flat vc_btn3-color-success" href="https://www.tiojosemaria.com/apartamentos/tomillo/" title="">VISÍTALO</a>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="vc_empty_space" style="height: 32px">
+                                <span class="vc_empty_space_inner"></span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="container vc_container   ">
+                      <div class="vc_row wpb_row vc_row-fluid">
+                        <div class="wpb_column vc_column_container vc_col-sm-6">
+                          <div class="vc_column-inner ">
+                            <div class="wpb_wrapper">
+                              <div class="vc-hoverbox-wrapper  vc_custom_1696320245594 vc-hoverbox-shape--rounded vc-hoverbox-align--center vc-hoverbox-direction--default vc-hoverbox-width--100">
+                                <div class="vc-hoverbox">
+                                  <div class="vc-hoverbox-inner">
+                                    <div class="vc-hoverbox-block vc-hoverbox-front" style="background-image: url(https://www.tiojosemaria.com/wp-content/uploads/2018/12/LAVANDAHOME1.jpg);">
+                                      <div class="vc-hoverbox-block-inner vc-hoverbox-front-inner">
+                                        <h2 style="font-size: 60px;color: #ffffff;text-align: center;font-family:La Belle Aurore;font-weight:400;font-style:normal" class="vc_custom_heading   text-center">
+                                          <a href="">Lavanda</a>
+                                        </h2>
+                                      </div>
+                                    </div>
+                                    <div class="vc-hoverbox-block vc-hoverbox-back" style="background-color: #ebebeb;">
+                                      <div class="vc-hoverbox-block-inner vc-hoverbox-back-inner">
+                                        <h2 style="text-align: center;font-family:La Belle Aurore;font-weight:400;font-style:normal" class="vc_custom_heading   text-center">
+                                          <a href="https://www.tiojosemaria.com/apartamentos/lavanda/">Lavanda</a>
+                                        </h2>
+                                        <p>
+                                          <span style="color: #333333;">
+                                            <strong>APARTAMENTO PARA 4 PERSONAS &#8211; 1ª PLANTA</strong>
+                                          </span>
+                                        </p>
+                                        <div class="vc_btn3-container vc_btn3-inline">
+                                          <a class="vc_general vc_btn3 vc_btn3-size-lg vc_btn3-shape-rounded vc_btn3-style-flat vc_btn3-color-success" href="https://www.tiojosemaria.com/apartamentos/lavanda/" title="">VISÍTALO</a>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="vc_empty_space" style="height: 32px">
+                                <span class="vc_empty_space_inner"></span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="wpb_column vc_column_container vc_col-sm-6">
+                          <div class="vc_column-inner ">
+                            <div class="wpb_wrapper">
+                              <div class="vc-hoverbox-wrapper  vc-hoverbox-shape--rounded vc-hoverbox-align--center vc-hoverbox-direction--default vc-hoverbox-width--100">
+                                <div class="vc-hoverbox">
+                                  <div class="vc-hoverbox-inner">
+                                    <div class="vc-hoverbox-block vc-hoverbox-front" style="background-image: url(https://www.tiojosemaria.com/wp-content/uploads/2018/12/ALBAHACA-1.jpg);">
+                                      <div class="vc-hoverbox-block-inner vc-hoverbox-front-inner">
+                                        <h2 style="font-size: 60px;color: #ffffff;text-align: center;font-family:La Belle Aurore;font-weight:400;font-style:normal" class="vc_custom_heading   text-center">
+                                          <a href="https://www.tiojosemaria.com/apartamentos/albahaca/">Albahaca</a>
+                                        </h2>
+                                      </div>
+                                    </div>
+                                    <div class="vc-hoverbox-block vc-hoverbox-back" style="background-color: #ebebeb;">
+                                      <div class="vc-hoverbox-block-inner vc-hoverbox-back-inner">
+                                        <h2 style="text-align: center;font-family:La Belle Aurore;font-weight:400;font-style:normal" class="vc_custom_heading   text-center">
+                                          <a href="https://www.tiojosemaria.com/apartamentos/albahaca/">Albahaca</a>
+                                        </h2>
+                                        <p>
+                                          <span style="color: #333333;">
+                                            <strong>APARTAMENTO PARA 2 PERSONAS &#8211; 1ª PLANTA</strong>
+                                          </span>
+                                        </p>
+                                        <div class="vc_btn3-container vc_btn3-inline">
+                                          <a class="vc_general vc_btn3 vc_btn3-size-lg vc_btn3-shape-rounded vc_btn3-style-flat vc_btn3-color-success" href="https://www.tiojosemaria.com/apartamentos/albahaca/" title="">VISÍTALO</a>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="vc_empty_space" style="height: 32px">
+                                <span class="vc_empty_space_inner"></span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="container vc_container   ">
+                      <div class="vc_row wpb_row vc_row-fluid">
+                        <div class="wpb_column vc_column_container vc_col-sm-12">
+                          <div class="vc_column-inner ">
+                            <div class="wpb_wrapper">
+                              <div class="wpb_text_column wpb_content_element ">
+                                <div class="wpb_wrapper">
+                                  <p style="text-align: center;">
+                                    <span style="color: #132f50;">Tío José María es un grupo apartamentos totalmente independientes, confortables, luminosos, y muy acogedores, que conservan el encanto de su construcción original en una casa rural del siglo XVII preciosamente restaurada, que conserva la solidez, el encanto y la tipicidad de la arquitectura tradicional andaluza. Piedra y barro en sus anchos muros, madera y caña en sus techos. Estancias generosas y coloristas para disfrutar con sosiego de un entorno rico en naturaleza, historia y gastronomía.</span>
+                                  </p>
+                                  <p style="text-align: center;">
+                                    <span style="color: #132f50;">Situados junto a la Plaza de la Constitución, en el centro del tranquilo y pintoresco pueblo de Hinojares, Valle del Guadiana Menor al sur del Parque Natural en la Sierra de Cazorla, muy cerca del nacimiento del Río Guadalquivir, en un entorno rico en agua y de singular belleza y colorido. La originalidad de sus apartamentos, que reciben el nombre de plantas aromáticas de la sierra, junto con la oferta de actividades diversas, harán que su estancia sea tranquila, grata y saludable.</span>
+                                  </p>
+                                </div>
+                              </div>
+                              <div class="stm_spacer ">
+                                <div class="visible-lg" style="height: 50px;"></div>
+                                <div class="visible-md" style="height: 50px;"></div>
+                                <div class="visible-sm" style="height: 50px;"></div>
+                                <div class="visible-xs" style="height: 40px;"></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                  <div class="container vc_container   ">
+                    <div class="vc_row wpb_row vc_row-fluid">
+                      <div class="wpb_column vc_column_container vc_col-sm-12">
+                        <div class="vc_column-inner ">
+                          <div class="wpb_wrapper">
+                            <div class="vc_separator wpb_content_element vc_separator_align_center vc_sep_width_100 vc_sep_pos_align_center vc_sep_color_grey vc_separator-has-text">
+                              <span class="vc_sep_holder vc_sep_holder_l">
+                                <span class="vc_sep_line"></span>
+                              </span>
+                              <h4>Valoración de los Clientes</h4>
+                              <span class="vc_sep_holder vc_sep_holder_r">
+                                <span class="vc_sep_line"></span>
+                              </span>
+                            </div>
+                            <div class="vc_empty_space" style="height: 32px">
+                              <span class="vc_empty_space_inner"></span>
+                            </div>
+                            <div class="vc_row wpb_row vc_inner vc_row-fluid">
+                              <div class="wpb_column vc_column_container vc_col-sm-4 hotel_column_inner_6d26c9117e3bfde17d3dcabe87a07e45">
+                                <div class="vc_column-inner ">
+                                  <div class="wpb_wrapper">
+                                    <div class="wpb_raw_code wpb_content_element wpb_raw_html">
+                                      <div class="wpb_wrapper">
+                                        <img src="https://www.tiojosemaria.com/wp-content/uploads/2019/01/valoración1.jpg">
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="wpb_column vc_column_container vc_col-sm-4 hotel_column_inner_6d26c9117e3bfde17d3dcabe87a07e45">
+                                <div class="vc_column-inner ">
+                                  <div class="wpb_wrapper">
+                                    <div class="wpb_raw_code wpb_content_element wpb_raw_html">
+                                      <div class="wpb_wrapper">
+                                        <img src="https://www.tiojosemaria.com/wp-content/uploads/2019/01/valoración2.jpg">
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="wpb_column vc_column_container vc_col-sm-4 hotel_column_inner_6d26c9117e3bfde17d3dcabe87a07e45">
+                                <div class="vc_column-inner ">
+                                  <div class="wpb_wrapper">
+                                    <div class="wpb_raw_code wpb_content_element wpb_raw_html">
+                                      <div class="wpb_wrapper">
+                                        <img src="https://www.tiojosemaria.com/wp-content/uploads/2019/01/valoración3.jpg">
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="vc_empty_space" style="height: 32px">
+                              <span class="vc_empty_space_inner"></span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="container vc_container  vc_custom_1547143398596 ">
+                    <div class="vc_row wpb_row vc_row-fluid vc_row-has-fill vc_row-o-content-middle vc_row-flex">
+                      <div class="wpb_column vc_column_container vc_col-sm-12">
+                        <div class="vc_column-inner ">
+                          <div class="wpb_wrapper">
+                            <div class="vc_tta-container vc_tta-o-non-responsive" data-vc-action="collapse" data-vc-tta-autoplay="{&quot;delay&quot;:5000}">
+                              <div class="vc_general vc_tta vc_tta-tabs vc_tta-o-shape-group vc_tta-has-pagination vc_tta-o-no-fill vc_tta-tabs-position-top  vc_tta-pageable">
+                                <div class="vc_tta-panels-container">
+                                  <ul class="vc_general vc_pagination vc_pagination-style-outline vc_pagination-shape-square vc_pagination-color-grey">
+                                    <li class="vc_pagination-item vc_active" data-vc-tab>
+                                      <a href="#1547036884053-8e54af9f-1667" class="vc_pagination-trigger" data-vc-tabs data-vc-container=".vc_tta"></a>
+                                    </li>
+                                    <li class="vc_pagination-item" data-vc-tab>
+                                      <a href="#1547036884142-3ec4cb00-daa4" class="vc_pagination-trigger" data-vc-tabs data-vc-container=".vc_tta"></a>
+                                    </li>
+                                    <li class="vc_pagination-item" data-vc-tab>
+                                      <a href="#1547036884236-f9aac8e0-27c3" class="vc_pagination-trigger" data-vc-tabs data-vc-container=".vc_tta"></a>
+                                    </li>
+                                    <li class="vc_pagination-item" data-vc-tab>
+                                      <a href="#1547036884326-712c9fd9-be28" class="vc_pagination-trigger" data-vc-tabs data-vc-container=".vc_tta"></a>
+                                    </li>
+                                    <li class="vc_pagination-item" data-vc-tab>
+                                      <a href="#1547036884419-529a789b-be5c" class="vc_pagination-trigger" data-vc-tabs data-vc-container=".vc_tta"></a>
+                                    </li>
+                                  </ul>
+                                  <div class="vc_tta-panels">
+                                    <div class="vc_tta-panel vc_active" id="1547036884053-8e54af9f-1667" data-vc-content=".vc_tta-panel-body">
+                                      <div class="vc_tta-panel-body">
+                                        <span class="vc_tta-panel-title">
+                                          <a data-vc-container=".vc_tta-container" data-vc-accordion="" data-vc-target="#1547036884053-8e54af9f-1667"></a>
+                                        </span>
+                                        <div class="wpb_text_column wpb_content_element ">
+                                          <div class="wpb_wrapper">
+                                            <p style="text-align: center;">
+                                              <span style="color: #ffffff;">
+                                                <strong>Eneko (Booking.com)</strong>
+                                              </span>
+                                            </p>
+                                            <p style="text-align: center;">
+                                              <span style="color: #ffffff;">“Impresionante, al apartamento no le falta de nada, los dueños majísimos. Nos explicaron al detalle cuales eran las mejores opciones para visitar.”</span>
+                                            </p>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="vc_tta-panel" id="1547036884142-3ec4cb00-daa4" data-vc-content=".vc_tta-panel-body">
+                                      <div class="vc_tta-panel-body">
+                                        <span class="vc_tta-panel-title">
+                                          <a data-vc-container=".vc_tta-container" data-vc-accordion="" data-vc-target="#1547036884142-3ec4cb00-daa4"></a>
+                                        </span>
+                                        <div class="wpb_text_column wpb_content_element ">
+                                          <div class="wpb_wrapper">
+                                            <p style="text-align: center;">
+                                              <span style="color: #ffffff;">
+                                                <strong>Ana (Booking.com)</strong>
+                                              </span>
+                                            </p>
+                                            <p style="text-align: center;">
+                                              <span style="color: #ffffff;">“El apartamento contaba con detalles que hicieron nuestra estancia mucho más acogedora y relajada. Pero sin duda, lo que más nos cautivó fue el trato por parte de los dueños&#8230; el adjetivo de encantadores se quedaría corto! Él se considera aprendiz de mucho y maestro de nada, pero en mi opinión es un MAESTRO y en mayúsculas!!!”</span>
+                                            </p>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="vc_tta-panel" id="1547036884236-f9aac8e0-27c3" data-vc-content=".vc_tta-panel-body">
+                                      <div class="vc_tta-panel-body">
+                                        <span class="vc_tta-panel-title">
+                                          <a data-vc-container=".vc_tta-container" data-vc-accordion="" data-vc-target="#1547036884236-f9aac8e0-27c3"></a>
+                                        </span>
+                                        <div class="wpb_text_column wpb_content_element ">
+                                          <div class="wpb_wrapper">
+                                            <p style="text-align: center;">
+                                              <span style="color: #ffffff;">
+                                                <strong>Manuel Argentina (Booking.com)</strong>
+                                              </span>
+                                            </p>
+                                            <p style="text-align: center;">
+                                              <span style="color: #ffffff;">“La dedicación de los anfitriones queda manifiesta desde el primer momento, lei algunas criticas al respecto y creo que no son justas, las explicaciones y la dedicación de Jesús hicieron prontamente que una estancia de paso por una noche resultase en una extensión de un día mas y porque no teníamos mas tiempo, mis felicitaciones por el aporte a los turistas que no conocemos esa zona y que tiene mucho por ver, solo le sugeriría como humilde opinión y no como critica una charla mas corta ya que la guía con la que te esperan es por demás detallada. La limpieza es un 10 y el apartamento muy cómodo y las fotos son reales. No se puede aparcar en la zona del establecimiento pero a escasos 100 mts hay parking publico gratuito.”</span>
+                                            </p>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="vc_tta-panel" id="1547036884326-712c9fd9-be28" data-vc-content=".vc_tta-panel-body">
+                                      <div class="vc_tta-panel-body">
+                                        <span class="vc_tta-panel-title">
+                                          <a data-vc-container=".vc_tta-container" data-vc-accordion="" data-vc-target="#1547036884326-712c9fd9-be28"></a>
+                                        </span>
+                                        <div class="wpb_text_column wpb_content_element ">
+                                          <div class="wpb_wrapper">
+                                            <p style="text-align: center;">
+                                              <span style="color: #ffffff;">
+                                                <strong>Sonia (Booking.com)</strong>
+                                              </span>
+                                            </p>
+                                            <p style="text-align: center;">
+                                              <span style="color: #ffffff;">“El apartamento es estupendo. Totalmente equipado, no le falta ni un detalle. Todo muy muy limpio. Los dueños, Jesús y Mari Carmen son encantadores. Además nos dieron una guía de viaje, hecha por ellos mismos, con varias rutas detalladas para hacer por la zona, actividades, restaurantes&#8230;”</span>
+                                            </p>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="vc_tta-panel" id="1547036884419-529a789b-be5c" data-vc-content=".vc_tta-panel-body">
+                                      <div class="vc_tta-panel-body">
+                                        <span class="vc_tta-panel-title">
+                                          <a data-vc-container=".vc_tta-container" data-vc-accordion="" data-vc-target="#1547036884419-529a789b-be5c"></a>
+                                        </span>
+                                        <div class="wpb_text_column wpb_content_element ">
+                                          <div class="wpb_wrapper">
+                                            <p style="text-align: center;">
+                                              <span style="color: #ffffff;">
+                                                <strong>Miguel (Booking.com)</strong>
+                                              </span>
+                                            </p>
+                                            <p style="text-align: center;">
+                                              <span style="color: #ffffff;">«Tanto Mari Carmen como Jesús son unos anfitriones buenísimos. Su amabilidad y consideración a la hora de describir las zonas a visitar y su interés han sido muy notables. Por otra parte, el alojamiento tiene una atracción especial, así como la ubicación. Lo recomiendo sin duda alguna si lo que quieres es relajarte y disfrutar!»</span>
+                                            </p>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="container vc_container   ">
+                    <div class="vc_row wpb_row vc_row-fluid">
+                      <div class="wpb_column vc_column_container vc_col-sm-12">
+                        <div class="vc_column-inner ">
+                          <div class="wpb_wrapper">
+                            <div class="vc_empty_space" style="height: 50px">
+                              <span class="vc_empty_space_inner"></span>
+                            </div>
+                            <h4 style="text-align: center" class="vc_custom_heading   text-center">Su entorno está repleto de historia, naturaleza y gastronomía</h4>
+                            <div class="wpb_text_column wpb_content_element ">
+                              <div class="wpb_wrapper">
+                                <p style="text-align: center;">
+                                  <span style="color: #132f50;">Destino mágico y saludable donde podrá escuchar el silencio, la melodía de los ruiseñores y acunar las estrellas en el cuenco del multicolor valle del Guadiana Menor. Muy cerca de la A-92, de las ciudades de Guadix y Baza y de las ciudades Patrimonio de la Humanidad de Úbeda y Baeza. Equidistante de las capitales de Jaén y Granada y muy cerca de los Embalses de la Bolera, el Portillo, San Clemente y del gran lago de El Negratín. En la ruta de los Nazaríes, la presencia árabe en su diseño urbano y agrícola es bien patente en cada traza de su callejero urbano y de su abancalada vega.</span>
+                                </p>
+                              </div>
+                            </div>
+                            <div class="vc_empty_space" style="height: 50px">
+                              <span class="vc_empty_space_inner"></span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="container-fluid vc_container-fluid  vc_custom_1545324238284 ">
+                    <div class="vc_row wpb_row vc_row-fluid">
+                      <div class="container-fluid stm_no_side_pd">
+                        <div class="row">
+                          <div class="wpb_column vc_column_container vc_col-sm-12">
+                            <div class="vc_column-inner ">
+                              <div class="wpb_wrapper">
+                                <div class="wpb_raw_code wpb_content_element wpb_raw_html">
+                                  <div class="wpb_wrapper">
+                                    <div id="sb_instagram" class="sbi sbi_disable_mobile sbi_col_5 sbi_medium" style="width:100%; " data-id="8973126672" data-num="5" data-res="auto" data-cols="5" data-sbi-index="1">
+                                      <div id="sbi_images">
+                                        <div class="sbi_item sbi_type_image">
+                                          <div class="sbi_photo_wrap">
+                                            <a class="sbi_photo sbi_imgLiquid_bgSize sbi_imgLiquid_ready" style="background-image: url(&quot;https://www.tiojosemaria.com/wp-content/uploads/2018/12/lavanda2-768x512.jpg&quot;); background-size: cover; background-position: center center; background-repeat: no-repeat; height: 220px; opacity: 1;"></a>
+                                          </div>
+                                        </div>
+                                        <div class="sbi_item sbi_type_image">
+                                          <div class="sbi_photo_wrap">
+                                            <a class="sbi_photo sbi_imgLiquid_bgSize sbi_imgLiquid_ready" style="background-image: url(&quot;https://www.tiojosemaria.com/wp-content/uploads/2018/12/romero1-768x545.jpg&quot;); background-size: cover; background-position: center center; background-repeat: no-repeat; height: 220px; opacity: 1;"></a>
+                                          </div>
+                                        </div>
+                                        <div class="sbi_item sbi_type_image">
+                                          <div class="sbi_photo_wrap">
+                                            <a class="sbi_photo sbi_imgLiquid_bgSize sbi_imgLiquid_ready" style="background-image: url(&quot;https://www.tiojosemaria.com/wp-content/uploads/2018/12/lavanda6-768x512.jpg&quot;); background-size: cover; background-position: center center; background-repeat: no-repeat; height: 220px; opacity: 1;"></a>
+                                          </div>
+                                        </div>
+                                        <div class="sbi_item sbi_type_image">
+                                          <div class="sbi_photo_wrap">
+                                            <a class="sbi_photo sbi_imgLiquid_bgSize sbi_imgLiquid_ready" style="background-image: url(https://www.tiojosemaria.com/wp-content/uploads/2022/08/WhatsApp-Image-2022-08-26-at-11.34.03-AM.jpeg); background-size: cover; background-position: center center; background-repeat: no-repeat; height: 220px; opacity: 1;"></a>
+                                          </div>
+                                        </div>
+                                        <div class="sbi_item sbi_type_image">
+                                          <div class="sbi_photo_wrap">
+                                            <a class="sbi_photo sbi_imgLiquid_bgSize sbi_imgLiquid_ready" style="background-image: url(https://www.tiojosemaria.com/wp-content/uploads/2022/08/WhatsApp-Image-2022-08-26-at-11.31.04-AM.jpeg); background-size: cover; background-position: center center; background-repeat: no-repeat; height: 220px; opacity: 1;"></a>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- .container -->
+      </div>
+      <!-- #content -->
+      <footer class="stm-footer ">
+        <div class="container">
+          <div class="row stm-footer__widgets">
+            <div class="col-md-3">
+              <aside id="text-5" class="widget widget-default widget-footer widget_text">
+                <div class="textwidget">
+                  <p>
+                    <img loading="lazy" class="alignnone wp-image-2038" src="https://www.tiojosemaria.com/wp-content/uploads/2018/12/LOGO-300x96.png" alt="" width="184" height="59" srcset="https://www.tiojosemaria.com/wp-content/uploads/2018/12/LOGO-300x96.png 300w, https://www.tiojosemaria.com/wp-content/uploads/2018/12/LOGO.png 513w" sizes="(max-width: 184px) 100vw, 184px" />
+                  </p>
+                  <p>Apartamentos rurales luminosos, típicos y confortables donde cada rincón es único.</p>
+                  <p font-style="center">Os esperamos.</p>
+                </div>
+              </aside>
+              <aside id="gtranslate-2" class="widget widget-default widget-footer widget_gtranslate">
+                <div class="gtranslate_wrapper" id="gt-wrapper-81757737"></div>
+              </aside>
+            </div>
+            <div class="col-md-3">
+              <aside id="text-8" class="widget widget-default widget-footer widget_text">
+                <div class="textwidget">
+                  <div class="widgettitle widget-footer-title">
+                    <h4 style="font-family: 'Rubik' !important; font-size: 22px !important; font-weight: 500 !important; line-height: 30px !important;     margin-bottom: 20px !important;">Información</h4>
+                  </div>
+                  <p>
+                    <a href="/hinojares">Hinojares</a>
+                    <br />
+                    <a href="/apartamentos">Apartamentos</a>
+                    <br />
+                    <a href="/entorno/actividades">Actividades</a>
+                    <br />
+                    <a href="/entorno/gastronomia">Gastronomía</a>
+                    <br />
+                    <a href="/entorno/rutas">Rutas</a>
+                    <br />
+                    <a href="/aviso-legal">Aviso Legal</a>
+                    <br />
+                    <a href="/politica-de-privacidad">Política de Privacidad</a>
+                    <br />
+                    <a href="/politica-de-cookies">Política de Cookies</a>
+                  </p>
+                </div>
+              </aside>
+            </div>
+            <div class="col-md-3">
+              <aside id="text-3" class="widget widget-default widget-footer widget_text">
+                <div class="textwidget">
+                  <div class="widgettitle widget-footer-title">
+                    <h4 style="font-family: 'Rubik' !important; font-size: 22px !important; font-weight: 500 !important; line-height: 30px !important; margin-bottom: 20px !important;">Contacta con Nosotros</h4>
+                  </div>
+                  <p>Calle Baja 1 <br /> 23486 Hinojares (Jaén) <br /> ESPAÑA </p>
+                  <p>Tel.:676 344 675 <strong>
+                      <br />
+                    </strong>
+                  </p>
+                  <p>
+                    <a href="mailto:apartamentostiojosemaria@gmail.com">apartamentostiojosemaria@gmail.com</a>
+                  </p>
+                </div>
+              </aside>
+            </div>
+            <div class="col-md-3">
+              <aside id="text-7" class="widget widget-default widget-footer widget_text">
+                <div class="textwidget">
+                  <div class="widgettitle widget-footer-title">
+                    <h4 style="font-family: 'Rubik' !important; font-size: 22px !important; font-weight: 500 !important; line-height: 30px !important; margin-bottom: 20px !important;">Valoraciones</h4>
+                    <p>
+                      <a href="https://www.booking.com/hotel/es/casa-rural-tio-jose-maria.es.html" target="_blank" rel="noopener">
+                        <img loading="lazy" class="alignnone size-full wp-image-2037" src="https://www.tiojosemaria.com/wp-content/uploads/2019/02/bokkintiojosemaria.png" alt="" width="150" height="auto" />
+                      </a>
+                      <a href="https://www.airbnb.es/users/show/55269019">
+                        <img loading="lazy" class="alignnone size-full wp-image-2926" src="https://www.tiojosemaria.com/wp-content/uploads/2019/02/Superhosttiojosemaria.png" alt="" width="148" height="37" />
+                      </a>
+                      <br />
+                      <img loading="lazy" class="alignnone size-full wp-image-2927" src="https://www.tiojosemaria.com/wp-content/uploads/2019/02/googlereseñastiojosemaria.png" alt="" width="162" height="29" />
+                    </p>
+                    <p>
+                      <img loading="lazy" class="size-full wp-image-2033 alignleft" src="https://www.tiojosemaria.com/wp-content/uploads/2018/12/ruraljos.png" alt="" width="60" height="auto" />
+                    </p>
+                    <p>
+                      <a href="https://www.booking.com/hotel/es/casa-rural-tio-jose-maria.es.html" target="_blank" rel="noopener">
+                        <img loading="lazy" class="size-full wp-image-2034 alignleft" src="https://www.tiojosemaria.com/wp-content/uploads/2018/12/bookinjot.png" alt="" width="60" height="auto" />
+                      </a>
+                    </p>
+                    <p>
+                      <a href="https://www.airbnb.es/rooms/10697310?guests=1&amp;adults=1" target="_blank" rel="noopener">
+                        <img loading="lazy" class="size-full wp-image-2036 alignleft" src="https://www.tiojosemaria.com/wp-content/uploads/2018/12/airbnbjosemaria.png" alt="" width="60" height="auto" />
+                      </a>
+                    </p>
+                    <p>
+                      <a href="https://www.tripadvisor.es/VacationRentalReview-g1953910-d5885042-Apartamentos_Tio_Jose_Maria_Apartamento_Albahaca_2_pax-Hinojares_Province_of_Jaen_And.html" target="_blank" rel="noopener">
+                        <img loading="lazy" class="size-full wp-image-2035 alignleft" src="https://www.tiojosemaria.com/wp-content/uploads/2018/12/tripjpose.png" alt="" width="60" height="auto" />
+                      </a>
+                    </p>
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </div>
+          <div class="stm-footer__bottom">
+            <div class="stm_markup stm_markup_right stm_markup_50">
+              <div itemscope itemtype="http://schema.org/Organization" class="stm_markup__content stm_mf stm_bottom_copyright ">
+                <span>Copyright &copy;</span>
+                <span>2026</span>
+                <span itemprop="copyrightHolder">Casa Rural "Tío José María". Desarrollado por <a target="_blank" href="https://www.clearis.es/">Clearis</a>. </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
+      <!-- #colophon -->
+    </div>
+    <!-- #page -->
+    <!--Site global modals-->
+    <div class="modal fade" id="searchModal" tabindex="-1" role="dialog" aria-labelledby="searchModal">
+      <div class="vertical-alignment-helper">
+        <div class="modal-dialog vertical-align-center" role="document">
+          <div class="modal-content">
+            <div class="modal-body">
+              <form method="get" id="searchform" action="https://www.tiojosemaria.com/">
+                <div class="search-wrapper">
+                  <input placeholder="Start typing here..." type="text" class="form-control search-input" value="" name="s" id="s" />
+                  <button type="submit" class="search-submit">
+                    <i class="fa fa-search mtc"></i>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="hotel_arrow_top">
+      <div class="arrow"></div>
+    </div>
+    <!--googleoff: all-->
+    <div id="cookie-law-info-bar" data-nosnippet="true">
+      <span>
+        <div class="cli-bar-container cli-style-v2">
+          <div class="cli-bar-message">Empleamos cookies para personalizar y mejorar nuestros contenidos y servicios, mostrar anuncios relevantes y ofrecer una experiencia segura. Puedes revisar los controles de cookies cuando quieras. <a href="https://www.tiojosemaria.com/politica-de-cookies/" target="_blank" style="color:blue !important">Consulta nuestra Política de cookies</a> para obtener más información sobre el uso y los controles de cookies. </div>
+          <div class="cli-bar-btn_container">
+            <a role='button' class="cli_settings_button" style="margin:0px 10px 0px 5px">Configuración de Cookies</a>
+            <a role='button' data-cli_action="accept" id="cookie_action_close_header" class="medium cli-plugin-button cli-plugin-main-button cookie_action_close_header cli_action_button wt-cli-accept-btn" style="display:inline-block">Aceptar</a>
+          </div>
+        </div>
+      </span>
+    </div>
+    <div id="cookie-law-info-again" style="display:none" data-nosnippet="true">
+      <span id="cookie_hdr_showagain">Privacy &amp; Cookies Policy</span>
+    </div>
+    <div class="cli-modal" data-nosnippet="true" id="cliSettingsPopup" tabindex="-1" role="dialog" aria-labelledby="cliSettingsPopup" aria-hidden="true">
+      <div class="cli-modal-dialog" role="document">
+        <div class="cli-modal-content cli-bar-popup">
+          <button type="button" class="cli-modal-close" id="cliModalClose">
+            <svg class="" viewBox="0 0 24 24">
+              <path d="M19 6.41l-1.41-1.41-5.59 5.59-5.59-5.59-1.41 1.41 5.59 5.59-5.59 5.59 1.41 1.41 5.59-5.59 5.59 5.59 1.41-1.41-5.59-5.59z"></path>
+              <path d="M0 0h24v24h-24z" fill="none"></path>
+            </svg>
+            <span class="wt-cli-sr-only">Cerrar</span>
+          </button>
+          <div class="cli-modal-body">
+            <div class="cli-container-fluid cli-tab-container">
+              <div class="cli-row">
+                <div class="cli-col-12 cli-align-items-stretch cli-px-0">
+                  <div class="cli-privacy-overview">
+                    <h4>Resumen de Privacidad</h4>
+                    <div class="cli-privacy-content">
+                      <div class="cli-privacy-content-text">Este sitio web utiliza cookies para mejorar su experiencia mientras navega por el sitio web. De estas, las cookies que se clasifican como necesarias se almacenan en su navegador, ya que son esenciales para el funcionamiento de las funcionalidades básicas del sitio web. También utilizamos cookies de terceros que nos ayudan a analizar y comprender cómo utiliza este sitio web. Estas cookies se almacenarán en su navegador solo con su consentimiento. También tiene la opción de optar por no recibir estas cookies. Pero la exclusión voluntaria de algunas de estas cookies puede afectar su experiencia de navegación.</div>
+                    </div>
+                    <a class="cli-privacy-readmore" aria-label="Mostrar más" role="button" data-readmore-text="Mostrar más" data-readless-text="Mostrar menos"></a>
+                  </div>
+                </div>
+                <div class="cli-col-12 cli-align-items-stretch cli-px-0 cli-tab-section-container">
+                  <div class="cli-tab-section">
+                    <div class="cli-tab-header">
+                      <a role="button" tabindex="0" class="cli-nav-link cli-settings-mobile" data-target="necessary" data-toggle="cli-toggle-tab"> Necessary </a>
+                      <div class="wt-cli-necessary-checkbox">
+                        <input type="checkbox" class="cli-user-preference-checkbox" id="wt-cli-checkbox-necessary" data-id="checkbox-necessary" checked="checked" />
+                        <label class="form-check-label" for="wt-cli-checkbox-necessary">Necessary</label>
+                      </div>
+                      <span class="cli-necessary-caption">Siempre activado</span>
+                    </div>
+                    <div class="cli-tab-content">
+                      <div class="cli-tab-pane cli-fade" data-id="necessary">
+                        <div class="wt-cli-cookie-description"> Necessary cookies are absolutely essential for the website to function properly. This category only includes cookies that ensures basic functionalities and security features of the website. These cookies do not store any personal information. </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="cli-tab-section">
+                    <div class="cli-tab-header">
+                      <a role="button" tabindex="0" class="cli-nav-link cli-settings-mobile" data-target="non-necessary" data-toggle="cli-toggle-tab"> No Necesarias </a>
+                      <div class="cli-switch">
+                        <input type="checkbox" id="wt-cli-checkbox-non-necessary" class="cli-user-preference-checkbox" data-id="checkbox-non-necessary" checked='checked' />
+                        <label for="wt-cli-checkbox-non-necessary" class="cli-slider" data-cli-enable="Activado" data-cli-disable="Desactivado">
+                          <span class="wt-cli-sr-only">No Necesarias</span>
+                        </label>
+                      </div>
+                    </div>
+                    <div class="cli-tab-content">
+                      <div class="cli-tab-pane cli-fade" data-id="non-necessary">
+                        <div class="wt-cli-cookie-description"> Las cookies que pueden no ser particularmente necesarias para el funcionamiento del sitio web y que se utilizan específicamente para recopilar datos personales del usuario a través de análisis, anuncios y otros contenidos integrados se denominan cookies no necesarias. Es obligatorio obtener el consentimiento del usuario antes de ejecutar estas cookies en su sitio web. </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="cli-modal-footer">
+            <div class="wt-cli-element cli-container-fluid cli-tab-container">
+              <div class="cli-row">
+                <div class="cli-col-12 cli-align-items-stretch cli-px-0">
+                  <div class="cli-tab-footer wt-cli-privacy-overview-actions">
+                    <a id="wt-cli-privacy-save-btn" role="button" tabindex="0" data-cli-action="accept" class="wt-cli-privacy-btn cli_setting_save_button wt-cli-privacy-accept-btn cli-btn">GUARDAR Y ACEPTAR</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="cli-modal-backdrop cli-fade cli-settings-overlay"></div>
+    <div class="cli-modal-backdrop cli-fade cli-popupbar-overlay"></div>
+    <!--googleon: all-->
+    <!-- Instagram Feed JS -->
+    <script type="text/javascript">
+      var sbiajaxurl = "https://www.tiojosemaria.com/wp-admin/admin-ajax.php";
+    </script>
+    <script type="text/javascript">
+      function revslider_showDoubleJqueryError(sliderID) {
+        var errorMessage = "Revolution Slider Error: You have some jquery.js library include that comes after the revolution files js include.";
+        errorMessage += " < br > This includes make eliminates the revolution slider libraries, and make it not work.
+        ";
+        errorMessage += " < br > < br > To fix it you can: < br > & nbsp; & nbsp; & nbsp;
+        1. In the Slider Settings - > Troubleshooting set option: < strong > < b > Put JS Includes To Body < /b> < /strong> option to true.";
+        errorMessage += " < br > & nbsp; & nbsp; & nbsp;
+        2. Find the double jquery.js include and remove it.
+        ";
+        errorMessage = " < span style = 'font-size:16px;color:#BC0C06;' > " + errorMessage + " < /span>";
+        jQuery(sliderID).show().html(errorMessage);
+      }
+    </script>
+    <link rel='stylesheet' id='hotello-row_style_1-css' href='https://www.tiojosemaria.com/wp-content/themes/hotello/public/css/vc_elements/row/style_1.css?ver=1.2.4' type='text/css' media='all' />
+    <link rel='stylesheet' id='vc_google_fonts_la_belle_auroreregular-css' href='//fonts.googleapis.com/css?family=La+Belle+Aurore%3Aregular&#038;ver=5.9.12' type='text/css' media='all' />
+    <link rel='stylesheet' id='vc_tta_style-css' href='https://www.tiojosemaria.com/wp-content/plugins/js_composer/assets/css/js_composer_tta.min.css?ver=5.6' type='text/css' media='all' />
+    <script type='text/javascript' id='hotello-app-js-extra'>
+      /* 
+																			<![CDATA[ */
+      var stm_hotelier_translations = {
+        "check_availability": "Check availability",
+        "book_now": "Book now",
+        "room_available": "Room is available",
+        "room_not_available": "Room is not available",
+        "deposit_required": "Deposit required: "
+      };
+      /* ]]> */
+    </script>
+    <script type='text/javascript' src='https://www.tiojosemaria.com/wp-content/themes/hotello/public/js/app.js?ver=1.2.4' id='hotello-app-js'></script>
+    <script type='text/javascript' src='https://www.tiojosemaria.com/wp-content/themes/hotello/public/vendors/bootstrap.js?ver=1.2.4' id='hotel_bootstrap-js'></script>
+    <script type='text/javascript' src='https://www.tiojosemaria.com/wp-content/plugins/wp-hotelier/assets/js/lib/fecha/fecha.min.js?ver=4.2.1' id='fecha-js'></script>
+    <script type='text/javascript' src='https://www.tiojosemaria.com/wp-content/plugins/wp-hotelier/assets/js/lib/hotel-datepicker/hotel-datepicker.min.js?ver=4.7.4' id='hotel-datepicker-js'></script>
+    <script type='text/javascript' id='hotelier-init-datepicker-js-extra'>
+      /* 
+																			<![CDATA[ */
+      var datepicker_params = {
+        "ajax_url": "\/wp-admin\/admin-ajax.php",
+        "htl_ajax_url": "\/?htl-ajax=get_checkin_dates",
+        "start_of_week": "monday",
+        "start_date": "2026-02-25",
+        "end_date": "",
+        "move_both_months": "",
+        "autoclose": "",
+        "min_nights": "1",
+        "max_nights": "0",
+        "datepicker_format": "D MMM YYYY",
+        "disabled_dates": [],
+        "enable_checkout": "1",
+        "disabled_days_of_week": [],
+        "no_checkin_week_days": [],
+        "no_checkout_week_days": [],
+        "inline": "",
+        "topbar_position": "top",
+        "submit_button_name": "hotelier_datepicker_button",
+        "i18n": {
+          "selected": "Your stay:",
+          "night": "Night",
+          "nights": "Nights",
+          "button": "Close",
+          "clearButton": "Clear",
+          "submitButton": "Check",
+          "checkin-disabled": "Check-in disabled",
+          "checkout-disabled": "Check-out disabled",
+          "day-names": ["domingo", "lunes", "martes", "mi\u00e9rcoles", "jueves", "viernes", "s\u00e1bado"],
+          "day-names-short": ["Dom", "Lun", "Mar", "Mi\u00e9", "Jue", "Vie", "S\u00e1b"],
+          "month-names": ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
+          "month-names-short": ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
+          "error-more": "Date range should not be more than 1 night",
+          "error-more-plural": "Date range should not be more than %d nights",
+          "error-less": "Date range should not be less than 1 night",
+          "error-less-plural": "Date range should not be less than %d nights",
+          "info-more": "Please select a date range longer than 1 night",
+          "info-more-plural": "Please select a date range longer than %d nights",
+          "info-range": "Please select a date range between %d and %d nights",
+          "info-range-equal": "Please select a date range of %d nights",
+          "info-default": "Please select a date range",
+          "aria-application": "Calendar",
+          "aria-selected-checkin": "Selected as check-in date, %s",
+          "aria-selected-checkout": "Selected as check-out date, %s",
+          "aria-selected": "Selected, %s",
+          "aria-disabled": "Not available, %s",
+          "aria-choose-checkin": "Choose %s as your check-in date",
+          "aria-choose-checkout": "Choose %s as your check-out date",
+          "aria-prev-month": "Move backward to switch to the previous month",
+          "aria-next-month": "Move forward to switch to the next month",
+          "aria-close-button": "Close the datepicker",
+          "aria-clear-button": "Clear the selected dates",
+          "aria-submit-button": "Submit the form"
+        }
+      };
+      /* ]]> */
+    </script>
+    <script type='text/javascript' src='https://www.tiojosemaria.com/wp-content/themes/hotello/public/js/vc_modules/wp_hotelier_form/datepicker.js?ver=1.2.4' id='hotelier-init-datepicker-js'></script>
+    <script type='text/javascript' id='hotelier-js-js-extra'>
+      /* 
+																			<![CDATA[ */
+      var hotelier_params = {
+        "expand_rates": "0",
+        "book_now_redirect_to_booking_page": "0",
+        "book_now_allow_quantity_selection": "0",
+        "apply_coupon_nonce": "4fd54514aa",
+        "apply_coupon_i18n": {
+          "empty_coupon": "Please insert a valid coupon code."
+        },
+        "ajax_url": "\/wp-admin\/admin-ajax.php",
+        "enable_debug": ""
+      };
+      /* ]]> */
+    </script>
+    <script type='text/javascript' src='https://www.tiojosemaria.com/wp-content/plugins/wp-hotelier/assets/js/frontend/hotelier.min.js?ver=2.18.2' id='hotelier-js-js'></script>
+    <script type='text/javascript' src='https://www.tiojosemaria.com/wp-content/themes/hotello/inc/admin/theme_options/sticky_header/assets/sticky.js?ver=1.1' id='sticky-script-js'></script>
+    <script type='text/javascript' src='https://www.tiojosemaria.com/wp-content/plugins/js_composer/assets/js/dist/js_composer_front.min.js?ver=5.6' id='wpb_composer_front_js-js'></script>
+    <script type='text/javascript' src='https://www.tiojosemaria.com/wp-content/plugins/js_composer/assets/lib/vc_accordion/vc-accordion.min.js?ver=5.6' id='vc_accordion_script-js'></script>
+    <script type='text/javascript' src='https://www.tiojosemaria.com/wp-content/plugins/js_composer/assets/lib/vc-tta-autoplay/vc-tta-autoplay.min.js?ver=5.6' id='vc_tta_autoplay_script-js'></script>
+    <script type='text/javascript' src='https://www.tiojosemaria.com/wp-content/plugins/js_composer/assets/lib/vc_tabs/vc-tabs.min.js?ver=5.6' id='vc_tabs_script-js'></script>
+    <script type='text/javascript' id='gt_widget_script_81757737-js-before'>
+      window.gtranslateSettings = /* document.write */ window.gtranslateSettings || {};
+      window.gtranslateSettings['81757737'] = {
+        "default_language": "es",
+        "languages": ["es", "en", "fr", "pt", "de", "ar", "zh-CN", "ja"],
+        "url_structure": "none",
+        "flag_style": "2d",
+        "flag_size": 24,
+        "wrapper_selector": "#gt-wrapper-81757737",
+        "alt_flags": [],
+        "horizontal_position": "inline",
+        "flags_location": "\/wp-content\/plugins\/gtranslate\/flags\/"
+      };
+    </script>
+    <script src="https://www.tiojosemaria.com/wp-content/plugins/gtranslate/js/flags.js?ver=5.9.12" data-no-optimize="1" data-no-minify="1" data-gt-orig-url="/" data-gt-orig-domain="www.tiojosemaria.com" data-gt-widget-id="81757737" defer></script>
+    <script type="text/javascript">
+      jQuery(document).ready(function($) {
+            for (let i = 0; i < document.forms.length; ++i) {
+              let form = document.forms[i];
+              if ($(form).attr("method") != "get") {
+                $(form).append(' < input type = "hidden"
+                    name = "kGZVA-Ed"
+                    value = "E6[_Ko9rSA3t" / > '); }
+                    if ($(form).attr("method") != "get") {
+                      $(form).append(' < input type = "hidden"
+                          name = "rNgXCvQcbyU"
+                          value = "e9P1HMfEo" / > '); }
+                          if ($(form).attr("method") != "get") {
+                            $(form).append(' < input type = "hidden"
+                                name = "fhMOcjUXT"
+                                value = "CVFbftdQP02s" / > '); }
+                                if ($(form).attr("method") != "get") {
+                                  $(form).append(' < input type = "hidden"
+                                    name = "rjoOtp"
+                                    value = "1uVNoyid" / > '); }
+                                  }
+                                  $(document).on('submit', 'form', function() {
+                                        if ($(this).attr("method") != "get") {
+                                          $(this).append(' < input type = "hidden"
+                                              name = "kGZVA-Ed"
+                                              value = "E6[_Ko9rSA3t" / > '); }
+                                              if ($(this).attr("method") != "get") {
+                                                $(this).append(' < input type = "hidden"
+                                                    name = "rNgXCvQcbyU"
+                                                    value = "e9P1HMfEo" / > '); }
+                                                    if ($(this).attr("method") != "get") {
+                                                      $(this).append(' < input type = "hidden"
+                                                        name = "fhMOcjUXT"
+                                                        value = "CVFbftdQP02s" / > '); }
+                                                        if ($(this).attr("method") != "get") {
+                                                          $(this).append(' < input type = "hidden"
+                                                            name = "rjoOtp"
+                                                            value = "1uVNoyid" / > '); }
+                                                            return true;
+                                                          }); jQuery.ajaxSetup({
+                                                          beforeSend: function(e, data) {
+                                                            if (data.type !== 'POST') return;
+                                                            if (typeof data.data === 'object' && data.data !== null) {
+                                                              data.data.append("kGZVA-Ed", "E6[_Ko9rSA3t");
+                                                              data.data.append("rNgXCvQcbyU", "e9P1HMfEo");
+                                                              data.data.append("fhMOcjUXT", "CVFbftdQP02s");
+                                                              data.data.append("rjoOtp", "1uVNoyid");
+                                                            } else {
+                                                              data.data = data.data + '&kGZVA-Ed=E6[_Ko9rSA3t&rNgXCvQcbyU=e9P1HMfEo&fhMOcjUXT=CVFbftdQP02s&rjoOtp=1uVNoyid';
+                                                            }
+                                                          }
+                                                        });
+                                                      });
+    </script>
+  </body>
+</html>

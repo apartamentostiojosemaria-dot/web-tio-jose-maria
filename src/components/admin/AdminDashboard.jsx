@@ -1,0 +1,110 @@
+import React, { useState } from 'react';
+import { supabase } from '../../lib/supabase';
+import { COLORS } from '../../App';
+import { LayoutDashboard, Home, Map, FileText, Settings, LogOut } from 'lucide-react';
+import ApartmentsManager from './ApartmentsManager';
+import WebConfigManager from './WebConfigManager';
+import LocalPlacesManager from './LocalPlacesManager';
+import DocumentsManager from './DocumentsManager';
+
+const AdminDashboard = () => {
+    const [activeTab, setActiveTab] = useState('dashboard');
+
+    return (
+        <div className="min-h-screen bg-gray-50 flex">
+            {/* Sidebar */}
+            <aside className="w-64 bg-white border-r border-gray-100 flex flex-col">
+                <div className="p-8 border-b border-gray-50">
+                    <h2 className="font-serif text-xl font-bold" style={{ color: COLORS.text }}>Tío José María</h2>
+                    <p className="text-[10px] uppercase font-bold tracking-widest opacity-40">Administración</p>
+                </div>
+
+                <nav className="flex-grow p-4 space-y-2">
+                    <SidebarLink
+                        icon={<LayoutDashboard size={18} />}
+                        label="Dashboard"
+                        active={activeTab === 'dashboard'}
+                        onClick={() => setActiveTab('dashboard')}
+                    />
+                    <SidebarLink
+                        icon={<Home size={18} />}
+                        label="Apartamentos"
+                        active={activeTab === 'apartamentos'}
+                        onClick={() => setActiveTab('apartamentos')}
+                    />
+                    <SidebarLink
+                        icon={<Map size={18} />}
+                        label="Rutas y Entorno"
+                        active={activeTab === 'entorno'}
+                        onClick={() => setActiveTab('entorno')}
+                    />
+                    <SidebarLink
+                        icon={<FileText size={18} />}
+                        label="Documentos"
+                        active={activeTab === 'documentos'}
+                        onClick={() => setActiveTab('documentos')}
+                    />
+                    <SidebarLink
+                        icon={<Settings size={18} />}
+                        label="Configuración"
+                        active={activeTab === 'configuracion'}
+                        onClick={() => setActiveTab('configuracion')}
+                    />
+                </nav>
+
+                <div className="p-4 border-t border-gray-50">
+                    <button
+                        onClick={() => supabase.auth.signOut()}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl transition-colors text-sm font-bold"
+                    >
+                        <LogOut size={18} />
+                        Cerrar Sesión
+                    </button>
+                </div>
+            </aside>
+
+            {/* Main Content */}
+            <main className="flex-grow p-10 h-screen overflow-y-auto">
+                {activeTab === 'dashboard' && (
+                    <>
+                        <header className="mb-10">
+                            <h1 className="text-3xl font-serif font-bold" style={{ color: COLORS.text }}>Bienvenido al Panel de Control</h1>
+                            <p className="text-gray-500">¿Qué quieres gestionar hoy?</p>
+                        </header>
+
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <StatCard label="Apartamentos Activos" value="4" />
+                            <StatCard label="Rutas Publicadas" value="0" />
+                            <StatCard label="Documentos" value="2" />
+                        </div>
+                    </>
+                )}
+
+                {activeTab === 'apartamentos' && <ApartmentsManager />}
+                {activeTab === 'entorno' && <LocalPlacesManager />}
+                {activeTab === 'documentos' && <DocumentsManager />}
+                {activeTab === 'configuracion' && <WebConfigManager />}
+            </main>
+        </div>
+    );
+};
+
+const SidebarLink = ({ icon, label, active = false, onClick }) => (
+    <button
+        onClick={onClick}
+        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-bold ${active ? 'bg-rural-100' : 'hover:bg-gray-50 opacity-60 hover:opacity-100'}`}
+        style={active ? { backgroundColor: COLORS.bgWarm, color: COLORS.primary } : {}}
+    >
+        {icon}
+        {label}
+    </button>
+);
+
+const StatCard = ({ label, value }) => (
+    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+        <p className="text-xs uppercase tracking-widest font-bold opacity-40 mb-2">{label}</p>
+        <p className="text-4xl font-serif font-bold" style={{ color: COLORS.primary }}>{value}</p>
+    </div>
+);
+
+export default AdminDashboard;
