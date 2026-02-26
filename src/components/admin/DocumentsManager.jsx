@@ -61,7 +61,7 @@ const DocumentsManager = () => {
                                 {doc.is_public ? 'Público' : 'Solo Clientes'}
                             </button>
                             <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="p-2 text-gray-300 hover:text-blue-500"><Download size={18} /></a>
-                            <button className="p-2 text-gray-300 hover:text-red-500"><Trash2 size={18} /></button>
+                            <button onClick={async () => { if (window.confirm('¿Eliminar este documento?')) { await supabase.from('documents').delete().eq('id', doc.id); fetchDocs(); } }} className="p-2 text-gray-300 hover:text-red-500"><Trash2 size={18} /></button>
                         </div>
                     </div>
                 ))}

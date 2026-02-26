@@ -22,9 +22,12 @@ const AvailabilityManager = () => {
 
     useEffect(() => {
         if (selectedApt) {
+            // Limpiar estado al cambiar de apartamento
+            setBlockedDates([]);
+            setSelection({ start: null, end: null });
             fetchBlockedDates(selectedApt.id);
         }
-    }, [selectedApt]);
+    }, [selectedApt?.id]);
 
     async function fetchApartments() {
         const { data } = await supabase.from('apartments').select('*').order('name');
