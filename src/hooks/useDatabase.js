@@ -154,6 +154,37 @@ export function useGuestGuides() {
     return { guides, loading };
 }
 
+export function useGuestBookings(profileId) {
+    const [bookings, setBookings] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (!profileId) return;
+        const fetchBookings = async () => {
+            setLoading(true);
+            const { data } = await supabase
+                .from('guest_bookings')
+                .select('*')
+                .eq('profile_id', profileId)
+                .order('check_in', { ascending: false });
+            if (data) setBookings(data);
+            setLoading(false);
+        };
+        fetchBookings();
+
+        const subscription = supabase
+            .channel(`guest_bookings_${profileId}`)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'guest_bookings', filter: `profile_id=eq.${profileId}` }, fetchBookings)
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(subscription);
+        };
+    }, [profileId]);
+
+    return { bookings, loading };
+}
+
 export function useBlockedDates(apartmentId) {
     const [blockedDates, setBlockedDates] = useState([]);
     const [loading, setLoading] = useState(true);
