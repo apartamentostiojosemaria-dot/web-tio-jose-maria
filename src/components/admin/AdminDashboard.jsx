@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { COLORS } from '../../App';
 import ApartmentsManager from './ApartmentsManager';
@@ -10,6 +10,23 @@ import { LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar } from
 
 const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
+    const [stats, setStats] = useState({ apartments: 0, routes: 0, documents: 0 });
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            const [apts, routes, docs] = await Promise.all([
+                supabase.from('apartments').select('id', { count: 'exact', head: true }),
+                supabase.from('routes').select('id', { count: 'exact', head: true }),
+                supabase.from('documents').select('id', { count: 'exact', head: true })
+            ]);
+            setStats({
+                apartments: apts.count || 0,
+                routes: routes.count || 0,
+                documents: docs.count || 0
+            });
+        };
+        fetchStats();
+    }, []);
 
     return (
         <div className="min-h-screen bg-gray-50 flex">
@@ -80,9 +97,9 @@ const AdminDashboard = () => {
                         </header>
 
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <StatCard label="Apartamentos Activos" value="4" />
-                            <StatCard label="Rutas Publicadas" value="0" />
-                            <StatCard label="Documentos" value="2" />
+                            <StatCard label="Apartamentos Activos" value={stats.apartments} />
+                            <StatCard label="Rutas Publicadas" value={stats.routes} />
+                            <StatCard label="Documentos" value={stats.documents} />
                         </div>
                     </>
                 )}
