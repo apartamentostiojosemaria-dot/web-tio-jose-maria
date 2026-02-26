@@ -112,6 +112,22 @@ export function useRoutes() {
     return { routes, loading };
 }
 
+export function useHighSeasons() {
+    const [seasons, setSeasons] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchSeasons = async () => {
+            const { data } = await supabase.from('high_seasons').select('*').order('start_date', { ascending: true });
+            if (data) setSeasons(data);
+            setLoading(false);
+        };
+        fetchSeasons();
+    }, []);
+
+    return { seasons, loading };
+}
+
 export function useBlockedDates(apartmentId) {
     const [blockedDates, setBlockedDates] = useState([]);
     const [loading, setLoading] = useState(true);

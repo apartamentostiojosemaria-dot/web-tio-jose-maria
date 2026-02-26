@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useApartment, useBlockedDates } from '../hooks/useDatabase';
+import { useApartment, useBlockedDates, useHighSeasons } from '../hooks/useDatabase';
 import { syncApartmentDates } from '../utils/syncService';
 import { COLORS } from '../App';
 import {
@@ -28,9 +28,10 @@ const AMENITIES_ICONS = {
 
 const AvailabilityCalendar = ({ apartmentId }) => {
     const { blockedDates, loading } = useBlockedDates(apartmentId);
+    const { seasons, loading: loadingSeasons } = useHighSeasons();
     const [currentMonth, setCurrentMonth] = useState(new Date());
 
-    if (loading) return <div className="p-8 text-center animate-pulse text-rural-400">Cargando disponibilidad...</div>;
+    if (loading || loadingSeasons) return <div className="p-8 text-center animate-pulse text-rural-400">Cargando disponibilidad...</div>;
 
     const getDaysInMonth = (date) => {
         const year = date.getFullYear();
@@ -45,6 +46,19 @@ const AvailabilityCalendar = ({ apartmentId }) => {
         checkDate.setHours(0, 0, 0, 0);
 
         return blockedDates.some(range => {
+            const start = new Date(range.start_date);
+            const end = new Date(range.end_date);
+            start.setHours(0, 0, 0, 0);
+            end.setHours(23, 59, 59, 999);
+            return checkDate >= start && checkDate <= end;
+        });
+    };
+
+    const isHighSeason = (day) => {
+        const checkDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+        checkDate.setHours(0, 0, 0, 0);
+
+        return seasons.some(range => {
             const start = new Date(range.start_date);
             const end = new Date(range.end_date);
             start.setHours(0, 0, 0, 0);
@@ -81,13 +95,17 @@ const AvailabilityCalendar = ({ apartmentId }) => {
                 {Array.from({ length: days }).map((_, i) => {
                     const day = i + 1;
                     const blocked = isDateBlocked(day);
+                    const high = isHighSeason(day);
                     return (
                         <div
                             key={day}
                             className={`aspect-square flex items-center justify-center text-sm font-bold rounded-xl transition-all ${blocked
                                 ? 'bg-red-50 text-red-300 line-through decoration-red-200'
-                                : 'bg-white text-rural-700 hover:bg-rural-100 cursor-default'
+                                : high
+                                    ? 'bg-amber-100 text-amber-900 border border-amber-200'
+                                    : 'bg-white text-rural-700 hover:bg-rural-100 cursor-default'
                                 }`}
+                            title={high ? 'Temporada Alta' : ''}
                         >
                             {day}
                         </div>
@@ -95,9 +113,10 @@ const AvailabilityCalendar = ({ apartmentId }) => {
                 })}
             </div>
 
-            <div className="mt-6 flex gap-4 text-[10px] font-bold uppercase tracking-widest justify-center">
+            <div className="mt-6 flex flex-wrap gap-4 text-[10px] font-bold uppercase tracking-widest justify-center">
                 <div className="flex items-center gap-2"><div className="w-3 h-3 bg-white border border-gray-100 rounded-sm" /> Libre</div>
                 <div className="flex items-center gap-2"><div className="w-3 h-3 bg-red-50 rounded-sm" /> Ocupado</div>
+                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-amber-100 border border-amber-200 rounded-sm" /> Temp. Alta</div>
             </div>
         </div>
     );

@@ -6,7 +6,8 @@ import WebConfigManager from './WebConfigManager';
 import LocalPlacesManager from './LocalPlacesManager';
 import DocumentsManager from './DocumentsManager';
 import AvailabilityManager from './AvailabilityManager';
-import { LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar } from 'lucide-react';
+import SeasonsManager from './SeasonsManager';
+import { LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar, Star } from 'lucide-react';
 
 const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -63,6 +64,12 @@ const AdminDashboard = () => {
                         onClick={() => setActiveTab('disponibilidad')}
                     />
                     <SidebarLink
+                        icon={<Star size={18} />}
+                        label="Temporadas"
+                        active={activeTab === 'temporadas'}
+                        onClick={() => setActiveTab('temporadas')}
+                    />
+                    <SidebarLink
                         icon={<FileText size={18} />}
                         label="Documentos"
                         active={activeTab === 'documentos'}
@@ -106,6 +113,7 @@ const AdminDashboard = () => {
 
                 {activeTab === 'apartamentos' && <ApartmentsManager />}
                 {activeTab === 'disponibilidad' && <AvailabilityManager />}
+                {activeTab === 'temporadas' && <SeasonsManager />}
                 {activeTab === 'entorno' && <LocalPlacesManager />}
                 {activeTab === 'documentos' && <DocumentsManager />}
                 {activeTab === 'configuracion' && <WebConfigManager />}
