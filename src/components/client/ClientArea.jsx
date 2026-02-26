@@ -15,10 +15,17 @@ const ClientArea = () => {
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
 
+    const [profile, setProfile] = useState(null);
+
     useEffect(() => {
         const getData = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             setUser(user);
+
+            if (user) {
+                const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+                if (profileData) setProfile(profileData);
+            }
 
             const { data } = await supabase.from('documents').select('*').order('created_at', { ascending: false });
             if (data) setDocs(data);

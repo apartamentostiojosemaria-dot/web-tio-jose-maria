@@ -7,8 +7,9 @@ import DocumentsManager from './DocumentsManager';
 import AvailabilityManager from './AvailabilityManager';
 import SeasonsManager from './SeasonsManager';
 import GuestGuidesManager from './GuestGuidesManager';
+import GuestUserManager from './GuestUserManager';
 import { ClientAreaContent } from '../client/ClientArea';
-import { LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar, Star, Eye } from 'lucide-react';
+import { LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar, Star, Eye, Users } from 'lucide-react';
 
 const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
