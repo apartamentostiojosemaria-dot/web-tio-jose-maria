@@ -17,6 +17,10 @@ const ApartmentsManager = () => {
     async function fetchApartments() {
         setLoading(true);
         const { data, error } = await supabase.from('apartments').select('*').order('id');
+        if (error) {
+            console.error('Error fetching apartments:', error);
+            alert('Error al cargar apartamentos: ' + error.message);
+        }
         if (data) setApartments(data);
         setLoading(false);
     }
