@@ -7,15 +7,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     FileText, Download, LogOut, User, MapPin,
     Calendar, ExternalLink, Map, Utensils,
-    Tent, Mountain, ChefHat, Info, ChevronRight
+    Calendar, ExternalLink, Map, Utensils,
+    Tent, Mountain, ChefHat, Info, ChevronRight,
+    ShieldAlert, LogOut
 } from 'lucide-react';
 
 const ClientArea = () => {
     const [docs, setDocs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
-
     const [profile, setProfile] = useState(null);
+    const [accessDenied, setAccessDenied] = useState(false);
 
     useEffect(() => {
         const getData = async () => {
@@ -24,7 +26,43 @@ const ClientArea = () => {
 
             if (user) {
                 const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-                if (profileData) setProfile(profileData);
+                if (profileData) {
+                    setProfile(profileData);
+
+                    // VALIDACIÓN DE ACCESO
+                    if (profileData.is_active === false) {
+                        setAccessDenied(true);
+                        setLoading(false);
+                        return;
+                    }
+
+                    if (profileData.access_mode !== 'always' && profileData.check_in) {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const checkIn = new Date(profileData.check_in);
+                        const checkOut = new Date(profileData.check_out);
+
+                        // Si es stay_only, bloqueamos si no es hoy
+                        if (profileData.access_mode === 'stay_only') {
+                            if (today < checkIn || today > checkOut) {
+                                setAccessDenied(true);
+                                setLoading(false);
+                                return;
+                            }
+                        }
+
+                        // Si es stay_plus_7, bloqueamos si han pasado más de 7 días
+                        if (profileData.access_mode === 'stay_plus_7') {
+                            const gracePeriod = new Date(checkOut);
+                            gracePeriod.setDate(gracePeriod.getDate() + 7);
+                            if (today < checkIn || today > gracePeriod) {
+                                setAccessDenied(true);
+                                setLoading(false);
+                                return;
+                            }
+                        }
+                    }
+                }
             }
 
             const { data } = await supabase.from('documents').select('*').order('created_at', { ascending: false });
@@ -37,6 +75,8 @@ const ClientArea = () => {
     const handleLogout = () => supabase.auth.signOut();
 
     if (loading) return <div className="min-h-screen flex items-center justify-center bg-rural-50 font-serif italic text-gray-400">Cargando tu área personal...</div>;
+
+    if (accessDenied) return <AccessDeniedView onLogout={handleLogout} profile={profile} />;
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
@@ -59,13 +99,37 @@ const ClientArea = () => {
             </header>
 
             <main className="max-w-5xl mx-auto px-6 py-10">
-                <ClientAreaContent docs={docs} userEmail={user?.email} />
+                <ClientAreaContent docs={docs} userEmail={user?.email} profile={profile} />
             </main>
         </div>
     );
 };
 
-export const ClientAreaContent = ({ docs = [], userEmail = 'invitado@ejemplo.com' }) => {
+const AccessDeniedView = ({ onLogout, profile }) => (
+    <div className="min-h-screen bg-rural-50 flex items-center justify-center px-6">
+        <div className="max-w-md w-full bg-white rounded-[40px] p-10 shadow-2xl border border-rural-100 text-center">
+            <div className="w-20 h-20 bg-red-50 text-red-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
+                <ShieldAlert size={40} />
+            </div>
+            <h2 className="text-2xl font-serif font-bold mb-4" style={{ color: COLORS.text }}>Acceso Restringido</h2>
+            <p className="text-gray-500 mb-8 text-sm leading-relaxed">
+                {profile?.is_active === false
+                    ? "Lo sentimos, tu cuenta ha sido desactivada por el administrador. Contacta con nosotros si crees que esto es un error."
+                    : "Tu acceso solo está permitido durante las fechas de tu reserva (y el tiempo de cortesía si aplica). ¡Te esperamos pronto por aquí!"}
+            </p>
+            <div className="space-y-4">
+                <a href="https://wa.me/34676344675" className="flex items-center justify-center gap-2 w-full py-4 bg-rural-600 text-white rounded-2xl font-bold shadow-lg" style={{ backgroundColor: COLORS.primary }}>
+                    Contactar Soporte
+                </a>
+                <button onClick={onLogout} className="text-sm font-bold text-gray-400 hover:text-rural-700 transition-colors">
+                    Cerrar Sesión
+                </button>
+            </div>
+        </div>
+    </div>
+);
+
+export const ClientAreaContent = ({ docs = [], userEmail = 'invitado@ejemplo.com', profile = null }) => {
     return (
         <div className="space-y-10">
             {/* Intro Card */}
@@ -84,6 +148,8 @@ export const ClientAreaContent = ({ docs = [], userEmail = 'invitado@ejemplo.com
                 <h3 className="text-2xl font-serif font-bold mb-8 flex items-center gap-3" style={{ color: COLORS.text }}>
                     <Map size={24} style={{ color: COLORS.primary }} /> Guía Exclusiva del Huésped
                 </h3>
+
+                <WeatherWidget stayDates={{ check_in: profile?.check_in, check_out: profile?.check_out }} />
 
                 <GuestGuide />
             </div>
@@ -146,8 +212,14 @@ export const ClientAreaContent = ({ docs = [], userEmail = 'invitado@ejemplo.com
                         <div className="flex items-start gap-4">
                             <Calendar className="text-rural-400 mt-1" size={20} style={{ color: COLORS.accent }} />
                             <div>
-                                <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Check-in / Check-out</p>
-                                <p className="font-bold text-gray-700">Entrada: 16:00 / Salida: 12:00</p>
+                                <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Tu Estancia</p>
+                                {profile?.check_in ? (
+                                    <p className="font-bold text-gray-700">
+                                        {new Date(profile.check_in).toLocaleDateString()} - {new Date(profile.check_out).toLocaleDateString()}
+                                    </p>
+                                ) : (
+                                    <p className="font-bold text-gray-700">Entrada: 16:00 / Salida: 12:00</p>
+                                )}
                             </div>
                         </div>
                     </div>
