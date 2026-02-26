@@ -6,7 +6,7 @@ import {
     Home, Users, Eye, EyeOff, Layout, List, Upload, Loader2,
     Tv, Wifi, Flame, Wind, Thermometer, UtensilsCrossed,
     Refrigerator, Microwave, Bath, Eraser, Dog, ShieldCheck,
-    Bed, Info
+    Bed, Info, RefreshCw, Calendar as CalendarIcon, Link as LinkIcon
 } from 'lucide-react';
 
 const AMENITIES_LIST = [
@@ -130,6 +130,71 @@ const ApartmentsManager = () => {
             images: [...currentImages, newImageUrl]
         });
         setNewImageUrl('');
+    };
+
+    const handleSync = async (apt) => {
+        if (!apt.airbnb_ical_url && !apt.booking_ical_url) {
+            alert('Por favor, añade al menos un enlace de iCal (Airbnb o Booking) primero.');
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            const allBlockedDates = [];
+            const urls = [
+                { url: apt.airbnb_ical_url, source: 'airbnb' },
+                { url: apt.booking_ical_url, source: 'booking' }
+            ].filter(item => item.url);
+
+            for (const { url, source } of urls) {
+                // Usamos un proxy para evitar CORS
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+                const response = await fetch(proxyUrl);
+                const data = await response.json();
+                const icsText = data.contents;
+
+                // Parser básico de iCal
+                const regex = /BEGIN:VEVENT[\s\S]*?DTSTART;VALUE=DATE:(\d{8})[\s\S]*?DTEND;VALUE=DATE:(\d{8})[\s\S]*?END:VEVENT/g;
+                let match;
+                while ((match = regex.exec(icsText)) !== null) {
+                    const startStr = match[1];
+                    const endStr = match[2];
+
+                    const start_date = `${startStr.slice(0, 4)}-${startStr.slice(4, 6)}-${startStr.slice(6, 8)}`;
+                    const end_date = `${endStr.slice(0, 4)}-${endStr.slice(4, 6)}-${endStr.slice(6, 8)}`;
+
+                    allBlockedDates.push({
+                        apartment_id: apt.id,
+                        start_date,
+                        end_date,
+                        source
+                    });
+                }
+            }
+
+            // 1. Limpiar bloqueos antiguos de este apartamento que vengan de sync
+            await supabase
+                .from('blocked_dates')
+                .delete()
+                .eq('apartment_id', apt.id)
+                .neq('source', 'manual');
+
+            // 2. Insertar nuevos bloqueos
+            if (allBlockedDates.length > 0) {
+                const { error: insertError } = await supabase
+                    .from('blocked_dates')
+                    .insert(allBlockedDates);
+                if (insertError) throw insertError;
+            }
+
+            alert(`Sincronización completada: ${allBlockedDates.length} periodos bloqueados.`);
+            fetchApartments();
+        } catch (error) {
+            console.error('Error in sync:', error);
+            alert('Error al sincronizar: ' + error.message);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const removeImage = (index) => {
@@ -272,8 +337,34 @@ const ApartmentsManager = () => {
                                 </section>
                             </div>
 
-                            {/* Columna 2: Servicios e Iconos */}
+                            {/* Columna 2: Servicios e iCal */}
                             <div className="space-y-8">
+                                <section className="space-y-4">
+                                    <h5 className="font-bold flex items-center gap-2 text-rural-700 uppercase tracking-widest text-xs">
+                                        <LinkIcon size={16} /> Sincronización (iCal)
+                                    </h5>
+                                    <div className="space-y-4 bg-rural-50 p-6 rounded-3xl border border-rural-100">
+                                        <div>
+                                            <label className="block text-[10px] font-bold uppercase tracking-widest text-rural-400 mb-1">Enlace Airbnb (.ics)</label>
+                                            <input
+                                                className="w-full p-4 bg-white border border-gray-100 rounded-2xl text-xs"
+                                                placeholder="https://www.airbnb.es/calendar/export..."
+                                                value={editingApt.airbnb_ical_url || ''}
+                                                onChange={e => setEditingApt({ ...editingApt, airbnb_ical_url: e.target.value })}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-bold uppercase tracking-widest text-rural-400 mb-1">Enlace Booking (.ics)</label>
+                                            <input
+                                                className="w-full p-4 bg-white border border-gray-100 rounded-2xl text-xs"
+                                                placeholder="https://ical.booking.com/v1/export..."
+                                                value={editingApt.booking_ical_url || ''}
+                                                onChange={e => setEditingApt({ ...editingApt, booking_ical_url: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                </section>
+
                                 <section className="space-y-4">
                                     <h5 className="font-bold flex items-center gap-2 text-rural-700 uppercase tracking-widest text-xs">
                                         <List size={16} /> Servicios Incluidos
@@ -284,8 +375,8 @@ const ApartmentsManager = () => {
                                                 key={item.id}
                                                 onClick={() => toggleAmenity(item.id)}
                                                 className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${(editingApt.amenities || []).includes(item.id)
-                                                        ? 'bg-rural-50 border-rural-200 text-rural-700 shadow-sm'
-                                                        : 'bg-white border-gray-100 text-gray-400 hover:border-gray-200'
+                                                    ? 'bg-rural-50 border-rural-200 text-rural-700 shadow-sm'
+                                                    : 'bg-white border-gray-100 text-gray-400 hover:border-gray-200'
                                                     }`}
                                             >
                                                 <div className="flex items-center gap-3">
@@ -407,8 +498,18 @@ const ApartmentsManager = () => {
                                         <p className="text-lg font-serif font-bold text-rural-800">{apt.price_high}€</p>
                                     </div>
                                 </div>
-                                <div className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${apt.is_active ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
-                                    {apt.is_active ? 'Visible' : 'Oculto'}
+                                <div className="flex items-center gap-4">
+                                    <button
+                                        onClick={() => handleSync(apt)}
+                                        disabled={isSaving}
+                                        className="flex items-center gap-2 px-4 py-2 bg-rural-50 text-rural-700 rounded-xl font-bold text-xs hover:bg-rural-100 transition-all"
+                                    >
+                                        <RefreshCw size={14} className={isSaving ? 'animate-spin' : ''} />
+                                        Sincronizar
+                                    </button>
+                                    <div className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${apt.is_active ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
+                                        {apt.is_active ? 'Visible' : 'Oculto'}
+                                    </div>
                                 </div>
                             </div>
                         </div>

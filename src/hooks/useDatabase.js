@@ -111,3 +111,24 @@ export function useRoutes() {
 
     return { routes, loading };
 }
+
+export function useBlockedDates(apartmentId) {
+    const [blockedDates, setBlockedDates] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (!apartmentId) return;
+        const fetchBlockedDates = async () => {
+            setLoading(true);
+            const { data } = await supabase
+                .from('blocked_dates')
+                .select('*')
+                .eq('apartment_id', apartmentId);
+            if (data) setBlockedDates(data);
+            setLoading(false);
+        };
+        fetchBlockedDates();
+    }, [apartmentId]);
+
+    return { blockedDates, loading };
+}
