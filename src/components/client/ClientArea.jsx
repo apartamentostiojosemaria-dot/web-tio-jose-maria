@@ -204,17 +204,53 @@ const GuestGuide = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.3 }}
-                    className="grid gap-4 md:grid-cols-2"
+                    className="grid gap-6 md:grid-cols-2"
                 >
                     {filteredGuides.map((item, i) => (
-                        <div key={i} className="bg-white p-6 rounded-2xl border border-gray-50 shadow-sm group hover:border-rural-100 transition-all">
-                            <h4 className="font-bold text-rural-900 mb-2 flex items-center gap-2 group-hover:translate-x-1 transition-transform">
-                                <ChevronRight size={14} style={{ color: COLORS.accent }} />
-                                {item.title}
-                            </h4>
-                            <p className="text-sm text-gray-500 leading-relaxed">
-                                {item.description}
-                            </p>
+                        <div key={i} className="bg-white rounded-3xl border border-gray-50 shadow-sm overflow-hidden group hover:border-rural-100 transition-all flex flex-col">
+                            {item.image_url && (
+                                <div className="h-48 overflow-hidden relative">
+                                    <img src={item.image_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                    {item.video_url && (
+                                        <a href={item.video_url} target="_blank" rel="noopener noreferrer" className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/40 transition-colors group">
+                                            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                                <Play size={20} style={{ color: COLORS.primary }} fill={COLORS.primary} />
+                                            </div>
+                                        </a>
+                                    )}
+                                </div>
+                            )}
+                            <div className="p-6 flex-grow flex flex-col">
+                                <div className="flex justify-between items-start mb-2">
+                                    <h4 className="font-bold text-rural-900 flex items-center gap-2">
+                                        <ChevronRight size={14} style={{ color: COLORS.accent }} />
+                                        {item.title}
+                                    </h4>
+                                    {(item.difficulty || item.duration) && (
+                                        <div className="flex gap-2">
+                                            {item.difficulty && <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 bg-rural-50 text-rural-400 rounded-full">{item.difficulty}</span>}
+                                            {item.duration && <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 bg-rural-50 text-rural-400 rounded-full">{item.duration}</span>}
+                                        </div>
+                                    )}
+                                </div>
+                                <p className="text-sm text-gray-500 leading-relaxed mb-6">
+                                    {item.description}
+                                </p>
+
+                                {item.location_url && (
+                                    <div className="mt-auto">
+                                        <a
+                                            href={item.location_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold bg-gray-50 text-gray-500 hover:bg-rural-50 hover:text-rural-600 transition-all group"
+                                        >
+                                            <MapPin size={16} className="group-hover:animate-bounce" />
+                                            Cómo llegar
+                                        </a>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     ))}
                     {filteredGuides.length === 0 && (

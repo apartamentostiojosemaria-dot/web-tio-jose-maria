@@ -19,6 +19,11 @@ const GuestGuidesManager = () => {
         category: 'rutas',
         title: '',
         description: '',
+        image_url: '',
+        video_url: '',
+        location_url: '',
+        difficulty: '',
+        duration: '',
         order_index: 0
     });
 
@@ -30,13 +35,23 @@ const GuestGuidesManager = () => {
     }, [activeTab, editingId]);
 
     const resetForm = () => {
-        setFormData({ category: activeTab, title: '', description: '', order_index: 0 });
+        setFormData({
+            category: activeTab,
+            title: '',
+            description: '',
+            image_url: '',
+            video_url: '',
+            location_url: '',
+            difficulty: '',
+            duration: '',
+            order_index: 0
+        });
         setIsAdding(false);
         setEditingId(null);
     };
 
     const handleSave = async () => {
-        if (!formData.title || !formData.description) return alert('Por favor, rellena todos los campos');
+        if (!formData.title || !formData.description) return alert('Por favor, rellena al menos Título y Descripción');
 
         if (editingId) {
             await supabase.from('guest_guides').update(formData).eq('id', editingId);
@@ -58,13 +73,13 @@ const GuestGuidesManager = () => {
     const activeCategory = CATEGORIES.find(c => c.id === activeTab);
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-8 animate-in fade-in duration-500 pb-20">
             <header>
                 <h2 className="text-2xl font-serif font-bold" style={{ color: COLORS.text }}>Mi Guía Exclusiva</h2>
-                <p className="text-gray-500 text-sm">Gestiona visualmente lo que ven tus clientes.</p>
+                <p className="text-gray-500 text-sm">Gestiona visualmente lo que ven tus clientes (imágenes, vídeos, mapas...).</p>
             </header>
 
-            {/* Categorías (mismo estilo que Área de Clientes) */}
+            {/* Categorías */}
             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                 {CATEGORIES.map((cat) => {
                     const Icon = cat.icon;
@@ -86,9 +101,9 @@ const GuestGuidesManager = () => {
                 })}
             </div>
 
-            {/* Botón de añadir específico para la categoría activa */}
-            <div className="flex justify-start">
-                {!isAdding && (
+            {/* Añadir */}
+            {!isAdding && (
+                <div className="flex justify-start">
                     <button
                         onClick={() => setIsAdding(true)}
                         className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all border-2 border-dashed hover:border-solid bg-transparent"
@@ -98,77 +113,164 @@ const GuestGuidesManager = () => {
                     >
                         <Plus size={18} /> Añadir a {activeCategory?.label}
                     </button>
-                )}
-            </div>
+                </div>
+            )}
 
-            {/* Formulario Inline */}
+            {/* Formulario Expandido */}
             {isAdding && (
-                <div className="bg-white p-6 rounded-3xl border border-rural-100 shadow-xl space-y-4 animate-in slide-in-from-top-4 duration-300">
-                    <div className="flex justify-between items-center mb-2">
+                <div className="bg-white p-6 rounded-3xl border border-rural-100 shadow-2xl space-y-6 animate-in slide-in-from-top-4 duration-300">
+                    <div className="flex justify-between items-center">
                         <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-rural-50 rounded-full" style={{ color: COLORS.primary, backgroundColor: COLORS.bgWarm }}>
-                            Nuevo Item: {activeCategory?.label}
+                            {editingId ? 'Editando Item' : 'Nuevo Item'}: {activeCategory?.label}
                         </span>
-                        <button onClick={resetForm} className="text-gray-400 hover:text-red-500"><X size={18} /></button>
+                        <button onClick={resetForm} className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-lg transition-colors"><X size={20} /></button>
                     </div>
-                    <div className="space-y-4">
-                        <input
-                            type="text"
-                            value={formData.title}
-                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-100 focus:ring-2 focus:ring-rural-200 outline-none transition-all font-bold"
-                            placeholder="Título sugerente (ej: Cueva del Agua)"
-                        />
-                        <textarea
-                            value={formData.description}
-                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-100 focus:ring-2 focus:ring-rural-200 outline-none transition-all h-24 resize-none text-sm"
-                            placeholder="Describe brevemente el sitio, sabor o actividad..."
-                        />
-                        <div className="flex justify-end">
-                            <button
-                                onClick={handleSave}
-                                className="flex items-center gap-2 px-8 py-3 rounded-xl text-white font-bold transition-all hover:scale-105"
-                                style={{ backgroundColor: COLORS.primary }}
-                            >
-                                <Save size={18} /> {editingId ? 'Actualizar' : 'Publicar en Guía'}
-                            </button>
+
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Título</label>
+                                <input
+                                    type="text"
+                                    value={formData.title}
+                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-100 focus:ring-2 focus:ring-rural-200 outline-none transition-all font-bold"
+                                    placeholder="Nombre de la ruta, plato o sitio"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Descripción</label>
+                                <textarea
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-100 focus:ring-2 focus:ring-rural-200 outline-none transition-all h-32 resize-none text-sm leading-relaxed"
+                                    placeholder="Describe los detalles..."
+                                />
+                            </div>
                         </div>
+
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">URL Imagen</label>
+                                    <input
+                                        type="url"
+                                        value={formData.image_url}
+                                        onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                                        className="w-full px-4 py-3 rounded-xl border border-gray-100 focus:ring-2 focus:ring-rural-200 outline-none transition-all text-xs"
+                                        placeholder="https://..."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">URL Vídeo</label>
+                                    <input
+                                        type="url"
+                                        value={formData.video_url}
+                                        onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
+                                        className="w-full px-4 py-3 rounded-xl border border-gray-100 focus:ring-2 focus:ring-rural-200 outline-none transition-all text-xs"
+                                        placeholder="YouTube/Vimeo link"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">URL Google Maps (Cómo llegar)</label>
+                                <input
+                                    type="url"
+                                    value={formData.location_url}
+                                    onChange={(e) => setFormData({ ...formData, location_url: e.target.value })}
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-100 focus:ring-2 focus:ring-rural-200 outline-none transition-all text-xs"
+                                    placeholder="Pega el enlace de Google Maps"
+                                />
+                            </div>
+                            {activeTab === 'rutas' && (
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Dificultad</label>
+                                        <select
+                                            value={formData.difficulty}
+                                            onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
+                                            className="w-full px-4 py-3 rounded-xl border border-gray-100 focus:ring-2 focus:ring-rural-200 outline-none transition-all text-sm font-bold"
+                                        >
+                                            <option value="">No aplica</option>
+                                            <option value="Baja">Baja</option>
+                                            <option value="Media">Media</option>
+                                            <option value="Alta">Alta</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Duración</label>
+                                        <input
+                                            type="text"
+                                            value={formData.duration}
+                                            onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
+                                            className="w-full px-4 py-3 rounded-xl border border-gray-100 focus:ring-2 focus:ring-rural-200 outline-none transition-all text-sm"
+                                            placeholder="Ej: 2h 30m"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="flex justify-end border-t border-gray-50 pt-4">
+                        <button
+                            onClick={handleSave}
+                            className="flex items-center gap-2 px-10 py-4 rounded-2xl text-white font-bold transition-all hover:scale-105 shadow-lg shadow-rural-200"
+                            style={{ backgroundColor: COLORS.primary }}
+                        >
+                            <Save size={20} /> {editingId ? 'Guardar Cambios' : 'Publicar en Guía'}
+                        </button>
                     </div>
                 </div>
             )}
 
-            {/* Cards (Estilo Cliente con Admin Controls) */}
-            <div className="grid md:grid-cols-2 gap-4">
+            {/* Cards Grid */}
+            <div className="grid md:grid-cols-2 gap-6">
                 {currentGuides.map((guide) => (
-                    <div key={guide.id} className="bg-white p-6 rounded-2xl border border-gray-50 shadow-sm relative group hover:border-rural-200 transition-all">
-                        <div className="pr-12">
-                            <h4 className="font-bold text-rural-900 mb-2 flex items-center gap-2">
+                    <div key={guide.id} className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden group hover:border-rural-200 transition-all flex flex-col">
+                        {guide.image_url && (
+                            <div className="h-40 overflow-hidden relative">
+                                <img src={guide.image_url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={guide.title} />
+                                <div className="absolute top-3 left-3 flex gap-2">
+                                    {guide.video_url && <span className="p-1.5 bg-black/50 text-white rounded-lg backdrop-blur-sm"><Plus size={14} /></span>}
+                                    {guide.location_url && <span className="p-1.5 bg-black/50 text-white rounded-lg backdrop-blur-sm"><MapPin size={14} /></span>}
+                                </div>
+                            </div>
+                        )}
+                        <div className="p-6 flex-grow relative">
+                            <h4 className="font-bold text-rural-900 mb-2 pr-16 flex items-center gap-2">
                                 <ChevronRight size={14} style={{ color: COLORS.accent }} />
                                 {guide.title}
                             </h4>
-                            <p className="text-sm text-gray-500 leading-relaxed">{guide.description}</p>
-                        </div>
-                        <div className="absolute top-4 right-4 flex flex-col gap-2">
-                            <button
-                                onClick={() => { setFormData(guide); setEditingId(guide.id); setIsAdding(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                                className="p-2 text-gray-400 hover:text-rural-600 hover:bg-rural-50 rounded-lg transition-all"
-                                title="Editar"
-                            >
-                                <Plus size={16} className="rotate-45" />
-                            </button>
-                            <button
-                                onClick={() => handleDelete(guide.id)}
-                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                                title="Eliminar"
-                            >
-                                <Trash2 size={16} />
-                            </button>
+                            <p className="text-sm text-gray-500 leading-relaxed mb-4 line-clamp-3">{guide.description}</p>
+
+                            <div className="flex flex-wrap gap-2 mt-auto">
+                                {guide.difficulty && <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 bg-gray-50 rounded text-gray-400">Dif: {guide.difficulty}</span>}
+                                {guide.duration && <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 bg-gray-50 rounded text-gray-400">{guide.duration}</span>}
+                            </div>
+
+                            <div className="absolute top-6 right-6 flex flex-col gap-2">
+                                <button
+                                    onClick={() => { setFormData(guide); setEditingId(guide.id); setIsAdding(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                                    className="p-2 bg-gray-50 text-gray-400 hover:text-rural-700 hover:bg-rural-100 rounded-xl transition-all shadow-sm"
+                                    title="Editar"
+                                >
+                                    <Save size={16} />
+                                </button>
+                                <button
+                                    onClick={() => handleDelete(guide.id)}
+                                    className="p-2 bg-gray-50 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all shadow-sm"
+                                    title="Eliminar"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
                         </div>
                     </div>
                 ))}
                 {currentGuides.length === 0 && !isAdding && (
-                    <div className="col-span-full text-center p-12 bg-white rounded-3xl border-2 border-dashed border-gray-100 text-gray-400 italic">
-                        No hay nada en {activeCategory?.label} todavía.
+                    <div className="col-span-full text-center p-16 bg-white rounded-[40px] border-2 border-dashed border-gray-100 text-gray-400 italic font-serif">
+                        Tu guía de {activeCategory?.label} está esperando contenido.
                     </div>
                 )}
             </div>
