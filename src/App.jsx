@@ -304,8 +304,10 @@ const ServicesGrid = ({ apartments }) => {
         { name: 'Romero', tag: 'Familiar', capacity: '4 plazas', href: '/Romero.html', img: `${WP}/2018/12/ROMEROHOME1.jpg`, desc: 'Confort rústico con todas las comodidades. Salón con chimenea para las noches de invierno y dos dormitorios independientes.', icons: [Flame, UtensilsCrossed, Wifi] },
     ];
 
-    const displayApartments = apartments && apartments.length > 0
-        ? apartments.map(apt => ({
+    const activeApartments = apartments?.filter(apt => apt.is_active) || [];
+
+    const displayApartments = activeApartments.length > 0
+        ? activeApartments.map(apt => ({
             name: apt.name,
             tag: apt.capacity_people <= 2 ? 'Romántico' : 'Familiar',
             capacity: `${apt.capacity_people} plazas`,
