@@ -111,6 +111,15 @@ export const syncApartmentDates = async (apt) => {
     }
 
     // 2. Generar y subir nuevo iCal exportable
+    const exportResult = await regenerateICalExport(apt);
+    diagnosticMsg += exportResult.message;
+
+    return { count: syncCount, message: diagnosticMsg };
+};
+
+// Función independiente: regenera SOLO el archivo .ics de exportación
+// Se puede llamar automáticamente tras añadir/borrar reservas manuales
+export const regenerateICalExport = async (apt) => {
     try {
         const { data: allBlocks } = await supabase.from('blocked_dates').select('*').eq('apartment_id', apt.id);
         const now = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
@@ -128,9 +137,7 @@ export const syncApartmentDates = async (apt) => {
         allBlocks?.forEach(block => {
             const start = block.start_date.replace(/-/g, '');
             const end = block.end_date.replace(/-/g, '');
-            // Aseguramos un UID único, formato estándar
             const safeUid = (block.id || Math.random().toString(36).substr(2, 9)).replace(/[^a-zA-Z0-9-]/g, '');
-
             ical.push(
                 'BEGIN:VEVENT',
                 `DTSTAMP:${now}`,
@@ -143,27 +150,24 @@ export const syncApartmentDates = async (apt) => {
         });
 
         ical.push('END:VCALENDAR');
-        // iCal requiere CRLF estricto y una línea vacía al final a veces
         const icsText = ical.join('\r\n') + '\r\n';
 
         const { error: uploadError } = await supabase.storage
             .from('calendars')
             .upload(`${apt.slug}.ics`, icsText, {
                 contentType: 'text/calendar; charset=utf-8',
-                cacheControl: '10', // 10 segundos para no cachear locamente
+                cacheControl: '10',
                 upsert: true
             });
 
         if (uploadError) {
-            console.error('Error detail uploading to storage:', uploadError);
-            diagnosticMsg += `\n- Error Exportación: ${uploadError.message}`;
-        } else {
-            diagnosticMsg += `\n- Archivo de exportación generado correctamente.`;
+            console.error('Error uploading to storage:', uploadError);
+            return { success: false, message: `\n- Error Exportación: ${uploadError.message}` };
         }
+        console.log(`Calendario ${apt.slug}.ics actualizado automáticamente.`);
+        return { success: true, message: `\n- Archivo de exportación actualizado.` };
     } catch (error) {
-        console.error('Critical sync error:', error);
-        diagnosticMsg += `\n- Error Exportación Crítico: ${error.message}`;
+        console.error('Critical export error:', error);
+        return { success: false, message: `\n- Error Exportación Crítico: ${error.message}` };
     }
-
-    return { count: syncCount, message: diagnosticMsg };
 };

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { COLORS } from '../../App';
+import { regenerateICalExport } from '../../utils/syncService';
 import {
     Calendar as CalendarIcon, ChevronLeft, ChevronRight,
     Lock, Unlock, Info, RefreshCw, AlertCircle, Trash2, Check
@@ -97,6 +98,8 @@ const AvailabilityManager = () => {
         } else {
             setSelection({ start: null, end: null });
             fetchBlockedDates(selectedApt.id);
+            // Auto-regenerar el archivo .ics para que Airbnb/Booking se enteren
+            await regenerateICalExport(selectedApt);
         }
         setIsSaving(false);
     };
@@ -105,7 +108,11 @@ const AvailabilityManager = () => {
         if (!window.confirm('¿Quieres eliminar este bloqueo manual?')) return;
 
         const { error } = await supabase.from('blocked_dates').delete().eq('id', id);
-        if (!error) fetchBlockedDates(selectedApt.id);
+        if (!error) {
+            fetchBlockedDates(selectedApt.id);
+            // Auto-regenerar el archivo .ics para que Airbnb/Booking se enteren
+            await regenerateICalExport(selectedApt);
+        }
     };
 
     const { days, firstDay } = getDaysInMonth(currentMonth);
@@ -124,8 +131,8 @@ const AvailabilityManager = () => {
                             key={apt.id}
                             onClick={() => setSelectedApt(apt)}
                             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${selectedApt?.id === apt.id
-                                    ? 'bg-rural-700 text-white shadow-md'
-                                    : 'text-gray-400 hover:bg-gray-100'
+                                ? 'bg-rural-700 text-white shadow-md'
+                                : 'text-gray-400 hover:bg-gray-100'
                                 }`}
                         >
                             {apt.name}
@@ -167,8 +174,8 @@ const AvailabilityManager = () => {
                                         key={day}
                                         onClick={() => handleDateClick(day)}
                                         className={`aspect-square rounded-2xl flex flex-col items-center justify-center transition-all relative ${blocked
-                                                ? blocked.source === 'manual' ? 'bg-rural-100 text-rural-700 underline' : 'bg-red-50 text-red-400 line-through'
-                                                : isSelected ? 'bg-rural-600 text-white' : isStart ? 'bg-rural-700 text-white' : 'bg-gray-50 hover:bg-rural-50 text-gray-600'
+                                            ? blocked.source === 'manual' ? 'bg-rural-100 text-rural-700 underline' : 'bg-red-50 text-red-400 line-through'
+                                            : isSelected ? 'bg-rural-600 text-white' : isStart ? 'bg-rural-700 text-white' : 'bg-gray-50 hover:bg-rural-50 text-gray-600'
                                             }`}
                                     >
                                         <span className="text-sm font-bold">{day}</span>
