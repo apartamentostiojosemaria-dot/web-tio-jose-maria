@@ -24,6 +24,29 @@ export function useWebConfig() {
     return { config, loading };
 }
 
+export function useApartment(slug) {
+    const [apartment, setApartment] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (!slug) return;
+        const fetchApartment = async () => {
+            setLoading(true);
+            const { data, error } = await supabase
+                .from('apartments')
+                .select('*')
+                .eq('slug', slug)
+                .single();
+            if (data) setApartment(data);
+            setLoading(false);
+        };
+
+        fetchApartment();
+    }, [slug]);
+
+    return { apartment, loading };
+}
+
 export function useApartments() {
     const [apartments, setApartments] = useState([]);
     const [loading, setLoading] = useState(true);

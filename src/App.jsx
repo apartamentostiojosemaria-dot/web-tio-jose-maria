@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from './lib/supabase';
 import AdminLogin from './components/admin/AdminLogin';
 import AdminDashboard from './components/admin/AdminDashboard';
 import ClientLogin from './components/client/ClientLogin';
 import ClientArea from './components/client/ClientArea';
+import ApartmentDetail from './components/ApartmentDetail';
 import { Mail, Phone, MapPin, Instagram, Facebook, Menu, X, Flame, Wifi, Tv, UtensilsCrossed, Baby, Eye } from 'lucide-react';
 
 export const COLORS = {
@@ -45,10 +46,10 @@ const Navigation = () => {
     }, []);
 
     const links = [
-        { label: 'Apartamentos', href: '#apartamentos' },
-        { label: 'El Entorno', href: '#entorno' },
+        { label: 'Apartamentos', href: '/#apartamentos' },
+        { label: 'El Entorno', href: '/#entorno' },
         { label: 'Documentos', href: '/clientes' },
-        { label: 'Contacto', href: '#contacto' },
+        { label: 'Contacto', href: '/#contacto' },
     ];
 
     return (
@@ -308,12 +309,12 @@ const ServicesGrid = ({ apartments }) => {
             name: apt.name,
             tag: apt.capacity_people <= 2 ? 'Romántico' : 'Familiar',
             capacity: `${apt.capacity_people} plazas`,
-            href: `/${apt.name}.html`,
+            href: `/apartamento/${apt.slug}`,
             img: apt.images?.[0] || `${WP}/2018/12/ALBAHACA-1.jpg`,
             desc: apt.description,
             icons: apt.capacity_people <= 2 ? [Flame, Wifi, Tv] : [Flame, UtensilsCrossed, Wifi]
         }))
-        : defaultApartments;
+        : defaultApartments.map(apt => ({ ...apt, href: `/apartamento/${apt.name.toLowerCase()}` }));
 
     return (
         <section id="apartamentos" className="py-28 px-6" style={{ background: `linear-gradient(180deg, ${COLORS.bgWarm} 0%, ${COLORS.bg} 100%)` }}>
@@ -328,7 +329,7 @@ const ServicesGrid = ({ apartments }) => {
                 <div className="grid md:grid-cols-2 gap-10">
                     {displayApartments.map((apt, idx) => (
                         <FadeInUp key={apt.name} delay={idx * 0.1}>
-                            <a href={apt.href} className="block group">
+                            <Link to={apt.href} className="block group">
                                 <div
                                     className="bg-white rounded-2xl overflow-hidden shadow-lg transition-all duration-500 group-hover:shadow-2xl group-hover:-translate-y-2"
                                     style={{ border: '1px solid transparent' }}
@@ -359,7 +360,7 @@ const ServicesGrid = ({ apartments }) => {
                                         </div>
                                     </div>
                                 </div>
-                            </a>
+                            </Link>
                         </FadeInUp>
                     ))}
                 </div>
@@ -575,6 +576,24 @@ const WhatsAppFab = () => (
     </a>
 );
 
+import { useLocation } from 'react-router-dom';
+
+const ScrollToTop = () => {
+    const { pathname, hash } = useLocation();
+    useEffect(() => {
+        if (!hash) {
+            window.scrollTo(0, 0);
+        } else {
+            const id = hash.replace('#', '');
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    }, [pathname, hash]);
+    return null;
+};
+
 import { useWebConfig, useApartments, useReviews, useLocalPlaces, useRoutes } from './hooks/useDatabase';
 
 // --- PUBLIC LANDING PAGE ---
@@ -654,18 +673,23 @@ export default function App() {
     }
 
     return (
-        <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route
-                path="/admin"
-                element={!session ? <AdminLogin /> : (userProfile?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/" replace />)}
-            />
-            <Route
-                path="/clientes"
-                element={!session ? <ClientLogin /> : <ClientArea />}
-            />
-            {/* Fallback */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <>
+            <ScrollToTop />
+            <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/apartamento/:slug" element={<ApartmentDetail />} />
+                <Route
+                    path="/admin"
+                    element={!session ? <AdminLogin /> : (userProfile?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/" replace />)}
+                />
+                <Route
+                    path="/clientes"
+                    element={!session ? <ClientLogin /> : <ClientArea />}
+                />
+                {/* Fallback */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+        </>
+    );
     );
 }
