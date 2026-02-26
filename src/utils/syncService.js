@@ -55,19 +55,29 @@ export const syncApartmentDates = async (apt) => {
     try {
         const { data: allBlocks } = await supabase.from('blocked_dates').select('*').eq('apartment_id', apt.id);
 
+        const now = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
         let ical = [
             'BEGIN:VCALENDAR',
             'VERSION:2.0',
             'PRODID:-//Tio Jose Maria//NONSGML v1.0//ES',
             'CALSCALE:GREGORIAN',
             'METHOD:PUBLISH',
-            `X-WR-CALNAME:Disponibilidad - ${apt.name}`
+            `X-WR-CALNAME:Disponibilidad - ${apt.name}`,
+            'X-WR-TIMEZONE:Europe/Madrid'
         ];
 
         allBlocks?.forEach(block => {
             const start = block.start_date.replace(/-/g, '');
             const end = block.end_date.replace(/-/g, '');
-            ical.push('BEGIN:VEVENT', `DTSTART;VALUE=DATE:${start}`, `DTEND;VALUE=DATE:${end}`, `UID:${block.id}@tiojosemaria.es`, `SUMMARY:Ocupado (${block.source})`, 'END:VEVENT');
+            ical.push(
+                'BEGIN:VEVENT',
+                `DTSTAMP:${now}`,
+                `DTSTART;VALUE=DATE:${start}`,
+                `DTEND;VALUE=DATE:${end}`,
+                `UID:${block.id || Math.random().toString(36).substr(2, 9)}@tiojosemaria.es`,
+                `SUMMARY:Reserva (${block.source})`,
+                'END:VEVENT'
+            );
         });
 
         ical.push('END:VCALENDAR');
