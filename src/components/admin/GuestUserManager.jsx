@@ -14,6 +14,7 @@ const GuestUserManager = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedGuest, setSelectedGuest] = useState(null);
+    const [isCreatingGuest, setIsCreatingGuest] = useState(false);
 
     useEffect(() => {
         fetchGuests();
@@ -45,16 +46,29 @@ const GuestUserManager = () => {
                         <p className="text-gray-500 text-sm">Gestiona la ficha de cliente, sus preferencias, historial y reglas de acceso.</p>
                     </header>
 
-                    <div className="relative max-w-md">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                        <input
-                            type="text"
-                            placeholder="Buscar por nombre o ID..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-12 pr-4 py-3 rounded-2xl border border-gray-100 focus:ring-2 focus:ring-rural-200 outline-none transition-all shadow-sm"
-                        />
+                    <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between mb-8">
+                        <div className="relative flex-grow max-w-md">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                            <input
+                                type="text"
+                                placeholder="Buscar por nombre o ID..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full pl-12 pr-4 py-3 rounded-2xl border border-gray-100 focus:ring-2 focus:ring-rural-200 outline-none transition-all shadow-sm"
+                            />
+                        </div>
+                        <button
+                            onClick={() => setIsCreatingGuest(true)}
+                            className="flex items-center gap-2 px-8 py-3 bg-rural-600 text-white rounded-2xl font-bold shadow-lg hover:scale-105 transition-all"
+                            style={{ backgroundColor: COLORS.primary }}
+                        >
+                            <Plus size={20} /> Nuevo Huésped
+                        </button>
                     </div>
+
+                    <InvitationTool />
+
+                    {isCreatingGuest && <CreateGuestModal onClose={() => setIsCreatingGuest(false)} />}
 
                     {loading ? (
                         <div className="p-12 text-center animate-pulse text-rural-400 font-serif italic">Cargando lista de huéspedes...</div>
@@ -430,6 +444,117 @@ const InvitationTool = () => {
                     {copied ? <CheckCircle2 size={18} /> : <Save size={18} />}
                     {copied ? 'Copiado' : 'Copiar Enlace'}
                 </button>
+            </div>
+        </div>
+    );
+};
+
+const CreateGuestModal = ({ onClose }) => {
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [step, setStep] = useState(1); // 1: form, 2: success/invite link
+
+    const registrationUrl = `${window.location.origin}/cliente/login`;
+
+    const handleInvite = () => {
+        setStep(2);
+    };
+
+    const copyToWhatsApp = () => {
+        const text = `Hola ${name}, te envío el enlace para que te registres en nuestra área de clientes de Tío José María: ${registrationUrl}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/20 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="bg-white rounded-[40px] p-10 max-w-lg w-full shadow-2xl border border-rural-100 relative overflow-hidden">
+                <button onClick={onClose} className="absolute top-6 right-6 p-2 text-gray-400 hover:text-gray-800 transition-colors">
+                    <X size={24} />
+                </button>
+
+                {step === 1 ? (
+                    <div className="space-y-6">
+                        <div className="w-16 h-16 rounded-2xl bg-rural-50 flex items-center justify-center text-rural-600 mb-2" style={{ backgroundColor: COLORS.bgWarm, color: COLORS.primary }}>
+                            <Plus size={32} />
+                        </div>
+                        <h3 className="text-2xl font-serif font-bold" style={{ color: COLORS.text }}>Alta de Nuevo Huésped</h3>
+                        <p className="text-sm text-gray-500">Introduce el nombre y el correo del cliente para preparar su acceso.</p>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1 ml-2">Nombre Completo</label>
+                                <input
+                                    type="text"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    placeholder="Ej: Juan Pérez"
+                                    className="w-full px-6 py-4 rounded-2xl border border-gray-100 focus:ring-2 focus:ring-rural-100 outline-none transition-all"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1 ml-2">Correo Electrónico</label>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="juan@ejemplo.com"
+                                    className="w-full px-6 py-4 rounded-2xl border border-gray-100 focus:ring-2 focus:ring-rural-100 outline-none transition-all"
+                                />
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={handleInvite}
+                            disabled={!name || !email}
+                            className="w-full py-5 bg-rural-600 text-white rounded-[24px] font-bold shadow-xl shadow-rural-100 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:hover:scale-100"
+                            style={{ backgroundColor: COLORS.primary }}
+                        >
+                            Generar Acceso para {name.split(' ')[0]}
+                        </button>
+                    </div>
+                ) : (
+                    <div className="space-y-8 py-4">
+                        <div className="w-20 h-20 bg-green-50 text-green-500 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
+                            <CheckCircle2 size={40} />
+                        </div>
+                        <div className="text-center">
+                            <h3 className="text-2xl font-serif font-bold mb-2" style={{ color: COLORS.text }}>¡Invitación Lista!</h3>
+                            <p className="text-sm text-gray-500">Envía este mensaje personalizado a <strong>{name}</strong> para que pueda acceder:</p>
+                        </div>
+
+                        <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100 italic text-sm text-gray-600 leading-relaxed shadow-inner">
+                            "Hola {name}, te envío el enlace para que te registres en nuestra área de clientes de Tío José María: {registrationUrl}"
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <button
+                                onClick={copyToWhatsApp}
+                                className="flex flex-col items-center gap-3 p-6 rounded-3xl border border-green-100 bg-green-50/50 hover:bg-green-50 transition-all font-bold text-green-700 text-xs"
+                            >
+                                <div className="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center shadow-md">
+                                    <Mail size={18} />
+                                </div>
+                                Enviar WhatsApp
+                            </button>
+                            <button
+                                onClick={() => {
+                                    navigator.clipboard.writeText(`Hola ${name}, te envío el enlace para que te registres en nuestra área de clientes de Tío José María: ${registrationUrl}`);
+                                    alert('Mensaje copiado al portapapeles');
+                                }}
+                                className="flex flex-col items-center gap-3 p-6 rounded-3xl border border-gray-100 hover:bg-gray-50 transition-all font-bold text-gray-600 text-xs"
+                            >
+                                <div className="w-10 h-10 rounded-full bg-gray-600 text-white flex items-center justify-center shadow-md">
+                                    <Save size={18} />
+                                </div>
+                                Copiar Texto
+                            </button>
+                        </div>
+
+                        <button onClick={onClose} className="w-full py-4 text-xs font-bold text-gray-400 hover:text-gray-800 transition-colors">
+                            Cerrar y volver a la lista
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );
