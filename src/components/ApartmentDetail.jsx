@@ -6,8 +6,23 @@ import { COLORS } from '../App';
 import {
     ChevronLeft, Users, Flame, Wifi, Tv,
     UtensilsCrossed, Baby, MapPin, Calendar,
-    Share2, Heart, ArrowRight, Home
+    Share2, Heart, ArrowRight, Home, Wind, Thermometer,
+    Refrigerator, Microwave, Bath, Eraser, Dog, ShieldCheck
 } from 'lucide-react';
+
+const AMENITIES_ICONS = {
+    tv: { label: 'TV Pantalla Plana', icon: Tv },
+    wifi: { label: 'WiFi Gratis', icon: Wifi },
+    heating: { label: 'Calefacción', icon: Thermometer },
+    ac: { label: 'Aire Acondicionado', icon: Wind },
+    fireplace: { label: 'Chimenea', icon: Flame },
+    kitchen: { label: 'Vitrocerámica y Menaje', icon: UtensilsCrossed },
+    fridge: { label: 'Frigorífico', icon: Refrigerator },
+    microwave: { label: 'Microondas y Tostadora', icon: Microwave },
+    bath: { label: 'Gel y Toallas', icon: Bath },
+    hairdryer: { label: 'Secador de Pelo', icon: Eraser },
+    no_pets: { label: 'No Mascotas', icon: Dog },
+};
 
 const ApartmentDetail = () => {
     const { slug } = useParams();
@@ -89,33 +104,47 @@ const ApartmentDetail = () => {
                     {/* Contenido */}
                     <div className="space-y-10">
                         <div>
-                            <div className="flex items-center gap-3 text-rural-600 font-bold uppercase tracking-widest text-xs mb-3">
-                                <Home size={16} /> <span>Apartamento Rural</span>
+                            <div className="flex flex-wrap items-center gap-3 text-rural-600 font-bold uppercase tracking-widest text-[10px] mb-3">
+                                <Home size={14} /> <span>Alojamiento Rural</span>
                                 <span className="opacity-20">|</span>
                                 <span className="flex items-center gap-1"><Users size={14} /> {apartment.capacity_people} plazas</span>
+                                <span className="opacity-20">|</span>
+                                <span className="flex items-center gap-1"><ShieldCheck size={14} /> {apartment.registration_number || 'A/JA/00060'}</span>
                             </div>
                             <h1 className="text-5xl md:text-6xl font-serif font-bold text-rural-900 mb-6 leading-tight">
                                 {apartment.name}
                             </h1>
                             <div className="flex items-center gap-2 text-gray-500 mb-8">
                                 <MapPin size={18} className="text-rural-500" />
-                                <span className="text-lg">Hinojares, Jaén · Sierra de Cazorla</span>
+                                <span className="text-lg">Hinojares, Jaén · {apartment.bathrooms || 1} Baño privado</span>
                             </div>
-                            <div className="p-8 bg-rural-50 rounded-[2rem] border border-rural-100 flex flex-wrap gap-8">
-                                <div className="flex flex-col gap-1">
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-rural-400">Desde</span>
-                                    <span className="text-3xl font-serif font-bold text-rural-800">Consultar</span>
+
+                            {/* Precios */}
+                            <div className="grid grid-cols-2 gap-4 mb-8">
+                                <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100 text-center space-y-1">
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Temporada Baja</p>
+                                    <p className="text-4xl font-serif font-bold text-rural-800">{apartment.price_low || 60}<span className="text-lg">€</span></p>
+                                    <p className="text-[10px] text-gray-400 leading-none italic">/ por noche</p>
                                 </div>
-                                <div className="flex-grow flex items-center justify-end">
-                                    <a
-                                        href={`https://api.whatsapp.com/send?phone=34676344675&text=Hola,%20me%20gustar%C3%ADa%20consultar%20disponibilidad%20para%20el%20apartamento%20${apartment.name}.`}
-                                        target="_blank"
-                                        className="px-10 py-5 bg-rural-700 text-white rounded-2xl font-bold shadow-xl hover:bg-rural-800 hover:-translate-y-1 transition-all flex items-center gap-3"
-                                    >
-                                        <Calendar size={22} />
-                                        Reservar estancia
-                                    </a>
+                                <div className="p-6 bg-rural-50 rounded-3xl border border-rural-100 text-center space-y-1">
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-rural-600">Temporada Alta</p>
+                                    <p className="text-4xl font-serif font-bold text-rural-800">{apartment.price_high || 70}<span className="text-lg">€</span></p>
+                                    <p className="text-[10px] text-rural-400 leading-none italic">Navidad, S. Santa y Puentes</p>
                                 </div>
+                            </div>
+
+                            <div className="p-4 bg-rural-900 text-white rounded-3xl flex items-center justify-between group">
+                                <div className="pl-4">
+                                    <p className="text-xs opacity-60">Consultar disponibilidad</p>
+                                    <p className="font-bold">WhatsApp Directo</p>
+                                </div>
+                                <a
+                                    href={`https://api.whatsapp.com/send?phone=34676344675&text=Hola,%20me%20gustar%C3%ADa%20consultar%20disponibilidad%20para%20el%20apartamento%20${apartment.name}.`}
+                                    target="_blank"
+                                    className="px-8 py-4 bg-white text-rural-900 rounded-2xl font-bold hover:bg-rural-50 transition-all flex items-center gap-2"
+                                >
+                                    <Calendar size={18} /> Reservar
+                                </a>
                             </div>
                         </div>
 
@@ -127,21 +156,19 @@ const ApartmentDetail = () => {
                         </div>
 
                         <div className="space-y-6">
-                            <h3 className="text-2xl font-serif font-bold text-rural-800">Equipamiento y Servicios</h3>
+                            <h3 className="text-2xl font-serif font-bold text-rural-800 uppercase tracking-widest text-xs">Equipamiento y Servicios</h3>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                {[
-                                    { icon: Flame, label: 'Chimenea' },
-                                    { icon: Wifi, label: 'WiFi Gratis' },
-                                    { icon: UtensilsCrossed, label: 'Cocina' },
-                                    { icon: Tv, label: 'Smart TV' },
-                                    { icon: Baby, label: 'Cuna disp.' },
-                                    { icon: Home, label: 'Mascotas' }
-                                ].map((item, i) => (
-                                    <div key={i} className="flex items-center gap-3 p-4 bg-white border border-gray-100 rounded-2xl hover:border-rural-200 transition-colors group">
-                                        <item.icon size={20} className="text-rural-400 group-hover:text-rural-600 transition-colors" />
-                                        <span className="text-sm font-medium text-gray-700">{item.label}</span>
-                                    </div>
-                                ))}
+                                {(apartment.amenities && apartment.amenities.length > 0 ? apartment.amenities : ['tv', 'wifi', 'heating', 'ac', 'fireplace', 'kitchen', 'fridge', 'microwave', 'bath', 'hairdryer', 'no_pets']).map((id, i) => {
+                                    const item = AMENITIES_ICONS[id];
+                                    if (!item) return null;
+                                    const Icon = item.icon;
+                                    return (
+                                        <div key={i} className="flex flex-col items-center gap-3 p-6 bg-white border border-gray-100 rounded-[2rem] hover:border-rural-200 transition-all group text-center">
+                                            <Icon size={32} className="text-rural-400 group-hover:text-rural-600 transition-colors" />
+                                            <span className="text-[10px] font-bold text-gray-700 uppercase tracking-widest leading-tight">{item.label}</span>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>
