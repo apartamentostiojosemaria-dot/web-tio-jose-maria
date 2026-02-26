@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { COLORS } from '../../App';
-import { LayoutDashboard, Home, Map, FileText, Settings, LogOut } from 'lucide-react';
 import ApartmentsManager from './ApartmentsManager';
 import WebConfigManager from './WebConfigManager';
 import LocalPlacesManager from './LocalPlacesManager';
 import DocumentsManager from './DocumentsManager';
+import AvailabilityManager from './AvailabilityManager';
+import { LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar } from 'lucide-react';
 
 const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -37,6 +38,12 @@ const AdminDashboard = () => {
                         label="Rutas y Entorno"
                         active={activeTab === 'entorno'}
                         onClick={() => setActiveTab('entorno')}
+                    />
+                    <SidebarLink
+                        icon={<Calendar size={18} />}
+                        label="Disponibilidad"
+                        active={activeTab === 'disponibilidad'}
+                        onClick={() => setActiveTab('disponibilidad')}
                     />
                     <SidebarLink
                         icon={<FileText size={18} />}
@@ -81,6 +88,7 @@ const AdminDashboard = () => {
                 )}
 
                 {activeTab === 'apartamentos' && <ApartmentsManager />}
+                {activeTab === 'disponibilidad' && <AvailabilityManager />}
                 {activeTab === 'entorno' && <LocalPlacesManager />}
                 {activeTab === 'documentos' && <DocumentsManager />}
                 {activeTab === 'configuracion' && <WebConfigManager />}
