@@ -7,6 +7,7 @@ import AdminDashboard from './components/admin/AdminDashboard';
 import ClientLogin from './components/client/ClientLogin';
 import ClientArea from './components/client/ClientArea';
 import ApartmentDetail from './components/ApartmentDetail';
+import ICalExport from './components/ICalExport';
 import { Mail, Phone, MapPin, Instagram, Facebook, Menu, X, Flame, Wifi, Tv, UtensilsCrossed, Baby, Eye } from 'lucide-react';
 
 export const COLORS = {
@@ -680,6 +681,7 @@ export default function App() {
             <Routes>
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/apartamento/:slug" element={<ApartmentDetail />} />
+                <Route path="/ical/:slug" element={<ICalExport />} />
                 <Route
                     path="/admin"
                     element={!session ? <AdminLogin /> : (userProfile?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/" replace />)}

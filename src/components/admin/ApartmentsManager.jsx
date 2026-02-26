@@ -6,8 +6,9 @@ import {
     Home, Users, Eye, EyeOff, Layout, List, Upload, Loader2,
     Tv, Wifi, Flame, Wind, Thermometer, UtensilsCrossed,
     Refrigerator, Microwave, Bath, Eraser, Dog, ShieldCheck,
-    Bed, Info, RefreshCw, Calendar as CalendarIcon, Link as LinkIcon
+    Bed, Info, RefreshCw, Calendar as CalendarIcon, Link as LinkIcon, Copy
 } from 'lucide-react';
+import { syncApartmentDates } from '../../utils/syncService';
 
 const AMENITIES_LIST = [
     { id: 'tv', label: 'TV Pantalla Plana', icon: Tv },
@@ -122,16 +123,6 @@ const ApartmentsManager = () => {
         }
     };
 
-    const addImage = () => {
-        if (!newImageUrl) return;
-        const currentImages = editingApt.images || [];
-        setEditingApt({
-            ...editingApt,
-            images: [...currentImages, newImageUrl]
-        });
-        setNewImageUrl('');
-    };
-
     const handleSync = async (apt) => {
         if (!apt.airbnb_ical_url && !apt.booking_ical_url) {
             alert('Por favor, añade al menos un enlace de iCal (Airbnb o Booking) primero.');
@@ -140,56 +131,8 @@ const ApartmentsManager = () => {
 
         setIsSaving(true);
         try {
-            const allBlockedDates = [];
-            const urls = [
-                { url: apt.airbnb_ical_url, source: 'airbnb' },
-                { url: apt.booking_ical_url, source: 'booking' }
-            ].filter(item => item.url);
-
-            for (const { url, source } of urls) {
-                // Usamos un proxy para evitar CORS (corsproxy.io es más directo)
-                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-                const response = await fetch(proxyUrl);
-
-                if (!response.ok) throw new Error(`Error al acceder al calendario de ${source}`);
-
-                const icsText = await response.text();
-
-                // Parser básico de iCal
-                const regex = /BEGIN:VEVENT[\s\S]*?DTSTART;VALUE=DATE:(\d{8})[\s\S]*?DTEND;VALUE=DATE:(\d{8})[\s\S]*?END:VEVENT/g;
-                let match;
-                while ((match = regex.exec(icsText)) !== null) {
-                    const startStr = match[1];
-                    const endStr = match[2];
-
-                    const start_date = `${startStr.slice(0, 4)}-${startStr.slice(4, 6)}-${startStr.slice(6, 8)}`;
-                    const end_date = `${endStr.slice(0, 4)}-${endStr.slice(4, 6)}-${endStr.slice(6, 8)}`;
-
-                    allBlockedDates.push({
-                        apartment_id: apt.id,
-                        start_date,
-                        end_date,
-                        source
-                    });
-                }
-            }
-
-            // 1. Limpiar bloqueos antiguos de este apartamento que vengan de sync
-            await supabase
-                .from('blocked_dates')
-                .delete()
-                .eq('apartment_id', apt.id)
-                .neq('source', 'manual');
-
-            // 2. Insertar nuevos bloqueos
-            if (allBlockedDates.length > 0) {
-                const { error: insertError } = await supabase
-                    .from('blocked_dates')
-                    .insert(allBlockedDates);
-                if (insertError) throw insertError;
-            }
-
-            alert(`Sincronización completada: ${allBlockedDates.length} periodos bloqueados.`);
+            const count = await syncApartmentDates(apt);
+            alert(`Sincronización completada: ${count} periodos bloqueados.`);
             fetchApartments();
         } catch (error) {
             console.error('Error in sync:', error);
@@ -206,6 +149,11 @@ const ApartmentsManager = () => {
             ...editingApt,
             images: currentImages
         });
+    };
+
+    const copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text);
+        alert('Copiado al portapapeles');
     };
 
     if (loading) return <div className="p-10 text-center animate-pulse font-serif italic text-gray-500">Cargando apartamentos...</div>;
@@ -252,7 +200,7 @@ const ApartmentsManager = () => {
                         </div>
 
                         <div className="p-8 grid grid-cols-1 lg:grid-cols-3 gap-8 max-h-[75vh] overflow-y-auto">
-                            {/* Columna 1: Información Básica y Precios */}
+                            {/* Columna 1 */}
                             <div className="space-y-8">
                                 <section className="space-y-4">
                                     <h5 className="font-bold flex items-center gap-2 text-rural-700 uppercase tracking-widest text-xs">
@@ -295,30 +243,24 @@ const ApartmentsManager = () => {
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Precio T. Baja</label>
-                                            <div className="relative">
-                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 font-bold">€</span>
-                                                <input
-                                                    type="number"
-                                                    className="w-full pl-10 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 ring-rural-300 outline-none"
-                                                    value={editingApt.price_low || ''}
-                                                    onChange={e => setEditingApt({ ...editingApt, price_low: parseFloat(e.target.value) })}
-                                                />
-                                            </div>
+                                            <input
+                                                type="number"
+                                                className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 ring-rural-300 outline-none"
+                                                value={editingApt.price_low || ''}
+                                                onChange={e => setEditingApt({ ...editingApt, price_low: parseFloat(e.target.value) })}
+                                            />
                                         </div>
                                         <div>
                                             <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Precio T. Alta</label>
-                                            <div className="relative">
-                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 font-bold">€</span>
-                                                <input
-                                                    type="number"
-                                                    className="w-full pl-10 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 ring-rural-300 outline-none"
-                                                    value={editingApt.price_high || ''}
-                                                    onChange={e => setEditingApt({ ...editingApt, price_high: parseFloat(e.target.value) })}
-                                                />
-                                            </div>
+                                            <input
+                                                type="number"
+                                                className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 ring-rural-300 outline-none"
+                                                value={editingApt.price_high || ''}
+                                                onChange={e => setEditingApt({ ...editingApt, price_high: parseFloat(e.target.value) })}
+                                            />
                                         </div>
                                         <div>
-                                            <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Plazas Máx.</label>
+                                            <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Plazas</label>
                                             <input
                                                 type="number"
                                                 className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 ring-rural-300 outline-none"
@@ -339,15 +281,15 @@ const ApartmentsManager = () => {
                                 </section>
                             </div>
 
-                            {/* Columna 2: Servicios e iCal */}
+                            {/* Columna 2: Sincronización */}
                             <div className="space-y-8">
                                 <section className="space-y-4">
                                     <h5 className="font-bold flex items-center gap-2 text-rural-700 uppercase tracking-widest text-xs">
-                                        <LinkIcon size={16} /> Sincronización (iCal)
+                                        <LinkIcon size={16} /> Sincronización Importación (BOOKING/AIRBNB)
                                     </h5>
                                     <div className="space-y-4 bg-rural-50 p-6 rounded-3xl border border-rural-100">
                                         <div>
-                                            <label className="block text-[10px] font-bold uppercase tracking-widest text-rural-400 mb-1">Enlace Airbnb (.ics)</label>
+                                            <label className="block text-[10px] font-bold uppercase tracking-widest text-rural-400 mb-1">Airbnb iCal (.ics)</label>
                                             <input
                                                 className="w-full p-4 bg-white border border-gray-100 rounded-2xl text-xs"
                                                 placeholder="https://www.airbnb.es/calendar/export..."
@@ -356,7 +298,7 @@ const ApartmentsManager = () => {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-[10px] font-bold uppercase tracking-widest text-rural-400 mb-1">Enlace Booking (.ics)</label>
+                                            <label className="block text-[10px] font-bold uppercase tracking-widest text-rural-400 mb-1">Booking iCal (.ics)</label>
                                             <input
                                                 className="w-full p-4 bg-white border border-gray-100 rounded-2xl text-xs"
                                                 placeholder="https://ical.booking.com/v1/export..."
@@ -369,30 +311,47 @@ const ApartmentsManager = () => {
 
                                 <section className="space-y-4">
                                     <h5 className="font-bold flex items-center gap-2 text-rural-700 uppercase tracking-widest text-xs">
+                                        <RefreshCw size={16} /> Sincronización Exportación (HACIA FUERA)
+                                    </h5>
+                                    <div className="bg-amber-50 p-6 rounded-3xl border border-amber-100 space-y-4">
+                                        <p className="text-[10px] text-amber-800 font-bold uppercase">Copia este enlace en Airbnb/Booking:</p>
+                                        <div className="flex gap-2">
+                                            <input
+                                                readOnly
+                                                className="flex-grow p-3 bg-white border border-amber-200 rounded-xl text-[10px] font-mono"
+                                                value={editingApt.slug ? `${window.location.origin}/ical/${editingApt.slug}` : 'Guarda primero el apartamento'}
+                                            />
+                                            <button
+                                                onClick={() => copyToClipboard(`${window.location.origin}/ical/${editingApt.slug}`)}
+                                                className="p-3 bg-amber-600 text-white rounded-xl hover:bg-amber-700 transition-all"
+                                            >
+                                                <Copy size={16} />
+                                            </button>
+                                        </div>
+                                        <p className="text-[10px] text-amber-600 italic">Pega este enlace en la sección "Importar Calendario" de las otras plataformas.</p>
+                                    </div>
+                                </section>
+
+                                <section className="space-y-4">
+                                    <h5 className="font-bold flex items-center gap-2 text-rural-700 uppercase tracking-widest text-xs">
                                         <List size={16} /> Servicios Incluidos
                                     </h5>
-                                    <div className="grid grid-cols-1 gap-2">
+                                    <div className="grid grid-cols-2 gap-2">
                                         {AMENITIES_LIST.map(item => (
                                             <button
                                                 key={item.id}
                                                 onClick={() => toggleAmenity(item.id)}
-                                                className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${(editingApt.amenities || []).includes(item.id)
-                                                    ? 'bg-rural-50 border-rural-200 text-rural-700 shadow-sm'
-                                                    : 'bg-white border-gray-100 text-gray-400 hover:border-gray-200'
-                                                    }`}
+                                                className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${(editingApt.amenities || []).includes(item.id) ? 'bg-rural-50 border-rural-200 text-rural-700' : 'bg-white border-gray-100 text-gray-400'}`}
                                             >
-                                                <div className="flex items-center gap-3">
-                                                    <item.icon size={20} />
-                                                    <span className="text-sm font-bold">{item.label}</span>
-                                                </div>
-                                                {(editingApt.amenities || []).includes(item.id) && <Check size={18} />}
+                                                <item.icon size={16} />
+                                                <span className="text-[10px] font-bold uppercase">{item.label}</span>
                                             </button>
                                         ))}
                                     </div>
                                 </section>
                             </div>
 
-                            {/* Columna 3: Imágenes y Descripción */}
+                            {/* Columna 3 */}
                             <div className="space-y-8">
                                 <section className="space-y-4">
                                     <h5 className="font-bold flex items-center gap-2 text-rural-700 uppercase tracking-widest text-xs">
@@ -405,16 +364,13 @@ const ApartmentsManager = () => {
                                             disabled={isUploading}
                                             className="w-full py-4 border-2 border-dashed border-rural-200 rounded-2xl flex items-center justify-center gap-2 text-rural-600 font-bold hover:bg-rural-100 transition-all"
                                         >
-                                            {isUploading ? <Loader2 className="animate-spin" /> : <Upload size={18} />} Subir foto local
+                                            {isUploading ? <Loader2 className="animate-spin" /> : <Upload size={18} />} Subir foto
                                         </button>
-
-                                        <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto pr-1">
+                                        <div className="grid grid-cols-3 gap-2">
                                             {(editingApt.images || []).map((img, idx) => (
                                                 <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group">
                                                     <img src={img} className="w-full h-full object-cover" />
-                                                    <button onClick={() => removeImage(idx)} className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <X size={12} />
-                                                    </button>
+                                                    <button onClick={() => removeImage(idx)} className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"><X size={12} /></button>
                                                 </div>
                                             ))}
                                         </div>
@@ -423,7 +379,7 @@ const ApartmentsManager = () => {
 
                                 <section className="space-y-4">
                                     <h5 className="font-bold flex items-center gap-2 text-rural-700 uppercase tracking-widest text-xs">
-                                        <Info size={16} /> Descripción del Alojamiento
+                                        <Info size={16} /> Descripción
                                     </h5>
                                     <textarea
                                         className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 ring-rural-300 outline-none"
@@ -451,7 +407,7 @@ const ApartmentsManager = () => {
                                 disabled={isSaving}
                                 className="px-10 py-3 bg-rural-700 text-white font-bold rounded-2xl hover:bg-rural-800 transition-all shadow-lg flex items-center gap-2"
                             >
-                                {isSaving ? 'Guardando...' : <><Save size={20} /> Guardar Ficha</>}
+                                {isSaving ? 'Guardando...' : <Save size={20} />} Guardar Cambios
                             </button>
                         </div>
                     </div>
@@ -463,29 +419,17 @@ const ApartmentsManager = () => {
                     <div key={apt.id} className="group bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col md:flex-row gap-8 hover:shadow-xl transition-all">
                         <div className="w-full md:w-64 h-44 bg-gray-100 rounded-2xl overflow-hidden relative">
                             <img src={apt.images?.[0] || 'https://via.placeholder.com/400x300'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                            <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold text-rural-700 shadow-sm border border-rural-100">
-                                {apt.capacity_people} Plazas · {apt.bathrooms} Baño
-                            </div>
                         </div>
 
                         <div className="flex-grow flex flex-col justify-between">
-                            <div>
-                                <div className="flex justify-between items-start mb-2">
-                                    <div>
-                                        <h4 className="text-3xl font-serif font-bold text-rural-900">{apt.name}</h4>
-                                        <p className="text-xs font-mono text-gray-400">/{apt.slug} · {apt.registration_number}</p>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <button onClick={() => setEditingApt(apt)} className="p-3 text-rural-600 hover:bg-rural-50 rounded-2xl transition-all"><Edit2 size={20} /></button>
-                                        <button onClick={() => handleDelete(apt.id)} className="p-3 text-red-400 hover:bg-red-50 rounded-2xl transition-all"><Trash2 size={20} /></button>
-                                    </div>
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <h4 className="text-3xl font-serif font-bold text-rural-900">{apt.name}</h4>
+                                    <p className="text-xs text-gray-400">/{apt.slug} · {apt.registration_number}</p>
                                 </div>
-                                <div className="flex flex-wrap gap-2 mb-4">
-                                    {(apt.amenities || []).slice(0, 5).map(id => {
-                                        const Item = AMENITIES_LIST.find(a => a.id === id);
-                                        return Item ? <Item.icon key={id} size={14} className="text-rural-400" /> : null;
-                                    })}
-                                    {(apt.amenities || []).length > 5 && <span className="text-[10px] text-gray-400 font-bold">+{apt.amenities.length - 5} más</span>}
+                                <div className="flex gap-2">
+                                    <button onClick={() => setEditingApt(apt)} className="p-3 text-rural-600 hover:bg-rural-50 rounded-2xl transition-all"><Edit2 size={20} /></button>
+                                    <button onClick={() => handleDelete(apt.id)} className="p-3 text-red-400 hover:bg-red-50 rounded-2xl transition-all"><Trash2 size={20} /></button>
                                 </div>
                             </div>
 
@@ -509,9 +453,6 @@ const ApartmentsManager = () => {
                                         <RefreshCw size={14} className={isSaving ? 'animate-spin' : ''} />
                                         Sincronizar
                                     </button>
-                                    <div className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${apt.is_active ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
-                                        {apt.is_active ? 'Visible' : 'Oculto'}
-                                    </div>
                                 </div>
                             </div>
                         </div>
