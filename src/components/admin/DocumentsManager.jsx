@@ -144,6 +144,7 @@ const DocumentsManager = () => {
                             >
                                 <option value="publico">Público</option>
                                 <option value="solo_clientes">Solo Clientes</option>
+                                <option value="privado">Privado (Personal)</option>
                             </select>
                         </div>
                     </div>
@@ -176,8 +177,8 @@ const DocumentsManager = () => {
                                 onClick={() => togglePrivacy(doc.id, doc.visibility)}
                                 className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${doc.visibility === 'publico' ? 'bg-green-50 border-green-100 text-green-600' : 'bg-gray-50 border-gray-100 text-gray-400'}`}
                             >
-                                {doc.visibility === 'publico' ? <Globe size={14} /> : <Lock size={14} />}
-                                {doc.visibility === 'publico' ? 'Público' : 'Solo Clientes'}
+                                {doc.visibility === 'publico' ? <Globe size={14} /> : doc.visibility === 'privado' ? <Lock size={14} className="text-amber-500" /> : <Shield size={14} />}
+                                {doc.visibility === 'publico' ? 'Público' : doc.visibility === 'privado' ? 'Privado' : 'Solo Clientes'}
                             </button>
                             <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="p-2 text-gray-300 hover:text-blue-500"><Download size={18} /></a>
                             <button onClick={() => handleDelete(doc.id)} className="p-2 text-gray-300 hover:text-red-500"><Trash2 size={18} /></button>

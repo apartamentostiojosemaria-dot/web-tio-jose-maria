@@ -128,6 +128,9 @@ const GuestDetailView = ({ guest, onBack }) => {
     const { bookings, loading: loadingHistory } = useGuestBookings(guest.id);
     const [notes, setNotes] = useState(guest.notes || '');
     const [preferences, setPreferences] = useState(guest.preferences || '');
+    const [phone, setPhone] = useState(guest.phone || '');
+    const [address, setAddress] = useState(guest.address || '');
+    const [paxCount, setPaxCount] = useState(guest.pax_count || 1);
     const [isActive, setIsActive] = useState(guest.is_active !== false);
     const [accessMode, setAccessMode] = useState(guest.access_mode || 'always');
 
@@ -140,6 +143,9 @@ const GuestDetailView = ({ guest, onBack }) => {
         const updateData = {
             notes,
             preferences,
+            phone,
+            address,
+            pax_count: parseInt(paxCount),
             is_active: isActive,
             access_mode: accessMode,
             updated_at: new Date().toISOString(),
@@ -203,25 +209,70 @@ const GuestDetailView = ({ guest, onBack }) => {
             <div className="grid lg:grid-cols-3 gap-8">
                 {/* Panel Izquierdo: Info y Seguridad */}
                 <div className="lg:col-span-1 space-y-6">
-                    <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm text-center">
+                    <div className="bg-white p-10 rounded-[40px] border border-gray-100 shadow-sm text-center">
                         <div className="w-24 h-24 rounded-[32px] bg-rural-50 flex items-center justify-center text-rural-600 mx-auto mb-6 shadow-inner" style={{ backgroundColor: COLORS.bgWarm, color: COLORS.primary }}>
                             <User size={48} />
                         </div>
                         <h3 className="text-2xl font-serif font-bold mb-2" style={{ color: COLORS.text }}>{guest.full_name || 'Huésped'}</h3>
-                        <p className="text-sm text-gray-400 mb-6">{guest.id}</p>
+                        <p className="text-xs text-gray-400 mb-6">{guest.id}</p>
 
-                        <div className="pt-6 border-t border-gray-50 flex flex-col gap-3">
-                            <div className="flex items-center gap-3 text-sm text-gray-600 justify-center">
-                                <Mail size={16} className="text-gray-400" />
-                                {guest.id}
+                        <div className="flex items-center gap-3 text-sm text-gray-600 justify-center mb-6">
+                            <Mail size={16} className="text-gray-400" />
+                            {guest.email || guest.id}
+                        </div>
+
+                        <div className="space-y-4 text-left border-t border-gray-50 pt-6">
+                            <div>
+                                <label className="block text-[8px] font-bold text-gray-400 uppercase mb-1 ml-1">Teléfono</label>
+                                <input
+                                    type="text"
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                    placeholder="Ej: 600 000 000"
+                                    className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-xs font-bold focus:ring-2 focus:ring-rural-100 outline-none transition-all"
+                                />
                             </div>
+                            <div>
+                                <label className="block text-[8px] font-bold text-gray-400 uppercase mb-1 ml-1">Dirección</label>
+                                <input
+                                    type="text"
+                                    value={address}
+                                    onChange={(e) => setAddress(e.target.value)}
+                                    placeholder="Calle, Ciudad, Provincia"
+                                    className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-xs font-bold focus:ring-2 focus:ring-rural-100 outline-none transition-all"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[8px] font-bold text-gray-400 uppercase mb-1 ml-1">Viajeros (Pax)</label>
+                                <input
+                                    type="number"
+                                    value={paxCount}
+                                    onChange={(e) => setPaxCount(e.target.value)}
+                                    className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:ring-2 focus:ring-rural-100 outline-none"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="mt-8 grid grid-cols-2 gap-4">
+                            <div className="p-4 bg-gray-50 rounded-[24px] border border-gray-100">
+                                <span className="block text-[8px] font-bold text-gray-400 uppercase mb-1">Registro</span>
+                                <span className={`font-bold text-[10px] ${guest.is_profile_completed ? 'text-green-600' : 'text-amber-600'}`}>
+                                    {guest.is_profile_completed ? 'Listo' : 'Pdte'}
+                                </span>
+                            </div>
+                            <button
+                                onClick={() => handleUpdateProfile()}
+                                className="p-4 bg-rural-600 text-white rounded-[24px] font-bold text-xs shadow-md hover:scale-105 transition-all"
+                                style={{ backgroundColor: COLORS.primary }}
+                            >
+                                Guardar
+                            </button>
                         </div>
                     </div>
 
-                    {/* Seguridad / Acceso */}
                     <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm space-y-6">
                         <h5 className="flex items-center gap-2 font-bold text-rural-900 uppercase tracking-widest text-[10px]">
-                            <Shield size={16} style={{ color: COLORS.primary }} /> Reglas de Acceso
+                            <Shield size={16} style={{ color: COLORS.primary }} /> Acceso de Usuario
                         </h5>
 
                         <div className="space-y-4">
@@ -230,7 +281,7 @@ const GuestDetailView = ({ guest, onBack }) => {
                                 <select
                                     value={accessMode}
                                     onChange={(e) => setAccessMode(e.target.value)}
-                                    className="w-full p-3 rounded-xl border border-gray-100 text-sm font-bold bg-gray-50 outline-none"
+                                    className="w-full p-3 rounded-xl border border-gray-100 text-sm font-bold bg-gray-50 outline-none focus:ring-2 focus:ring-rural-100"
                                 >
                                     <option value="always">Siempre permitido</option>
                                     <option value="stay_only">Solo durante la estancia</option>
@@ -245,120 +296,89 @@ const GuestDetailView = ({ guest, onBack }) => {
                                 style={!isActive ? { backgroundColor: COLORS.primary } : {}}
                             >
                                 {isActive ? <Lock size={18} /> : <Unlock size={18} />}
-                                {isActive ? 'Bloquear Acceso Manualmente' : 'Restaurar Acceso'}
+                                {isActive ? 'Bloquear Acceso' : 'Restaurar Acceso'}
                             </button>
-
-                            <p className="text-[10px] text-gray-400 text-center leading-relaxed">
-                                {isActive
-                                    ? "El cliente puede acceder según el modo seleccionado arriba."
-                                    : "Baneado: El cliente tiene el acceso prohibido aunque intente loguearse."}
-                            </p>
                         </div>
                     </div>
 
-                    <div className="bg-amber-50 p-6 rounded-3xl border border-amber-100/50">
+                    <div className="bg-amber-50 p-6 rounded-[32px] border border-amber-100/50">
                         <h5 className="flex items-center gap-2 font-bold text-amber-900 text-sm mb-4">
-                            <Heart size={16} /> Preferencias del Huésped
+                            <Heart size={16} /> Preferencias
                         </h5>
                         <textarea
                             value={preferences}
                             onChange={(e) => setPreferences(e.target.value)}
-                            placeholder="Ej: Prefiere habitación planta baja, alérgico a..."
-                            className="w-full bg-white/50 p-4 rounded-2xl border border-amber-200/50 text-sm h-32 resize-none outline-none focus:ring-2 focus:ring-amber-200 transition-all shadow-inner"
+                            placeholder="Preferencias del cliente..."
+                            className="w-full bg-white/50 p-4 rounded-2xl border border-amber-200/50 text-sm h-32 resize-none outline-none focus:ring-2 focus:ring-amber-200 transition-all"
                         />
                         <button
                             onClick={() => handleUpdateProfile()}
-                            disabled={saving}
-                            className="w-full mt-4 py-3 bg-amber-600 text-white rounded-xl font-bold text-xs shadow-md transition-all hover:scale-105 active:scale-95"
+                            className="w-full mt-4 py-3 bg-amber-600 text-white rounded-xl font-bold text-xs shadow-md transition-all hover:scale-105"
                         >
-                            {saving ? 'Guardando...' : 'Actualizar Ficha'}
+                            Guardar Preferencias
                         </button>
                     </div>
                 </div>
 
-                {/* Panel Central: Notas Internas y Estancia Actual */}
+                {/* Panel Central y Derecho */}
                 <div className="lg:col-span-2 space-y-8">
                     <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm">
                         <h5 className="flex items-center gap-2 font-bold text-rural-900 mb-6 uppercase tracking-widest text-[10px]">
-                            <FileText size={16} style={{ color: COLORS.primary }} /> Notas Internas de Administración
+                            <FileText size={16} style={{ color: COLORS.primary }} /> Notas Internas
                         </h5>
                         <textarea
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
-                            placeholder="Escribe notas privadas aquí. Solo los administradores pueden ver esto..."
-                            className="w-full p-6 bg-gray-50 rounded-3xl border border-gray-100 text-sm h-48 resize-none outline-none focus:bg-white focus:ring-2 focus:ring-rural-100 transition-all shadow-inner leading-relaxed"
+                            placeholder="Notas privadas solo para administración..."
+                            className="w-full p-6 bg-gray-50 rounded-3xl border border-gray-100 text-sm h-32 resize-none outline-none focus:bg-white focus:ring-2 focus:ring-rural-100 transition-all shadow-inner leading-relaxed"
                         />
                         <div className="flex justify-end mt-4">
                             <button
                                 onClick={() => handleUpdateProfile()}
-                                disabled={saving}
                                 className="flex items-center gap-2 px-8 py-3 bg-rural-600 text-white rounded-2xl font-bold shadow-lg shadow-rural-100 hover:scale-105 transition-all text-sm"
                                 style={{ backgroundColor: COLORS.primary }}
                             >
-                                <Save size={18} /> {saving ? 'Guardando...' : 'Guardar Notas'}
+                                <Save size={18} /> Guardar Notas
                             </button>
                         </div>
                     </div>
+
+                    {/* Documentos Privados */}
+                    <PrivateDocsSection guestId={guest.id} />
 
                     {/* Historial de Reservas */}
                     <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm">
                         <div className="flex justify-between items-center mb-8">
                             <h5 className="flex items-center gap-2 font-bold text-rural-900 uppercase tracking-widest text-[10px]">
-                                <History size={16} style={{ color: COLORS.accent }} /> Historial de Estancias
+                                <History size={16} /> Historial de Estancias
                             </h5>
                             <button
                                 onClick={() => setIsAddingBooking(true)}
                                 className="flex items-center gap-2 px-4 py-2 rounded-xl border border-rural-100 text-rural-600 hover:bg-rural-50 font-bold text-xs transition-all"
                                 style={{ color: COLORS.primary }}
                             >
-                                <Plus size={14} /> Registrar Nueva Estancia
+                                <Plus size={14} /> Nueva Estancia
                             </button>
                         </div>
 
-                        {/* Modal Añadir Estancia */}
                         {isAddingBooking && (
                             <div className="mb-8 p-6 bg-rural-50 rounded-3xl border border-rural-100 animate-in zoom-in-95 duration-200">
                                 <div className="grid md:grid-cols-2 gap-4 mb-4">
-                                    <div>
-                                        <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Apartamento</label>
-                                        <input
-                                            type="text"
-                                            placeholder="Nombre del apartamento"
-                                            value={newBooking.apartment_name}
-                                            onChange={(e) => setNewBooking({ ...newBooking, apartment_name: e.target.value })}
-                                            className="w-full px-4 py-2 rounded-xl border border-white text-sm"
-                                        />
-                                    </div>
-                                    <div className="flex gap-4">
-                                        <div className="flex-1">
-                                            <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Entrada</label>
-                                            <input
-                                                type="date"
-                                                value={newBooking.check_in}
-                                                onChange={(e) => setNewBooking({ ...newBooking, check_in: e.target.value })}
-                                                className="w-full px-4 py-2 rounded-xl border border-white text-sm"
-                                            />
-                                        </div>
-                                        <div className="flex-1">
-                                            <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Salida</label>
-                                            <input
-                                                type="date"
-                                                value={newBooking.check_out}
-                                                onChange={(e) => setNewBooking({ ...newBooking, check_out: e.target.value })}
-                                                className="w-full px-4 py-2 rounded-xl border border-white text-sm"
-                                            />
-                                        </div>
+                                    <input
+                                        type="text"
+                                        placeholder="Apartamento"
+                                        value={newBooking.apartment_name}
+                                        onChange={(e) => setNewBooking({ ...newBooking, apartment_name: e.target.value })}
+                                        className="px-4 py-2 rounded-xl border border-white text-sm"
+                                    />
+                                    <div className="flex gap-2">
+                                        <input type="date" value={newBooking.check_in} onChange={(e) => setNewBooking({ ...newBooking, check_in: e.target.value })} className="flex-1 px-4 py-2 rounded-xl border border-white text-sm" />
+                                        <input type="date" value={newBooking.check_out} onChange={(e) => setNewBooking({ ...newBooking, check_out: e.target.value })} className="flex-1 px-4 py-2 rounded-xl border border-white text-sm" />
                                     </div>
                                 </div>
                                 <div className="flex justify-end gap-3">
                                     <button onClick={() => setIsAddingBooking(false)} className="px-5 py-2 text-gray-400 text-sm font-bold">Cancelar</button>
-                                    <button
-                                        onClick={handleAddBooking}
-                                        className="px-6 py-2 bg-rural-600 text-white rounded-xl text-sm font-bold shadow-md"
-                                        style={{ backgroundColor: COLORS.primary }}
-                                    >
-                                        Guardar Estancia
-                                    </button>
+                                    <button onClick={handleAddBooking} className="px-6 py-2 bg-rural-600 text-white rounded-xl text-sm font-bold shadow-md" style={{ backgroundColor: COLORS.primary }}>Guardar</button>
                                 </div>
                             </div>
                         )}
@@ -367,9 +387,7 @@ const GuestDetailView = ({ guest, onBack }) => {
                             {bookings.map((booking) => (
                                 <div key={booking.id} className="flex items-center justify-between p-5 rounded-2xl border border-gray-50 hover:bg-gray-50/50 transition-colors group">
                                     <div className="flex items-center gap-6">
-                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${booking.status === 'completed' ? 'bg-green-50 text-green-600' :
-                                            booking.status === 'upcoming' ? 'bg-blue-50 text-blue-600' : 'bg-gray-50 text-gray-400'
-                                            }`}>
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${booking.status === 'completed' ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600'}`}>
                                             {booking.status === 'completed' ? <CheckCircle2 size={20} /> : <Clock size={20} />}
                                         </div>
                                         <div>
@@ -379,16 +397,11 @@ const GuestDetailView = ({ guest, onBack }) => {
                                             </p>
                                         </div>
                                     </div>
-                                    <button
-                                        onClick={() => handleDeleteBooking(booking.id)}
-                                        className="p-2 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
-                                    >
-                                        <X size={16} />
-                                    </button>
+                                    <button onClick={() => handleDeleteBooking(booking.id)} className="p-2 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"><X size={16} /></button>
                                 </div>
                             ))}
                             {!loadingHistory && bookings.length === 0 && (
-                                <p className="text-center py-10 text-gray-300 italic text-sm">No hay registros de estancias anteriores.</p>
+                                <p className="text-center py-10 text-gray-300 italic text-sm">No hay registros de estancias.</p>
                             )}
                         </div>
                     </div>
@@ -396,12 +409,12 @@ const GuestDetailView = ({ guest, onBack }) => {
                     <div className="bg-blue-50 p-8 rounded-[40px] border border-blue-100 flex gap-4 items-start">
                         <Settings2 className="text-blue-600 mt-1" size={24} />
                         <div>
-                            <h6 className="font-bold text-blue-900 mb-2">Consejo Pro: Registro de Clientes</h6>
-                            <p className="text-sm text-blue-800 leading-relaxed mb-4">
-                                Para dar de alta a un nuevo cliente, solo tienes que pedirle que se registre en la web con su email. Una vez registrado, su ficha aparecerá aquí automáticamente y tú podrás asignarle sus fechas de estancia y permitirle el acceso.
+                            <h6 className="font-bold text-blue-900 mb-2">Consejo Pro: Registro</h6>
+                            <p className="text-sm text-blue-800 leading-relaxed">
+                                El cliente debe registrarse con su email para ver sus documentos privados.
                             </p>
-                            <div className="bg-white/50 p-4 rounded-2xl text-[10px] font-mono text-blue-900">
-                                URL de Registro: {window.location.origin}/cliente/login
+                            <div className="mt-3 bg-white/50 p-3 rounded-xl text-[10px] font-mono text-blue-900">
+                                Link: {window.location.origin}/clientes
                             </div>
                         </div>
                     </div>
@@ -412,7 +425,7 @@ const GuestDetailView = ({ guest, onBack }) => {
 };
 
 const InvitationTool = () => {
-    const registrationUrl = `${window.location.origin}/cliente/login`;
+    const registrationUrl = `${window.location.origin}/clientes`;
     const [copied, setCopied] = useState(false);
 
     const handleCopy = () => {
@@ -554,6 +567,118 @@ const CreateGuestModal = ({ onClose }) => {
                             Cerrar y volver a la lista
                         </button>
                     </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+const PrivateDocsSection = ({ guestId }) => {
+    const [docs, setDocs] = useState([]);
+    const [uploading, setUploading] = useState(false);
+    const [title, setTitle] = useState('');
+    const fileInputRef = React.useRef(null);
+
+    useEffect(() => {
+        fetchDocs();
+    }, [guestId]);
+
+    const fetchDocs = async () => {
+        const { data } = await supabase
+            .from('documents')
+            .select('*')
+            .eq('profile_id', guestId);
+        if (data) setDocs(data);
+    };
+
+    const handleUpload = async () => {
+        const file = fileInputRef.current?.files?.[0];
+        if (!file || !title) return alert('Ponle un título y selecciona un archivo (PDF, Imagen...)');
+
+        setUploading(true);
+        try {
+            const fileName = `${Date.now()}_factura_${guestId.slice(0, 5)}_${file.name.replace(/\s/g, '_')}`;
+            const { error: uploadError } = await supabase.storage.from('documents').upload(fileName, file);
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage.from('documents').getPublicUrl(fileName);
+
+            const { error } = await supabase.from('documents').insert([{
+                title,
+                file_url: publicUrl,
+                visibility: 'privado',
+                category: 'factura',
+                profile_id: guestId
+            }]);
+
+            if (error) throw error;
+            setTitle('');
+            if (fileInputRef.current) fileInputRef.current.value = '';
+            fetchDocs();
+        } catch (e) {
+            alert('Error: ' + e.message);
+        }
+        setUploading(false);
+    };
+
+    const handleDelete = async (id) => {
+        if (!confirm('¿Borrar este documento?')) return;
+        await supabase.from('documents').delete().eq('id', id);
+        fetchDocs();
+    };
+
+    return (
+        <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm">
+            <h5 className="flex items-center gap-2 font-bold text-rural-900 mb-6 uppercase tracking-widest text-[10px]">
+                <Lock size={16} style={{ color: COLORS.primary }} /> Documentos Privados del Huésped
+            </h5>
+
+            <div className="flex flex-col md:flex-row gap-4 mb-8 p-6 bg-rural-50 rounded-3xl border border-rural-100">
+                <div className="flex-grow">
+                    <input
+                        type="text"
+                        value={title}
+                        onChange={e => setTitle(e.target.value)}
+                        placeholder="Ej: Factura Estancia Agosto 2025"
+                        className="w-full p-3 rounded-xl border border-white text-sm mb-3"
+                    />
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        className="w-full text-[10px] text-gray-400"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                    />
+                </div>
+                <button
+                    onClick={handleUpload}
+                    disabled={uploading}
+                    className="px-6 py-2 bg-rural-600 text-white rounded-xl font-bold text-xs shadow-md transition-all hover:scale-105"
+                    style={{ backgroundColor: COLORS.primary }}
+                >
+                    {uploading ? 'Subiendo...' : 'Subir Documento'}
+                </button>
+            </div>
+
+            <div className="space-y-3">
+                {docs.map(doc => (
+                    <div key={doc.id} className="flex items-center justify-between p-4 rounded-2xl border border-gray-50 hover:bg-gray-50/50 transition-colors group">
+                        <div className="flex items-center gap-4">
+                            <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-rural-600 shadow-sm">
+                                <FileText size={16} />
+                            </div>
+                            <div>
+                                <p className="font-bold text-rural-900 text-xs">{doc.title}</p>
+                                <p className="text-[8px] text-gray-400 uppercase font-mono">{new Date(doc.created_at).toLocaleDateString()}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="p-2 text-gray-300 hover:text-blue-500"><Download size={14} /></a>
+                            <button onClick={() => handleDelete(doc.id)} className="p-2 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100"><X size={14} /></button>
+                        </div>
+                    </div>
+                ))}
+                {docs.length === 0 && (
+                    <p className="text-center py-6 text-gray-300 italic text-xs">No hay documentos privados cargados todavía.</p>
                 )}
             </div>
         </div>

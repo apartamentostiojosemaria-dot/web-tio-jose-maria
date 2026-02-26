@@ -64,7 +64,11 @@ const ClientArea = () => {
                 }
             }
 
-            const { data } = await supabase.from('documents').select('*').order('created_at', { ascending: false });
+            const { data } = await supabase
+                .from('documents')
+                .select('*')
+                .or(`visibility.eq.publico,visibility.eq.solo_clientes,profile_id.eq.${user.id}`)
+                .order('created_at', { ascending: false });
             if (data) setDocs(data);
             setLoading(false);
         };
@@ -98,7 +102,13 @@ const ClientArea = () => {
             </header>
 
             <main className="max-w-5xl mx-auto px-6 py-10">
-                <ClientAreaContent docs={docs} userEmail={user?.email} profile={profile} />
+                {!profile?.is_profile_completed ? (
+                    <CompleteProfileView profile={profile} onComplete={(updatedProfile) => {
+                        setProfile(updatedProfile);
+                    }} />
+                ) : (
+                    <ClientAreaContent docs={docs} userEmail={user?.email} profile={profile} />
+                )}
             </main>
         </div>
     );
@@ -339,6 +349,120 @@ const GuestGuide = () => {
                     )}
                 </motion.div>
             </AnimatePresence>
+        </div>
+    );
+};
+
+const CompleteProfileView = ({ profile, onComplete }) => {
+    const [name, setName] = useState(profile?.full_name || '');
+    const [phone, setPhone] = useState(profile?.phone || '');
+    const [address, setAddress] = useState(profile?.address || '');
+    const [pax, setPax] = useState(profile?.pax_count || 1);
+    const [saving, setSaving] = useState(false);
+
+    const handleSave = async () => {
+        if (!name || !phone) return alert('Por favor, indica tu nombre y teléfono de contacto.');
+        setSaving(true);
+        const { data, error } = await supabase
+            .from('profiles')
+            .update({
+                full_name: name,
+                phone,
+                address,
+                pax_count: parseInt(pax),
+                is_profile_completed: true,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', profile.id)
+            .select()
+            .single();
+
+        if (error) {
+            alert('Error al guardar: ' + error.message);
+        } else if (data) {
+            onComplete(data);
+        }
+        setSaving(false);
+    };
+
+    return (
+        <div className="max-w-2xl mx-auto py-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="bg-white rounded-[40px] p-10 shadow-2xl border border-rural-100 overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-rural-50 rounded-bl-full opacity-50 -translate-y-10 translate-x-10" />
+
+                <header className="mb-10 relative z-10">
+                    <div className="w-16 h-16 rounded-3xl bg-rural-600 text-white flex items-center justify-center mb-6 shadow-lg" style={{ backgroundColor: COLORS.primary }}>
+                        <User size={32} />
+                    </div>
+                    <h2 className="text-3xl font-serif font-bold mb-3" style={{ color: COLORS.text }}>¡Casi listo!</h2>
+                    <p className="text-gray-500 leading-relaxed">
+                        Para ofrecerte la mejor experiencia en <strong style={{ color: COLORS.primary }}>Tío José María</strong>, necesitamos completar tu ficha de huésped.
+                    </p>
+                </header>
+
+                <div className="space-y-6 relative z-10">
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-2">Nombre Completo</label>
+                            <input
+                                type="text"
+                                value={name}
+                                onChange={e => setName(e.target.value)}
+                                className="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:ring-2 focus:ring-rural-100 outline-none transition-all"
+                                placeholder="Ej: Juan García"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-2">Teléfono de Contacto</label>
+                            <input
+                                type="tel"
+                                value={phone}
+                                onChange={e => setPhone(e.target.value)}
+                                className="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:ring-2 focus:ring-rural-100 outline-none transition-all"
+                                placeholder="Ej: 600 000 000"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-2">Dirección de Origen (Opcional)</label>
+                        <input
+                            type="text"
+                            value={address}
+                            onChange={e => setAddress(e.target.value)}
+                            className="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:ring-2 focus:ring-rural-100 outline-none transition-all"
+                            placeholder="Calle, Ciudad, Provincia..."
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-2">¿Cuántas personas venís?</label>
+                        <select
+                            value={pax}
+                            onChange={e => setPax(e.target.value)}
+                            className="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:ring-2 focus:ring-rural-100 outline-none transition-all font-bold text-rural-700"
+                        >
+                            {[1, 2, 3, 4, 5, 6].map(n => (
+                                <option key={n} value={n}>{n} {n === 1 ? 'Persona' : 'Personas'}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <button
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="w-full py-5 bg-rural-600 text-white rounded-[24px] font-bold shadow-xl shadow-rural-100 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 mt-4"
+                        style={{ backgroundColor: COLORS.primary }}
+                    >
+                        {saving ? 'Guardando...' : 'Confirmar y Entrar'}
+                        <ChevronRight size={20} />
+                    </button>
+
+                    <p className="text-center text-[10px] text-gray-400">
+                        Tus datos se tratan de forma segura y solo se usan para la gestión de tu reserva.
+                    </p>
+                </div>
+            </div>
         </div>
     );
 };
