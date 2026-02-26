@@ -612,25 +612,36 @@ const LandingPage = () => {
 export default function App() {
     const [session, setSession] = useState(null);
     const [userProfile, setUserProfile] = useState(null);
+    const [loadingProfile, setLoadingProfile] = useState(true);
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
             if (session) fetchProfile(session.user.id);
+            else setLoadingProfile(false);
         });
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
             if (session) fetchProfile(session.user.id);
-            else setUserProfile(null);
+            else {
+                setUserProfile(null);
+                setLoadingProfile(false);
+            }
         });
 
         return () => subscription.unsubscribe();
     }, []);
 
     async function fetchProfile(userId) {
+        setLoadingProfile(true);
         const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
         if (data) setUserProfile(data);
+        setLoadingProfile(false);
+    }
+
+    if (session && loadingProfile) {
+        return <div className="min-h-screen flex items-center justify-center bg-rural-50 italic opacity-50 font-serif">Verificando credenciales...</div>;
     }
 
     return (
