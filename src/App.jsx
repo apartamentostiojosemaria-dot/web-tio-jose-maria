@@ -641,7 +641,16 @@ export default function App() {
     }
 
     if (session && loadingProfile) {
-        return <div className="min-h-screen flex items-center justify-center bg-rural-50 italic opacity-50 font-serif">Verificando credenciales...</div>;
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-rural-50 font-serif p-6 text-center">
+                <div className="animate-pulse text-rural-700 italic mb-4">Verificando credenciales...</div>
+                <div className="text-[10px] text-gray-400 space-y-1 bg-white p-4 rounded-xl border border-gray-100 shadow-sm max-w-xs">
+                    <p>Sesión activa para: <span className="text-gray-600 font-mono">{session.user.email}</span></p>
+                    <p>ID: <span className="text-gray-300 font-mono">{session.user.id.substring(0, 8)}...</span></p>
+                    <p>Estado perfil: <span className={userProfile ? "text-green-500" : "text-amber-500"}>{userProfile ? `Rol: ${userProfile.role}` : "Cargando datos..."}</span></p>
+                </div>
+            </div>
+        );
     }
 
     return (
