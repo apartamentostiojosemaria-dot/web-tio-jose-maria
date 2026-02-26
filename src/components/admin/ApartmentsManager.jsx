@@ -147,11 +147,13 @@ const ApartmentsManager = () => {
             ].filter(item => item.url);
 
             for (const { url, source } of urls) {
-                // Usamos un proxy para evitar CORS
-                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+                // Usamos un proxy para evitar CORS (corsproxy.io es más directo)
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
                 const response = await fetch(proxyUrl);
-                const data = await response.json();
-                const icsText = data.contents;
+
+                if (!response.ok) throw new Error(`Error al acceder al calendario de ${source}`);
+
+                const icsText = await response.text();
 
                 // Parser básico de iCal
                 const regex = /BEGIN:VEVENT[\s\S]*?DTSTART;VALUE=DATE:(\d{8})[\s\S]*?DTEND;VALUE=DATE:(\d{8})[\s\S]*?END:VEVENT/g;
