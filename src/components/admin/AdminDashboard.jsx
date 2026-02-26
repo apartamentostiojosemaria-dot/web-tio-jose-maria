@@ -3,7 +3,6 @@ import { supabase } from '../../lib/supabase';
 import { COLORS } from '../../App';
 import ApartmentsManager from './ApartmentsManager';
 import WebConfigManager from './WebConfigManager';
-import LocalPlacesManager from './LocalPlacesManager';
 import DocumentsManager from './DocumentsManager';
 import AvailabilityManager from './AvailabilityManager';
 import SeasonsManager from './SeasonsManager';
@@ -52,12 +51,6 @@ const AdminDashboard = () => {
                         label="Apartamentos"
                         active={activeTab === 'apartamentos'}
                         onClick={() => setActiveTab('apartamentos')}
-                    />
-                    <SidebarLink
-                        icon={<Map size={18} />}
-                        label="Rutas y Entorno"
-                        active={activeTab === 'entorno'}
-                        onClick={() => setActiveTab('entorno')}
                     />
                     <SidebarLink
                         icon={<Star size={18} />}
@@ -130,7 +123,6 @@ const AdminDashboard = () => {
                 {activeTab === 'apartamentos' && <ApartmentsManager />}
                 {activeTab === 'disponibilidad' && <AvailabilityManager />}
                 {activeTab === 'temporadas' && <SeasonsManager />}
-                {activeTab === 'entorno' && <LocalPlacesManager />}
                 {activeTab === 'guias' && <GuestGuidesManager />}
                 {activeTab === 'documentos' && <DocumentsManager />}
                 {activeTab === 'configuracion' && <WebConfigManager />}
