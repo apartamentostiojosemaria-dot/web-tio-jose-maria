@@ -7,6 +7,7 @@ import LocalPlacesManager from './LocalPlacesManager';
 import DocumentsManager from './DocumentsManager';
 import AvailabilityManager from './AvailabilityManager';
 import SeasonsManager from './SeasonsManager';
+import GuestGuidesManager from './GuestGuidesManager';
 import { ClientAreaContent } from '../client/ClientArea';
 import { LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar, Star, Eye } from 'lucide-react';
 
@@ -57,6 +58,12 @@ const AdminDashboard = () => {
                         label="Rutas y Entorno"
                         active={activeTab === 'entorno'}
                         onClick={() => setActiveTab('entorno')}
+                    />
+                    <SidebarLink
+                        icon={<Star size={18} />}
+                        label="Guía del Huésped"
+                        active={activeTab === 'guias'}
+                        onClick={() => setActiveTab('guias')}
                     />
                     <SidebarLink
                         icon={<Calendar size={18} />}
@@ -124,6 +131,7 @@ const AdminDashboard = () => {
                 {activeTab === 'disponibilidad' && <AvailabilityManager />}
                 {activeTab === 'temporadas' && <SeasonsManager />}
                 {activeTab === 'entorno' && <LocalPlacesManager />}
+                {activeTab === 'guias' && <GuestGuidesManager />}
                 {activeTab === 'documentos' && <DocumentsManager />}
                 {activeTab === 'configuracion' && <WebConfigManager />}
                 {activeTab === 'vista_huesped' && (

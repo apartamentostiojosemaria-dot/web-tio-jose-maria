@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { COLORS } from '../../App';
+import { useGuestGuides } from '../../hooks/useDatabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     FileText, Download, LogOut, User, MapPin,
@@ -160,39 +161,18 @@ export const ClientAreaContent = ({ docs = [], userEmail = 'invitado@ejemplo.com
 };
 
 const GuestGuide = () => {
+    const { guides, loading } = useGuestGuides();
     const [activeTab, setActiveTab] = useState('rutas');
 
     const sections = {
-        rutas: {
-            icon: Mountain,
-            title: 'Rutas y Paisajes',
-            items: [
-                { title: 'Cueva del Agua', desc: 'Visita el Santuario de Tíscar y la impresionante Cueva del Agua, un paraje natural único en el sur del parque.' },
-                { title: 'Cerrada del Río Castril', desc: 'Una pasarela sobre el río y puentes colgantes en uno de los senderos más espectaculares de la zona.' },
-                { title: 'Nacimiento del Guadalquivir', desc: 'Descubre los enclaves más bellos donde nace el gran río de Andalucía, rodeado de bosques vírgenes.' },
-                { title: 'Lago del Altiplano', desc: 'Ruta por los embalses del Negratín y la Bolera, conocidos por sus aguas color turquesa y paisajes casi desérticos.' },
-                { title: 'Patrimonio de la Humanidad', desc: 'A poca distancia se encuentran Úbeda y Baeza, joyas del Renacimiento español declaradas por la UNESCO.' }
-            ]
-        },
-        gastronomia: {
-            icon: ChefHat,
-            title: 'Sabores Locales',
-            items: [
-                { title: 'Cordero Segureño', desc: 'Nuestra especialidad estrella. Carne tierna y sabrosa, criada en los pastos de la sierra.' },
-                { title: 'Gachas y Migas', desc: 'Platos tradicionales de cuchara, ideales para los días de invierno junto a la chimenea.' },
-                { title: 'Repostería Tradicional', desc: 'No te vayas sin probar los Roscos Fritos, las Natillas caseras o nuestros famosos Papajotes.' }
-            ]
-        },
-        actividades: {
-            icon: Tent,
-            title: 'Aventura y Ocio',
-            items: [
-                { title: 'Rutas a Caballo', desc: 'Apto para todas las edades. Varias yeguas dóciles listas para paseos por el pueblo de Hinojares.' },
-                { title: 'Vuelo en Parapente', desc: 'Siente la libertad de volar sobre el Cerro Jabalcón con vistas increíbles al embalse del Negratín.' },
-                { title: 'Pesca y Kayak', desc: 'Disfruta de la tranquilidad del agua en los embalses de la Bolera o el Negratín.' }
-            ]
-        }
+        rutas: { icon: Mountain, title: 'Rutas y Paisajes' },
+        gastronomia: { icon: ChefHat, title: 'Sabores Locales' },
+        actividades: { icon: Tent, title: 'Aventura y Ocio' }
     };
+
+    if (loading) return <div className="p-8 text-center text-gray-400 font-serif italic">Cargando guía...</div>;
+
+    const filteredGuides = guides.filter(g => g.category === activeTab);
 
     return (
         <div className="space-y-6">
@@ -226,17 +206,22 @@ const GuestGuide = () => {
                     transition={{ duration: 0.3 }}
                     className="grid gap-4 md:grid-cols-2"
                 >
-                    {sections[activeTab].items.map((item, i) => (
+                    {filteredGuides.map((item, i) => (
                         <div key={i} className="bg-white p-6 rounded-2xl border border-gray-50 shadow-sm group hover:border-rural-100 transition-all">
                             <h4 className="font-bold text-rural-900 mb-2 flex items-center gap-2 group-hover:translate-x-1 transition-transform">
                                 <ChevronRight size={14} style={{ color: COLORS.accent }} />
                                 {item.title}
                             </h4>
                             <p className="text-sm text-gray-500 leading-relaxed">
-                                {item.desc}
+                                {item.description}
                             </p>
                         </div>
                     ))}
+                    {filteredGuides.length === 0 && (
+                        <div className="col-span-full text-center p-10 bg-white rounded-3xl border border-dashed border-gray-100 text-gray-400 italic font-serif">
+                            Próximamente más recomendaciones en esta sección.
+                        </div>
+                    )}
                 </motion.div>
             </AnimatePresence>
         </div>

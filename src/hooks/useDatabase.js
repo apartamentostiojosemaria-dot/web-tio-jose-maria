@@ -128,6 +128,32 @@ export function useHighSeasons() {
     return { seasons, loading };
 }
 
+export function useGuestGuides() {
+    const [guides, setGuides] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchGuides = async () => {
+            const { data } = await supabase.from('guest_guides').select('*').order('order_index', { ascending: true });
+            if (data) setGuides(data);
+            setLoading(false);
+        };
+        fetchGuides();
+
+        // Suscribirse a cambios en tiempo real
+        const subscription = supabase
+            .channel('guest_guides_changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'guest_guides' }, fetchGuides)
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(subscription);
+        };
+    }, []);
+
+    return { guides, loading };
+}
+
 export function useBlockedDates(apartmentId) {
     const [blockedDates, setBlockedDates] = useState([]);
     const [loading, setLoading] = useState(true);
