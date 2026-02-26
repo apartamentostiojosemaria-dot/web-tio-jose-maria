@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
 import { COLORS } from '../../App';
 import {
     Plus, Edit2, Trash2, Camera, Check, X, Save,
-    Home, Users, Eye, EyeOff, Layout, List
+    Home, Users, Eye, EyeOff, Layout, List, Upload, Loader2
 } from 'lucide-react';
 
 const ApartmentsManager = () => {
@@ -11,7 +11,9 @@ const ApartmentsManager = () => {
     const [loading, setLoading] = useState(true);
     const [editingApt, setEditingApt] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const [newImageUrl, setNewImageUrl] = useState('');
+    const fileInputRef = useRef(null);
 
     useEffect(() => {
         fetchApartments();
@@ -20,7 +22,10 @@ const ApartmentsManager = () => {
     async function fetchApartments() {
         setLoading(true);
         const { data, error } = await supabase.from('apartments').select('*').order('id');
-        if (error) alert('Error al cargar: ' + error.message);
+        if (error) {
+            console.error('Error fetching apartments:', error);
+            alert('Error al cargar apartamentos: ' + error.message);
+        }
         if (data) setApartments(data);
         setLoading(false);
     }
@@ -49,6 +54,39 @@ const ApartmentsManager = () => {
         if (window.confirm('¿Estás seguro de que quieres eliminar este apartamento?')) {
             const { error } = await supabase.from('apartments').delete().eq('id', id);
             if (!error) fetchApartments();
+        }
+    };
+
+    const handleFileUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random()}.${fileExt}`;
+            const filePath = `${fileName}`;
+
+            const { error: uploadError, data } = await supabase.storage
+                .from('apartments')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('apartments')
+                .getPublicUrl(filePath);
+
+            const currentImages = editingApt.images || [];
+            setEditingApt({
+                ...editingApt,
+                images: [...currentImages, publicUrl]
+            });
+        } catch (error) {
+            alert('Error al subir la imagen. Asegúrate de haber ejecutado el SQL de Storage en Supabase: ' + error.message);
+        } finally {
+            setIsUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
         }
     };
 
@@ -176,11 +214,41 @@ const ApartmentsManager = () => {
                                         <Camera size={18} /> Galería de Fotos
                                     </h5>
 
-                                    <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 space-y-4">
+                                    <div className="bg-gray-50 p-6 rounded-[2rem] border border-gray-100 space-y-6">
+                                        {/* Subida de Archivo Local */}
+                                        <div>
+                                            <input
+                                                type="file"
+                                                ref={fileInputRef}
+                                                onChange={handleFileUpload}
+                                                accept="image/*"
+                                                className="hidden"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => fileInputRef.current.click()}
+                                                disabled={isUploading}
+                                                className="w-full py-6 border-2 border-dashed border-rural-200 rounded-3xl flex flex-col items-center justify-center gap-2 hover:bg-rural-100/50 hover:border-rural-300 transition-all group"
+                                            >
+                                                {isUploading ? (
+                                                    <Loader2 className="animate-spin text-rural-600" size={32} />
+                                                ) : (
+                                                    <Upload className="text-rural-400 group-hover:text-rural-600 transition-colors" size={32} />
+                                                )}
+                                                <span className="text-xs font-bold text-rural-700">SUBIR DESDE MI PC</span>
+                                            </button>
+                                        </div>
+
+                                        <div className="relative flex items-center py-2">
+                                            <div className="flex-grow border-t border-gray-200"></div>
+                                            <span className="flex-shrink mx-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">O pega un enlace</span>
+                                            <div className="flex-grow border-t border-gray-200"></div>
+                                        </div>
+
                                         <div className="flex gap-2">
                                             <input
-                                                className="flex-grow p-3 bg-white border border-gray-100 rounded-xl text-sm outline-none"
-                                                placeholder="Pega la URL de una foto..."
+                                                className="flex-grow p-3 bg-white border border-gray-100 rounded-xl text-sm outline-none shadow-sm"
+                                                placeholder="https://enlace-de-mi-foto.jpg"
                                                 value={newImageUrl}
                                                 onChange={e => setNewImageUrl(e.target.value)}
                                                 onKeyPress={e => e.key === 'Enter' && addImage()}
@@ -188,7 +256,7 @@ const ApartmentsManager = () => {
                                             <button
                                                 type="button"
                                                 onClick={addImage}
-                                                className="p-3 bg-rural-700 text-white rounded-xl hover:bg-rural-800 transition-colors"
+                                                className="p-3 bg-rural-700 text-white rounded-xl hover:bg-rural-800 transition-colors shadow-md"
                                             >
                                                 <Plus size={20} />
                                             </button>
@@ -196,21 +264,21 @@ const ApartmentsManager = () => {
 
                                         <div className="grid grid-cols-3 gap-3 max-h-80 overflow-y-auto pr-2">
                                             {(editingApt.images || []).map((img, idx) => (
-                                                <div key={idx} className="relative aspect-square group rounded-xl overflow-hidden border border-gray-200">
+                                                <div key={idx} className="relative aspect-square group rounded-xl overflow-hidden border border-gray-200 shadow-sm">
                                                     <img src={img} className="w-full h-full object-cover" />
                                                     <button
                                                         onClick={() => removeImage(idx)}
-                                                        className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        className="absolute top-1 right-1 p-1.5 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                                                     >
                                                         <Trash2 size={12} />
                                                     </button>
                                                     {idx === 0 && (
-                                                        <div className="absolute bottom-0 inset-x-0 bg-rural-700/80 text-[8px] text-white text-center py-0.5 font-bold uppercase">Portada</div>
+                                                        <div className="absolute bottom-0 inset-x-0 bg-rural-700/80 text-[8px] text-white text-center py-1 font-bold uppercase tracking-widest">Portada</div>
                                                     )}
                                                 </div>
                                             ))}
                                             {(!editingApt.images || editingApt.images.length === 0) && (
-                                                <div className="col-span-3 py-10 text-center text-xs text-gray-400 italic">No hay fotos. Añade la primera arriba.</div>
+                                                <div className="col-span-3 py-10 text-center text-xs text-gray-400 italic">No hay fotos. Sube una arriba.</div>
                                             )}
                                         </div>
                                     </div>
