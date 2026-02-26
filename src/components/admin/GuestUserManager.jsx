@@ -354,7 +354,7 @@ const GuestDetailView = ({ guest, onBack }) => {
                                 <div key={booking.id} className="flex items-center justify-between p-5 rounded-2xl border border-gray-50 hover:bg-gray-50/50 transition-colors group">
                                     <div className="flex items-center gap-6">
                                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${booking.status === 'completed' ? 'bg-green-50 text-green-600' :
-                                                booking.status === 'upcoming' ? 'bg-blue-50 text-blue-600' : 'bg-gray-50 text-gray-400'
+                                            booking.status === 'upcoming' ? 'bg-blue-50 text-blue-600' : 'bg-gray-50 text-gray-400'
                                             }`}>
                                             {booking.status === 'completed' ? <CheckCircle2 size={20} /> : <Clock size={20} />}
                                         </div>
@@ -392,6 +392,44 @@ const GuestDetailView = ({ guest, onBack }) => {
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    );
+};
+
+const InvitationTool = () => {
+    const registrationUrl = `${window.location.origin}/cliente/login`;
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(registrationUrl);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    return (
+        <div className="bg-white p-8 rounded-[40px] border border-rural-100 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6 mb-8 group hover:shadow-md transition-all">
+            <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-rural-50 flex items-center justify-center text-rural-600 shadow-inner" style={{ backgroundColor: COLORS.bgWarm, color: COLORS.primary }}>
+                    <Plus size={24} />
+                </div>
+                <div>
+                    <h3 className="font-serif text-xl font-bold" style={{ color: COLORS.text }}>Invitación a Huéspedes</h3>
+                    <p className="text-sm text-gray-400">Envía este enlace a tus clientes para que se registren fácilmente.</p>
+                </div>
+            </div>
+            <div className="flex items-center gap-4 w-full md:w-auto">
+                <div className="flex-grow md:flex-grow-0 bg-gray-50 px-4 py-3 rounded-xl border border-gray-100 text-xs font-mono text-gray-500 overflow-hidden truncate max-w-[200px]">
+                    {registrationUrl}
+                </div>
+                <button
+                    onClick={handleCopy}
+                    className="px-6 py-3 bg-rural-600 text-white rounded-xl font-bold text-sm shadow-lg hover:scale-105 transition-all flex items-center gap-2 whitespace-nowrap"
+                    style={{ backgroundColor: COLORS.primary }}
+                >
+                    {copied ? <CheckCircle2 size={18} /> : <Save size={18} />}
+                    {copied ? 'Copiado' : 'Copiar Enlace'}
+                </button>
             </div>
         </div>
     );

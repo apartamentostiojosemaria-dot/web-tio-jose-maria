@@ -77,6 +77,12 @@ const AdminDashboard = () => {
                         active={activeTab === 'documentos'}
                         onClick={() => setActiveTab('documentos')}
                     />
+                    <SidebarLink
+                        icon={<Users size={18} />}
+                        label="Huéspedes"
+                        active={activeTab === 'huespedes'}
+                        onClick={() => setActiveTab('huespedes')}
+                    />
                     <div className="pt-4 mt-4 border-t border-gray-50">
                         <SidebarLink
                             icon={<Eye size={18} />}
@@ -126,6 +132,7 @@ const AdminDashboard = () => {
                 {activeTab === 'temporadas' && <SeasonsManager />}
                 {activeTab === 'guias' && <GuestGuidesManager />}
                 {activeTab === 'documentos' && <DocumentsManager />}
+                {activeTab === 'huespedes' && <GuestUserManager />}
                 {activeTab === 'configuracion' && <WebConfigManager />}
                 {activeTab === 'vista_huesped' && (
                     <div className="max-w-4xl mx-auto">
