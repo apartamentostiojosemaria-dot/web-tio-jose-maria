@@ -215,7 +215,7 @@ const IntroSection = ({ text }) => (
                         {text || `Bienvenidos a Tío José María. Ubicados en el sur del Parque Natural de Cazorla, nuestros 4 apartamentos combinan la arquitectura tradicional andaluza con el confort moderno.\n\nMuros de piedra, techos de vigas de madera y el calor de la chimenea te esperan. Ideal para parejas que buscan intimidad o familias que desean reconectar con la naturaleza.`}
                     </p>
                     <ul className="space-y-3">
-                        {['Ubicación privilegiada en Hinojares', 'Chimenea de leña en todos los apartamentos', 'WiFi gratuito y mascotas bienvenidas'].map((item) => (
+                        {['Ubicación privilegiada en Hinojares', 'Chimenea de leña en todos los apartamentos', 'WiFi gratuito y ambiente familiar'].map((item) => (
                             <li key={item} className="flex items-center gap-3 text-base" style={{ color: COLORS.text }}>
                                 <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-white text-xs" style={{ backgroundColor: COLORS.primary }}>✓</span>
                                 {item}

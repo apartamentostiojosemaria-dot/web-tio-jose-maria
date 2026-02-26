@@ -23,7 +23,7 @@ const AMENITIES_ICONS = {
     microwave: { label: 'Microondas y Tostadora', icon: Microwave },
     bath: { label: 'Gel y Toallas', icon: Bath },
     hairdryer: { label: 'Secador de Pelo', icon: Eraser },
-    no_pets: { label: 'No Mascotas', icon: Dog },
+    no_pets: { label: 'No se admiten mascotas', icon: Dog },
 };
 
 const AvailabilityCalendar = ({ apartmentId }) => {
