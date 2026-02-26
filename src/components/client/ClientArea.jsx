@@ -7,9 +7,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     FileText, Download, LogOut, User, MapPin,
     Calendar, ExternalLink, Map, Utensils,
-    Calendar, ExternalLink, Map, Utensils,
     Tent, Mountain, ChefHat, Info, ChevronRight,
-    ShieldAlert, LogOut
+    ShieldAlert, Play
 } from 'lucide-react';
 
 const ClientArea = () => {
