@@ -7,6 +7,7 @@ import AdminDashboard from './components/admin/AdminDashboard';
 import ClientLogin from './components/client/ClientLogin';
 import ClientArea from './components/client/ClientArea';
 import ApartmentDetail from './components/ApartmentDetail';
+import WeatherWidget from './components/WeatherWidget';
 import { Mail, Phone, MapPin, Instagram, Facebook, Menu, X, Flame, Wifi, Tv, UtensilsCrossed, Baby, Eye } from 'lucide-react';
 
 export const COLORS = {
@@ -155,6 +156,9 @@ const HeroSection = ({ title, subtitle }) => (
             transition={{ duration: 1.2, ease: 'easeOut' }}
             className="relative z-10 text-center px-6 max-w-5xl pt-20"
         >
+            <div className="flex justify-center mb-6">
+                <WeatherWidget isMinimal />
+            </div>
             <p className="text-white/70 uppercase tracking-[0.3em] text-sm mb-5 font-sans">Hinojares, Jaén</p>
             <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white font-bold mb-6 leading-tight">
                 {title.split(' en ')[0].replace('Tío José María', '')}

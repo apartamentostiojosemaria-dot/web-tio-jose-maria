@@ -53,12 +53,24 @@ const GuestGuidesManager = () => {
     const handleSave = async () => {
         if (!formData.title || !formData.description) return alert('Por favor, rellena al menos Título y Descripción');
 
+        // Limpiar campos técnicos que no deben enviarse en el UPDATE/INSERT
+        const { id, created_at, ...payload } = formData;
+
+        let error;
         if (editingId) {
-            await supabase.from('guest_guides').update(formData).eq('id', editingId);
+            const { error: updateError } = await supabase.from('guest_guides').update(payload).eq('id', editingId);
+            error = updateError;
         } else {
-            await supabase.from('guest_guides').insert([formData]);
+            const { error: insertError } = await supabase.from('guest_guides').insert([payload]);
+            error = insertError;
         }
-        resetForm();
+
+        if (error) {
+            console.error('Error al guardar en guest_guides:', error);
+            alert('Error al guardar: ' + error.message);
+        } else {
+            resetForm();
+        }
     };
 
     const handleDelete = async (id) => {
