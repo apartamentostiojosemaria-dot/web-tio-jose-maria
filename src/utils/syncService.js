@@ -128,24 +128,29 @@ export const syncApartmentDates = async (apt) => {
         allBlocks?.forEach(block => {
             const start = block.start_date.replace(/-/g, '');
             const end = block.end_date.replace(/-/g, '');
+            // Aseguramos un UID único, formato estándar
+            const safeUid = (block.id || Math.random().toString(36).substr(2, 9)).replace(/[^a-zA-Z0-9-]/g, '');
+
             ical.push(
                 'BEGIN:VEVENT',
                 `DTSTAMP:${now}`,
                 `DTSTART;VALUE=DATE:${start}`,
                 `DTEND;VALUE=DATE:${end}`,
-                `UID:${block.id || Math.random().toString(36).substr(2, 9)}@tiojosemaria.es`,
+                `UID:${safeUid}@tiojosemaria.com`,
                 `SUMMARY:Reserva (${block.source})`,
                 'END:VEVENT'
             );
         });
 
         ical.push('END:VCALENDAR');
-        const icsText = ical.join('\r\n');
+        // iCal requiere CRLF estricto y una línea vacía al final a veces
+        const icsText = ical.join('\r\n') + '\r\n';
 
         const { error: uploadError } = await supabase.storage
             .from('calendars')
             .upload(`${apt.slug}.ics`, icsText, {
-                contentType: 'text/calendar',
+                contentType: 'text/calendar; charset=utf-8',
+                cacheControl: '10', // 10 segundos para no cachear locamente
                 upsert: true
             });
 
