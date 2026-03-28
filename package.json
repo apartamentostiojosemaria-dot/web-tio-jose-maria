@@ -24,7 +24,13 @@
     "vite": "^7.3.1"
   },
   "dependencies": {
+    "@google/stitch-sdk": "^0.0.3",
     "@supabase/supabase-js": "^2.97.0",
-    "react-router-dom": "^7.13.1"
+    "leaflet": "^1.9.4",
+    "qrcode.react": "^4.2.0",
+    "react-leaflet": "^5.0.0",
+    "react-router-dom": "^7.13.1",
+    "recharts": "^3.8.1",
+    "vite-plugin-pwa": "^1.2.0"
   }
 }

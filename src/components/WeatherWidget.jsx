@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sun, Cloud, CloudRain, CloudLightning, CloudSnow, Wind, Droplets } from 'lucide-react';
 import { COLORS } from '../App';
+import { logError } from '../utils/logger';
 
 const WEATHER_ICONS = {
     0: { icon: Sun, label: 'Despejado', color: '#FDB813' },
@@ -52,7 +53,7 @@ const WeatherWidget = ({ isMinimal = false, stayDates = null }) => {
                 const data = await response.json();
                 setWeather(data);
             } catch (error) {
-                console.error('Error fetching weather:', error);
+                logError('WeatherWidget.fetchWeather', error);
             } finally {
                 setLoading(false);
             }

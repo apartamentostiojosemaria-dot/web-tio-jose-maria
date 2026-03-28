@@ -3,7 +3,10 @@ import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApartment, useBlockedDates, useHighSeasons } from '../hooks/useDatabase';
 import { syncApartmentDates } from '../utils/syncService';
+import { logError } from '../utils/logger';
 import { COLORS } from '../App';
+import { ApartmentJsonLd, BreadcrumbJsonLd } from './seo/JsonLd';
+import BookingWidget from './booking/BookingWidget';
 import {
     ChevronLeft, Users, Flame, Wifi, Tv,
     UtensilsCrossed, Baby, MapPin, Calendar,
@@ -122,11 +125,18 @@ const AvailabilityCalendar = ({ apartmentId }) => {
     );
 };
 
+const BookingWidgetSection = ({ apartment }) => {
+    const { blockedDates } = useBlockedDates(apartment.id);
+    const { seasons } = useHighSeasons();
+    return <BookingWidget apartment={apartment} blockedDates={blockedDates} highSeasons={seasons} />;
+};
+
 const ApartmentDetail = () => {
     const { slug } = useParams();
     const { apartment, loading } = useApartment(slug);
     const [activeImg, setActiveImg] = useState(0);
     const [isSyncing, setIsSyncing] = useState(false);
+    const [showBooking, setShowBooking] = useState(false);
 
     // Auto-sync background
     React.useEffect(() => {
@@ -139,7 +149,7 @@ const ApartmentDetail = () => {
                     // la próxima vez que se cargue useBlockedDates ya tendrá los datos.
                     // O si queremos refrescar el estado local, podríamos llamar a una función de refresh.
                 } catch (e) {
-                    console.warn('Silent sync failed', e);
+                    logError('ApartmentDetail.autoSync', e);
                 } finally {
                     setIsSyncing(false);
                 }
@@ -170,6 +180,11 @@ const ApartmentDetail = () => {
 
     return (
         <div className="min-h-screen bg-white">
+            <ApartmentJsonLd apartment={apartment} />
+            <BreadcrumbJsonLd items={[
+                { name: 'Inicio', url: 'https://tiojosemaria.com/' },
+                { name: apartment.name, url: `https://tiojosemaria.com/apartamento/${apartment.slug}` }
+            ]} />
             <nav className="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4">
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
                     <Link to="/" className="flex items-center gap-2 text-rural-700 font-bold hover:gap-3 transition-all">
@@ -212,7 +227,7 @@ const ApartmentDetail = () => {
                                     onClick={() => setActiveImg(idx)}
                                     className={`relative flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden transition-all duration-300 ${activeImg === idx ? 'ring-4 ring-rural-600 scale-95 opacity-100' : 'opacity-60 hover:opacity-100'}`}
                                 >
-                                    <img src={img} className="w-full h-full object-cover" />
+                                    <img src={img} loading="lazy" className="w-full h-full object-cover" />
                                 </button>
                             ))}
                         </div>
@@ -248,31 +263,7 @@ const ApartmentDetail = () => {
                                 </div>
                             </div>
 
-                            <div className="space-y-6 mb-8">
-                                <h3 className="text-sm font-bold text-rural-700 uppercase tracking-widest flex items-center gap-2">
-                                    <Calendar size={16} /> Disponibilidad Actual
-                                </h3>
-                                <AvailabilityCalendar apartmentId={apartment.id} />
-                                <div className="flex items-start gap-3 p-4 bg-amber-50 rounded-2xl border border-amber-100 text-amber-800">
-                                    <AlertCircle size={20} className="shrink-0 mt-0.5" />
-                                    <p className="text-xs font-serif italic">Las fechas marcadas en rojo están ocupadas. Si tienes dudas sobre alguna fecha específica, consúltanos sin compromiso.</p>
-                                </div>
-                            </div>
-
-                            <div className="p-4 bg-rural-900 text-white rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4 group">
-                                <div className="text-center sm:text-left sm:pl-4">
-                                    <p className="text-[10px] opacity-60">Consultar disponibilidad</p>
-                                    <p className="font-bold text-lg">WhatsApp Directo</p>
-                                </div>
-                                <a
-                                    href={`https://api.whatsapp.com/send?phone=34676344675&text=Hola,%20me%20gustaría%20consultar%20disponibilidad%20para%20el%20apartamento%20${apartment.name}.`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="w-full sm:w-auto px-8 py-4 bg-white text-rural-900 rounded-2xl font-bold hover:bg-rural-50 transition-all flex items-center justify-center gap-2 shadow-lg"
-                                >
-                                    <Calendar size={18} /> Reservar
-                                </a>
-                            </div>
+                            <BookingWidgetSection apartment={apartment} />
                         </div>
 
                         <div className="space-y-6">

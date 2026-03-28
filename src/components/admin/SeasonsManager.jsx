@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { COLORS } from '../../App';
 import { Calendar, Plus, Trash2, Loader2, Save, X } from 'lucide-react';
+import { logError, userErrorMessage } from '../../utils/logger';
 
 const SeasonsManager = () => {
     const [seasons, setSeasons] = useState([]);
@@ -30,7 +31,8 @@ const SeasonsManager = () => {
         setSaving(true);
         const { error } = await supabase.from('high_seasons').insert([newSeason]);
         if (error) {
-            alert('Error al guardar: ' + error.message);
+            logError('SeasonsManager.handleAdd', error);
+            alert(userErrorMessage('Error al guardar la temporada.'));
         } else {
             setNewSeason({ name: '', start_date: '', end_date: '' });
             setShowForm(false);

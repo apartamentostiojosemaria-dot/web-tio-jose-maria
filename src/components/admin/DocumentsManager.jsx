@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
 import { COLORS } from '../../App';
 import { FileText, Download, Trash2, Globe, Lock, Plus, Upload, X, Loader2 } from 'lucide-react';
+import { logError, userErrorMessage } from '../../utils/logger';
+import { validateDocFile } from '../../utils/fileValidation';
 
 const DocumentsManager = () => {
     const [docs, setDocs] = useState([]);
@@ -26,6 +28,12 @@ const DocumentsManager = () => {
         const file = fileInputRef.current?.files?.[0];
         if (!file || !newDoc.title.trim()) {
             alert('Introduce un título y selecciona un archivo.');
+            return;
+        }
+
+        const validation = validateDocFile(file);
+        if (!validation.valid) {
+            alert(validation.message);
             return;
         }
 
@@ -58,7 +66,8 @@ const DocumentsManager = () => {
             if (fileInputRef.current) fileInputRef.current.value = '';
             fetchDocs();
         } catch (error) {
-            alert('Error al subir documento: ' + error.message);
+            logError('handleUpload', error);
+            alert(userErrorMessage('Error al subir el documento.'));
         }
         setUploading(false);
     };

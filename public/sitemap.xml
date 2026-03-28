@@ -2,32 +2,56 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://tiojosemaria.com/</loc>
-    <lastmod>2026-02-26</lastmod>
+    <lastmod>2026-03-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://tiojosemaria.com/Albahaca.html</loc>
-    <lastmod>2026-02-26</lastmod>
+    <loc>https://tiojosemaria.com/apartamento/albahaca</loc>
+    <lastmod>2026-03-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://tiojosemaria.com/Tomillo.html</loc>
-    <lastmod>2026-02-26</lastmod>
+    <loc>https://tiojosemaria.com/apartamento/tomillo</loc>
+    <lastmod>2026-03-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://tiojosemaria.com/Lavanda.html</loc>
-    <lastmod>2026-02-26</lastmod>
+    <loc>https://tiojosemaria.com/apartamento/lavanda</loc>
+    <lastmod>2026-03-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://tiojosemaria.com/Romero.html</loc>
-    <lastmod>2026-02-26</lastmod>
+    <loc>https://tiojosemaria.com/apartamento/romero</loc>
+    <lastmod>2026-03-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://tiojosemaria.com/hinojares</loc>
+    <lastmod>2026-03-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://tiojosemaria.com/rutas</loc>
+    <lastmod>2026-03-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://tiojosemaria.com/eventos</loc>
+    <lastmod>2026-03-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tiojosemaria.com/privacidad</loc>
+    <lastmod>2026-03-28</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
   </url>
 </urlset>

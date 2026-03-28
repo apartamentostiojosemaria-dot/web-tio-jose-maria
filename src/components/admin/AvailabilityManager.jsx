@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { COLORS } from '../../App';
 import { regenerateICalExport } from '../../utils/syncService';
+import { logError, userErrorMessage } from '../../utils/logger';
 import {
     Calendar as CalendarIcon, ChevronLeft, ChevronRight,
     Lock, Unlock, Info, RefreshCw, AlertCircle, Trash2, Check
@@ -97,7 +98,8 @@ const AvailabilityManager = () => {
         }]);
 
         if (error) {
-            alert('Error al bloquear fechas: ' + error.message);
+            logError('AvailabilityManager.handleBlockDates', error);
+            alert(userErrorMessage('Error al bloquear las fechas.'));
         } else {
             setSelection({ start: null, end: null });
             fetchBlockedDates(selectedApt.id);

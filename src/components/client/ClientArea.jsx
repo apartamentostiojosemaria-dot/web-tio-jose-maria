@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { COLORS } from '../../App';
-import { useGuestGuides } from '../../hooks/useDatabase';
+import { useGuestGuides, useWebConfig } from '../../hooks/useDatabase';
+import WelcomePackage from './WelcomePackage';
+import ReviewForm from './ReviewForm';
 import WeatherWidget from '../WeatherWidget';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -10,6 +12,7 @@ import {
     Tent, Mountain, ChefHat, Info, ChevronRight,
     ShieldAlert, Play
 } from 'lucide-react';
+import { logError, userErrorMessage } from '../../utils/logger';
 
 const ClientArea = () => {
     const [docs, setDocs] = useState([]);
@@ -153,16 +156,21 @@ const AccessDeniedView = ({ onLogout, profile }) => (
 );
 
 export const ClientAreaContent = ({ docs = [], userEmail = 'invitado@ejemplo.com', profile = null }) => {
+    const { config } = useWebConfig();
+
     return (
         <div className="space-y-10">
+            {/* Welcome Package */}
+            <WelcomePackage config={config} guestName={profile?.full_name} />
+
             {/* Intro Card */}
             <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 overflow-hidden relative">
                 <div className="absolute top-0 right-0 w-32 h-32 opacity-5 translate-x-10 -translate-y-10">
                     <MapPin size={120} />
                 </div>
-                <h3 className="text-2xl font-serif font-bold mb-4" style={{ color: COLORS.text }}>¡Hola de nuevo!</h3>
+                <h3 className="text-2xl font-serif font-bold mb-4" style={{ color: COLORS.text }}>Tu estancia en Tío José María</h3>
                 <p className="text-gray-500 max-w-xl leading-relaxed">
-                    Aquí tienes acceso a toda la documentación de tu estancia en <strong style={{ color: COLORS.primary }}>Tío José María</strong>. Descarga tus facturas, contratos o consulta nuestra guía exclusiva del huésped.
+                    Aquí tienes acceso a toda la documentación, guías exclusivas y todo lo que necesitas para disfrutar al máximo.
                 </p>
             </div>
 
@@ -259,6 +267,9 @@ export const ClientAreaContent = ({ docs = [], userEmail = 'invitado@ejemplo.com
                     </div>
                 </div>
             </div>
+
+            {/* Review Form */}
+            <ReviewForm profile={profile} />
         </div>
     );
 };
@@ -269,8 +280,12 @@ const GuestGuide = () => {
 
     const sections = {
         rutas: { icon: Mountain, title: 'Rutas y Paisajes' },
+        naturaleza: { icon: MapPin, title: 'Naturaleza' },
         gastronomia: { icon: ChefHat, title: 'Sabores Locales' },
-        actividades: { icon: Tent, title: 'Aventura y Ocio' }
+        actividades: { icon: Tent, title: 'Aventura y Ocio' },
+        cultura: { icon: Info, title: 'Historia y Cultura' },
+        servicios: { icon: FileText, title: 'Servicios Útiles' },
+        emergencias: { icon: ShieldAlert, title: 'Emergencias' }
     };
 
     if (loading) return <div className="p-8 text-center text-gray-400 font-serif italic">Cargando guía...</div>;
@@ -392,7 +407,8 @@ const CompleteProfileView = ({ profile, onComplete }) => {
             .single();
 
         if (error) {
-            alert('Error al guardar: ' + error.message);
+            logError('ClientArea.handleSave', error);
+            alert(userErrorMessage('Error al guardar los datos.'));
         } else if (data) {
             onComplete(data);
         }

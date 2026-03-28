@@ -1,9 +1,9 @@
 import { supabase } from '../lib/supabase';
+import { logError } from './logger';
 
 export const syncApartmentDates = async (apt) => {
     let syncCount = 0;
     let diagnosticMsg = '';
-    console.log('--- iCal Sync Service v2.3 Activated (Verified Proxies) ---');
 
     // 1. Intentar sincronización desde Airbnb/Booking/Holidu
     if (apt.airbnb_ical_url || apt.booking_ical_url) {
@@ -31,38 +31,33 @@ export const syncApartmentDates = async (apt) => {
                 for (let i = 0; i < proxyFactories.length; i++) {
                     try {
                         const proxyUrl = proxyFactories[i](cacheBusterUrl);
-                        console.log(`Trying proxy ${i + 1} for ${source}: ${proxyUrl}`);
-                        const response = await fetch(proxyUrl);
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-                        if (!response.ok) {
-                            console.warn(`Proxy ${i + 1} returned status ${response.status}`);
-                            continue;
-                        }
+                        const response = await fetch(proxyUrl, { signal: controller.signal });
+                        clearTimeout(timeoutId);
+
+                        if (!response.ok) continue;
 
                         if (i === 2) { // AllOrigins Get returns JSON
                             const json = await response.json();
                             const raw = json.contents;
                             if (raw && raw.startsWith('data:')) {
-                                // Decode base64 if AllOrigins wrapped it
                                 const base64 = raw.split(',')[1];
                                 icsText = atob(base64);
                             } else {
                                 icsText = raw;
                             }
                         } else {
-                            // Raw text proxies
                             icsText = await response.text();
                         }
 
                         if (icsText && icsText.includes('BEGIN:VCALENDAR')) {
                             success = true;
-                            console.log(`Proxy ${i + 1} succeeded for ${source}. Content starts with: ${icsText.substring(0, 50)}...`);
                             break;
-                        } else {
-                            console.warn(`Proxy ${i + 1} did not return a valid iCal string. Recieved: ${icsText?.substring(0, 50)}`);
                         }
                     } catch (e) {
-                        console.warn(`Proxy ${i + 1} failed for ${source}:`, e);
+                        logError(`syncService.proxy${i + 1}.${source}`, e);
                     }
                 }
 
@@ -78,7 +73,6 @@ export const syncApartmentDates = async (apt) => {
 
                 while ((eventMatch = eventRegex.exec(icsText)) !== null) {
                     const eventContent = eventMatch[1];
-                    // Extraer DTSTART y DTEND (YYYYMMDD)
                     const startMatch = eventContent.match(/DTSTART(?:;[^:]*)?:(\d{8})/i);
                     const endMatch = eventContent.match(/DTEND(?:;[^:]*)?:(\d{8})/i);
 
@@ -105,7 +99,7 @@ export const syncApartmentDates = async (apt) => {
             }
             syncCount = allBlockedDates.length;
         } catch (error) {
-            console.error('Error in sync logic:', error);
+            logError('syncApartmentDates', error);
             diagnosticMsg += `\n- Error crítico: ${error.message}`;
         }
     }
@@ -161,13 +155,12 @@ export const regenerateICalExport = async (apt) => {
             });
 
         if (uploadError) {
-            console.error('Error uploading to storage:', uploadError);
+            logError('regenerateICalExport.upload', uploadError);
             return { success: false, message: `\n- Error Exportación: ${uploadError.message}` };
         }
-        console.log(`Calendario ${apt.slug}.ics actualizado automáticamente.`);
         return { success: true, message: `\n- Archivo de exportación actualizado.` };
     } catch (error) {
-        console.error('Critical export error:', error);
+        logError('regenerateICalExport', error);
         return { success: false, message: `\n- Error Exportación Crítico: ${error.message}` };
     }
 };

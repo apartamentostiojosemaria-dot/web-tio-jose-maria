@@ -1,0 +1,104 @@
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '../../lib/supabase';
+import { logError } from '../../utils/logger';
+import FadeInUp from '../shared/FadeInUp';
+import { COLORS } from '../../constants/colors';
+import { WP } from '../../constants/urls';
+
+const GuiaSection = () => {
+    const [email, setEmail] = useState('');
+    const [status, setStatus] = useState('idle'); // idle | sending | success | error
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setStatus('sending');
+
+        const { error } = await supabase
+            .from('email_subscribers')
+            .insert({ email, source: 'guia_section' });
+
+        if (error) {
+            if (error.code === '23505') {
+                setStatus('success');
+            } else {
+                logError('GuiaSection.subscribe', error);
+                setStatus('error');
+            }
+        } else {
+            setStatus('success');
+        }
+
+        setEmail('');
+    };
+
+    return (
+        <section id="guia" className="py-24 relative overflow-hidden text-white" style={{ backgroundColor: COLORS.primaryDark }}>
+            <div className="absolute inset-0 opacity-20">
+                <img src={`${WP}/2023/07/slide-1.jpg`} alt="Paisaje del entorno natural de Cazorla" className="w-full h-full object-cover" style={{ filter: 'grayscale(100%)' }} />
+            </div>
+            <div className="max-w-3xl mx-auto px-6 relative z-10 text-center">
+                <FadeInUp>
+                    <p className="text-4xl md:text-5xl mb-6">🗺️</p>
+                    <h2 className="font-serif text-2xl md:text-5xl font-bold mb-5">Descubre el Cazorla <br className="md:hidden" /> que no sale en las guías</h2>
+                    <p className="text-base md:text-lg mb-10 opacity-90 leading-relaxed" style={{ color: COLORS.accent }}>
+                        Hemos preparado una guía exclusiva con nuestras rutas favoritas, los mejores sitios para comer en Hinojares y secretos locales.
+                    </p>
+
+                    <AnimatePresence mode="wait">
+                        {status === 'success' ? (
+                            <motion.div
+                                key="success"
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 max-w-md mx-auto"
+                            >
+                                <p className="text-3xl mb-3">✅</p>
+                                <p className="font-bold text-lg mb-1">¡Perfecto!</p>
+                                <p className="text-sm opacity-80">Pronto recibirás nuestra guía exclusiva en tu correo.</p>
+                            </motion.div>
+                        ) : (
+                            <motion.form
+                                key="form"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto"
+                                onSubmit={handleSubmit}
+                            >
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="Tu correo electrónico"
+                                    required
+                                    disabled={status === 'sending'}
+                                    className="px-6 py-4 rounded-full text-gray-900 focus:outline-none focus:ring-2 flex-grow disabled:opacity-50"
+                                    style={{ '--tw-ring-color': COLORS.accent }}
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={status === 'sending'}
+                                    className="px-8 py-4 font-bold rounded-full transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:hover:scale-100"
+                                    style={{ backgroundColor: COLORS.accent, color: COLORS.text }}
+                                >
+                                    {status === 'sending' ? 'Enviando...' : 'Enviar Guía'}
+                                </button>
+                            </motion.form>
+                        )}
+                    </AnimatePresence>
+
+                    {status === 'error' && (
+                        <p className="text-xs mt-4 text-red-300">Ha ocurrido un error. Inténtalo de nuevo.</p>
+                    )}
+                    {status !== 'success' && (
+                        <p className="text-xs mt-5 opacity-60">Prometemos no enviar spam. Solo cosas bonitas del campo.</p>
+                    )}
+                </FadeInUp>
+            </div>
+        </section>
+    );
+};
+
+export default GuiaSection;

@@ -9,6 +9,8 @@ import {
     Bed, Info, RefreshCw, Calendar as CalendarIcon, Link as LinkIcon, Copy
 } from 'lucide-react';
 import { syncApartmentDates } from '../../utils/syncService';
+import { logError, userErrorMessage } from '../../utils/logger';
+import { validateImageFile } from '../../utils/fileValidation';
 
 const AMENITIES_LIST = [
     { id: 'tv', label: 'TV Pantalla Plana', icon: Tv },
@@ -41,8 +43,8 @@ const ApartmentsManager = () => {
         setLoading(true);
         const { data, error } = await supabase.from('apartments').select('*').order('id');
         if (error) {
-            console.error('Error fetching apartments:', error);
-            alert('Error al cargar apartamentos: ' + error.message);
+            logError('fetchApartments', error);
+            alert(userErrorMessage('Error al cargar apartamentos.'));
         }
         if (data) setApartments(data);
         setLoading(false);
@@ -60,7 +62,8 @@ const ApartmentsManager = () => {
         }
 
         if (error) {
-            alert('Error al guardar: ' + error.message);
+            logError('handleSave', error);
+            alert(userErrorMessage('Error al guardar el apartamento.'));
         } else {
             setEditingApt(null);
             fetchApartments();
@@ -78,6 +81,13 @@ const ApartmentsManager = () => {
     const handleFileUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
+
+        const validation = validateImageFile(file);
+        if (!validation.valid) {
+            alert(validation.message);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+            return;
+        }
 
         setIsUploading(true);
         try {
@@ -101,7 +111,8 @@ const ApartmentsManager = () => {
                 images: [...currentImages, publicUrl]
             });
         } catch (error) {
-            alert('Error al subir la imagen. Asegúrate de haber ejecutado el SQL de Storage: ' + error.message);
+            logError('handleFileUpload', error);
+            alert(userErrorMessage('Error al subir la imagen.'));
         } finally {
             setIsUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
@@ -135,8 +146,8 @@ const ApartmentsManager = () => {
             // Recargar para ver los cambios en el listado si estamos en AvailabilityManager
             if (typeof fetchBlockedDates === 'function') fetchBlockedDates(apt.id);
         } catch (error) {
-            alert(`Error en la sincronización: ${error.message}`);
-            console.error(error);
+            logError('handleSync', error);
+            alert(userErrorMessage('Error en la sincronización.'));
         } finally {
             setIsSaving(false);
         }

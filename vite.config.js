@@ -1,11 +1,88 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
     plugins: [
         react(),
         tailwindcss(),
+        VitePWA({
+            registerType: 'autoUpdate',
+            includeAssets: ['assets/logo.jpg', 'assets/favicon.ico'],
+            manifest: {
+                name: 'Tío José María - Apartamentos Rurales',
+                short_name: 'Tío José María',
+                description: 'Apartamentos rurales con encanto en Hinojares, Sierra de Cazorla',
+                theme_color: '#556B2F',
+                background_color: '#FCFBF9',
+                display: 'standalone',
+                orientation: 'portrait',
+                start_url: '/',
+                scope: '/',
+                categories: ['travel', 'lifestyle'],
+                icons: [
+                    {
+                        src: '/assets/pwa-192.png',
+                        sizes: '192x192',
+                        type: 'image/png',
+                    },
+                    {
+                        src: '/assets/pwa-512.png',
+                        sizes: '512x512',
+                        type: 'image/png',
+                    },
+                    {
+                        src: '/assets/pwa-512.png',
+                        sizes: '512x512',
+                        type: 'image/png',
+                        purpose: 'maskable',
+                    },
+                ],
+            },
+            workbox: {
+                globPatterns: ['**/*.{js,css,html,ico,png,jpg,svg,woff2}'],
+                runtimeCaching: [
+                    {
+                        // Cache Google Fonts
+                        urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
+                        handler: 'CacheFirst',
+                        options: {
+                            cacheName: 'google-fonts',
+                            expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
+                        },
+                    },
+                    {
+                        // Cache OpenTopoMap tiles (hiking maps offline!)
+                        urlPattern: /^https:\/\/[abc]\.tile\.opentopomap\.org\/.*/i,
+                        handler: 'CacheFirst',
+                        options: {
+                            cacheName: 'map-tiles',
+                            expiration: { maxEntries: 500, maxAgeSeconds: 60 * 60 * 24 * 30 },
+                        },
+                    },
+                    {
+                        // Cache Supabase API responses
+                        urlPattern: /^https:\/\/.*\.supabase\.co\/rest\/.*/i,
+                        handler: 'NetworkFirst',
+                        options: {
+                            cacheName: 'supabase-api',
+                            expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 },
+                            networkTimeoutSeconds: 5,
+                        },
+                    },
+                    {
+                        // Cache images from Unsplash and other CDNs
+                        urlPattern: /^https:\/\/images\.unsplash\.com\/.*/i,
+                        handler: 'CacheFirst',
+                        options: {
+                            cacheName: 'external-images',
+                            expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 30 },
+                        },
+                    },
+                ],
+            },
+        }),
     ],
     root: '.',
     server: {

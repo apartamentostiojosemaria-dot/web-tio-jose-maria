@@ -9,7 +9,9 @@ import SeasonsManager from './SeasonsManager';
 import GuestGuidesManager from './GuestGuidesManager';
 import GuestUserManager from './GuestUserManager';
 import { ClientAreaContent } from '../client/ClientArea';
-import { LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar, Star, Eye, Users } from 'lucide-react';
+import AnalyticsDashboard from './AnalyticsDashboard';
+import QRCodeManager from './QRCodeManager';
+import { LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar, Star, Eye, Users, BarChart3, QrCode } from 'lucide-react';
 
 const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -83,6 +85,18 @@ const AdminDashboard = () => {
                         active={activeTab === 'huespedes'}
                         onClick={() => setActiveTab('huespedes')}
                     />
+                    <SidebarLink
+                        icon={<BarChart3 size={18} />}
+                        label="Analítica"
+                        active={activeTab === 'analitica'}
+                        onClick={() => setActiveTab('analitica')}
+                    />
+                    <SidebarLink
+                        icon={<QrCode size={18} />}
+                        label="Códigos QR"
+                        active={activeTab === 'qrcodes'}
+                        onClick={() => setActiveTab('qrcodes')}
+                    />
                     <div className="pt-4 mt-4 border-t border-gray-50">
                         <SidebarLink
                             icon={<Eye size={18} />}
@@ -134,6 +148,8 @@ const AdminDashboard = () => {
                 {activeTab === 'documentos' && <DocumentsManager />}
                 {activeTab === 'huespedes' && <GuestUserManager />}
                 {activeTab === 'configuracion' && <WebConfigManager />}
+                {activeTab === 'analitica' && <AnalyticsDashboard />}
+                {activeTab === 'qrcodes' && <QRCodeManager />}
                 {activeTab === 'vista_huesped' && (
                     <div className="max-w-4xl mx-auto">
                         <div className="mb-6 flex items-center justify-between p-4 bg-amber-50 rounded-2xl border border-amber-100">

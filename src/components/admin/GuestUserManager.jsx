@@ -8,6 +8,8 @@ import {
     CheckCircle2, AlertCircle, Clock, Shield, Lock, Unlock,
     ShieldAlert, Settings2, Phone
 } from 'lucide-react';
+import { logError, userErrorMessage } from '../../utils/logger';
+import { validateDocFile } from '../../utils/fileValidation';
 
 const GuestUserManager = () => {
     const [guests, setGuests] = useState([]);
@@ -157,7 +159,10 @@ const GuestDetailView = ({ guest, onBack }) => {
             .update(updateData)
             .eq('id', guest.id);
 
-        if (error) alert('Error al guardar: ' + error.message);
+        if (error) {
+            logError('GuestUserManager.handleSave', error);
+            alert(userErrorMessage('Error al guardar los datos del huésped.'));
+        }
         setSaving(false);
     };
 
@@ -169,7 +174,8 @@ const GuestDetailView = ({ guest, onBack }) => {
             .insert([{ ...newBooking, profile_id: guest.id }]);
 
         if (error) {
-            alert('Error al añadir estancia: ' + error.message);
+            logError('GuestUserManager.handleAddBooking', error);
+            alert(userErrorMessage('Error al añadir la estancia.'));
         } else {
             setIsAddingBooking(false);
             setNewBooking({ apartment_name: '', check_in: '', check_out: '', status: 'completed' });
@@ -491,7 +497,8 @@ const CreateGuestModal = ({ onClose }) => {
             }, { onConflict: 'email' });
 
         if (error) {
-            alert('Error al preparar el acceso: ' + error.message);
+            logError('GuestUserManager.prepareAccess', error);
+            alert(userErrorMessage('Error al preparar el acceso.'));
         } else {
             setStep(2);
         }
@@ -625,6 +632,12 @@ const PrivateDocsSection = ({ guestId }) => {
         const file = fileInputRef.current?.files?.[0];
         if (!file || !title) return alert('Ponle un título y selecciona un archivo (PDF, Imagen...)');
 
+        const validation = validateDocFile(file);
+        if (!validation.valid) {
+            alert(validation.message);
+            return;
+        }
+
         setUploading(true);
         try {
             const fileName = `${Date.now()}_factura_${guestId.slice(0, 5)}_${file.name.replace(/\s/g, '_')}`;
@@ -646,7 +659,8 @@ const PrivateDocsSection = ({ guestId }) => {
             if (fileInputRef.current) fileInputRef.current.value = '';
             fetchDocs();
         } catch (e) {
-            alert('Error: ' + e.message);
+            logError('GuestUserManager.handleUpload', e);
+            alert(userErrorMessage('Error al subir el documento.'));
         }
         setUploading(false);
     };
