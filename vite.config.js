@@ -53,8 +53,8 @@ export default defineConfig({
                         },
                     },
                     {
-                        // Cache OpenTopoMap tiles (hiking maps offline!)
-                        urlPattern: /^https:\/\/[abc]\.tile\.opentopomap\.org\/.*/i,
+                        // Cache CartoDB Voyager tiles (maps offline!)
+                        urlPattern: /^https:\/\/[abcd]\.basemaps\.cartocdn\.com\/.*/i,
                         handler: 'CacheFirst',
                         options: {
                             cacheName: 'map-tiles',
