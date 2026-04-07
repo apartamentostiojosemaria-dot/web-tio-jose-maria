@@ -38,16 +38,17 @@ const BookingsManager = () => {
             logError('BookingsManager.updateStatus', error);
             alert(userErrorMessage('Error al actualizar la reserva.'));
         } else {
-            // Si confirmamos, bloquear las fechas en el calendario
+            const booking = bookings.find(b => b.id === id);
+
             if (newStatus === 'confirmed') {
-                const booking = bookings.find(b => b.id === id);
+                // Actualizar source de las fechas bloqueadas de pending a confirmed
                 if (booking?.apartment_id) {
-                    await supabase.from('blocked_dates').insert({
-                        apartment_id: booking.apartment_id,
-                        start_date: booking.check_in,
-                        end_date: booking.check_out,
-                        source: 'booking',
-                    });
+                    await supabase.from('blocked_dates')
+                        .update({ source: 'booking' })
+                        .eq('apartment_id', booking.apartment_id)
+                        .eq('start_date', booking.check_in)
+                        .eq('end_date', booking.check_out)
+                        .eq('source', 'booking_pending');
                 }
 
                 // Notificar al cliente por email
@@ -63,6 +64,16 @@ const BookingsManager = () => {
             }
 
             if (newStatus === 'cancelled') {
+                // Liberar las fechas bloqueadas
+                if (booking?.apartment_id) {
+                    await supabase.from('blocked_dates')
+                        .delete()
+                        .eq('apartment_id', booking.apartment_id)
+                        .eq('start_date', booking.check_in)
+                        .eq('end_date', booking.check_out)
+                        .in('source', ['booking_pending', 'booking']);
+                }
+
                 try {
                     const { data: { session } } = await supabase.auth.getSession();
                     await supabase.functions.invoke('booking-status-update', {

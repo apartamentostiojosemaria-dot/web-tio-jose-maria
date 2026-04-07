@@ -110,14 +110,17 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
         setSubmitting(true);
         setError(null);
 
+        const checkInStr = checkIn.toISOString().split('T')[0];
+        const checkOutStr = checkOut.toISOString().split('T')[0];
+
         const { error: insertError } = await supabase.from('guest_bookings').insert({
             apartment_id: apartment.id,
             guest_name: form.name,
             guest_email: form.email,
             guest_phone: form.phone,
             pax_count: form.pax,
-            check_in: checkIn.toISOString().split('T')[0],
-            check_out: checkOut.toISOString().split('T')[0],
+            check_in: checkInStr,
+            check_out: checkOutStr,
             total_price: priceBreakdown.total,
             price_breakdown: priceBreakdown,
             notes: form.notes,
@@ -129,6 +132,14 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
             setError('Ha ocurrido un error. Inténtalo de nuevo o contacta por WhatsApp.');
             setSubmitting(false);
         } else {
+            // Bloquear fechas mientras la reserva está pendiente
+            await supabase.from('blocked_dates').insert({
+                apartment_id: apartment.id,
+                start_date: checkInStr,
+                end_date: checkOutStr,
+                source: 'booking_pending',
+            });
+
             // Notificar al admin y al cliente via edge function
             try {
                 await supabase.functions.invoke('notify-booking', {
