@@ -12,8 +12,9 @@ import { ClientAreaContent } from '../client/ClientArea';
 import AnalyticsDashboard from './AnalyticsDashboard';
 import QRCodeManager from './QRCodeManager';
 import BookingsManager from './BookingsManager';
+import RoutesManager from './RoutesManager';
 import { usePendingBookingsCount } from '../../hooks/useDatabase';
-import { LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar, Star, Eye, Users, BarChart3, QrCode, CalendarCheck } from 'lucide-react';
+import { LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar, Star, Eye, Users, BarChart3, QrCode, CalendarCheck, Route } from 'lucide-react';
 
 const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -63,6 +64,12 @@ const AdminDashboard = () => {
                         label="Guía del Huésped"
                         active={activeTab === 'guias'}
                         onClick={() => setActiveTab('guias')}
+                    />
+                    <SidebarLink
+                        icon={<Route size={18} />}
+                        label="Rutas"
+                        active={activeTab === 'rutas'}
+                        onClick={() => setActiveTab('rutas')}
                     />
                     <SidebarLink
                         icon={<Calendar size={18} />}
@@ -152,6 +159,7 @@ const AdminDashboard = () => {
                 )}
 
                 {activeTab === 'apartamentos' && <ApartmentsManager />}
+                {activeTab === 'rutas' && <RoutesManager />}
                 {activeTab === 'disponibilidad' && <AvailabilityManager />}
                 {activeTab === 'temporadas' && <SeasonsManager />}
                 {activeTab === 'reservas' && <BookingsManager />}
