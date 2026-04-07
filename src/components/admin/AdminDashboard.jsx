@@ -14,8 +14,10 @@ import QRCodeManager from './QRCodeManager';
 import BookingsManager from './BookingsManager';
 import RoutesManager from './RoutesManager';
 import ReviewsManager from './ReviewsManager';
+import EventsManager from './EventsManager';
+import PlacesManager from './PlacesManager';
 import { usePendingBookingsCount } from '../../hooks/useDatabase';
-import { LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar, Star, Eye, Users, BarChart3, QrCode, CalendarCheck, Route, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar, Star, Eye, Users, BarChart3, QrCode, CalendarCheck, Route, MessageSquare, PartyPopper, MapPin } from 'lucide-react';
 
 const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -104,6 +106,18 @@ const AdminDashboard = () => {
                         onClick={() => setActiveTab('huespedes')}
                     />
                     <SidebarLink
+                        icon={<PartyPopper size={18} />}
+                        label="Eventos"
+                        active={activeTab === 'eventos'}
+                        onClick={() => setActiveTab('eventos')}
+                    />
+                    <SidebarLink
+                        icon={<MapPin size={18} />}
+                        label="Directorio Local"
+                        active={activeTab === 'directorio'}
+                        onClick={() => setActiveTab('directorio')}
+                    />
+                    <SidebarLink
                         icon={<BarChart3 size={18} />}
                         label="Analítica"
                         active={activeTab === 'analitica'}
@@ -176,6 +190,8 @@ const AdminDashboard = () => {
                 {activeTab === 'configuracion' && <WebConfigManager />}
                 {activeTab === 'analitica' && <AnalyticsDashboard />}
                 {activeTab === 'resenas' && <ReviewsManager />}
+                {activeTab === 'eventos' && <EventsManager />}
+                {activeTab === 'directorio' && <PlacesManager />}
                 {activeTab === 'qrcodes' && <QRCodeManager />}
                 {activeTab === 'vista_huesped' && (
                     <div className="max-w-4xl mx-auto">
