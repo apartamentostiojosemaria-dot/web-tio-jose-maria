@@ -56,7 +56,6 @@ function formatDate(dateStr) {
 }
 
 function formatDateRange(event) {
-    if (event.is_recurring) return 'Cada luna llena';
     if (!event.event_date) return 'Consultar fechas';
     const start = formatDate(event.event_date);
     if (!event.end_date || event.event_date === event.end_date) return start;
