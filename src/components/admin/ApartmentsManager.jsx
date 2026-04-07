@@ -363,16 +363,22 @@ const ApartmentsManager = () => {
                                         <List size={16} /> Servicios Incluidos
                                     </h5>
                                     <div className="grid grid-cols-2 gap-2">
-                                        {AMENITIES_LIST.map(item => (
-                                            <button
-                                                key={item.id}
-                                                onClick={() => toggleAmenity(item.id)}
-                                                className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${(editingApt.amenities || []).includes(item.id) ? 'bg-rural-50 border-rural-200 text-rural-700' : 'bg-white border-gray-100 text-gray-400'}`}
-                                            >
-                                                <item.icon size={16} />
-                                                <span className="text-[10px] font-bold uppercase">{item.label}</span>
-                                            </button>
-                                        ))}
+                                        {AMENITIES_LIST.map(item => {
+                                            const isActive = (editingApt.amenities || []).includes(item.id);
+                                            return (
+                                                <button
+                                                    key={item.id}
+                                                    onClick={() => toggleAmenity(item.id)}
+                                                    className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${isActive ? 'bg-rural-50 border-rural-300 text-rural-700 ring-1 ring-rural-200' : 'bg-white border-gray-100 text-gray-300 opacity-50'}`}
+                                                >
+                                                    <div className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-all ${isActive ? 'bg-rural-600 text-white' : 'border-2 border-gray-200'}`}>
+                                                        {isActive && <Check size={12} />}
+                                                    </div>
+                                                    <item.icon size={16} />
+                                                    <span className="text-[10px] font-bold uppercase">{item.label}</span>
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 </section>
                             </div>

@@ -11,11 +11,14 @@ import GuestUserManager from './GuestUserManager';
 import { ClientAreaContent } from '../client/ClientArea';
 import AnalyticsDashboard from './AnalyticsDashboard';
 import QRCodeManager from './QRCodeManager';
-import { LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar, Star, Eye, Users, BarChart3, QrCode } from 'lucide-react';
+import BookingsManager from './BookingsManager';
+import { usePendingBookingsCount } from '../../hooks/useDatabase';
+import { LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar, Star, Eye, Users, BarChart3, QrCode, CalendarCheck } from 'lucide-react';
 
 const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [stats, setStats] = useState({ apartments: 0, routes: 0, documents: 0 });
+    const pendingBookings = usePendingBookingsCount();
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -72,6 +75,13 @@ const AdminDashboard = () => {
                         label="Temporadas"
                         active={activeTab === 'temporadas'}
                         onClick={() => setActiveTab('temporadas')}
+                    />
+                    <SidebarLink
+                        icon={<CalendarCheck size={18} />}
+                        label="Reservas"
+                        active={activeTab === 'reservas'}
+                        onClick={() => setActiveTab('reservas')}
+                        badge={pendingBookings}
                     />
                     <SidebarLink
                         icon={<FileText size={18} />}
@@ -144,6 +154,7 @@ const AdminDashboard = () => {
                 {activeTab === 'apartamentos' && <ApartmentsManager />}
                 {activeTab === 'disponibilidad' && <AvailabilityManager />}
                 {activeTab === 'temporadas' && <SeasonsManager />}
+                {activeTab === 'reservas' && <BookingsManager />}
                 {activeTab === 'guias' && <GuestGuidesManager />}
                 {activeTab === 'documentos' && <DocumentsManager />}
                 {activeTab === 'huespedes' && <GuestUserManager />}
@@ -166,14 +177,19 @@ const AdminDashboard = () => {
     );
 };
 
-const SidebarLink = ({ icon, label, active = false, onClick }) => (
+const SidebarLink = ({ icon, label, active = false, onClick, badge = 0 }) => (
     <button
         onClick={onClick}
         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-bold ${active ? 'bg-rural-100' : 'hover:bg-gray-50 opacity-60 hover:opacity-100'}`}
         style={active ? { backgroundColor: COLORS.bgWarm, color: COLORS.primary } : {}}
     >
         {icon}
-        {label}
+        <span className="flex-grow text-left">{label}</span>
+        {badge > 0 && (
+            <span className="bg-amber-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                {badge}
+            </span>
+        )}
     </button>
 );
 

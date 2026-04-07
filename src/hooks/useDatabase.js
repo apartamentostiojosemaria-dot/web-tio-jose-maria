@@ -232,6 +232,66 @@ export function useGuestBookings(profileId) {
     return { bookings, loading, error };
 }
 
+export function useAllBookings() {
+    const [bookings, setBookings] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchBookings = async () => {
+            setLoading(true);
+            const { data, error } = await supabase
+                .from('guest_bookings')
+                .select('*, apartments(name, slug)')
+                .order('created_at', { ascending: false });
+            if (error) {
+                logError('useAllBookings', error);
+                setError(error);
+            }
+            if (data) setBookings(data);
+            setLoading(false);
+        };
+        fetchBookings();
+
+        const subscription = supabase
+            .channel('all_bookings')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'guest_bookings' }, fetchBookings)
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(subscription);
+        };
+    }, []);
+
+    return { bookings, loading, error };
+}
+
+export function usePendingBookingsCount() {
+    const [count, setCount] = useState(0);
+
+    useEffect(() => {
+        const fetchCount = async () => {
+            const { count, error } = await supabase
+                .from('guest_bookings')
+                .select('*', { count: 'exact', head: true })
+                .eq('status', 'pending');
+            if (!error) setCount(count || 0);
+        };
+        fetchCount();
+
+        const subscription = supabase
+            .channel('pending_bookings_count')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'guest_bookings' }, fetchCount)
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(subscription);
+        };
+    }, []);
+
+    return count;
+}
+
 export function useLocalEvents() {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);

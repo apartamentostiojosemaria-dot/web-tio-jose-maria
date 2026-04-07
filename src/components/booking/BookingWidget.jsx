@@ -129,6 +129,27 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
             setError('Ha ocurrido un error. Inténtalo de nuevo o contacta por WhatsApp.');
             setSubmitting(false);
         } else {
+            // Notificar al admin y al cliente via edge function
+            try {
+                await supabase.functions.invoke('notify-booking', {
+                    body: {
+                        booking_data: {
+                            apartment_name: apartment.name,
+                            apartments: { name: apartment.name },
+                            guest_name: form.name,
+                            guest_email: form.email,
+                            guest_phone: form.phone,
+                            pax_count: form.pax,
+                            check_in: checkIn.toISOString().split('T')[0],
+                            check_out: checkOut.toISOString().split('T')[0],
+                            total_price: priceBreakdown?.total,
+                            notes: form.notes,
+                        },
+                    },
+                });
+            } catch (e) {
+                logError('BookingWidget.notify', e);
+            }
             setStep(4);
             setSubmitting(false);
         }

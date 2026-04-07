@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { COLORS } from '../../App';
-import { Calendar, Plus, Trash2, Loader2, Save, X } from 'lucide-react';
+import { Calendar, Plus, Trash2, Loader2, Save, X, Pencil } from 'lucide-react';
 import { logError, userErrorMessage } from '../../utils/logger';
 
 const SeasonsManager = () => {
@@ -9,7 +9,8 @@ const SeasonsManager = () => {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [showForm, setShowForm] = useState(false);
-    const [newSeason, setNewSeason] = useState({ name: '', start_date: '', end_date: '' });
+    const [editingId, setEditingId] = useState(null);
+    const [formData, setFormData] = useState({ name: '', start_date: '', end_date: '' });
 
     useEffect(() => {
         fetchSeasons();
@@ -22,28 +23,65 @@ const SeasonsManager = () => {
         setLoading(false);
     }
 
-    const handleAdd = async () => {
-        if (!newSeason.name || !newSeason.start_date || !newSeason.end_date) {
+    const resetForm = () => {
+        setFormData({ name: '', start_date: '', end_date: '' });
+        setShowForm(false);
+        setEditingId(null);
+    };
+
+    const startEdit = (season) => {
+        setEditingId(season.id);
+        setFormData({
+            name: season.name,
+            start_date: season.start_date,
+            end_date: season.end_date,
+        });
+        setShowForm(true);
+    };
+
+    const startNew = () => {
+        resetForm();
+        setShowForm(true);
+    };
+
+    const handleSave = async () => {
+        if (!formData.name || !formData.start_date || !formData.end_date) {
             alert('Por favor, rellena todos los campos.');
             return;
         }
 
         setSaving(true);
-        const { error } = await supabase.from('high_seasons').insert([newSeason]);
-        if (error) {
-            logError('SeasonsManager.handleAdd', error);
-            alert(userErrorMessage('Error al guardar la temporada.'));
+
+        if (editingId) {
+            const { error } = await supabase
+                .from('high_seasons')
+                .update(formData)
+                .eq('id', editingId);
+            if (error) {
+                logError('SeasonsManager.handleUpdate', error);
+                alert(userErrorMessage('Error al actualizar la temporada.'));
+            } else {
+                resetForm();
+                fetchSeasons();
+            }
         } else {
-            setNewSeason({ name: '', start_date: '', end_date: '' });
-            setShowForm(false);
-            fetchSeasons();
+            const { error } = await supabase.from('high_seasons').insert([formData]);
+            if (error) {
+                logError('SeasonsManager.handleAdd', error);
+                alert(userErrorMessage('Error al guardar la temporada.'));
+            } else {
+                resetForm();
+                fetchSeasons();
+            }
         }
+
         setSaving(false);
     };
 
     const handleDelete = async (id) => {
         if (!window.confirm('¿Eliminar esta temporada alta?')) return;
         await supabase.from('high_seasons').delete().eq('id', id);
+        if (editingId === id) resetForm();
         fetchSeasons();
     };
 
@@ -57,7 +95,7 @@ const SeasonsManager = () => {
                     <p className="text-sm text-gray-500">Define los rangos de fechas con precios especiales y resáltalos en el calendario.</p>
                 </div>
                 <button
-                    onClick={() => setShowForm(!showForm)}
+                    onClick={() => showForm ? resetForm() : startNew()}
                     className="flex items-center gap-2 px-6 py-3 rounded-xl text-white font-bold transition-all hover:scale-105 shadow-md"
                     style={{ backgroundColor: COLORS.primary }}
                 >
@@ -68,15 +106,17 @@ const SeasonsManager = () => {
 
             {showForm && (
                 <div className="bg-white p-8 rounded-3xl border-2 border-dashed border-rural-200 space-y-4">
-                    <h4 className="font-bold text-lg">Definir Temporada</h4>
+                    <h4 className="font-bold text-lg">
+                        {editingId ? 'Editar Temporada' : 'Definir Temporada'}
+                    </h4>
                     <div className="grid md:grid-cols-3 gap-4">
                         <div>
                             <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Nombre (Ej: Semana Santa)</label>
                             <input
                                 type="text"
                                 className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none"
-                                value={newSeason.name}
-                                onChange={e => setNewSeason({ ...newSeason, name: e.target.value })}
+                                value={formData.name}
+                                onChange={e => setFormData({ ...formData, name: e.target.value })}
                             />
                         </div>
                         <div>
@@ -84,8 +124,8 @@ const SeasonsManager = () => {
                             <input
                                 type="date"
                                 className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none"
-                                value={newSeason.start_date}
-                                onChange={e => setNewSeason({ ...newSeason, start_date: e.target.value })}
+                                value={formData.start_date}
+                                onChange={e => setFormData({ ...formData, start_date: e.target.value })}
                             />
                         </div>
                         <div>
@@ -93,19 +133,19 @@ const SeasonsManager = () => {
                             <input
                                 type="date"
                                 className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none"
-                                value={newSeason.end_date}
-                                onChange={e => setNewSeason({ ...newSeason, end_date: e.target.value })}
+                                value={formData.end_date}
+                                onChange={e => setFormData({ ...formData, end_date: e.target.value })}
                             />
                         </div>
                     </div>
                     <button
-                        onClick={handleAdd}
+                        onClick={handleSave}
                         disabled={saving}
                         className="w-full py-4 rounded-2xl text-white font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all"
                         style={{ backgroundColor: COLORS.primary }}
                     >
                         {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-                        {saving ? 'Guardando...' : 'Guardar Temporada'}
+                        {saving ? 'Guardando...' : editingId ? 'Actualizar Temporada' : 'Guardar Temporada'}
                     </button>
                 </div>
             )}
@@ -114,8 +154,12 @@ const SeasonsManager = () => {
                 {seasons.map(season => {
                     const start = new Date(season.start_date).toLocaleDateString();
                     const end = new Date(season.end_date).toLocaleDateString();
+                    const isEditing = editingId === season.id;
                     return (
-                        <div key={season.id} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-6">
+                        <div
+                            key={season.id}
+                            className={`bg-white p-6 rounded-2xl border shadow-sm flex items-center gap-6 transition-all ${isEditing ? 'border-rural-300 ring-2 ring-rural-100' : 'border-gray-100'}`}
+                        >
                             <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ color: COLORS.accent, backgroundColor: COLORS.primary }}>
                                 <Calendar size={24} />
                             </div>
@@ -125,7 +169,14 @@ const SeasonsManager = () => {
                                     {start} — {end}
                                 </p>
                             </div>
-                            <button onClick={() => handleDelete(season.id)} className="p-2 text-gray-300 hover:text-red-500">
+                            <button
+                                onClick={() => isEditing ? resetForm() : startEdit(season)}
+                                className={`p-2 transition-colors ${isEditing ? 'text-rural-600' : 'text-gray-300 hover:text-rural-500'}`}
+                                title="Editar temporada"
+                            >
+                                <Pencil size={20} />
+                            </button>
+                            <button onClick={() => handleDelete(season.id)} className="p-2 text-gray-300 hover:text-red-500" title="Eliminar temporada">
                                 <Trash2 size={20} />
                             </button>
                         </div>
