@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { COLORS } from '../../App';
 import { useGuestGuides } from '../../hooks/useDatabase';
-import { Plus, Trash2, Save, X, Mountain, ChefHat, Tent, ChevronRight } from 'lucide-react';
+import { Plus, Trash2, Save, X, Mountain, ChefHat, Tent, ChevronRight, MapPin } from 'lucide-react';
 import { logError, userErrorMessage } from '../../utils/logger';
 
 const CATEGORIES = [
