@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { COLORS } from '../../App';
 import { useGuestGuides } from '../../hooks/useDatabase';
-import { Plus, Trash2, Save, X, Mountain, ChefHat, Tent, ChevronRight, MapPin, Trees, Landmark, Phone, Store } from 'lucide-react';
+import { Plus, Trash2, Save, Pencil, X, Mountain, ChefHat, Tent, ChevronRight, MapPin, Trees, Landmark, Phone, Store } from 'lucide-react';
 import { logError, userErrorMessage } from '../../utils/logger';
 
 const CATEGORIES = [
@@ -272,7 +272,7 @@ const GuestGuidesManager = () => {
                                     className="p-2 bg-gray-50 text-gray-400 hover:text-rural-700 hover:bg-rural-100 rounded-xl transition-all shadow-sm"
                                     title="Editar"
                                 >
-                                    <Save size={16} />
+                                    <Pencil size={16} />
                                 </button>
                                 <button
                                     onClick={() => handleDelete(guide.id)}
