@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
 import { COLORS } from '../../App';
 import { logError, userErrorMessage } from '../../utils/logger';
+import { validateImageFile } from '../../utils/fileValidation';
 import {
     Plus, Save, X, Trash2, Pencil, Loader2, Map, Mountain,
-    Clock, Ruler, TrendingUp, Image, Link as LinkIcon, Tag, Layers
+    Clock, Ruler, TrendingUp, Image, Link as LinkIcon, Tag, Layers, Upload, Camera
 } from 'lucide-react';
 
 const DIFFICULTY_OPTIONS = [
@@ -39,6 +40,7 @@ const EMPTY_ROUTE = {
     elevation_gain: '',
     map_url: '',
     image_url: '',
+    images: [],
     gpx_url: '',
     category: 'senderismo',
     route_group: 'walk',
@@ -53,6 +55,8 @@ const RoutesManager = () => {
     const [saving, setSaving] = useState(false);
     const [editingRoute, setEditingRoute] = useState(null);
     const [highlightInput, setHighlightInput] = useState('');
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef(null);
 
     useEffect(() => {
         fetchRoutes();
@@ -96,7 +100,8 @@ const RoutesManager = () => {
             distance_km: editingRoute.distance_km ? parseFloat(editingRoute.distance_km) : null,
             elevation_gain: editingRoute.elevation_gain ? parseInt(editingRoute.elevation_gain) : null,
             map_url: editingRoute.map_url || null,
-            image_url: editingRoute.image_url || null,
+            image_url: editingRoute.images?.[0] || editingRoute.image_url || null,
+            images: editingRoute.images?.length > 0 ? editingRoute.images : null,
             gpx_url: editingRoute.gpx_url || null,
             category: editingRoute.category || 'senderismo',
             route_group: editingRoute.route_group || 'walk',
@@ -149,6 +154,46 @@ const RoutesManager = () => {
         const h = [...(editingRoute.highlights || [])];
         h.splice(idx, 1);
         setEditingRoute({ ...editingRoute, highlights: h });
+    };
+
+    const handleFileUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const validation = validateImageFile(file);
+        if (!validation.valid) {
+            alert(validation.message);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+            return;
+        }
+        setIsUploading(true);
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `routes/${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`;
+            const { error: uploadError } = await supabase.storage.from('apartments').upload(fileName, file);
+            if (uploadError) throw uploadError;
+            const { data: { publicUrl } } = supabase.storage.from('apartments').getPublicUrl(fileName);
+            setEditingRoute({
+                ...editingRoute,
+                images: [...(editingRoute.images || []), publicUrl],
+                image_url: editingRoute.image_url || publicUrl,
+            });
+        } catch (error) {
+            logError('RoutesManager.upload', error);
+            alert(userErrorMessage('Error al subir la imagen.'));
+        } finally {
+            setIsUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
+    const removeImage = (idx) => {
+        const imgs = [...(editingRoute.images || [])];
+        imgs.splice(idx, 1);
+        setEditingRoute({
+            ...editingRoute,
+            images: imgs,
+            image_url: imgs[0] || '',
+        });
     };
 
     const groupLabel = (group) => GROUP_OPTIONS.find(g => g.value === group)?.label || group;
@@ -363,12 +408,36 @@ const RoutesManager = () => {
                                 </div>
                             </div>
 
-                            {/* Preview image */}
-                            {editingRoute.image_url && (
-                                <div className="rounded-2xl overflow-hidden h-40 bg-gray-100">
-                                    <img src={editingRoute.image_url} alt="Preview" className="w-full h-full object-cover" />
+                            {/* Galería de fotos */}
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">
+                                    <Camera size={12} className="inline mr-1" /> Galería de fotos ({(editingRoute.images || []).length})
+                                </label>
+                                <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 space-y-3">
+                                    <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*" className="hidden" />
+                                    <button
+                                        onClick={() => fileInputRef.current.click()}
+                                        disabled={isUploading}
+                                        className="w-full py-3 border-2 border-dashed border-rural-200 rounded-xl flex items-center justify-center gap-2 text-rural-600 font-bold text-sm hover:bg-rural-100 transition-all"
+                                    >
+                                        {isUploading ? <Loader2 className="animate-spin" size={16} /> : <Upload size={16} />}
+                                        {isUploading ? 'Subiendo...' : 'Subir foto'}
+                                    </button>
+                                    <div className="grid grid-cols-4 gap-2">
+                                        {(editingRoute.images || []).map((img, idx) => (
+                                            <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group">
+                                                <img src={img} className="w-full h-full object-cover" />
+                                                {idx === 0 && (
+                                                    <span className="absolute top-1 left-1 bg-rural-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded">Principal</span>
+                                                )}
+                                                <button onClick={() => removeImage(idx)} className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <X size={10} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
-                            )}
+                            </div>
                         </div>
 
                         <div className="p-8 border-t border-gray-100 flex gap-3 justify-end bg-gray-50/50 rounded-b-[2rem]">
