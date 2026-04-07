@@ -53,10 +53,8 @@ const BookingsManager = () => {
 
                 // Notificar al cliente por email
                 try {
-                    const { data: { session } } = await supabase.auth.getSession();
                     await supabase.functions.invoke('booking-status-update', {
                         body: { booking_id: id, status: 'confirmed' },
-                        headers: { Authorization: `Bearer ${session?.access_token}` },
                     });
                 } catch (e) {
                     logError('BookingsManager.notifyConfirm', e);
@@ -75,10 +73,8 @@ const BookingsManager = () => {
                 }
 
                 try {
-                    const { data: { session } } = await supabase.auth.getSession();
                     await supabase.functions.invoke('booking-status-update', {
                         body: { booking_id: id, status: 'cancelled', reason: rejectReason },
-                        headers: { Authorization: `Bearer ${session?.access_token}` },
                     });
                 } catch (e) {
                     logError('BookingsManager.notifyCancel', e);
