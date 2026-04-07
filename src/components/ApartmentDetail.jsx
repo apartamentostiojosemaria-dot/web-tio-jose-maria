@@ -220,12 +220,12 @@ const ApartmentDetail = () => {
                             </div>
                         </motion.div>
 
-                        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2">
                             {images.map((img, idx) => (
                                 <button
                                     key={idx}
                                     onClick={() => setActiveImg(idx)}
-                                    className={`relative flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden transition-all duration-300 ${activeImg === idx ? 'ring-4 ring-rural-600 scale-95 opacity-100' : 'opacity-60 hover:opacity-100'}`}
+                                    className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-300 ${activeImg === idx ? 'ring-3 ring-rural-600 scale-95 opacity-100' : 'opacity-60 hover:opacity-100'}`}
                                 >
                                     <img src={img} loading="lazy" className="w-full h-full object-cover" />
                                 </button>
