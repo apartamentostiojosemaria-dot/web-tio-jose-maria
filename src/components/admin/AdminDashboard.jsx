@@ -13,8 +13,9 @@ import AnalyticsDashboard from './AnalyticsDashboard';
 import QRCodeManager from './QRCodeManager';
 import BookingsManager from './BookingsManager';
 import RoutesManager from './RoutesManager';
+import ReviewsManager from './ReviewsManager';
 import { usePendingBookingsCount } from '../../hooks/useDatabase';
-import { LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar, Star, Eye, Users, BarChart3, QrCode, CalendarCheck, Route } from 'lucide-react';
+import { LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar, Star, Eye, Users, BarChart3, QrCode, CalendarCheck, Route, MessageSquare } from 'lucide-react';
 
 const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -109,6 +110,12 @@ const AdminDashboard = () => {
                         onClick={() => setActiveTab('analitica')}
                     />
                     <SidebarLink
+                        icon={<MessageSquare size={18} />}
+                        label="Reseñas"
+                        active={activeTab === 'resenas'}
+                        onClick={() => setActiveTab('resenas')}
+                    />
+                    <SidebarLink
                         icon={<QrCode size={18} />}
                         label="Códigos QR"
                         active={activeTab === 'qrcodes'}
@@ -168,6 +175,7 @@ const AdminDashboard = () => {
                 {activeTab === 'huespedes' && <GuestUserManager />}
                 {activeTab === 'configuracion' && <WebConfigManager />}
                 {activeTab === 'analitica' && <AnalyticsDashboard />}
+                {activeTab === 'resenas' && <ReviewsManager />}
                 {activeTab === 'qrcodes' && <QRCodeManager />}
                 {activeTab === 'vista_huesped' && (
                     <div className="max-w-4xl mx-auto">

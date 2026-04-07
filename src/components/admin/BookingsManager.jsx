@@ -23,6 +23,7 @@ const BookingsManager = () => {
     const [actionLoading, setActionLoading] = useState(null);
     const [rejectReason, setRejectReason] = useState('');
     const [showRejectModal, setShowRejectModal] = useState(null);
+    const [showInviteModal, setShowInviteModal] = useState(null); // booking object after confirm
 
     const filtered = filter === 'all' ? bookings : bookings.filter(b => b.status === filter);
     const pendingCount = bookings.filter(b => b.status === 'pending').length;
@@ -51,6 +52,41 @@ const BookingsManager = () => {
                         .eq('source', 'booking_pending');
                 }
 
+                // Auto-crear perfil de huésped si no existe
+                try {
+                    const guestEmail = booking.guest_email?.toLowerCase().trim();
+                    const { data: existingProfile } = await supabase
+                        .from('profiles')
+                        .select('id')
+                        .eq('email', guestEmail)
+                        .single();
+
+                    if (!existingProfile) {
+                        const userId = self.crypto.randomUUID();
+                        await supabase.from('profiles').insert({
+                            id: userId,
+                            full_name: booking.guest_name,
+                            email: guestEmail,
+                            phone: booking.guest_phone || null,
+                            pax_count: booking.pax_count || 2,
+                            check_in: booking.check_in,
+                            check_out: booking.check_out,
+                            role: 'cliente',
+                            is_active: true,
+                            access_mode: 'always',
+                            is_profile_completed: false,
+                            updated_at: new Date().toISOString(),
+                        });
+                    } else {
+                        // Actualizar fechas de estancia en perfil existente
+                        await supabase.from('profiles')
+                            .update({ check_in: booking.check_in, check_out: booking.check_out, updated_at: new Date().toISOString() })
+                            .eq('id', existingProfile.id);
+                    }
+                } catch (e) {
+                    logError('BookingsManager.autoCreateProfile', e);
+                }
+
                 // Notificar al cliente por email
                 try {
                     await supabase.functions.invoke('booking-status-update', {
@@ -59,6 +95,9 @@ const BookingsManager = () => {
                 } catch (e) {
                     logError('BookingsManager.notifyConfirm', e);
                 }
+
+                // Mostrar modal de invitación para enviar por WhatsApp
+                setShowInviteModal(booking);
             }
 
             if (newStatus === 'cancelled') {
@@ -341,6 +380,54 @@ const BookingsManager = () => {
                                 {actionLoading === showRejectModal ? 'Rechazando...' : 'Confirmar rechazo'}
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Invite modal — shown after confirming a booking */}
+            {showInviteModal && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
+                        <div className="text-center">
+                            <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-3">
+                                <CheckCircle size={28} className="text-green-500" />
+                            </div>
+                            <h4 className="font-serif font-bold text-xl" style={{ color: COLORS.text }}>Reserva confirmada</h4>
+                            <p className="text-sm text-gray-500 mt-1">
+                                Perfil de <strong>{showInviteModal.guest_name}</strong> creado. Enviale la invitacion para que acceda a su area de cliente.
+                            </p>
+                        </div>
+
+                        <div className="bg-rural-50 p-4 rounded-xl border border-rural-100 text-sm text-gray-600 italic leading-relaxed">
+                            "Hola {showInviteModal.guest_name?.split(' ')[0]}, tu reserva en {showInviteModal.apartments?.name || 'Tio Jose Maria'} esta confirmada ({formatDate(showInviteModal.check_in)} → {formatDate(showInviteModal.check_out)}). Para acceder a tu guia, WiFi, rutas y servicios, entra aqui con tu email: {window.location.origin}/clientes"
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <a
+                                href={`https://api.whatsapp.com/send?phone=${showInviteModal.guest_phone?.replace(/\D/g, '') || ''}&text=${encodeURIComponent(`Hola ${showInviteModal.guest_name?.split(' ')[0]}, tu reserva en ${showInviteModal.apartments?.name || 'Tío José María'} está confirmada (${formatDate(showInviteModal.check_in)} → ${formatDate(showInviteModal.check_out)}). Para acceder a tu guía, WiFi, rutas y servicios, entra aquí con tu email: ${window.location.origin}/clientes`)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-all"
+                            >
+                                <MessageCircle size={16} /> WhatsApp
+                            </a>
+                            <button
+                                onClick={() => {
+                                    navigator.clipboard.writeText(`Hola ${showInviteModal.guest_name?.split(' ')[0]}, tu reserva en ${showInviteModal.apartments?.name || 'Tío José María'} está confirmada (${formatDate(showInviteModal.check_in)} → ${formatDate(showInviteModal.check_out)}). Para acceder a tu guía, WiFi, rutas y servicios, entra aquí con tu email: ${window.location.origin}/clientes`);
+                                    alert('Mensaje copiado');
+                                }}
+                                className="flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-600 rounded-xl text-sm font-bold hover:bg-gray-200 transition-all"
+                            >
+                                <Mail size={16} /> Copiar texto
+                            </button>
+                        </div>
+
+                        <button
+                            onClick={() => setShowInviteModal(null)}
+                            className="w-full py-2.5 text-sm font-bold text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                            Cerrar
+                        </button>
                     </div>
                 </div>
             )}

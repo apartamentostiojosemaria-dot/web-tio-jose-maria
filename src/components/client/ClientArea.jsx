@@ -77,7 +77,29 @@ const ClientArea = () => {
                         setLoading(false);
                         return;
                     }
-                    // ... (resto de validaciones de acceso)
+
+                    // Validar access_mode por fechas de estancia
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const checkIn = profileData.check_in ? new Date(profileData.check_in) : null;
+                    const checkOut = profileData.check_out ? new Date(profileData.check_out) : null;
+
+                    if (profileData.access_mode === 'stay_only' && checkIn && checkOut) {
+                        if (today < checkIn || today > checkOut) {
+                            setAccessDenied(true);
+                            setLoading(false);
+                            return;
+                        }
+                    } else if (profileData.access_mode === 'stay_plus_7' && checkIn && checkOut) {
+                        const extendedCheckOut = new Date(checkOut);
+                        extendedCheckOut.setDate(extendedCheckOut.getDate() + 7);
+                        if (today < checkIn || today > extendedCheckOut) {
+                            setAccessDenied(true);
+                            setLoading(false);
+                            return;
+                        }
+                    }
+                    // access_mode 'always' → sin restricción
                 }
             }
 
