@@ -2,13 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { COLORS } from '../../App';
 import { useGuestGuides } from '../../hooks/useDatabase';
-import { Plus, Trash2, Save, X, Mountain, ChefHat, Tent, ChevronRight, MapPin } from 'lucide-react';
+import { Plus, Trash2, Save, X, Mountain, ChefHat, Tent, ChevronRight, MapPin, Trees, Landmark, Phone, Store } from 'lucide-react';
 import { logError, userErrorMessage } from '../../utils/logger';
 
 const CATEGORIES = [
     { id: 'rutas', label: 'Rutas y Paisajes', icon: Mountain },
+    { id: 'naturaleza', label: 'Naturaleza', icon: Trees },
     { id: 'gastronomia', label: 'Sabores Locales', icon: ChefHat },
-    { id: 'actividades', label: 'Aventura y Ocio', icon: Tent }
+    { id: 'actividades', label: 'Aventura y Ocio', icon: Tent },
+    { id: 'cultura', label: 'Historia y Cultura', icon: Landmark },
+    { id: 'emergencias', label: 'Emergencias', icon: Phone },
+    { id: 'servicios', label: 'Servicios', icon: Store },
 ];
 
 const GuestGuidesManager = () => {
