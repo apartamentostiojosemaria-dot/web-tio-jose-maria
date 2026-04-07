@@ -6,10 +6,10 @@ import { WP } from '../../constants/urls';
 
 const ApartmentsGrid = ({ apartments }) => {
     const defaultApartments = [
-        { name: 'Albahaca', tag: 'Romántico', capacity: '2 plazas', href: '/Albahaca.html', img: `${WP}/2018/12/ALBAHACA-1.jpg`, desc: 'Íntimo y acogedor. Diseñado para parejas. Disfruta de una cena romántica frente a la chimenea después de una ruta por el parque.', icons: [Flame, Wifi, Tv] },
-        { name: 'Tomillo', tag: 'Con Vistas', capacity: '2 plazas', href: '/Tomillo.html', img: `${WP}/2018/12/TOMILLOHOME1.jpg`, desc: 'Ubicado en la segunda planta con balcón y vistas al valle. Techos de madera abuhardillados que le dan un encanto especial.', icons: [Eye, Wifi, Flame] },
-        { name: 'Lavanda', tag: 'Familiar', capacity: '4 plazas', href: '/Lavanda.html', img: `${WP}/2018/12/LAVANDAHOME1.jpg`, desc: 'Espacioso y luminoso. Salón con chimenea, cocina completa, dormitorio de matrimonio y otro doble. Ideal para familias.', icons: [Flame, UtensilsCrossed, Baby] },
-        { name: 'Romero', tag: 'Familiar', capacity: '4 plazas', href: '/Romero.html', img: `${WP}/2018/12/ROMEROHOME1.jpg`, desc: 'Confort rústico con todas las comodidades. Salón con chimenea para las noches de invierno y dos dormitorios independientes.', icons: [Flame, UtensilsCrossed, Wifi] },
+        { name: 'Albahaca', tag: 'Romántico', capacity: '2 plazas', href: '/Albahaca.html', img: `${WP}/ALBAHACA-1.jpg`, desc: 'Íntimo y acogedor. Diseñado para parejas. Disfruta de una cena romántica frente a la chimenea después de una ruta por el parque.', icons: [Flame, Wifi, Tv] },
+        { name: 'Tomillo', tag: 'Con Vistas', capacity: '2 plazas', href: '/Tomillo.html', img: `${WP}/TOMILLOHOME1.jpg`, desc: 'Ubicado en la segunda planta con balcón y vistas al valle. Techos de madera abuhardillados que le dan un encanto especial.', icons: [Eye, Wifi, Flame] },
+        { name: 'Lavanda', tag: 'Familiar', capacity: '4 plazas', href: '/Lavanda.html', img: `${WP}/LAVANDAHOME1.jpg`, desc: 'Espacioso y luminoso. Salón con chimenea, cocina completa, dormitorio de matrimonio y otro doble. Ideal para familias.', icons: [Flame, UtensilsCrossed, Baby] },
+        { name: 'Romero', tag: 'Familiar', capacity: '4 plazas', href: '/Romero.html', img: `${WP}/ROMEROHOME1.jpg`, desc: 'Confort rústico con todas las comodidades. Salón con chimenea para las noches de invierno y dos dormitorios independientes.', icons: [Flame, UtensilsCrossed, Wifi] },
     ];
 
     const activeApartments = apartments?.filter(apt => apt.is_active) || [];
@@ -20,7 +20,7 @@ const ApartmentsGrid = ({ apartments }) => {
             tag: apt.capacity_people <= 2 ? 'Romántico' : 'Familiar',
             capacity: `${apt.capacity_people} plazas`,
             href: `/apartamento/${apt.slug}`,
-            img: apt.images?.[0] || `${WP}/2018/12/ALBAHACA-1.jpg`,
+            img: apt.images?.[0] || `${WP}/ALBAHACA-1.jpg`,
             desc: apt.description,
             icons: apt.capacity_people <= 2 ? [Flame, Wifi, Tv] : [Flame, UtensilsCrossed, Wifi]
         }))

@@ -45,16 +45,16 @@ const EntornoSection = ({ places, routes }) => (
                 </FadeInUp>
                 <div className="grid grid-cols-2 gap-3 md:gap-4 md:mt-0">
                     <FadeInUp delay={0.2}>
-                        <img src={places[0]?.image_url || "https://www.tiojosemaria.com/wp-content/uploads/2018/12/hinojaresPueblo.jpg"} alt="Entorno Local" loading="lazy" className="rounded-2xl shadow-lg w-full h-40 md:h-64 object-cover md:mt-8" />
+                        <img src={places[0]?.image_url || "https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/general/hinojaresPueblo.jpg"} alt="Entorno Local" loading="lazy" className="rounded-2xl shadow-lg w-full h-40 md:h-64 object-cover md:mt-8" />
                     </FadeInUp>
                     <FadeInUp delay={0.3}>
-                        <img src={routes[0]?.image_url || "https://www.tiojosemaria.com/wp-content/uploads/2018/12/MG_9540-1024x561.jpg"} alt="Rutas Sierra" loading="lazy" className="rounded-2xl shadow-lg w-full h-48 md:h-80 object-cover" />
+                        <img src={routes[0]?.image_url || "https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/general/MG_9540-1024x561.jpg"} alt="Rutas Sierra" loading="lazy" className="rounded-2xl shadow-lg w-full h-48 md:h-80 object-cover" />
                     </FadeInUp>
                     <FadeInUp delay={0.4}>
-                        <img src={places[1]?.image_url || "https://www.tiojosemaria.com/wp-content/uploads/2019/01/chuletas-de-cordero-al-horno2-1024x724.jpg"} alt="Gastronomía" loading="lazy" className="rounded-2xl shadow-lg w-full h-40 md:h-64 object-cover md:-mt-16" />
+                        <img src={places[1]?.image_url || "https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/general/chuletas-de-cordero-al-horno2-1024x724.jpg"} alt="Gastronomía" loading="lazy" className="rounded-2xl shadow-lg w-full h-40 md:h-64 object-cover md:-mt-16" />
                     </FadeInUp>
                     <FadeInUp delay={0.5}>
-                        <img src={routes[1]?.image_url || "https://www.tiojosemaria.com/wp-content/uploads/2018/12/10-1024x768.jpg"} alt="Actividades" loading="lazy" className="rounded-2xl shadow-lg w-full h-40 md:h-64 object-cover mt-4" />
+                        <img src={routes[1]?.image_url || "https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/general/10-1024x768.jpg"} alt="Actividades" loading="lazy" className="rounded-2xl shadow-lg w-full h-40 md:h-64 object-cover mt-4" />
                     </FadeInUp>
                 </div>
             </div>
@@ -92,7 +92,7 @@ const EntornoSection = ({ places, routes }) => (
             <FadeInUp>
                 <div id="como-llegar" className="rounded-3xl p-10 md:p-16 text-white relative overflow-hidden shadow-2xl" style={{ backgroundColor: COLORS.primary }}>
                     <div className="absolute inset-0 opacity-10">
-                        <img src={`${WP}/2018/12/slide3.jpg`} alt="Paisaje" className="w-full h-full object-cover" />
+                        <img src={`${WP}/slide3.jpg`} alt="Paisaje" className="w-full h-full object-cover" />
                     </div>
                     <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
                         <div className="text-center lg:text-left">

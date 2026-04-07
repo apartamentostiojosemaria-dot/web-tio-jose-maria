@@ -51,7 +51,7 @@ export const HomeJsonLd = ({ reviews, apartments }) => {
             latitude: 37.7167,
             longitude: -2.9
         },
-        image: 'https://www.tiojosemaria.com/wp-content/uploads/2018/12/slide3.jpg',
+        image: 'https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/general/slide3.jpg',
         starRating: {
             '@type': 'Rating',
             ratingValue: '4'
@@ -84,7 +84,7 @@ export const ApartmentJsonLd = ({ apartment, reviews }) => {
         name: apartment.name,
         description: apartment.description || `Apartamento rural ${apartment.name} en Hinojares, Sierra de Cazorla`,
         url: `https://tiojosemaria.com/apartamento/${apartment.slug}`,
-        image: apartment.images?.[0] || 'https://www.tiojosemaria.com/wp-content/uploads/2018/12/slide3.jpg',
+        image: apartment.images?.[0] || 'https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/general/slide3.jpg',
         numberOfRooms: 1,
         numberOfBathroomsTotal: apartment.bathrooms || 1,
         occupancy: {

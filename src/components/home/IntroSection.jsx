@@ -8,7 +8,7 @@ const IntroSection = ({ text }) => (
             <FadeInUp>
                 <div className="relative">
                     <img
-                        src={`${WP}/2018/12/slide5.jpg`}
+                        src={`${WP}/slide5.jpg`}
                         alt="Interior rústico de los apartamentos Tío José María"
                         className="rounded-2xl shadow-2xl w-full h-[300px] md:h-[500px] object-cover"
                     />

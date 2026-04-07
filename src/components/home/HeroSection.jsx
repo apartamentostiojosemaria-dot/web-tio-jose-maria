@@ -7,7 +7,7 @@ const HeroSection = ({ title, subtitle }) => (
     <header className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
             <img
-                src={`${WP}/2018/12/slide1.jpg`}
+                src={`${WP}/slide1.jpg`}
                 alt="Vista panorámica de Casa Rural Tío José María en Hinojares"
                 className="w-full h-full object-cover"
             />

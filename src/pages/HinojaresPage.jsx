@@ -82,7 +82,7 @@ export default function HinojaresPage() {
             <section className="relative h-[70vh] min-h-[500px] flex items-end overflow-hidden">
                 <div className="absolute inset-0">
                     <img
-                        src={`${WP}/2018/12/hinojaresPueblo.jpg`}
+                        src={`${WP}/hinojaresPueblo.jpg`}
                         alt="Hinojares pueblo blanco"
                         className="w-full h-full object-cover"
                     />

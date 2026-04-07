@@ -35,7 +35,7 @@ const GuiaSection = () => {
     return (
         <section id="guia" className="py-24 relative overflow-hidden text-white" style={{ backgroundColor: COLORS.primaryDark }}>
             <div className="absolute inset-0 opacity-20">
-                <img src={`${WP}/2023/07/slide-1.jpg`} alt="Paisaje del entorno natural de Cazorla" className="w-full h-full object-cover" style={{ filter: 'grayscale(100%)' }} />
+                <img src={`${WP}/slide-1.jpg`} alt="Paisaje del entorno natural de Cazorla" className="w-full h-full object-cover" style={{ filter: 'grayscale(100%)' }} />
             </div>
             <div className="max-w-3xl mx-auto px-6 relative z-10 text-center">
                 <FadeInUp>
