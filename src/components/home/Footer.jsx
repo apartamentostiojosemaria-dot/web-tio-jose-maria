@@ -49,15 +49,22 @@ const Footer = () => (
                     className="block rounded-xl overflow-hidden h-48 relative group cursor-pointer"
                     style={{ backgroundColor: '#1f2937' }}
                 >
-                    <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=600&q=80" alt="Ubicación en mapa de Hinojares" className="w-full h-full object-cover opacity-50 group-hover:opacity-70 transition-opacity duration-300" />
+                    <img
+                        src="https://a.basemaps.cartocdn.com/rastertiles/voyager/14/8206/6214.png"
+                        alt="Mapa de Hinojares, Jaén"
+                        className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity duration-300"
+                        style={{ imageRendering: 'auto' }}
+                    />
                     <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="bg-white text-gray-900 px-5 py-2.5 rounded-full text-sm font-bold shadow-lg">Ver en Google Maps</span>
+                        <span className="bg-white text-gray-900 px-5 py-2.5 rounded-full text-sm font-bold shadow-lg flex items-center gap-2">
+                            <MapPin size={14} style={{ color: COLORS.primary }} /> Ver en Google Maps
+                        </span>
                     </div>
                 </a>
             </div>
         </div>
         <div className="border-t border-white/10 pt-8 text-center text-white/40 text-sm flex flex-col md:flex-row justify-center items-center gap-4">
-            <span>© 2025 Apartamentos Tío José María.</span>
+            <span>© {new Date().getFullYear()} Apartamentos Tío José María.</span>
             <div className="flex gap-4">
                 <Link to="/privacidad" className="hover:text-white transition-colors">Privacidad</Link>
                 <span className="opacity-20">|</span>

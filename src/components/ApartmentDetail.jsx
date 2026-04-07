@@ -253,13 +253,25 @@ const ApartmentDetail = () => {
                             <div className="grid sm:grid-cols-2 gap-4 mb-8">
                                 <div className="p-4 md:p-6 bg-gray-50 rounded-3xl border border-gray-100 text-center space-y-1">
                                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Temporada Baja</p>
-                                    <p className="text-3xl md:text-4xl font-serif font-bold text-rural-800">{apartment.price_low || 60}<span className="text-lg">€</span></p>
-                                    <p className="text-[10px] text-gray-400 leading-none italic">/ por noche</p>
+                                    {apartment.price_low ? (
+                                        <>
+                                            <p className="text-3xl md:text-4xl font-serif font-bold text-rural-800">{apartment.price_low}<span className="text-lg">€</span></p>
+                                            <p className="text-[10px] text-gray-400 leading-none italic">/ por noche</p>
+                                        </>
+                                    ) : (
+                                        <p className="text-xl font-serif font-bold text-rural-600 italic">Consultar</p>
+                                    )}
                                 </div>
                                 <div className="p-4 md:p-6 bg-rural-50 rounded-3xl border border-rural-100 text-center space-y-1">
                                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-rural-600">Temporada Alta</p>
-                                    <p className="text-3xl md:text-4xl font-serif font-bold text-rural-800">{apartment.price_high || 70}<span className="text-lg">€</span></p>
-                                    <p className="text-[10px] text-rural-400 leading-none italic">Navidad, S. Santa y Puentes</p>
+                                    {apartment.price_high ? (
+                                        <>
+                                            <p className="text-3xl md:text-4xl font-serif font-bold text-rural-800">{apartment.price_high}<span className="text-lg">€</span></p>
+                                            <p className="text-[10px] text-rural-400 leading-none italic">Navidad, S. Santa y Puentes</p>
+                                        </>
+                                    ) : (
+                                        <p className="text-xl font-serif font-bold text-rural-600 italic">Consultar</p>
+                                    )}
                                 </div>
                             </div>
 

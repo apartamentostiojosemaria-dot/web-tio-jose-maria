@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import { COLORS } from '../../constants/colors';
-import { WHATSAPP_URL } from '../../constants/urls';
 
 const Navigation = () => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -20,7 +19,7 @@ const Navigation = () => {
         { label: 'Hinojares', href: '/hinojares' },
         { label: 'Qué ver', href: '/rutas' },
         { label: 'Eventos', href: '/eventos' },
-        { label: 'Documentos', href: '/clientes' },
+        { label: 'Mi Estancia', href: '/clientes' },
         { label: 'Contacto', href: '/#contacto' },
     ];
 
@@ -57,9 +56,7 @@ const Navigation = () => {
                         </a>
                     ))}
                     <a
-                        href={WHATSAPP_URL}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href="/#apartamentos"
                         className="px-5 py-2.5 rounded-full text-sm font-bold text-white shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
                         style={{ backgroundColor: COLORS.primary }}
                     >
@@ -91,9 +88,8 @@ const Navigation = () => {
                         </a>
                     ))}
                     <a
-                        href={WHATSAPP_URL}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href="/#apartamentos"
+                        onClick={() => setMobileOpen(false)}
                         className="mt-2 px-8 py-3 rounded-full text-white font-bold shadow-lg"
                         style={{ backgroundColor: COLORS.primary }}
                     >

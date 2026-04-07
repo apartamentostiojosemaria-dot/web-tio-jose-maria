@@ -17,7 +17,7 @@ const EntornoSection = ({ places, routes }) => (
                         Tío José María se ubica en <strong>Hinojares</strong>, un pueblo mágico de gredas blancas al sur del <strong>Parque Natural de la Sierra de Cazorla</strong>. Es un destino donde el agua de los ríos y embalses se funde con paisajes semidesérticos y bosques vírgenes.
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-10">
-                        <div className="p-6 rounded-2xl border border-rural-100 bg-rural-50 hover:bg-white hover:shadow-xl transition-all group">
+                        <Link to="/rutas" className="p-6 rounded-2xl border border-rural-100 bg-rural-50 hover:bg-white hover:shadow-xl transition-all group block">
                             <span className="text-2xl mb-2 block">🐎</span>
                             <h4 className="font-serif text-xl font-bold mb-2" style={{ color: COLORS.primary }}>
                                 Actividades Estrella
@@ -25,8 +25,11 @@ const EntornoSection = ({ places, routes }) => (
                             <p className="text-sm opacity-80" style={{ color: COLORS.text }}>
                                 Desde rutas a caballo en el pueblo hasta kayak y parapente en los embalses cercanos.
                             </p>
-                        </div>
-                        <div className="p-6 rounded-2xl border border-rural-100 bg-rural-50 hover:bg-white hover:shadow-xl transition-all">
+                            <span className="text-xs font-bold mt-3 inline-flex items-center gap-1 group-hover:gap-2 transition-all" style={{ color: COLORS.primary }}>
+                                Ver actividades <ArrowRight size={12} />
+                            </span>
+                        </Link>
+                        <Link to="/hinojares#gastronomia" className="p-6 rounded-2xl border border-rural-100 bg-rural-50 hover:bg-white hover:shadow-xl transition-all group block">
                             <span className="text-2xl mb-2 block">🥘</span>
                             <h4 className="font-serif text-xl font-bold mb-2" style={{ color: COLORS.primary }}>
                                 Sabor Tradicional
@@ -34,7 +37,10 @@ const EntornoSection = ({ places, routes }) => (
                             <p className="text-sm opacity-80" style={{ color: COLORS.text }}>
                                 Prueba el cordero segureño y los platos típicos de la comarca, un placer para los sentidos.
                             </p>
-                        </div>
+                            <span className="text-xs font-bold mt-3 inline-flex items-center gap-1 group-hover:gap-2 transition-all" style={{ color: COLORS.primary }}>
+                                Ver gastronomía <ArrowRight size={12} />
+                            </span>
+                        </Link>
                     </div>
                 </FadeInUp>
                 <div className="grid grid-cols-2 gap-3 md:gap-4 md:mt-0">
@@ -84,7 +90,7 @@ const EntornoSection = ({ places, routes }) => (
             )}
 
             <FadeInUp>
-                <div className="rounded-3xl p-10 md:p-16 text-white relative overflow-hidden shadow-2xl" style={{ backgroundColor: COLORS.primary }}>
+                <div id="como-llegar" className="rounded-3xl p-10 md:p-16 text-white relative overflow-hidden shadow-2xl" style={{ backgroundColor: COLORS.primary }}>
                     <div className="absolute inset-0 opacity-10">
                         <img src={`${WP}/2018/12/slide3.jpg`} alt="Paisaje" className="w-full h-full object-cover" />
                     </div>

@@ -92,11 +92,12 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
             else lowNights++;
             d.setDate(d.getDate() + 1);
         }
-        const priceLow = apartment.price_low || 60;
-        const priceHigh = apartment.price_high || 70;
-        const total = (lowNights * priceLow) + (highNights * priceHigh);
+        const priceLow = apartment.price_low;
+        const priceHigh = apartment.price_high;
+        const hasPrices = priceLow && priceHigh;
+        const total = hasPrices ? (lowNights * priceLow) + (highNights * priceHigh) : null;
         const nights = lowNights + highNights;
-        return { lowNights, highNights, priceLow, priceHigh, total, nights };
+        return { lowNights, highNights, priceLow, priceHigh, total, nights, hasPrices };
     }, [checkIn, checkOut, apartment, highSeasons]);
 
     const formatDate = (d) => {
@@ -233,19 +234,22 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 rounded-2xl bg-rural-50 border border-rural-100 space-y-2">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-gray-600">{priceBreakdown.nights} {priceBreakdown.nights === 1 ? 'noche' : 'noches'}</span>
-                                    <span className="font-bold" style={{ color: COLORS.text }}>{priceBreakdown.total}€</span>
+                                    <span className="font-bold" style={{ color: COLORS.text }}>{priceBreakdown.hasPrices ? `${priceBreakdown.total}€` : 'Precio a confirmar'}</span>
                                 </div>
-                                {priceBreakdown.lowNights > 0 && (
+                                {priceBreakdown.hasPrices && priceBreakdown.lowNights > 0 && (
                                     <div className="flex justify-between text-xs text-gray-400">
                                         <span>{priceBreakdown.lowNights} × {priceBreakdown.priceLow}€ (temp. baja)</span>
                                         <span>{priceBreakdown.lowNights * priceBreakdown.priceLow}€</span>
                                     </div>
                                 )}
-                                {priceBreakdown.highNights > 0 && (
+                                {priceBreakdown.hasPrices && priceBreakdown.highNights > 0 && (
                                     <div className="flex justify-between text-xs text-amber-600">
                                         <span>{priceBreakdown.highNights} × {priceBreakdown.priceHigh}€ (temp. alta)</span>
                                         <span>{priceBreakdown.highNights * priceBreakdown.priceHigh}€</span>
                                     </div>
+                                )}
+                                {!priceBreakdown.hasPrices && (
+                                    <p className="text-xs text-gray-400 italic">El precio final te lo confirmaremos tras enviar la solicitud.</p>
                                 )}
                             </motion.div>
                         )}
@@ -272,7 +276,7 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
 
                         <div className="p-3 rounded-xl bg-rural-50 border border-rural-100 flex items-center justify-between text-sm">
                             <span className="font-bold" style={{ color: COLORS.text }}>{formatDate(checkIn)} → {formatDate(checkOut)}</span>
-                            <span className="font-bold" style={{ color: COLORS.primary }}>{priceBreakdown?.total}€</span>
+                            <span className="font-bold" style={{ color: COLORS.primary }}>{priceBreakdown?.hasPrices ? `${priceBreakdown.total}€` : 'Precio a confirmar'}</span>
                         </div>
 
                         <div className="space-y-3">
@@ -407,7 +411,7 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
                                 <hr className="border-rural-200" />
                                 <div className="flex justify-between text-lg">
                                     <span className="font-bold" style={{ color: COLORS.text }}>Total</span>
-                                    <span className="font-bold" style={{ color: COLORS.primary }}>{priceBreakdown?.total}€</span>
+                                    <span className="font-bold" style={{ color: COLORS.primary }}>{priceBreakdown?.hasPrices ? `${priceBreakdown.total}€` : 'A confirmar'}</span>
                                 </div>
                             </div>
                         </div>
@@ -445,7 +449,7 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
                         <div className="p-4 rounded-xl bg-rural-50 border border-rural-100">
                             <p className="text-xs text-gray-400 mb-1">Resumen</p>
                             <p className="font-bold text-sm" style={{ color: COLORS.text }}>
-                                {checkIn?.toLocaleDateString('es-ES')} → {checkOut?.toLocaleDateString('es-ES')} · {priceBreakdown?.nights} noches · {priceBreakdown?.total}€
+                                {checkIn?.toLocaleDateString('es-ES')} → {checkOut?.toLocaleDateString('es-ES')} · {priceBreakdown?.nights} noches{priceBreakdown?.hasPrices ? ` · ${priceBreakdown.total}€` : ''}
                             </p>
                         </div>
                         <a
