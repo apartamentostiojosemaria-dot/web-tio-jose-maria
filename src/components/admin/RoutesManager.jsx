@@ -26,8 +26,8 @@ const CATEGORY_OPTIONS = [
 const GROUP_OPTIONS = [
     { value: 'walk', label: 'Andando desde casa' },
     { value: 'near', label: 'Muy cerca (15-20 min)' },
-    { value: 'drive30', label: 'Media hora en coche' },
-    { value: 'daytrip', label: 'Excursión de día' },
+    { value: 'medium', label: 'Media hora en coche' },
+    { value: 'day', label: 'Excursión de día' },
 ];
 
 const EMPTY_ROUTE = {
