@@ -128,6 +128,7 @@ const AccessDeniedView = ({ onLogout, profile }) => (
 );
 
 export const ClientAreaContent = ({ docs = [], userEmail = '', profile = null }) => {
+    const [activeTab, setActiveTab] = useState('estancia');
     const { config } = useWebConfig();
     const { booking, loading: bookingLoading } = useMyBooking(userEmail);
     const { instructions } = useApartmentInstructions(booking?.apartment_id);
@@ -144,196 +145,228 @@ export const ClientAreaContent = ({ docs = [], userEmail = '', profile = null })
     const isBeforeStay = checkIn && today < checkIn;
     const isAfterStay = checkOut && today > checkOut;
 
+    const TABS = [
+        { key: 'estancia', label: 'Mi Estancia', icon: Home },
+        { key: 'guia', label: 'Guia', icon: Map },
+        { key: 'zona', label: 'La Zona', icon: MapPin },
+        { key: 'docs', label: 'Documentos', icon: FileText },
+    ];
+
     return (
-        <div className="space-y-8">
-            <WelcomePackage config={config} guestName={profile?.full_name} />
-
-            {/* Mi Reserva */}
-            <section>
-                <h3 className="text-xl font-serif font-bold mb-4 flex items-center gap-2 text-text-primary">
-                    <Home size={20} className="text-primary" /> Mi Reserva
-                </h3>
-                {bookingLoading ? (
-                    <div className="bg-white rounded-2xl p-8 text-center text-gray-400 italic">Cargando reserva...</div>
-                ) : booking ? (
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                        {booking.apartments?.images?.[0] && (
-                            <img src={booking.apartments.images[0]} alt={booking.apartments.name} className="w-full h-48 object-cover" />
-                        )}
-                        <div className="p-6 space-y-4">
-                            <div className="flex items-center justify-between">
-                                <h4 className="font-serif text-2xl font-bold text-text-primary">{booking.apartments?.name || 'Apartamento'}</h4>
-                                <StatusBadge status={booking.status} />
-                            </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                <InfoChip icon={Calendar} label="Entrada" value={formatDate(booking.check_in)} />
-                                <InfoChip icon={Calendar} label="Salida" value={formatDate(booking.check_out)} />
-                                <InfoChip icon={User} label="Huespedes" value={`${booking.pax_count} personas`} />
-                                <InfoChip icon={CreditCard} label="Total" value={booking.total_price ? `${booking.total_price}\u20AC` : 'A confirmar'} />
-                            </div>
-                            {booking.notes && (
-                                <p className="text-xs text-gray-400 bg-gray-50 p-3 rounded-xl"><strong>Notas:</strong> {booking.notes}</p>
-                            )}
+        <div className="space-y-6">
+            {/* Mini booking summary — always visible */}
+            {booking && !bookingLoading && (
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col sm:flex-row items-center gap-4">
+                    {booking.apartments?.images?.[0] && (
+                        <img src={booking.apartments.images[0]} alt={booking.apartments.name} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
+                    )}
+                    <div className="flex-1 text-center sm:text-left">
+                        <div className="flex items-center justify-center sm:justify-start gap-2">
+                            <h3 className="font-serif font-bold text-text-primary">{booking.apartments?.name}</h3>
+                            <StatusBadge status={booking.status} />
                         </div>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                            {formatDate(booking.check_in)} &rarr; {formatDate(booking.check_out)} &middot; {booking.pax_count} pers.
+                            {booking.total_price ? ` \u00B7 ${booking.total_price}\u20AC` : ''}
+                        </p>
                     </div>
-                ) : (
-                    <div className="bg-white rounded-2xl p-8 text-center border border-gray-100">
-                        <p className="text-gray-400 italic font-serif">No se ha encontrado una reserva asociada a tu cuenta.</p>
-                        <a href="https://wa.me/34676344675" className="text-sm font-bold text-primary mt-2 inline-block">Contactar para reservar</a>
-                    </div>
-                )}
-            </section>
-
-            {/* Guia del Apartamento */}
-            {instructions.length > 0 && (
-                <section>
-                    <h3 className="text-xl font-serif font-bold mb-4 flex items-center gap-2 text-text-primary">
-                        <Key size={20} className="text-primary" /> {isBeforeStay ? 'Antes de llegar' : 'Guia de tu apartamento'}
-                    </h3>
-                    <div className="grid md:grid-cols-2 gap-3">
-                        {instructions.map(inst => {
-                            const Icon = INSTRUCTION_ICONS[inst.icon] || Info;
-                            return (
-                                <div key={inst.id} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                            <Icon size={18} className="text-primary" />
-                                        </div>
-                                        <div>
-                                            <h4 className="font-bold text-sm text-text-primary mb-1">{inst.title}</h4>
-                                            <p className="text-xs text-gray-500 leading-relaxed">{inst.content}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </section>
-            )}
-
-            {/* Meteo + Plan del dia */}
-            {isDuringStay && (
-                <section>
-                    <h3 className="text-xl font-serif font-bold mb-4 flex items-center gap-2 text-text-primary">
-                        <Sun size={20} className="text-primary" /> Hoy en Hinojares
-                    </h3>
-                    <WeatherWidget stayDates={{ check_in: profile?.check_in, check_out: profile?.check_out }} />
-                    <DayPlan />
-                </section>
-            )}
-
-            {!isDuringStay && (
-                <WeatherWidget stayDates={{ check_in: profile?.check_in, check_out: profile?.check_out }} />
-            )}
-
-            {/* Guia del Huesped */}
-            <section>
-                <h3 className="text-xl font-serif font-bold mb-4 flex items-center gap-2 text-text-primary">
-                    <Map size={20} className="text-primary" /> Guia Exclusiva del Huesped
-                </h3>
-                <GuestGuide />
-            </section>
-
-            {/* Numeros de emergencia */}
-            {emergencyPlaces.length > 0 && (
-                <section>
-                    <h3 className="text-xl font-serif font-bold mb-4 flex items-center gap-2 text-text-primary">
-                        <ShieldAlert size={20} className="text-red-500" /> Numeros de Emergencia
-                    </h3>
-                    <div className="grid sm:grid-cols-2 gap-3">
-                        <EmergencyCard name="Emergencias" phone="112" desc="Policia, bomberos, ambulancia" alwaysShow />
-                        {emergencyPlaces.map(place => (
-                            <EmergencyCard key={place.id} name={place.name} phone={place.phone} desc={place.description} />
-                        ))}
-                    </div>
-                </section>
-            )}
-
-            {/* Restaurantes */}
-            {restaurants.length > 0 && (
-                <section>
-                    <h3 className="text-xl font-serif font-bold mb-4 flex items-center gap-2 text-text-primary">
-                        <Utensils size={20} className="text-primary" /> Donde comer
-                    </h3>
-                    <div className="grid sm:grid-cols-2 gap-3">
-                        {restaurants.map(r => (
-                            <div key={r.id} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-                                <h4 className="font-bold text-text-primary mb-1">{r.name}</h4>
-                                <p className="text-xs text-gray-500 mb-3">{r.description}</p>
-                                <div className="flex gap-2">
-                                    {r.phone && (
-                                        <a href={`tel:${r.phone.replace(/\s/g, '')}`} className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-bold">
-                                            <Phone size={12} /> Llamar
-                                        </a>
-                                    )}
-                                    {r.web_url && (
-                                        <a href={r.web_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-600 rounded-full text-xs font-bold">
-                                            <ExternalLink size={12} /> Web
-                                        </a>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-            )}
-
-            {/* Documentos */}
-            <section>
-                <h3 className="text-xl font-serif font-bold mb-4 flex items-center gap-2 text-text-primary">
-                    <FileText size={20} className="text-primary" /> Documentos
-                </h3>
-                <div className="space-y-3">
-                    {docs.map(doc => (
-                        <div key={doc.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-lg flex items-center justify-center text-primary bg-surface-warm">
-                                    <FileText size={20} />
-                                </div>
-                                <div>
-                                    <p className="font-bold text-gray-800 text-sm">{doc.title}</p>
-                                    <p className="text-[10px] text-gray-400 font-bold uppercase">{doc.category || 'General'}</p>
-                                </div>
-                            </div>
-                            <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full flex items-center justify-center border border-gray-100 text-gray-400 hover:bg-primary hover:text-white transition-all">
-                                <Download size={18} />
-                            </a>
-                        </div>
-                    ))}
-                    {docs.length === 0 && <p className="text-center p-8 bg-white rounded-2xl border border-dashed border-gray-200 text-gray-400 italic text-sm">No hay documentos disponibles.</p>}
-                </div>
-            </section>
-
-            {/* Ubicacion + Contacto */}
-            <section className="grid md:grid-cols-2 gap-6">
-                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
-                    <h4 className="font-bold text-text-primary flex items-center gap-2"><MapPin size={16} className="text-primary" /> Ubicacion</h4>
-                    <p className="text-sm text-gray-600">Calle Baja 1, 23486 Hinojares, Jaen</p>
-                    <a href="https://maps.app.goo.gl/EPzh8j2HivLfqUeN8" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-bold text-primary">Abrir en Google Maps <ExternalLink size={10} /></a>
-                </div>
-                <div className="bg-primary-dark rounded-2xl p-6 text-white">
-                    <h4 className="font-bold mb-2">Necesitas ayuda?</h4>
-                    <p className="text-xs opacity-70 mb-4">Estamos disponibles por WhatsApp para cualquier duda.</p>
-                    <a href="https://wa.me/34676344675" target="_blank" rel="noopener noreferrer" className="inline-block px-5 py-2 bg-white text-primary-dark rounded-full text-xs font-bold hover:scale-105 transition-transform">
-                        <Phone size={12} className="inline mr-1" /> WhatsApp
+                    <a href="https://wa.me/34676344675" className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white rounded-full text-xs font-bold flex-shrink-0 hover:shadow-lg transition-all">
+                        <Phone size={12} /> Contactar
                     </a>
                 </div>
-            </section>
-
-            {/* Codigo descuento */}
-            {isAfterStay && codes.length > 0 && (
-                <section>
-                    <h3 className="text-xl font-serif font-bold mb-4 flex items-center gap-2 text-text-primary">
-                        <Tag size={20} className="text-primary" /> Tu descuento para volver
-                    </h3>
-                    {codes.map(code => (
-                        <DiscountCard key={code.id} code={code} />
-                    ))}
-                </section>
             )}
 
-            {/* Resena — solo despues de la estancia */}
-            {(isAfterStay || isDuringStay) && <ReviewForm profile={profile} />}
+            {/* Tab navigation */}
+            <nav className="flex gap-1 bg-white rounded-2xl p-1.5 border border-gray-100 shadow-sm" role="tablist">
+                {TABS.map(tab => {
+                    const Icon = tab.icon;
+                    const isActive = activeTab === tab.key;
+                    return (
+                        <button
+                            key={tab.key}
+                            onClick={() => setActiveTab(tab.key)}
+                            role="tab"
+                            aria-selected={isActive}
+                            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all ${
+                                isActive ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-text-primary hover:bg-gray-50'
+                            }`}
+                        >
+                            <Icon size={16} />
+                            <span className="hidden sm:inline">{tab.label}</span>
+                        </button>
+                    );
+                })}
+            </nav>
+
+            {/* Tab content */}
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={activeTab}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.2 }}
+                >
+                    {/* TAB: Mi Estancia */}
+                    {activeTab === 'estancia' && (
+                        <div className="space-y-6">
+                            <WelcomePackage config={config} guestName={profile?.full_name} />
+
+                            {/* Meteo + Day plan */}
+                            {isDuringStay && <DayPlan />}
+                            <WeatherWidget stayDates={{ check_in: profile?.check_in, check_out: profile?.check_out }} />
+
+                            {/* Instrucciones del apartamento */}
+                            {instructions.length > 0 && (
+                                <section>
+                                    <h3 className="text-lg font-serif font-bold mb-4 flex items-center gap-2 text-text-primary">
+                                        <Key size={18} className="text-primary" /> {isBeforeStay ? 'Antes de llegar' : 'Tu apartamento'}
+                                    </h3>
+                                    <div className="grid md:grid-cols-2 gap-3">
+                                        {instructions.map(inst => {
+                                            const Icon = INSTRUCTION_ICONS[inst.icon] || Info;
+                                            return (
+                                                <div key={inst.id} className="bg-white rounded-xl p-4 border border-gray-100 hover:shadow-sm transition-shadow">
+                                                    <div className="flex items-start gap-3">
+                                                        <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                                            <Icon size={16} className="text-primary" />
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="font-bold text-sm text-text-primary mb-0.5">{inst.title}</h4>
+                                                            <p className="text-xs text-gray-500 leading-relaxed">{inst.content}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </section>
+                            )}
+
+                            {/* Booking details (if not shown in summary) */}
+                            {!booking && !bookingLoading && (
+                                <div className="bg-white rounded-2xl p-8 text-center border border-gray-100">
+                                    <p className="text-gray-400 italic font-serif">No se ha encontrado una reserva asociada a tu cuenta.</p>
+                                    <a href="https://wa.me/34676344675" className="text-sm font-bold text-primary mt-2 inline-block">Contactar para reservar</a>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* TAB: Guia */}
+                    {activeTab === 'guia' && (
+                        <div>
+                            <GuestGuide />
+                        </div>
+                    )}
+
+                    {/* TAB: La Zona */}
+                    {activeTab === 'zona' && (
+                        <div className="space-y-6">
+                            {/* Emergencias — siempre arriba */}
+                            <section>
+                                <h3 className="text-lg font-serif font-bold mb-3 flex items-center gap-2 text-text-primary">
+                                    <ShieldAlert size={18} className="text-red-500" /> Emergencias
+                                </h3>
+                                <div className="grid sm:grid-cols-2 gap-3">
+                                    <EmergencyCard name="Emergencias" phone="112" desc="Policia, bomberos, ambulancia" alwaysShow />
+                                    {emergencyPlaces.map(place => (
+                                        <EmergencyCard key={place.id} name={place.name} phone={place.phone} desc={place.description} />
+                                    ))}
+                                </div>
+                            </section>
+
+                            {/* Restaurantes */}
+                            {restaurants.length > 0 && (
+                                <section>
+                                    <h3 className="text-lg font-serif font-bold mb-3 flex items-center gap-2 text-text-primary">
+                                        <Utensils size={18} className="text-primary" /> Donde comer
+                                    </h3>
+                                    <div className="grid sm:grid-cols-2 gap-3">
+                                        {restaurants.map(r => (
+                                            <div key={r.id} className="bg-white rounded-xl p-4 border border-gray-100">
+                                                <h4 className="font-bold text-sm text-text-primary mb-1">{r.name}</h4>
+                                                <p className="text-xs text-gray-500 mb-2">{r.description}</p>
+                                                <div className="flex gap-2">
+                                                    {r.phone && (
+                                                        <a href={`tel:${r.phone.replace(/\s/g, '')}`} className="flex items-center gap-1 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-bold">
+                                                            <Phone size={11} /> Llamar
+                                                        </a>
+                                                    )}
+                                                    {r.web_url && (
+                                                        <a href={r.web_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 text-gray-600 rounded-full text-xs font-bold">
+                                                            <ExternalLink size={11} /> Web
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </section>
+                            )}
+
+                            {/* Ubicacion + contacto */}
+                            <section className="grid md:grid-cols-2 gap-4">
+                                <div className="bg-white p-5 rounded-xl border border-gray-100 space-y-3">
+                                    <h4 className="font-bold text-sm text-text-primary flex items-center gap-2"><MapPin size={14} className="text-primary" /> Ubicacion</h4>
+                                    <p className="text-sm text-gray-600">Calle Baja 1, 23486 Hinojares, Jaen</p>
+                                    <a href="https://maps.app.goo.gl/EPzh8j2HivLfqUeN8" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-bold text-primary">Google Maps <ExternalLink size={10} /></a>
+                                </div>
+                                <div className="bg-primary-dark rounded-xl p-5 text-white">
+                                    <h4 className="font-bold text-sm mb-2">Necesitas ayuda?</h4>
+                                    <p className="text-xs opacity-70 mb-3">Estamos por WhatsApp para lo que necesites.</p>
+                                    <a href="https://wa.me/34676344675" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-4 py-2 bg-white text-primary-dark rounded-full text-xs font-bold hover:scale-105 transition-transform">
+                                        <Phone size={12} /> WhatsApp
+                                    </a>
+                                </div>
+                            </section>
+                        </div>
+                    )}
+
+                    {/* TAB: Documentos */}
+                    {activeTab === 'docs' && (
+                        <div className="space-y-6">
+                            {/* Descuento */}
+                            {isAfterStay && codes.length > 0 && (
+                                <section>
+                                    {codes.map(code => (
+                                        <DiscountCard key={code.id} code={code} />
+                                    ))}
+                                </section>
+                            )}
+
+                            {/* Documentos */}
+                            <section>
+                                <h3 className="text-lg font-serif font-bold mb-3 flex items-center gap-2 text-text-primary">
+                                    <FileText size={18} className="text-primary" /> Documentos
+                                </h3>
+                                <div className="space-y-2">
+                                    {docs.map(doc => (
+                                        <div key={doc.id} className="bg-white p-4 rounded-xl border border-gray-100 flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-9 h-9 rounded-lg flex items-center justify-center text-primary bg-surface-warm">
+                                                    <FileText size={18} />
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-gray-800 text-sm">{doc.title}</p>
+                                                    <p className="text-[10px] text-gray-400 font-bold uppercase">{doc.category || 'General'}</p>
+                                                </div>
+                                            </div>
+                                            <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full flex items-center justify-center border border-gray-100 text-gray-400 hover:bg-primary hover:text-white transition-all">
+                                                <Download size={16} />
+                                            </a>
+                                        </div>
+                                    ))}
+                                    {docs.length === 0 && <p className="text-center p-6 bg-white rounded-xl border border-dashed border-gray-200 text-gray-400 italic text-sm">No hay documentos disponibles.</p>}
+                                </div>
+                            </section>
+
+                            {/* Resena */}
+                            {(isAfterStay || isDuringStay) && <ReviewForm profile={profile} />}
+                        </div>
+                    )}
+                </motion.div>
+            </AnimatePresence>
         </div>
     );
 };
