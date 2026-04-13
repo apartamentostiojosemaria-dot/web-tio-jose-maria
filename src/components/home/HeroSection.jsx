@@ -8,6 +8,7 @@ const HeroSection = ({ title, subtitle }) => (
             <img
                 src={`${WP}/slide1.jpg`}
                 alt="Vista panoramica de Casa Rural Tio Jose Maria en Hinojares"
+                fetchpriority="high"
                 className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/25 to-black/55" />

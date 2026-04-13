@@ -1,8 +1,15 @@
 import { Link } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
+import PageHead from '../components/seo/PageHead';
 
 const PrivacyPolicy = () => (
     <div className="min-h-screen bg-white">
+        <PageHead
+            title="Politica de Privacidad"
+            description="Politica de privacidad de Apartamentos Rurales Tio Jose Maria. Informacion sobre el tratamiento de datos personales, cookies y derechos del usuario."
+            path="/privacidad"
+            noindex={true}
+        />
         <nav className="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4">
             <div className="max-w-4xl mx-auto flex items-center">
                 <Link to="/" className="flex items-center gap-2 text-rural-700 font-bold hover:gap-3 transition-all">

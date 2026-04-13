@@ -5,6 +5,7 @@ import { useApartment, useBlockedDates, useHighSeasons } from '../hooks/useDatab
 import { syncApartmentDates } from '../utils/syncService';
 import { logError } from '../utils/logger';
 import { ApartmentJsonLd, BreadcrumbJsonLd } from './seo/JsonLd';
+import PageHead from './seo/PageHead';
 import BookingWidget from './booking/BookingWidget';
 import {
     ChevronLeft, Users, Flame, Wifi, Tv,
@@ -184,6 +185,12 @@ const ApartmentDetail = () => {
                 { name: 'Inicio', url: 'https://tiojosemaria.com/' },
                 { name: apartment.name, url: `https://tiojosemaria.com/apartamento/${apartment.slug}` }
             ]} />
+            <PageHead
+                title={`${apartment.name} — Apartamento Rural en Hinojares`}
+                description={apartment.description?.substring(0, 155) || `Apartamento ${apartment.name} en Casa Rural Tio Jose Maria, Hinojares. Reserva directa sin comisiones.`}
+                path={`/apartamento/${apartment.slug}`}
+                image={apartment.images?.[0]}
+            />
             <nav className="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4">
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
                     <Link to="/" className="flex items-center gap-2 text-rural-700 font-bold hover:gap-3 transition-all">
@@ -211,6 +218,7 @@ const ApartmentDetail = () => {
                                     exit={{ opacity: 0 }}
                                     transition={{ duration: 0.5 }}
                                     src={images[activeImg]}
+                                    alt={`${apartment.name} - Apartamento Rural Tio Jose Maria`}
                                     className="w-full h-full object-cover"
                                 />
                             </AnimatePresence>
@@ -226,7 +234,7 @@ const ApartmentDetail = () => {
                                     onClick={() => setActiveImg(idx)}
                                     className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-300 ${activeImg === idx ? 'ring-3 ring-rural-600 scale-95 opacity-100' : 'opacity-60 hover:opacity-100'}`}
                                 >
-                                    <img src={img} loading="lazy" className="w-full h-full object-cover" />
+                                    <img src={img} alt={`${apartment.name} foto ${idx + 1}`} loading="lazy" className="w-full h-full object-cover" />
                                 </button>
                             ))}
                         </div>
@@ -278,14 +286,14 @@ const ApartmentDetail = () => {
                         </div>
 
                         <div className="space-y-6">
-                            <h3 className="text-2xl font-serif font-bold text-rural-800 border-b border-gray-100 pb-4">Sobre el alojamiento</h3>
+                            <h2 className="text-2xl font-serif font-bold text-rural-800 border-b border-gray-100 pb-4">Sobre el alojamiento</h2>
                             <p className="text-gray-600 text-lg leading-relaxed whitespace-pre-line">
                                 {apartment.description || 'Disfruta de una estancia única en plena naturaleza. Nuestros apartamentos están cuidadosamente decorados para ofrecerte el máximo confort respetando la esencia rústica del entorno.'}
                             </p>
                         </div>
 
                         <div className="space-y-6">
-                            <h3 className="text-2xl font-serif font-bold text-rural-800 uppercase tracking-widest text-xs">Equipamiento y Servicios</h3>
+                            <h2 className="text-2xl font-serif font-bold text-rural-800 uppercase tracking-widest text-xs">Equipamiento y Servicios</h2>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                 {(apartment.amenities && apartment.amenities.length > 0 ? apartment.amenities : ['tv', 'wifi', 'heating', 'ac', 'fireplace', 'kitchen', 'fridge', 'microwave', 'bath', 'hairdryer', 'no_pets']).map((id, i) => {
                                     const item = AMENITIES_ICONS[id];

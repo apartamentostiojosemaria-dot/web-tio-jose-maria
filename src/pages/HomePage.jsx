@@ -1,5 +1,6 @@
 import { useWebConfig, useApartments, useReviews, useLocalPlaces, useRoutes } from '../hooks/useDatabase';
 import { HomeJsonLd, BreadcrumbJsonLd } from '../components/seo/JsonLd';
+import PageHead from '../components/seo/PageHead';
 import { HomePageSkeleton } from '../components/shared/Skeleton';
 import Navigation from '../components/home/Navigation';
 import HeroSection from '../components/home/HeroSection';
@@ -24,6 +25,11 @@ const HomePage = () => {
 
     return (
         <div className="bg-surface" style={{ fontFamily: '"Lato", sans-serif' }}>
+            <PageHead
+                title="Apartamentos Rurales en Hinojares, Cazorla"
+                description="Reserva en Apartamentos Rurales Tio Jose Maria. Alojamiento con encanto en Hinojares, Sierra de Cazorla. Historia, confort y chimenea en una casona del S.XIX."
+                path="/"
+            />
             <HomeJsonLd reviews={reviews} apartments={apartments} />
             <BreadcrumbJsonLd items={[
                 { name: 'Inicio', url: 'https://tiojosemaria.com/' }

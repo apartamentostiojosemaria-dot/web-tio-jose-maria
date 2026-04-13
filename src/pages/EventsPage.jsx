@@ -5,6 +5,8 @@ import {
     ChevronLeft, Calendar, MapPin, Filter, Leaf, Sun, CloudRain, Snowflake,
     TreePine, UtensilsCrossed, Palette, PartyPopper, Mountain, RefreshCw
 } from 'lucide-react';
+import PageHead from '../components/seo/PageHead';
+import { BreadcrumbJsonLd } from '../components/seo/JsonLd';
 import { useLocalEvents } from '../hooks/useDatabase';
 
 const SEASONS = [
@@ -76,6 +78,15 @@ const EventsPage = () => {
 
     return (
         <div className="min-h-screen bg-surface">
+            <PageHead
+                title="Eventos y Experiencias en la Sierra de Cazorla"
+                description="Descubre la magia de la Sierra de Cazorla a lo largo de las estaciones. Naturaleza, cultura, gastronomia y tradicion en Hinojares y alrededores."
+                path="/eventos"
+            />
+            <BreadcrumbJsonLd items={[
+                { name: 'Inicio', url: 'https://tiojosemaria.com/' },
+                { name: 'Eventos', url: 'https://tiojosemaria.com/eventos' }
+            ]} />
             {/* Hero */}
             <div className="relative h-[340px] md:h-[420px] overflow-hidden">
                 <AnimatePresence mode="wait">
@@ -161,6 +172,7 @@ const EventsPage = () => {
                     </motion.div>
                 ) : (
                     <>
+                        <h2 className="sr-only">Eventos disponibles</h2>
                         <p className="text-sm mb-6 text-secondary">{filteredEvents.length} {filteredEvents.length === 1 ? 'evento encontrado' : 'eventos encontrados'}</p>
                         <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <AnimatePresence mode="popLayout">

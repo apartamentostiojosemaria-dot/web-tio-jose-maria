@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronLeft, MapPin, Clock, Car, Footprints, Star, ChevronDown, Navigation } from 'lucide-react';
+import PageHead from '../components/seo/PageHead';
+import { BreadcrumbJsonLd } from '../components/seo/JsonLd';
 import { useRoutes } from '../hooks/useDatabase';
 import InteractiveMap from '../components/maps/InteractiveMap';
 
@@ -28,6 +30,15 @@ const MapPage = () => {
 
     return (
         <div className="min-h-screen bg-rural-50">
+            <PageHead
+                title="Rutas y Excursiones cerca de Hinojares"
+                description="Paseos, cascadas, rios turquesa y pueblos con encanto. Rutas de senderismo desde la puerta de casa hasta las joyas de la Sierra de Cazorla."
+                path="/rutas"
+            />
+            <BreadcrumbJsonLd items={[
+                { name: 'Inicio', url: 'https://tiojosemaria.com/' },
+                { name: 'Rutas y Excursiones', url: 'https://tiojosemaria.com/rutas' }
+            ]} />
             <header className="relative bg-white border-b border-gray-100">
                 <div className="max-w-5xl mx-auto px-4 pt-6 pb-8">
                     <Link to="/" className="inline-flex items-center gap-1 text-sm font-medium mb-6 text-primary hover:opacity-70 transition-opacity">
