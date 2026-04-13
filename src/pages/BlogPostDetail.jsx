@@ -88,6 +88,18 @@ const BlogPostDetail = () => {
             ]} />
             <BlogPostJsonLd post={post} />
 
+            {/* Fixed top nav */}
+            <nav className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-gray-100 shadow-sm">
+                <div className="max-w-3xl mx-auto px-6 py-3 flex items-center justify-between">
+                    <Link to="/blog" className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:opacity-70 transition-opacity">
+                        <ChevronLeft size={16} /> Blog
+                    </Link>
+                    <Link to="/" className="text-xs font-medium text-secondary hover:text-primary transition-colors">
+                        Tio Jose Maria
+                    </Link>
+                </div>
+            </nav>
+
             {/* Hero image */}
             {post.featured_image_url && (
                 <div className="relative h-[40vh] min-h-[300px] md:h-[50vh] overflow-hidden">
