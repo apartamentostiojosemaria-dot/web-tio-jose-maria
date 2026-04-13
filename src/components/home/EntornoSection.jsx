@@ -4,7 +4,26 @@ import FadeInUp from '../shared/FadeInUp';
 import InteractiveMap from '../maps/InteractiveMap';
 import { WP } from '../../constants/urls';
 
-const EntornoSection = ({ places, routes }) => (
+const GRID_IMAGES = [
+    { fallback: `${WP}/hinojaresPueblo.jpg`, alt: 'Hinojares pueblo blanco' },
+    { fallback: `${WP}/MG_9540-1024x561.jpg`, alt: 'Rutas de senderismo en la Sierra' },
+    { fallback: `${WP}/chuletas-de-cordero-al-horno2-1024x724.jpg`, alt: 'Gastronomia local' },
+    { fallback: `${WP}/10-1024x768.jpg`, alt: 'Kayak en el Embalse de la Bolera' },
+];
+
+const EntornoSection = ({ places, routes }) => {
+    // Build unique images from places/routes, falling back to curated defaults
+    const allSources = [
+        ...places.filter(p => p.image_url).map(p => p.image_url),
+        ...routes.filter(r => r.image_url).map(r => r.image_url),
+    ];
+    const uniqueSources = [...new Set(allSources)];
+    const gridImages = GRID_IMAGES.map((img, i) => ({
+        src: uniqueSources[i] || img.fallback,
+        alt: img.alt,
+    }));
+
+    return (
     <section id="entorno" className="py-24 px-6 bg-white overflow-hidden">
         <div className="max-w-7xl mx-auto">
             <div className="grid lg:grid-cols-2 gap-10 md:gap-16 items-center mb-12 md:mb-20">
@@ -43,16 +62,16 @@ const EntornoSection = ({ places, routes }) => (
                 </FadeInUp>
                 <div className="grid grid-cols-2 gap-3 md:gap-4 md:mt-0">
                     <FadeInUp delay={0.2}>
-                        <img src={places[0]?.image_url || "https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/general/hinojaresPueblo.jpg"} alt="Entorno Local" loading="lazy" className="rounded-2xl shadow-lg w-full h-40 md:h-64 object-cover md:mt-8" />
+                        <img src={gridImages[0].src} alt={gridImages[0].alt} loading="lazy" className="rounded-2xl shadow-lg w-full h-40 md:h-64 object-cover md:mt-8" />
                     </FadeInUp>
                     <FadeInUp delay={0.3}>
-                        <img src={routes[0]?.image_url || "https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/general/MG_9540-1024x561.jpg"} alt="Rutas Sierra" loading="lazy" className="rounded-2xl shadow-lg w-full h-48 md:h-80 object-cover" />
+                        <img src={gridImages[1].src} alt={gridImages[1].alt} loading="lazy" className="rounded-2xl shadow-lg w-full h-48 md:h-80 object-cover" />
                     </FadeInUp>
                     <FadeInUp delay={0.4}>
-                        <img src={places[1]?.image_url || "https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/general/chuletas-de-cordero-al-horno2-1024x724.jpg"} alt="Gastronomia" loading="lazy" className="rounded-2xl shadow-lg w-full h-40 md:h-64 object-cover md:-mt-16" />
+                        <img src={gridImages[2].src} alt={gridImages[2].alt} loading="lazy" className="rounded-2xl shadow-lg w-full h-40 md:h-64 object-cover md:-mt-16" />
                     </FadeInUp>
                     <FadeInUp delay={0.5}>
-                        <img src={routes[1]?.image_url || "https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/general/10-1024x768.jpg"} alt="Actividades" loading="lazy" className="rounded-2xl shadow-lg w-full h-40 md:h-64 object-cover mt-4" />
+                        <img src={gridImages[3].src} alt={gridImages[3].alt} loading="lazy" className="rounded-2xl shadow-lg w-full h-40 md:h-64 object-cover mt-4" />
                     </FadeInUp>
                 </div>
             </div>
@@ -119,6 +138,7 @@ const EntornoSection = ({ places, routes }) => (
             </FadeInUp>
         </div>
     </section>
-);
+    );
+};
 
 export default EntornoSection;
