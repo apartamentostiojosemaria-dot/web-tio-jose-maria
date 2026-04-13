@@ -387,3 +387,69 @@ export function useBlogPost(slug) {
 
     return { post, loading };
 }
+
+// Client portal
+export function useMyBooking(email) {
+    const [booking, setBooking] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (!email) { setLoading(false); return; }
+        const fetchBooking = async () => {
+            const { data, error } = await supabase
+                .from('guest_bookings')
+                .select('*, apartments(name, slug, images, capacity_people, amenities)')
+                .eq('guest_email', email.toLowerCase())
+                .order('check_in', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+            if (error) logError('useMyBooking', error);
+            if (data) setBooking(data);
+            setLoading(false);
+        };
+        fetchBooking();
+    }, [email]);
+
+    return { booking, loading };
+}
+
+export function useApartmentInstructions(apartmentId) {
+    const [instructions, setInstructions] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetch = async () => {
+            const { data, error } = await supabase
+                .from('apartment_instructions')
+                .select('*')
+                .or(apartmentId ? `apartment_id.eq.${apartmentId},apartment_id.is.null` : 'apartment_id.is.null')
+                .order('sort_order');
+            if (error) logError('useApartmentInstructions', error);
+            if (data) setInstructions(data);
+            setLoading(false);
+        };
+        fetch();
+    }, [apartmentId]);
+
+    return { instructions, loading };
+}
+
+export function useMyDiscountCodes() {
+    const [codes, setCodes] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetch = async () => {
+            const { data, error } = await supabase
+                .from('discount_codes')
+                .select('*')
+                .order('created_at', { ascending: false });
+            if (error) logError('useMyDiscountCodes', error);
+            if (data) setCodes(data);
+            setLoading(false);
+        };
+        fetch();
+    }, []);
+
+    return { codes, loading };
+}
