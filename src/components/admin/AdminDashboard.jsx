@@ -15,8 +15,9 @@ import RoutesManager from './RoutesManager';
 import ReviewsManager from './ReviewsManager';
 import EventsManager from './EventsManager';
 import PlacesManager from './PlacesManager';
+import BlogManager from './BlogManager';
 import { usePendingBookingsCount } from '../../hooks/useDatabase';
-import { LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar, Star, Eye, Users, BarChart3, QrCode, CalendarCheck, Route, MessageSquare, PartyPopper, MapPin, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar, Star, Eye, Users, BarChart3, QrCode, CalendarCheck, Route, MessageSquare, PartyPopper, MapPin, Menu, X, BookOpen } from 'lucide-react';
 
 const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -83,6 +84,7 @@ const AdminDashboard = () => {
                     <SidebarLink icon={<Users size={18} />} label="Huespedes" active={activeTab === 'huespedes'} onClick={() => handleTabChange('huespedes')} />
                     <SidebarLink icon={<PartyPopper size={18} />} label="Eventos" active={activeTab === 'eventos'} onClick={() => handleTabChange('eventos')} />
                     <SidebarLink icon={<MapPin size={18} />} label="Directorio Local" active={activeTab === 'directorio'} onClick={() => handleTabChange('directorio')} />
+                    <SidebarLink icon={<BookOpen size={18} />} label="Blog" active={activeTab === 'blog'} onClick={() => handleTabChange('blog')} />
                     <SidebarLink icon={<BarChart3 size={18} />} label="Analitica" active={activeTab === 'analitica'} onClick={() => handleTabChange('analitica')} />
                     <SidebarLink icon={<MessageSquare size={18} />} label="Resenas" active={activeTab === 'resenas'} onClick={() => handleTabChange('resenas')} />
                     <SidebarLink icon={<QrCode size={18} />} label="Codigos QR" active={activeTab === 'qrcodes'} onClick={() => handleTabChange('qrcodes')} />
@@ -127,6 +129,7 @@ const AdminDashboard = () => {
                 {activeTab === 'resenas' && <ReviewsManager />}
                 {activeTab === 'eventos' && <EventsManager />}
                 {activeTab === 'directorio' && <PlacesManager />}
+                {activeTab === 'blog' && <BlogManager />}
                 {activeTab === 'qrcodes' && <QRCodeManager />}
                 {activeTab === 'vista_huesped' && (
                     <div className="max-w-4xl mx-auto">

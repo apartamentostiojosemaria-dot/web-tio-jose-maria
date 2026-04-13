@@ -17,6 +17,8 @@ const AdminLogin = lazy(() => import('./components/admin/AdminLogin'));
 const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard'));
 const ClientLogin = lazy(() => import('./components/client/ClientLogin'));
 const ClientArea = lazy(() => import('./components/client/ClientArea'));
+const BlogPage = lazy(() => import('./pages/BlogPage'));
+const BlogPostDetail = lazy(() => import('./pages/BlogPostDetail'));
 
 const PageLoader = () => (
     <div className="min-h-screen flex items-center justify-center bg-rural-50">
@@ -76,6 +78,8 @@ export default function App() {
                         <Route path="/rutas" element={<MapPage />} />
                         <Route path="/eventos" element={<EventsPage />} />
                         <Route path="/hinojares" element={<HinojaresPage />} />
+                        <Route path="/blog" element={<BlogPage />} />
+                        <Route path="/blog/:slug" element={<BlogPostDetail />} />
                         <Route
                             path="/admin"
                             element={!session ? <AdminLogin /> : (userProfile?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/" replace />)}

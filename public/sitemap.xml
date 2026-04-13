@@ -49,6 +49,12 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://tiojosemaria.com/blog</loc>
+    <lastmod>2026-04-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://tiojosemaria.com/privacidad</loc>
     <lastmod>2026-03-28</lastmod>
     <changefreq>yearly</changefreq>

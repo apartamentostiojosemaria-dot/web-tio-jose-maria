@@ -342,3 +342,48 @@ export function useBlockedDates(apartmentId) {
 
     return { blockedDates, loading, error };
 }
+
+// Blog
+export function useBlogPosts() {
+    const [posts, setPosts] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchPosts = async () => {
+            const { data, error } = await supabase
+                .from('blog_posts')
+                .select('*')
+                .eq('published', true)
+                .order('published_at', { ascending: false });
+            if (error) logError('useBlogPosts', error);
+            if (data) setPosts(data);
+            setLoading(false);
+        };
+        fetchPosts();
+    }, []);
+
+    return { posts, loading };
+}
+
+export function useBlogPost(slug) {
+    const [post, setPost] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (!slug) return;
+        const fetchPost = async () => {
+            const { data, error } = await supabase
+                .from('blog_posts')
+                .select('*')
+                .eq('slug', slug)
+                .eq('published', true)
+                .single();
+            if (error) logError('useBlogPost', error);
+            if (data) setPost(data);
+            setLoading(false);
+        };
+        fetchPost();
+    }, [slug]);
+
+    return { post, loading };
+}

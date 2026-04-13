@@ -18,6 +18,7 @@ const Navigation = () => {
         { label: 'Hinojares', href: '/hinojares' },
         { label: 'Que ver', href: '/rutas' },
         { label: 'Eventos', href: '/eventos' },
+        { label: 'Blog', href: '/blog' },
         { label: 'Mi Estancia', href: '/clientes' },
         { label: 'Contacto', href: '/#contacto' },
     ];
