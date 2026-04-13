@@ -41,23 +41,26 @@ const Footer = () => (
             </div>
             <div>
                 <h4 className="text-sm font-bold uppercase tracking-widest mb-8 text-accent">Donde estamos?</h4>
-                <a
-                    href="https://maps.app.goo.gl/EPzh8j2HivLfqUeN8"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block rounded-xl overflow-hidden h-48 relative group cursor-pointer bg-footer-muted"
-                >
-                    <img
-                        src="https://a.basemaps.cartocdn.com/rastertiles/voyager/14/8206/6214.png"
-                        alt="Mapa de Hinojares, Jaen"
-                        className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity duration-300"
+                <div className="rounded-xl overflow-hidden h-48 relative group">
+                    <iframe
+                        title="Ubicacion Apartamentos Tio Jose Maria"
+                        src="https://maps.google.com/maps?q=Apartamentos+Rurales+Tio+Jose+Maria+Hinojares&z=14&output=embed"
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0 }}
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        className="opacity-80 group-hover:opacity-100 transition-opacity duration-300"
                     />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="bg-white text-gray-900 px-5 py-2.5 rounded-full text-sm font-bold shadow-lg flex items-center gap-2">
-                            <MapPin size={14} className="text-primary" /> Ver en Google Maps
-                        </span>
-                    </div>
-                </a>
+                    <a
+                        href="https://maps.app.goo.gl/EPzh8j2HivLfqUeN8"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="absolute bottom-3 right-3 bg-white text-gray-900 px-4 py-2 rounded-full text-xs font-bold shadow-lg flex items-center gap-1.5 hover:shadow-xl transition-shadow"
+                    >
+                        <MapPin size={12} className="text-primary" /> Abrir en Maps
+                    </a>
+                </div>
             </div>
         </div>
         <div className="border-t border-white/10 pt-8 text-center text-white/40 text-sm flex flex-col md:flex-row justify-center items-center gap-4">
