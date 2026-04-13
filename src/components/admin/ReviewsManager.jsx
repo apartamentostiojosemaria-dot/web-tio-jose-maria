@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { COLORS } from '../../App';
+
 import { logError, userErrorMessage } from '../../utils/logger';
 import { CheckCircle, XCircle, Clock, Star, Trash2, Eye, EyeOff, Loader2 } from 'lucide-react';
 
@@ -62,7 +62,7 @@ const ReviewsManager = () => {
         <div className="space-y-8">
             <div className="flex justify-between items-center">
                 <div>
-                    <h3 className="text-2xl font-serif font-bold" style={{ color: COLORS.text }}>Reseñas</h3>
+                    <h3 className="text-2xl font-serif font-bold text-text-primary">Reseñas</h3>
                     <p className="text-sm text-gray-500">
                         {pendingCount > 0 ? `${pendingCount} reseña${pendingCount > 1 ? 's' : ''} pendiente${pendingCount > 1 ? 's' : ''} de aprobación` : `${reviews.length} reseñas en total`}
                     </p>
@@ -79,8 +79,7 @@ const ReviewsManager = () => {
                     <button
                         key={f.key}
                         onClick={() => setFilter(f.key)}
-                        className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${filter === f.key ? 'text-white shadow-md' : 'bg-white border border-gray-100 text-gray-500 hover:bg-gray-50'}`}
-                        style={filter === f.key ? { backgroundColor: COLORS.primary } : {}}
+                        className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${filter === f.key ? 'text-white shadow-md bg-primary' : 'bg-white border border-gray-100 text-gray-500 hover:bg-gray-50'}`}
                     >
                         {f.label} {f.count > 0 && <span className="ml-1 opacity-70">({f.count})</span>}
                     </button>

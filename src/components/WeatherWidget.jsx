@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Sun, Cloud, CloudRain, CloudLightning, CloudSnow, Wind, Droplets } from 'lucide-react';
-import { COLORS } from '../App';
 import { logError } from '../utils/logger';
 
 const WEATHER_ICONS = {

@@ -1,21 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './lib/supabase';
 import ScrollToTop from './components/shared/ScrollToTop';
 import CookieConsent from './components/shared/CookieConsent';
-import HomePage from './pages/HomePage';
-import ApartmentDetail from './components/ApartmentDetail';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import MapPage from './pages/MapPage';
-import EventsPage from './pages/EventsPage';
-import HinojaresPage from './pages/HinojaresPage';
-import AdminLogin from './components/admin/AdminLogin';
-import AdminDashboard from './components/admin/AdminDashboard';
-import ClientLogin from './components/client/ClientLogin';
-import ClientArea from './components/client/ClientArea';
 
-// Re-export for backwards compatibility with existing component imports
-export { COLORS } from './constants/colors';
+// Eager load — always needed on first paint
+import HomePage from './pages/HomePage';
+
+// Lazy load — only when navigated to
+const ApartmentDetail = lazy(() => import('./components/ApartmentDetail'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const MapPage = lazy(() => import('./pages/MapPage'));
+const EventsPage = lazy(() => import('./pages/EventsPage'));
+const HinojaresPage = lazy(() => import('./pages/HinojaresPage'));
+const AdminLogin = lazy(() => import('./components/admin/AdminLogin'));
+const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard'));
+const ClientLogin = lazy(() => import('./components/client/ClientLogin'));
+const ClientArea = lazy(() => import('./components/client/ClientArea'));
+
+const PageLoader = () => (
+    <div className="min-h-screen flex items-center justify-center bg-rural-50">
+        <div className="animate-pulse text-rural-700 font-serif italic">Cargando...</div>
+    </div>
+);
 
 export default function App() {
     const [session, setSession] = useState(null);
@@ -51,36 +58,36 @@ export default function App() {
     if (session && loadingProfile) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-rural-50 font-serif p-6 text-center">
-                <div className="animate-pulse text-rural-700 italic mb-4">Verificando credenciales...</div>
-                <div className="text-[10px] text-gray-400 space-y-1 bg-white p-4 rounded-xl border border-gray-100 shadow-sm max-w-xs">
-                    <p>Sesión activa para: <span className="text-gray-600 font-mono">{session.user.email}</span></p>
-                    <p>ID: <span className="text-gray-300 font-mono">{session.user.id.substring(0, 8)}...</span></p>
-                    <p>Estado perfil: <span className={userProfile ? "text-green-500" : "text-amber-500"}>{userProfile ? `Rol: ${userProfile.role}` : "Cargando datos..."}</span></p>
-                </div>
+                <div className="animate-pulse text-rural-700 italic">Verificando acceso...</div>
             </div>
         );
     }
 
     return (
         <>
+            <a href="#main-content" className="skip-link">Saltar al contenido</a>
             <ScrollToTop />
-            <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/apartamento/:slug" element={<ApartmentDetail />} />
-                <Route path="/privacidad" element={<PrivacyPolicy />} />
-                <Route path="/rutas" element={<MapPage />} />
-                <Route path="/eventos" element={<EventsPage />} />
-                <Route path="/hinojares" element={<HinojaresPage />} />
-                <Route
-                    path="/admin"
-                    element={!session ? <AdminLogin /> : (userProfile?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/" replace />)}
-                />
-                <Route
-                    path="/clientes"
-                    element={!session ? <ClientLogin /> : <ClientArea />}
-                />
-                <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+            <Suspense fallback={<PageLoader />}>
+                <div id="main-content">
+                    <Routes>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/apartamento/:slug" element={<ApartmentDetail />} />
+                        <Route path="/privacidad" element={<PrivacyPolicy />} />
+                        <Route path="/rutas" element={<MapPage />} />
+                        <Route path="/eventos" element={<EventsPage />} />
+                        <Route path="/hinojares" element={<HinojaresPage />} />
+                        <Route
+                            path="/admin"
+                            element={!session ? <AdminLogin /> : (userProfile?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/" replace />)}
+                        />
+                        <Route
+                            path="/clientes"
+                            element={!session ? <ClientLogin /> : <ClientArea />}
+                        />
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
+                </div>
+            </Suspense>
             <CookieConsent />
         </>
     );

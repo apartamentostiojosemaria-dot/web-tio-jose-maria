@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { COLORS } from '../../App';
+
 import { useGuestGuides, useWebConfig } from '../../hooks/useDatabase';
 import WelcomePackage from './WelcomePackage';
 import ReviewForm from './ReviewForm';
@@ -126,11 +126,11 @@ const ClientArea = () => {
             <header className="bg-white border-b border-gray-100 py-6 px-6 sticky top-0 z-40">
                 <div className="max-w-5xl mx-auto flex justify-between items-center">
                     <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" style={{ backgroundColor: COLORS.primary }}>
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold bg-primary">
                             <User size={20} />
                         </div>
                         <div>
-                            <h2 className="font-serif text-lg font-bold" style={{ color: COLORS.text }}>Mi Área Personal</h2>
+                            <h2 className="font-serif text-lg font-bold text-text-primary">Mi Área Personal</h2>
                             <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">{user?.email}</p>
                         </div>
                     </div>
@@ -159,14 +159,14 @@ const AccessDeniedView = ({ onLogout, profile }) => (
             <div className="w-20 h-20 bg-red-50 text-red-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
                 <ShieldAlert size={40} />
             </div>
-            <h2 className="text-2xl font-serif font-bold mb-4" style={{ color: COLORS.text }}>Acceso Restringido</h2>
+            <h2 className="text-2xl font-serif font-bold mb-4 text-text-primary">Acceso Restringido</h2>
             <p className="text-gray-500 mb-8 text-sm leading-relaxed">
                 {profile?.is_active === false
                     ? "Lo sentimos, tu cuenta ha sido desactivada por el administrador. Contacta con nosotros si crees que esto es un error."
                     : "Tu acceso solo está permitido durante las fechas de tu reserva (y el tiempo de cortesía si aplica). ¡Te esperamos pronto por aquí!"}
             </p>
             <div className="space-y-4">
-                <a href="https://wa.me/34676344675" className="flex items-center justify-center gap-2 w-full py-4 bg-rural-600 text-white rounded-2xl font-bold shadow-lg" style={{ backgroundColor: COLORS.primary }}>
+                <a href="https://wa.me/34676344675" className="flex items-center justify-center gap-2 w-full py-4 bg-primary text-white rounded-2xl font-bold shadow-lg">
                     Contactar Soporte
                 </a>
                 <button onClick={onLogout} className="text-sm font-bold text-gray-400 hover:text-rural-700 transition-colors">
@@ -190,7 +190,7 @@ export const ClientAreaContent = ({ docs = [], userEmail = 'invitado@ejemplo.com
                 <div className="absolute top-0 right-0 w-32 h-32 opacity-5 translate-x-10 -translate-y-10">
                     <MapPin size={120} />
                 </div>
-                <h3 className="text-2xl font-serif font-bold mb-4" style={{ color: COLORS.text }}>Tu estancia en Tío José María</h3>
+                <h3 className="text-2xl font-serif font-bold mb-4 text-text-primary">Tu estancia en Tío José María</h3>
                 <p className="text-gray-500 max-w-xl leading-relaxed">
                     Aquí tienes acceso a toda la documentación, guías exclusivas y todo lo que necesitas para disfrutar al máximo.
                 </p>
@@ -198,8 +198,8 @@ export const ClientAreaContent = ({ docs = [], userEmail = 'invitado@ejemplo.com
 
             {/* Guest Guide Section */}
             <div>
-                <h3 className="text-2xl font-serif font-bold mb-8 flex items-center gap-3" style={{ color: COLORS.text }}>
-                    <Map size={24} style={{ color: COLORS.primary }} /> Guía Exclusiva del Huésped
+                <h3 className="text-2xl font-serif font-bold mb-8 flex items-center gap-3 text-text-primary">
+                    <Map size={24} className="text-primary" /> Guía Exclusiva del Huésped
                 </h3>
 
                 <WeatherWidget stayDates={{ check_in: profile?.check_in, check_out: profile?.check_out }} />
@@ -217,7 +217,7 @@ export const ClientAreaContent = ({ docs = [], userEmail = 'invitado@ejemplo.com
                         {docs.map(doc => (
                             <div key={doc.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between group hover:border-rural-200 transition-all">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-lg bg-rural-50 flex items-center justify-center text-rural-600" style={{ color: COLORS.primary, backgroundColor: COLORS.bgWarm }}>
+                                    <div className="w-10 h-10 rounded-lg flex items-center justify-center text-primary bg-surface-warm">
                                         <FileText size={20} />
                                     </div>
                                     <div>
@@ -229,10 +229,7 @@ export const ClientAreaContent = ({ docs = [], userEmail = 'invitado@ejemplo.com
                                     href={doc.file_url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-50 text-gray-400 group-hover:bg-rural-600 group-hover:text-white transition-all shadow-sm"
-                                    style={{ backgroundColor: 'transparent', border: '1px solid #f3f4f6' }}
-                                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = COLORS.primary; e.currentTarget.style.color = 'white'; }}
-                                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#9ca3af'; }}
+                                    className="w-10 h-10 rounded-full flex items-center justify-center bg-transparent text-gray-400 border border-gray-100 hover:bg-primary hover:text-white transition-all shadow-sm"
                                 >
                                     <Download size={18} />
                                 </a>
@@ -252,18 +249,18 @@ export const ClientAreaContent = ({ docs = [], userEmail = 'invitado@ejemplo.com
                     </h4>
                     <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6">
                         <div className="flex items-start gap-4">
-                            <MapPin className="text-rural-400 mt-1" size={20} style={{ color: COLORS.accent }} />
+                            <MapPin className="text-accent mt-1" size={20} />
                             <div>
                                 <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Ubicación</p>
                                 <p className="font-bold text-gray-700">Calle Baja 1, Hinojares, Jaén</p>
-                                <a href="https://maps.app.goo.gl/EPzh8j2HivLfqUeN8" target="_blank" rel="noopener noreferrer" className="text-xs flex items-center gap-1 mt-1 font-bold hover:underline" style={{ color: COLORS.primary }}>
+                                <a href="https://maps.app.goo.gl/EPzh8j2HivLfqUeN8" target="_blank" rel="noopener noreferrer" className="text-xs flex items-center gap-1 mt-1 font-bold hover:underline text-primary">
                                     Abrir en Maps <ExternalLink size={10} />
                                 </a>
                             </div>
                         </div>
 
                         <div className="flex items-start gap-4">
-                            <Calendar className="text-rural-400 mt-1" size={20} style={{ color: COLORS.accent }} />
+                            <Calendar className="text-accent mt-1" size={20} />
                             <div>
                                 <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Tu Estancia</p>
                                 {profile?.check_in ? (
@@ -278,11 +275,11 @@ export const ClientAreaContent = ({ docs = [], userEmail = 'invitado@ejemplo.com
                     </div>
 
                     {/* Help link */}
-                    <div className="bg-rural-900 rounded-3xl p-8 text-white relative overflow-hidden" style={{ backgroundColor: COLORS.primaryDark }}>
+                    <div className="bg-primary-dark rounded-3xl p-8 text-white relative overflow-hidden">
                         <div className="relative z-10">
                             <h5 className="font-bold mb-2">¿Necesitas ayuda?</h5>
                             <p className="text-xs opacity-70 mb-4">Estamos a tu disposición para cualquier duda durante tu estancia.</p>
-                            <a href="https://wa.me/34676344675" target="_blank" rel="noopener noreferrer" className="inline-block px-6 py-2 bg-white text-rural-900 rounded-full text-xs font-bold transition-transform hover:scale-105" style={{ color: COLORS.primaryDark }}>
+                            <a href="https://wa.me/34676344675" target="_blank" rel="noopener noreferrer" className="inline-block px-6 py-2 bg-white text-primary-dark rounded-full text-xs font-bold transition-transform hover:scale-105">
                                 Contactar por WhatsApp
                             </a>
                         </div>
@@ -325,10 +322,9 @@ const GuestGuide = () => {
                             key={key}
                             onClick={() => setActiveTab(key)}
                             className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold whitespace-nowrap transition-all ${isActive
-                                ? 'text-white shadow-lg'
+                                ? 'text-white shadow-lg bg-primary'
                                 : 'bg-white text-gray-500 border border-gray-100 hover:border-rural-200 shadow-sm'
                                 }`}
-                            style={isActive ? { backgroundColor: COLORS.primary } : {}}
                         >
                             <Icon size={18} />
                             {section.title}
@@ -354,7 +350,7 @@ const GuestGuide = () => {
                                     {item.video_url && (
                                         <a href={item.video_url} target="_blank" rel="noopener noreferrer" className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/40 transition-colors group">
                                             <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                                                <Play size={20} style={{ color: COLORS.primary }} fill={COLORS.primary} />
+                                                <Play size={20} className="text-primary fill-primary" />
                                             </div>
                                         </a>
                                     )}
@@ -363,7 +359,7 @@ const GuestGuide = () => {
                             <div className="p-6 flex-grow flex flex-col">
                                 <div className="flex justify-between items-start mb-2">
                                     <h4 className="font-bold text-rural-900 flex items-center gap-2">
-                                        <ChevronRight size={14} style={{ color: COLORS.accent }} />
+                                        <ChevronRight size={14} className="text-accent" />
                                         {item.title}
                                     </h4>
                                     {(item.difficulty || item.duration) && (
@@ -443,12 +439,12 @@ const CompleteProfileView = ({ profile, onComplete }) => {
                 <div className="absolute top-0 right-0 w-32 h-32 bg-rural-50 rounded-bl-full opacity-50 -translate-y-10 translate-x-10" />
 
                 <header className="mb-10 relative z-10">
-                    <div className="w-16 h-16 rounded-3xl bg-rural-600 text-white flex items-center justify-center mb-6 shadow-lg" style={{ backgroundColor: COLORS.primary }}>
+                    <div className="w-16 h-16 rounded-3xl bg-primary text-white flex items-center justify-center mb-6 shadow-lg">
                         <User size={32} />
                     </div>
-                    <h2 className="text-3xl font-serif font-bold mb-3" style={{ color: COLORS.text }}>¡Casi listo!</h2>
+                    <h2 className="text-3xl font-serif font-bold mb-3 text-text-primary">¡Casi listo!</h2>
                     <p className="text-gray-500 leading-relaxed">
-                        Para ofrecerte la mejor experiencia en <strong style={{ color: COLORS.primary }}>Tío José María</strong>, necesitamos completar tu ficha de huésped.
+                        Para ofrecerte la mejor experiencia en <strong className="text-primary">Tío José María</strong>, necesitamos completar tu ficha de huésped.
                     </p>
                 </header>
 
@@ -503,8 +499,7 @@ const CompleteProfileView = ({ profile, onComplete }) => {
                     <button
                         onClick={handleSave}
                         disabled={saving}
-                        className="w-full py-5 bg-rural-600 text-white rounded-[24px] font-bold shadow-xl shadow-rural-100 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 mt-4"
-                        style={{ backgroundColor: COLORS.primary }}
+                        className="w-full py-5 bg-primary text-white rounded-[24px] font-bold shadow-xl shadow-rural-100 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 mt-4"
                     >
                         {saving ? 'Guardando...' : 'Confirmar y Entrar'}
                         <ChevronRight size={20} />

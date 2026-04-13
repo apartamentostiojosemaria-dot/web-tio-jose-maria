@@ -1,6 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Clock, TrendingUp, Mountain, ChevronLeft, Navigation, Star } from 'lucide-react';
-import { COLORS } from '../../constants/colors';
 
 const DIFFICULTY_BADGE = {
     'Fácil': { bg: '#dcfce7', color: '#166534', label: 'Fácil' },
@@ -38,7 +37,7 @@ const RouteDetail = ({ route, onClose, onNavigate }) => {
                             onClick={onClose}
                             className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm rounded-full p-2 hover:bg-white transition-colors shadow-sm"
                         >
-                            <ChevronLeft size={18} style={{ color: COLORS.text }} />
+                            <ChevronLeft size={18} className="text-text-primary" />
                         </button>
                         <div className="absolute bottom-3 left-4 right-4">
                             <h3 className="text-white font-serif text-xl font-bold leading-tight drop-shadow-lg">
@@ -75,7 +74,7 @@ const RouteDetail = ({ route, onClose, onNavigate }) => {
                     </div>
 
                     {/* Description */}
-                    <p className="text-sm leading-relaxed" style={{ color: COLORS.text }}>
+                    <p className="text-sm leading-relaxed text-text-primary">
                         {route.description}
                     </p>
 
@@ -89,10 +88,9 @@ const RouteDetail = ({ route, onClose, onNavigate }) => {
                                 {route.highlights.map((h, i) => (
                                     <span
                                         key={i}
-                                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium"
-                                        style={{ backgroundColor: `${COLORS.primary}10`, color: COLORS.primary }}
+                                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-primary/10 text-primary"
                                     >
-                                        <Star size={10} fill={COLORS.primary} /> {h}
+                                        <Star size={10} className="fill-primary" /> {h}
                                     </span>
                                 ))}
                             </div>
@@ -106,8 +104,7 @@ const RouteDetail = ({ route, onClose, onNavigate }) => {
                                 href={route.map_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-white text-sm font-bold transition-all hover:shadow-lg hover:-translate-y-0.5"
-                                style={{ backgroundColor: COLORS.primary }}
+                                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-white text-sm font-bold transition-all hover:shadow-lg hover:-translate-y-0.5 bg-primary"
                             >
                                 <Navigation size={16} />
                                 Cómo llegar

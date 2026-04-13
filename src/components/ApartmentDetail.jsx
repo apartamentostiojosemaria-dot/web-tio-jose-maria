@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useApartment, useBlockedDates, useHighSeasons } from '../hooks/useDatabase';
 import { syncApartmentDates } from '../utils/syncService';
 import { logError } from '../utils/logger';
-import { COLORS } from '../App';
 import { ApartmentJsonLd, BreadcrumbJsonLd } from './seo/JsonLd';
 import BookingWidget from './booking/BookingWidget';
 import {

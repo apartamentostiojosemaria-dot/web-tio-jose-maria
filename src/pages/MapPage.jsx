@@ -4,20 +4,19 @@ import { motion } from 'framer-motion';
 import { ChevronLeft, MapPin, Clock, Car, Footprints, Star, ChevronDown, Navigation } from 'lucide-react';
 import { useRoutes } from '../hooks/useDatabase';
 import InteractiveMap from '../components/maps/InteractiveMap';
-import { COLORS } from '../constants/colors';
 
 const CATEGORIES = [
-    { key: 'walk', label: 'Andando desde casa', icon: '🚶', description: 'Sales por la puerta y empiezas a caminar', ids: [9, 10, 11] },
-    { key: 'near', label: 'Muy cerca (15-20 min)', icon: '🚗', description: 'Un paseo corto en coche y llegas', ids: [12, 13] },
-    { key: 'medium', label: 'Media hora en coche', icon: '⛰️', description: 'Excursiones que merecen mucho la pena', ids: [14, 15, 16] },
-    { key: 'day', label: 'Excursión de día', icon: '🌄', description: 'Las joyas de la Sierra de Cazorla', ids: [17, 18, 19, 20] },
+    { key: 'walk', label: 'Andando desde casa', icon: '\uD83D\uDEB6', description: 'Sales por la puerta y empiezas a caminar', ids: [9, 10, 11] },
+    { key: 'near', label: 'Muy cerca (15-20 min)', icon: '\uD83D\uDE97', description: 'Un paseo corto en coche y llegas', ids: [12, 13] },
+    { key: 'medium', label: 'Media hora en coche', icon: '\u26F0\uFE0F', description: 'Excursiones que merecen mucho la pena', ids: [14, 15, 16] },
+    { key: 'day', label: 'Excursion de dia', icon: '\uD83C\uDF04', description: 'Las joyas de la Sierra de Cazorla', ids: [17, 18, 19, 20] },
 ];
 
 const LEVEL_LABEL = {
-    'Fácil': { label: 'Para todos', color: '#16a34a', bg: '#dcfce7', icon: '👨‍👩‍👧‍👦' },
-    'Media': { label: 'Algo de forma física', color: '#d97706', bg: '#fef3c7', icon: '🥾' },
-    'Media-Alta': { label: 'Buena forma física', color: '#ea580c', bg: '#ffedd5', icon: '💪' },
-    'Alta': { label: 'Solo expertos', color: '#dc2626', bg: '#fee2e2', icon: '⛰️' },
+    'Facil': { label: 'Para todos', color: 'var(--color-level-easy)', bg: 'var(--color-level-easy-bg)', icon: '\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67\u200D\uD83D\uDC66' },
+    'Media': { label: 'Algo de forma fisica', color: 'var(--color-level-medium)', bg: 'var(--color-level-medium-bg)', icon: '\uD83E\uDD7E' },
+    'Media-Alta': { label: 'Buena forma fisica', color: 'var(--color-level-hard)', bg: 'var(--color-level-hard-bg)', icon: '\uD83D\uDCAA' },
+    'Alta': { label: 'Solo expertos', color: 'var(--color-level-expert)', bg: 'var(--color-level-expert-bg)', icon: '\u26F0\uFE0F' },
 };
 
 const MapPage = () => {
@@ -25,37 +24,24 @@ const MapPage = () => {
     const [expandedRoute, setExpandedRoute] = useState(null);
     const [showMap, setShowMap] = useState(false);
 
-    const getRoutesByCategory = (cat) =>
-        routes.filter(r => cat.ids.includes(r.id));
+    const getRoutesByCategory = (cat) => routes.filter(r => cat.ids.includes(r.id));
 
     return (
         <div className="min-h-screen bg-rural-50">
-            {/* Hero header */}
             <header className="relative bg-white border-b border-gray-100">
                 <div className="max-w-5xl mx-auto px-4 pt-6 pb-8">
-                    <Link
-                        to="/"
-                        className="inline-flex items-center gap-1 text-sm font-medium mb-6 hover:opacity-70 transition-opacity"
-                        style={{ color: COLORS.primary }}
-                    >
+                    <Link to="/" className="inline-flex items-center gap-1 text-sm font-medium mb-6 text-primary hover:opacity-70 transition-opacity">
                         <ChevronLeft size={18} /> Volver al inicio
                     </Link>
-                    <h1 className="font-serif text-3xl md:text-4xl font-bold mb-3" style={{ color: COLORS.text }}>
-                        Qué ver y hacer cerca de Hinojares
-                    </h1>
-                    <p className="text-base md:text-lg max-w-2xl" style={{ color: COLORS.secondary }}>
-                        Paseos, cascadas, ríos turquesa y pueblos con encanto. Desde rutas que salen de la puerta de casa hasta las joyas de la Sierra de Cazorla.
+                    <h1 className="font-serif text-3xl md:text-4xl font-bold mb-3 text-text-primary">Que ver y hacer cerca de Hinojares</h1>
+                    <p className="text-base md:text-lg max-w-2xl text-secondary">
+                        Paseos, cascadas, rios turquesa y pueblos con encanto. Desde rutas que salen de la puerta de casa hasta las joyas de la Sierra de Cazorla.
                     </p>
-
-                    {/* Map toggle */}
                     <button
                         onClick={() => setShowMap(!showMap)}
-                        className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all border"
-                        style={{
-                            backgroundColor: showMap ? COLORS.primary : 'white',
-                            color: showMap ? 'white' : COLORS.primary,
-                            borderColor: COLORS.primary,
-                        }}
+                        className={`mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all border border-primary ${
+                            showMap ? 'bg-primary text-white' : 'bg-white text-primary'
+                        }`}
                     >
                         <MapPin size={16} />
                         {showMap ? 'Ocultar mapa' : 'Ver en el mapa'}
@@ -63,21 +49,9 @@ const MapPage = () => {
                 </div>
             </header>
 
-            {/* Collapsible map */}
             {showMap && (
-                <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 400, opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.4 }}
-                    className="w-full overflow-hidden"
-                >
-                    <InteractiveMap
-                        routes={routes}
-                        selectedRoute={expandedRoute ? routes.find(r => r.id === expandedRoute) : null}
-                        onSelectRoute={(r) => { setExpandedRoute(r.id); setShowMap(false); }}
-                        compact
-                    />
+                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 400, opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.4 }} className="w-full overflow-hidden">
+                    <InteractiveMap routes={routes} selectedRoute={expandedRoute ? routes.find(r => r.id === expandedRoute) : null} onSelectRoute={(r) => { setExpandedRoute(r.id); setShowMap(false); }} compact />
                 </motion.div>
             )}
 
@@ -90,68 +64,30 @@ const MapPage = () => {
                     {CATEGORIES.map((cat) => {
                         const catRoutes = getRoutesByCategory(cat);
                         if (catRoutes.length === 0) return null;
-
                         return (
                             <section key={cat.key}>
-                                {/* Category header */}
                                 <div className="flex items-center gap-3 mb-2">
                                     <span className="text-2xl">{cat.icon}</span>
                                     <div>
-                                        <h2 className="font-serif text-xl md:text-2xl font-bold" style={{ color: COLORS.text }}>
-                                            {cat.label}
-                                        </h2>
-                                        <p className="text-sm" style={{ color: COLORS.secondary }}>{cat.description}</p>
+                                        <h2 className="font-serif text-xl md:text-2xl font-bold text-text-primary">{cat.label}</h2>
+                                        <p className="text-sm text-secondary">{cat.description}</p>
                                     </div>
                                 </div>
-
-                                {/* Route cards */}
                                 <div className="mt-4 space-y-3">
                                     {catRoutes.map((route, i) => {
                                         const isExpanded = expandedRoute === route.id;
                                         const level = LEVEL_LABEL[route.difficulty] || LEVEL_LABEL['Media'];
-
                                         return (
-                                            <motion.div
-                                                key={route.id}
-                                                initial={{ opacity: 0, y: 15 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ delay: i * 0.05 }}
-                                                className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-                                            >
-                                                {/* Card header — always visible */}
-                                                <button
-                                                    onClick={() => setExpandedRoute(isExpanded ? null : route.id)}
-                                                    className="w-full text-left p-4 md:p-5 flex gap-4"
-                                                >
-                                                    {route.image_url && (
-                                                        <img
-                                                            src={route.image_url}
-                                                            alt={route.title}
-                                                            className="w-20 h-20 md:w-24 md:h-24 rounded-xl object-cover flex-shrink-0"
-                                                            loading="lazy"
-                                                        />
-                                                    )}
+                                            <motion.div key={route.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                                                <button onClick={() => setExpandedRoute(isExpanded ? null : route.id)} className="w-full text-left p-4 md:p-5 flex gap-4" aria-expanded={isExpanded}>
+                                                    {route.image_url && <img src={route.image_url} alt={route.title} className="w-20 h-20 md:w-24 md:h-24 rounded-xl object-cover flex-shrink-0" loading="lazy" />}
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex items-start justify-between gap-2">
-                                                            <h3 className="font-serif font-bold text-base md:text-lg leading-snug" style={{ color: COLORS.text }}>
-                                                                {route.title}
-                                                            </h3>
-                                                            <ChevronDown
-                                                                size={18}
-                                                                className="flex-shrink-0 mt-1 transition-transform"
-                                                                style={{
-                                                                    color: COLORS.secondary,
-                                                                    transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                                                                }}
-                                                            />
+                                                            <h3 className="font-serif font-bold text-base md:text-lg leading-snug text-text-primary">{route.title}</h3>
+                                                            <ChevronDown size={18} className={`flex-shrink-0 mt-1 text-secondary transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                                                         </div>
-
-                                                        {/* Friendly tags */}
                                                         <div className="flex flex-wrap items-center gap-2 mt-2">
-                                                            <span
-                                                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
-                                                                style={{ backgroundColor: level.bg, color: level.color }}
-                                                            >
+                                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold" style={{ backgroundColor: level.bg, color: level.color }}>
                                                                 {level.icon} {level.label}
                                                             </span>
                                                             {route.duration && (
@@ -167,44 +103,21 @@ const MapPage = () => {
                                                         </div>
                                                     </div>
                                                 </button>
-
-                                                {/* Expanded detail */}
                                                 {isExpanded && (
-                                                    <motion.div
-                                                        initial={{ height: 0, opacity: 0 }}
-                                                        animate={{ height: 'auto', opacity: 1 }}
-                                                        transition={{ duration: 0.3 }}
-                                                        className="px-4 md:px-5 pb-5 border-t border-gray-50"
-                                                    >
-                                                        <p className="text-sm leading-relaxed mt-4 mb-4" style={{ color: COLORS.text }}>
-                                                            {route.description}
-                                                        </p>
-
-                                                        {/* Highlights as friendly chips */}
+                                                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} transition={{ duration: 0.3 }} className="px-4 md:px-5 pb-5 border-t border-gray-50">
+                                                        <p className="text-sm leading-relaxed mt-4 mb-4 text-text-primary">{route.description}</p>
                                                         {route.highlights?.length > 0 && (
                                                             <div className="flex flex-wrap gap-1.5 mb-4">
                                                                 {route.highlights.map((h, j) => (
-                                                                    <span
-                                                                        key={j}
-                                                                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium"
-                                                                        style={{ backgroundColor: `${COLORS.primary}10`, color: COLORS.primary }}
-                                                                    >
-                                                                        <Star size={10} fill={COLORS.primary} /> {h}
+                                                                    <span key={j} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-primary/10 text-primary">
+                                                                        <Star size={10} className="fill-primary" /> {h}
                                                                     </span>
                                                                 ))}
                                                             </div>
                                                         )}
-
-                                                        {/* Action */}
                                                         {route.map_url && (
-                                                            <a
-                                                                href={route.map_url}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-bold transition-all hover:shadow-lg hover:-translate-y-0.5"
-                                                                style={{ backgroundColor: COLORS.primary }}
-                                                            >
-                                                                <Navigation size={16} /> Cómo llegar
+                                                            <a href={route.map_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-bold bg-primary transition-all hover:shadow-lg hover:-translate-y-0.5">
+                                                                <Navigation size={16} /> Como llegar
                                                             </a>
                                                         )}
                                                     </motion.div>
@@ -216,12 +129,8 @@ const MapPage = () => {
                             </section>
                         );
                     })}
-
-                    {/* Footer tip */}
                     <div className="text-center py-8">
-                        <p className="text-sm" style={{ color: COLORS.secondary }}>
-                            ¿Necesitas más ideas? Pregúntanos por WhatsApp — conocemos cada rincón de la zona.
-                        </p>
+                        <p className="text-sm text-secondary">Necesitas mas ideas? Preguntanos por WhatsApp — conocemos cada rincon de la zona.</p>
                     </div>
                 </div>
             )}

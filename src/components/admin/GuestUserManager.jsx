@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { COLORS } from '../../App';
+
 import { useGuestBookings } from '../../hooks/useDatabase';
 import {
     Users, Search, Calendar, Save, Mail, User,
@@ -44,7 +44,7 @@ const GuestUserManager = () => {
             {!selectedGuest ? (
                 <>
                     <header>
-                        <h2 className="text-2xl font-serif font-bold" style={{ color: COLORS.text }}>Control de Huéspedes y CRM</h2>
+                        <h2 className="text-2xl font-serif font-bold text-text-primary">Control de Huéspedes y CRM</h2>
                         <p className="text-gray-500 text-sm">Gestiona la ficha de cliente, sus preferencias, historial y reglas de acceso.</p>
                     </header>
 
@@ -61,8 +61,7 @@ const GuestUserManager = () => {
                         </div>
                         <button
                             onClick={() => setIsCreatingGuest(true)}
-                            className="flex items-center gap-2 px-8 py-3 bg-rural-600 text-white rounded-2xl font-bold shadow-lg hover:scale-105 transition-all"
-                            style={{ backgroundColor: COLORS.primary }}
+                            className="flex items-center gap-2 px-8 py-3 bg-primary text-white rounded-2xl font-bold shadow-lg hover:scale-105 transition-all"
                         >
                             <Plus size={20} /> Nuevo Huésped
                         </button>
@@ -83,7 +82,7 @@ const GuestUserManager = () => {
                                     )}
                                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                                         <div className="flex items-center gap-4">
-                                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${guest.is_active ? 'bg-rural-50 text-rural-600' : 'bg-red-50 text-red-600'}`} style={guest.is_active ? { backgroundColor: COLORS.bgWarm, color: COLORS.primary } : {}}>
+                                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${guest.is_active ? 'bg-surface-warm text-primary' : 'bg-red-50 text-red-600'}`}>
                                                 <User size={24} />
                                             </div>
                                             <div>
@@ -107,8 +106,6 @@ const GuestUserManager = () => {
                                             <button
                                                 onClick={() => setSelectedGuest(guest)}
                                                 className="px-6 py-2.5 rounded-xl font-bold bg-gray-50 text-gray-500 hover:bg-rural-600 hover:text-white transition-all shadow-sm flex items-center gap-2"
-                                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = COLORS.primary}
-                                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
                                             >
                                                 Ver Ficha de Cliente <ChevronRight size={16} />
                                             </button>
@@ -216,10 +213,10 @@ const GuestDetailView = ({ guest, onBack }) => {
                 {/* Panel Izquierdo: Info y Seguridad */}
                 <div className="lg:col-span-1 space-y-6">
                     <div className="bg-white p-10 rounded-[40px] border border-gray-100 shadow-sm text-center">
-                        <div className="w-24 h-24 rounded-[32px] bg-rural-50 flex items-center justify-center text-rural-600 mx-auto mb-6 shadow-inner" style={{ backgroundColor: COLORS.bgWarm, color: COLORS.primary }}>
+                        <div className="w-24 h-24 rounded-[32px] bg-surface-warm flex items-center justify-center text-primary mx-auto mb-6 shadow-inner">
                             <User size={48} />
                         </div>
-                        <h3 className="text-2xl font-serif font-bold mb-2" style={{ color: COLORS.text }}>{guest.full_name || 'Huésped'}</h3>
+                        <h3 className="text-2xl font-serif font-bold mb-2 text-text-primary">{guest.full_name || 'Huésped'}</h3>
                         <p className="text-xs text-gray-400 mb-6">{guest.id}</p>
 
                         <div className="flex items-center gap-3 text-sm text-gray-600 justify-center mb-6">
@@ -268,8 +265,7 @@ const GuestDetailView = ({ guest, onBack }) => {
                             </div>
                             <button
                                 onClick={() => handleUpdateProfile()}
-                                className="p-4 bg-rural-600 text-white rounded-[24px] font-bold text-xs shadow-md hover:scale-105 transition-all"
-                                style={{ backgroundColor: COLORS.primary }}
+                                className="p-4 bg-primary text-white rounded-[24px] font-bold text-xs shadow-md hover:scale-105 transition-all"
                             >
                                 Guardar
                             </button>
@@ -278,7 +274,7 @@ const GuestDetailView = ({ guest, onBack }) => {
 
                     <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm space-y-6">
                         <h5 className="flex items-center gap-2 font-bold text-rural-900 uppercase tracking-widest text-[10px]">
-                            <Shield size={16} style={{ color: COLORS.primary }} /> Acceso de Usuario
+                            <Shield size={16} className="text-primary" /> Acceso de Usuario
                         </h5>
 
                         <div className="space-y-4">
@@ -297,9 +293,8 @@ const GuestDetailView = ({ guest, onBack }) => {
 
                             <button
                                 onClick={() => { const next = !isActive; setIsActive(next); handleUpdateProfile({ is_active: next }); }}
-                                className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-md ${isActive ? 'bg-red-50 text-red-600 border border-red-100 hover:bg-red-500 hover:text-white' : 'bg-green-600 text-white shadow-green-100 hover:scale-105'
+                                className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-md ${isActive ? 'bg-red-50 text-red-600 border border-red-100 hover:bg-red-500 hover:text-white' : 'bg-primary text-white shadow-green-100 hover:scale-105'
                                     }`}
-                                style={!isActive ? { backgroundColor: COLORS.primary } : {}}
                             >
                                 {isActive ? <Lock size={18} /> : <Unlock size={18} />}
                                 {isActive ? 'Bloquear Acceso' : 'Restaurar Acceso'}
@@ -330,7 +325,7 @@ const GuestDetailView = ({ guest, onBack }) => {
                 <div className="lg:col-span-2 space-y-8">
                     <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm">
                         <h5 className="flex items-center gap-2 font-bold text-rural-900 mb-6 uppercase tracking-widest text-[10px]">
-                            <FileText size={16} style={{ color: COLORS.primary }} /> Notas Internas
+                            <FileText size={16} className="text-primary" /> Notas Internas
                         </h5>
                         <textarea
                             value={notes}
@@ -341,8 +336,7 @@ const GuestDetailView = ({ guest, onBack }) => {
                         <div className="flex justify-end mt-4">
                             <button
                                 onClick={() => handleUpdateProfile()}
-                                className="flex items-center gap-2 px-8 py-3 bg-rural-600 text-white rounded-2xl font-bold shadow-lg shadow-rural-100 hover:scale-105 transition-all text-sm"
-                                style={{ backgroundColor: COLORS.primary }}
+                                className="flex items-center gap-2 px-8 py-3 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-rural-100 hover:scale-105 transition-all text-sm"
                             >
                                 <Save size={18} /> Guardar Notas
                             </button>
@@ -360,8 +354,7 @@ const GuestDetailView = ({ guest, onBack }) => {
                             </h5>
                             <button
                                 onClick={() => setIsAddingBooking(true)}
-                                className="flex items-center gap-2 px-4 py-2 rounded-xl border border-rural-100 text-rural-600 hover:bg-rural-50 font-bold text-xs transition-all"
-                                style={{ color: COLORS.primary }}
+                                className="flex items-center gap-2 px-4 py-2 rounded-xl border border-rural-100 text-primary hover:bg-rural-50 font-bold text-xs transition-all"
                             >
                                 <Plus size={14} /> Nueva Estancia
                             </button>
@@ -384,7 +377,7 @@ const GuestDetailView = ({ guest, onBack }) => {
                                 </div>
                                 <div className="flex justify-end gap-3">
                                     <button onClick={() => setIsAddingBooking(false)} className="px-5 py-2 text-gray-400 text-sm font-bold">Cancelar</button>
-                                    <button onClick={handleAddBooking} className="px-6 py-2 bg-rural-600 text-white rounded-xl text-sm font-bold shadow-md" style={{ backgroundColor: COLORS.primary }}>Guardar</button>
+                                    <button onClick={handleAddBooking} className="px-6 py-2 bg-primary text-white rounded-xl text-sm font-bold shadow-md">Guardar</button>
                                 </div>
                             </div>
                         )}
@@ -443,11 +436,11 @@ const InvitationTool = () => {
     return (
         <div className="bg-white p-8 rounded-[40px] border border-rural-100 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6 mb-8 group hover:shadow-md transition-all">
             <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-rural-50 flex items-center justify-center text-rural-600 shadow-inner" style={{ backgroundColor: COLORS.bgWarm, color: COLORS.primary }}>
+                <div className="w-14 h-14 rounded-2xl bg-surface-warm flex items-center justify-center text-primary shadow-inner">
                     <Plus size={24} />
                 </div>
                 <div>
-                    <h3 className="font-serif text-xl font-bold" style={{ color: COLORS.text }}>Invitación a Huéspedes</h3>
+                    <h3 className="font-serif text-xl font-bold text-text-primary">Invitación a Huéspedes</h3>
                     <p className="text-sm text-gray-400">Envía este enlace a tus clientes para que se registren fácilmente.</p>
                 </div>
             </div>
@@ -457,8 +450,7 @@ const InvitationTool = () => {
                 </div>
                 <button
                     onClick={handleCopy}
-                    className="px-6 py-3 bg-rural-600 text-white rounded-xl font-bold text-sm shadow-lg hover:scale-105 transition-all flex items-center gap-2 whitespace-nowrap"
-                    style={{ backgroundColor: COLORS.primary }}
+                    className="px-6 py-3 bg-primary text-white rounded-xl font-bold text-sm shadow-lg hover:scale-105 transition-all flex items-center gap-2 whitespace-nowrap"
                 >
                     {copied ? <CheckCircle2 size={18} /> : <Save size={18} />}
                     {copied ? 'Copiado' : 'Copiar Enlace'}
@@ -525,11 +517,11 @@ const CreateGuestModal = ({ onClose }) => {
 
                 {step === 1 ? (
                     <div className="space-y-8">
-                        <div className="w-16 h-16 rounded-[24px] bg-rural-50 flex items-center justify-center text-rural-600 mb-2" style={{ backgroundColor: COLORS.bgWarm, color: COLORS.primary }}>
+                        <div className="w-16 h-16 rounded-[24px] bg-surface-warm flex items-center justify-center text-primary mb-2">
                             <Plus size={32} />
                         </div>
                         <div>
-                            <h3 className="text-3xl font-serif font-bold mb-2" style={{ color: COLORS.text }}>Alta de Nuevo Huésped</h3>
+                            <h3 className="text-3xl font-serif font-bold mb-2 text-text-primary">Alta de Nuevo Huésped</h3>
                             <p className="text-sm text-gray-500 leading-relaxed">Prepara el acceso para tu cliente. Podrá entrar usando solo su email, sin complicaciones de contraseñas.</p>
                         </div>
 
@@ -559,8 +551,7 @@ const CreateGuestModal = ({ onClose }) => {
                         <button
                             onClick={handleInvite}
                             disabled={!name || !email || loading}
-                            className="w-full py-5 bg-rural-600 text-white rounded-[24px] font-bold shadow-xl shadow-rural-100 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-                            style={{ backgroundColor: COLORS.primary }}
+                            className="w-full py-5 bg-primary text-white rounded-[24px] font-bold shadow-xl shadow-rural-100 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                         >
                             {loading ? 'Preparando...' : `Generar Acceso para ${name.split(' ')[0]}`}
                         </button>
@@ -571,7 +562,7 @@ const CreateGuestModal = ({ onClose }) => {
                             <CheckCircle2 size={40} />
                         </div>
                         <div className="text-center">
-                            <h3 className="text-2xl font-serif font-bold mb-2" style={{ color: COLORS.text }}>¡Invitación Lista!</h3>
+                            <h3 className="text-2xl font-serif font-bold mb-2 text-text-primary">¡Invitación Lista!</h3>
                             <p className="text-sm text-gray-500 leading-relaxed px-4">Envía este mensaje a <strong>{name}</strong>. No necesita contraseña, solo su email:</p>
                         </div>
 
@@ -674,7 +665,7 @@ const PrivateDocsSection = ({ guestId }) => {
     return (
         <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm">
             <h5 className="flex items-center gap-2 font-bold text-rural-900 mb-6 uppercase tracking-widest text-[10px]">
-                <Lock size={16} style={{ color: COLORS.primary }} /> Documentos Privados del Huésped
+                <Lock size={16} className="text-primary" /> Documentos Privados del Huésped
             </h5>
 
             <div className="flex flex-col md:flex-row gap-4 mb-8 p-6 bg-rural-50 rounded-3xl border border-rural-100">
@@ -696,8 +687,7 @@ const PrivateDocsSection = ({ guestId }) => {
                 <button
                     onClick={handleUpload}
                     disabled={uploading}
-                    className="px-6 py-2 bg-rural-600 text-white rounded-xl font-bold text-xs shadow-md transition-all hover:scale-105"
-                    style={{ backgroundColor: COLORS.primary }}
+                    className="px-6 py-2 bg-primary text-white rounded-xl font-bold text-xs shadow-md transition-all hover:scale-105"
                 >
                     {uploading ? 'Subiendo...' : 'Subir Documento'}
                 </button>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
-import { COLORS } from '../../App';
+
 import { logError, userErrorMessage } from '../../utils/logger';
 import { validateImageFile } from '../../utils/fileValidation';
 import {
@@ -212,13 +212,12 @@ const RoutesManager = () => {
         <div className="space-y-8">
             <div className="flex justify-between items-center">
                 <div>
-                    <h3 className="text-2xl font-serif font-bold" style={{ color: COLORS.text }}>Rutas y Senderismo</h3>
+                    <h3 className="text-2xl font-serif font-bold text-text-primary">Rutas y Senderismo</h3>
                     <p className="text-sm text-gray-500">{routes.length} rutas publicadas</p>
                 </div>
                 <button
                     onClick={startNew}
-                    className="flex items-center gap-2 px-6 py-3 rounded-xl text-white font-bold transition-all hover:scale-105 shadow-md"
-                    style={{ backgroundColor: COLORS.primary }}
+                    className="flex items-center gap-2 px-6 py-3 rounded-xl text-white font-bold transition-all hover:scale-105 shadow-md bg-primary"
                 >
                     <Plus size={18} /> Nueva Ruta
                 </button>
@@ -445,8 +444,7 @@ const RoutesManager = () => {
                             <button
                                 onClick={handleSave}
                                 disabled={saving}
-                                className="px-10 py-3 text-white font-bold rounded-2xl hover:opacity-90 transition-all shadow-lg flex items-center gap-2"
-                                style={{ backgroundColor: COLORS.primary }}
+                                className="px-10 py-3 text-white font-bold rounded-2xl hover:opacity-90 transition-all shadow-lg flex items-center gap-2 bg-primary"
                             >
                                 {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
                                 {saving ? 'Guardando...' : editingRoute.id ? 'Actualizar Ruta' : 'Crear Ruta'}
@@ -468,7 +466,7 @@ const RoutesManager = () => {
                 if (!groupRoutes || groupRoutes.length === 0) return null;
                 return (
                     <div key={group.value} className="space-y-3">
-                        <h4 className="text-sm font-bold uppercase tracking-widest flex items-center gap-2" style={{ color: COLORS.primary }}>
+                        <h4 className="text-sm font-bold uppercase tracking-widest flex items-center gap-2 text-primary">
                             <Layers size={14} /> {group.label} ({groupRoutes.length})
                         </h4>
                         <div className="grid gap-3">
@@ -480,7 +478,7 @@ const RoutesManager = () => {
                                             <img src={route.image_url} alt={route.title} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
                                         ) : (
                                             <div className="w-16 h-16 rounded-xl bg-rural-50 flex items-center justify-center flex-shrink-0">
-                                                <Mountain size={24} style={{ color: COLORS.primary }} />
+                                                <Mountain size={24} className="text-primary" />
                                             </div>
                                         )}
                                         <div className="flex-grow min-w-0">

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { COLORS } from '../../App';
+
 import { logError, userErrorMessage } from '../../utils/logger';
 import {
     Plus, Save, X, Trash2, Pencil, Loader2, Calendar,
@@ -83,10 +83,10 @@ const EventsManager = () => {
         <div className="space-y-8">
             <div className="flex justify-between items-center">
                 <div>
-                    <h3 className="text-2xl font-serif font-bold" style={{ color: COLORS.text }}>Eventos y Experiencias</h3>
+                    <h3 className="text-2xl font-serif font-bold text-text-primary">Eventos y Experiencias</h3>
                     <p className="text-sm text-gray-500">{events.length} eventos · {events.filter(e => e.active).length} visibles</p>
                 </div>
-                <button onClick={() => setEditingEvent({ ...EMPTY_EVENT })} className="flex items-center gap-2 px-6 py-3 rounded-xl text-white font-bold transition-all hover:scale-105 shadow-md" style={{ backgroundColor: COLORS.primary }}>
+                <button onClick={() => setEditingEvent({ ...EMPTY_EVENT })} className="flex items-center gap-2 px-6 py-3 rounded-xl text-white font-bold transition-all hover:scale-105 shadow-md bg-primary">
                     <Plus size={18} /> Nuevo Evento
                 </button>
             </div>
@@ -155,7 +155,7 @@ const EventsManager = () => {
                         </div>
                         <div className="p-6 border-t border-gray-100 flex gap-3 justify-end bg-gray-50/50 rounded-b-[2rem]">
                             <button onClick={resetForm} className="px-6 py-3 bg-white border border-gray-200 text-gray-500 font-bold rounded-2xl">Cancelar</button>
-                            <button onClick={handleSave} disabled={saving} className="px-8 py-3 text-white font-bold rounded-2xl shadow-lg flex items-center gap-2" style={{ backgroundColor: COLORS.primary }}>
+                            <button onClick={handleSave} disabled={saving} className="px-8 py-3 text-white font-bold rounded-2xl shadow-lg flex items-center gap-2 bg-primary">
                                 {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
                                 {editingEvent.id ? 'Actualizar' : 'Crear'}
                             </button>
@@ -173,7 +173,7 @@ const EventsManager = () => {
                                 <img src={event.image_url} alt={event.title} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
                             ) : (
                                 <div className="w-16 h-16 rounded-xl bg-rural-50 flex items-center justify-center flex-shrink-0">
-                                    <Calendar size={24} style={{ color: COLORS.primary }} />
+                                    <Calendar size={24} className="text-primary" />
                                 </div>
                             )}
                             <div className="flex-grow min-w-0">

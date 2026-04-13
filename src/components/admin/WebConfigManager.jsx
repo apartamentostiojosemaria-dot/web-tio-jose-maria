@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { COLORS } from '../../App';
+
 import {
     Save, RefreshCw, AlertCircle, CheckCircle2,
     Globe, Home, Image, Star, MessageSquare, Mail,
@@ -199,14 +199,13 @@ const WebConfigManager = () => {
         <div className="space-y-8">
             <div className="flex justify-between items-center">
                 <div>
-                    <h3 className="text-2xl font-serif font-bold" style={{ color: COLORS.text }}>Configuración de la Web</h3>
+                    <h3 className="text-2xl font-serif font-bold text-text-primary">Configuración de la Web</h3>
                     <p className="text-sm text-gray-500">Edita todos los textos, datos de contacto e información para huéspedes</p>
                 </div>
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex items-center gap-2 px-6 py-3 rounded-xl text-white font-bold transition-all hover:scale-105 shadow-md disabled:opacity-50"
-                    style={{ backgroundColor: COLORS.primary }}
+                    className="flex items-center gap-2 px-6 py-3 rounded-xl text-white font-bold transition-all hover:scale-105 shadow-md disabled:opacity-50 bg-primary"
                 >
                     {saving ? <RefreshCw className="animate-spin" size={18} /> : <Save size={18} />}
                     {saving ? 'Guardando...' : 'Guardar Todo'}
@@ -226,7 +225,7 @@ const WebConfigManager = () => {
                     const Icon = meta.icon;
                     const isOpen = openSections[sectionKey] ?? false;
                     const sectionConfigs = configs.filter(c => c.section === sectionKey);
-                    const accentColor = meta.color || COLORS.secondary;
+                    const accentColor = meta.color || '#8C8468';
 
                     return (
                         <div key={sectionKey} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -238,7 +237,7 @@ const WebConfigManager = () => {
                                     <Icon size={20} style={{ color: accentColor }} />
                                 </div>
                                 <div className="flex-grow">
-                                    <h4 className="font-bold text-sm" style={{ color: COLORS.text }}>{meta.label}</h4>
+                                    <h4 className="font-bold text-sm text-text-primary">{meta.label}</h4>
                                     <p className="text-xs text-gray-400">{meta.description}</p>
                                 </div>
                                 <span className="text-[10px] font-bold text-gray-300 mr-2">{sectionConfigs.length} campos</span>

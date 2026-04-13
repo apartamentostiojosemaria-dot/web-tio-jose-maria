@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { COLORS } from '../../constants/colors';
+
 import { logError } from '../../utils/logger';
 import { BarChart3, Users, Star, TrendingUp, Calendar, Mail } from 'lucide-react';
 import {
@@ -8,7 +8,7 @@ import {
     PieChart, Pie, Cell, Legend
 } from 'recharts';
 
-const CHART_COLORS = [COLORS.primary, COLORS.secondary, COLORS.accent, '#7a9a3a', '#b5a77d'];
+const CHART_COLORS = ['#556B2F', '#8C8468', '#D6CEB8', '#7a9a3a', '#b5a77d'];
 
 const MONTHS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
@@ -129,7 +129,7 @@ const AnalyticsDashboard = () => {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-200" style={{ borderTopColor: COLORS.primary }} />
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-200 border-t-primary" />
             </div>
         );
     }
@@ -138,8 +138,8 @@ const AnalyticsDashboard = () => {
         <div>
             <header className="mb-10">
                 <div className="flex items-center gap-3 mb-1">
-                    <BarChart3 size={28} style={{ color: COLORS.primary }} />
-                    <h1 className="text-3xl font-serif font-bold" style={{ color: COLORS.text }}>Analítica</h1>
+                    <BarChart3 size={28} className="text-primary" />
+                    <h1 className="text-3xl font-serif font-bold text-text-primary">Analítica</h1>
                 </div>
                 <p className="text-gray-500">Resumen general del rendimiento de tu alojamiento</p>
             </header>
@@ -150,7 +150,7 @@ const AnalyticsDashboard = () => {
                     icon={<Calendar size={20} />}
                     label="Total Reservas"
                     value={stats.totalBookings}
-                    color={COLORS.primary}
+                    color="#556B2F"
                 />
                 <SummaryCard
                     icon={<Star size={20} />}
@@ -162,13 +162,13 @@ const AnalyticsDashboard = () => {
                     icon={<Users size={20} />}
                     label="Apartamentos"
                     value={stats.totalApartments}
-                    color={COLORS.secondary}
+                    color="#8C8468"
                 />
                 <SummaryCard
                     icon={<Mail size={20} />}
                     label="Suscriptores Email"
                     value={stats.emailSubscribers}
-                    color={COLORS.primary}
+                    color="#556B2F"
                 />
             </div>
 
@@ -177,8 +177,8 @@ const AnalyticsDashboard = () => {
                 {/* Monthly Bookings Bar Chart */}
                 <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <div className="flex items-center gap-2 mb-6">
-                        <TrendingUp size={18} style={{ color: COLORS.primary }} />
-                        <h2 className="font-serif font-bold text-lg" style={{ color: COLORS.text }}>
+                        <TrendingUp size={18} className="text-primary" />
+                        <h2 className="font-serif font-bold text-lg text-text-primary">
                             Reservas por Mes ({new Date().getFullYear()})
                         </h2>
                     </div>
@@ -194,7 +194,7 @@ const AnalyticsDashboard = () => {
                                     boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                                 }}
                             />
-                            <Bar dataKey="reservas" fill={COLORS.primary} radius={[6, 6, 0, 0]} />
+                            <Bar dataKey="reservas" fill="#556B2F" radius={[6, 6, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
@@ -203,7 +203,7 @@ const AnalyticsDashboard = () => {
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <div className="flex items-center gap-2 mb-6">
                         <Star size={18} style={{ color: '#e6a817' }} />
-                        <h2 className="font-serif font-bold text-lg" style={{ color: COLORS.text }}>
+                        <h2 className="font-serif font-bold text-lg text-text-primary">
                             Distribución de Reseñas
                         </h2>
                     </div>
@@ -243,8 +243,8 @@ const AnalyticsDashboard = () => {
             {/* Recent Activity Feed */}
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <div className="flex items-center gap-2 mb-6">
-                    <BarChart3 size={18} style={{ color: COLORS.primary }} />
-                    <h2 className="font-serif font-bold text-lg" style={{ color: COLORS.text }}>
+                    <BarChart3 size={18} className="text-primary" />
+                    <h2 className="font-serif font-bold text-lg text-text-primary">
                         Actividad Reciente
                     </h2>
                 </div>
@@ -259,18 +259,16 @@ const AnalyticsDashboard = () => {
                             >
                                 <div className="flex items-center gap-3">
                                     <div
-                                        className="w-8 h-8 rounded-full flex items-center justify-center"
-                                        style={{
-                                            backgroundColor: activity.type === 'booking' ? `${COLORS.primary}15` : '#e6a81715',
-                                        }}
+                                        className={`w-8 h-8 rounded-full flex items-center justify-center ${activity.type === 'booking' ? 'bg-primary/10' : ''}`}
+                                        style={activity.type !== 'booking' ? { backgroundColor: '#e6a81715' } : {}}
                                     >
                                         {activity.type === 'booking' ? (
-                                            <Calendar size={14} style={{ color: COLORS.primary }} />
+                                            <Calendar size={14} className="text-primary" />
                                         ) : (
                                             <Star size={14} style={{ color: '#e6a817' }} />
                                         )}
                                     </div>
-                                    <span className="text-sm font-medium" style={{ color: COLORS.text }}>
+                                    <span className="text-sm font-medium text-text-primary">
                                         {activity.text}
                                     </span>
                                 </div>
@@ -295,7 +293,7 @@ const SummaryCard = ({ icon, label, value, color }) => (
             </div>
         </div>
         <p className="text-xs uppercase tracking-widest font-bold opacity-40 mb-2">{label}</p>
-        <p className="text-4xl font-serif font-bold" style={{ color: COLORS.primary }}>{value}</p>
+        <p className="text-4xl font-serif font-bold text-primary">{value}</p>
     </div>
 );
 

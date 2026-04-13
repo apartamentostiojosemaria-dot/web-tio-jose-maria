@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Wifi, Key, Car, LogOut, AlertTriangle, ScrollText, ChevronDown, ChevronUp, Phone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { COLORS } from '../../constants/colors';
 
 const Section = ({ icon: Icon, title, children, defaultOpen = false, accent = false }) => {
     const [open, setOpen] = useState(defaultOpen);
@@ -12,10 +11,10 @@ const Section = ({ icon: Icon, title, children, defaultOpen = false, accent = fa
                 onClick={() => setOpen(!open)}
                 className="w-full flex items-center gap-3 p-4 text-left hover:bg-gray-50/50 transition-colors"
             >
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: accent ? COLORS.primary : '#f3f4f6' }}>
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${accent ? 'bg-primary' : 'bg-gray-100'}`}>
                     <Icon size={18} className={accent ? 'text-white' : 'text-gray-500'} />
                 </div>
-                <span className="font-bold text-sm flex-grow" style={{ color: COLORS.text }}>{title}</span>
+                <span className="font-bold text-sm flex-grow text-text-primary">{title}</span>
                 {open ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
             </button>
             <AnimatePresence>
@@ -51,12 +50,12 @@ const WelcomePackage = ({ config, guestName }) => {
 
     return (
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="p-6 pb-4" style={{ background: `linear-gradient(135deg, ${COLORS.primary}15, ${COLORS.accent}30)` }}>
+            <div className="p-6 pb-4 bg-gradient-to-br from-primary/10 to-accent/20">
                 <p className="text-2xl mb-1">🏡</p>
-                <h2 className="font-serif text-xl font-bold" style={{ color: COLORS.text }}>
+                <h2 className="font-serif text-xl font-bold text-text-primary">
                     {guestName ? `Bienvenido/a, ${guestName.split(' ')[0]}` : 'Tu Paquete de Bienvenida'}
                 </h2>
-                <p className="text-sm mt-1" style={{ color: COLORS.secondary }}>
+                <p className="text-sm mt-1 text-secondary">
                     Todo lo que necesitas para tu estancia en Tío José María
                 </p>
             </div>
@@ -68,13 +67,13 @@ const WelcomePackage = ({ config, guestName }) => {
                             {wifi_name && (
                                 <div className="flex-1">
                                     <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Red</p>
-                                    <p className="font-mono font-bold text-base" style={{ color: COLORS.text }}>{wifi_name}</p>
+                                    <p className="font-mono font-bold text-base text-text-primary">{wifi_name}</p>
                                 </div>
                             )}
                             {wifi_password && (
                                 <div className="flex-1">
                                     <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Contraseña</p>
-                                    <p className="font-mono font-bold text-base" style={{ color: COLORS.text }}>{wifi_password}</p>
+                                    <p className="font-mono font-bold text-base text-text-primary">{wifi_password}</p>
                                 </div>
                             )}
                         </div>

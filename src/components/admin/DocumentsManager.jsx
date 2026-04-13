@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
-import { COLORS } from '../../App';
+
 import { FileText, Download, Trash2, Globe, Lock, Plus, Upload, X, Loader2 } from 'lucide-react';
 import { logError, userErrorMessage } from '../../utils/logger';
 import { validateDocFile } from '../../utils/fileValidation';
@@ -93,13 +93,12 @@ const DocumentsManager = () => {
         <div className="space-y-8">
             <div className="flex justify-between items-center">
                 <div>
-                    <h3 className="text-2xl font-serif font-bold" style={{ color: COLORS.text }}>Gestión de Documentos</h3>
+                    <h3 className="text-2xl font-serif font-bold text-text-primary">Gestión de Documentos</h3>
                     <p className="text-sm text-gray-500">Sube guías para todos o documentos privados para clientes</p>
                 </div>
                 <button
                     onClick={() => setShowForm(!showForm)}
-                    className="flex items-center gap-2 px-6 py-3 rounded-xl text-white font-bold transition-all hover:scale-105 shadow-md"
-                    style={{ backgroundColor: COLORS.primary }}
+                    className="flex items-center gap-2 px-6 py-3 rounded-xl text-white font-bold transition-all hover:scale-105 shadow-md bg-primary"
                 >
                     {showForm ? <X size={18} /> : <Plus size={18} />}
                     {showForm ? 'Cancelar' : 'Subir Documento'}
@@ -160,8 +159,7 @@ const DocumentsManager = () => {
                     <button
                         onClick={handleUpload}
                         disabled={uploading}
-                        className="w-full py-4 rounded-2xl text-white font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all"
-                        style={{ backgroundColor: COLORS.primary }}
+                        className="w-full py-4 rounded-2xl text-white font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all bg-primary"
                     >
                         {uploading ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
                         {uploading ? 'Subiendo...' : 'Subir Documento'}
@@ -172,7 +170,7 @@ const DocumentsManager = () => {
             <div className="grid gap-4">
                 {docs.map(doc => (
                     <div key={doc.id} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-6">
-                        <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ color: COLORS.primary, backgroundColor: COLORS.bgWarm }}>
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center text-primary bg-surface-warm">
                             <FileText size={24} />
                         </div>
                         <div className="flex-grow">

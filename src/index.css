@@ -4,6 +4,7 @@
   --font-serif: "Playfair Display", serif;
   --font-sans: Lato, sans-serif;
 
+  /* Color palette — unified rural tokens */
   --color-rural-50: #FCFBF9;
   --color-rural-100: #F0EDE6;
   --color-rural-200: #E0D9CC;
@@ -14,6 +15,54 @@
   --color-rural-700: #4A5D28;
   --color-rural-800: #3A4A1F;
   --color-rural-900: #2A3615;
+
+  /* Semantic aliases mapped to the palette */
+  --color-primary: #556B2F;
+  --color-primary-dark: #3b4a20;
+  --color-secondary: #8C8468;
+  --color-accent: #D6CEB8;
+  --color-surface: #FCFBF9;
+  --color-surface-warm: #f5f2ea;
+  --color-text-primary: #2C3319;
+  --color-footer: #111827;
+  --color-footer-muted: #1f2937;
+
+  /* Difficulty / status colors */
+  --color-level-easy: #16a34a;
+  --color-level-easy-bg: #dcfce7;
+  --color-level-medium: #d97706;
+  --color-level-medium-bg: #fef3c7;
+  --color-level-hard: #ea580c;
+  --color-level-hard-bg: #ffedd5;
+  --color-level-expert: #dc2626;
+  --color-level-expert-bg: #fee2e2;
+
+  /* Season colors */
+  --color-season-spring: #065f46;
+  --color-season-spring-bg: #ecfdf5;
+  --color-season-spring-border: #a7f3d0;
+  --color-season-summer: #854d0e;
+  --color-season-summer-bg: #fef9c3;
+  --color-season-summer-border: #fde68a;
+  --color-season-autumn: #9a3412;
+  --color-season-autumn-bg: #fff7ed;
+  --color-season-autumn-border: #fed7aa;
+  --color-season-winter: #1e40af;
+  --color-season-winter-bg: #eff6ff;
+  --color-season-winter-border: #bfdbfe;
+  --color-season-year: #5b21b6;
+  --color-season-year-bg: #f5f3ff;
+  --color-season-year-border: #ddd6fe;
+
+  /* Place type colors */
+  --color-place-restaurant: #e67e22;
+  --color-place-active: #27ae60;
+  --color-place-emergency: #e74c3c;
+  --color-place-heritage: #8e44ad;
+  --color-place-nature: #2ecc71;
+  --color-place-shopping: #3498db;
+  --color-place-gas: #f39c12;
+  --color-place-bank: #2c3e50;
 }
 
 :root {
@@ -24,4 +73,31 @@ body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root.dark {
+    --color-surface: #1a1a1a;
+    --color-surface-warm: #242420;
+    --color-text-primary: #e8e4d8;
+  }
+}
+
+/* Skip to content link for accessibility */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--color-primary);
+  color: white;
+  padding: 8px 16px;
+  z-index: 100;
+  transition: top 0.2s;
+  font-weight: bold;
+  font-size: 0.875rem;
+  border-radius: 0 0 8px 0;
+}
+.skip-link:focus {
+  top: 0;
 }

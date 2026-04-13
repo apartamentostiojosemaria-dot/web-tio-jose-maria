@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
-import { COLORS } from '../../App';
+
 import {
     Plus, Edit2, Trash2, Camera, Check, X, Save,
     Home, Users, Eye, EyeOff, Layout, List, Upload, Loader2,
@@ -180,7 +180,7 @@ const ApartmentsManager = () => {
         <div className="space-y-8">
             <div className="flex justify-between items-center bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
                 <div>
-                    <h3 className="text-2xl font-serif font-bold" style={{ color: COLORS.text }}>Gestión de Apartamentos</h3>
+                    <h3 className="text-2xl font-serif font-bold text-text-primary">Gestión de Apartamentos</h3>
                     <p className="text-sm text-gray-400">Controla precios, servicios y visibilidad de tus alojamientos</p>
                 </div>
                 <button
@@ -196,8 +196,7 @@ const ApartmentsManager = () => {
                         bathrooms: 1,
                         amenities: []
                     })}
-                    className="flex items-center gap-2 px-6 py-3 rounded-2xl text-white font-bold transition-all hover:scale-105 shadow-lg"
-                    style={{ backgroundColor: COLORS.primary }}
+                    className="flex items-center gap-2 px-6 py-3 rounded-2xl text-white font-bold transition-all hover:scale-105 shadow-lg bg-primary"
                 >
                     <Plus size={20} /> Nuevo Apartamento
                 </button>

@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
 import WeatherWidget from '../WeatherWidget';
-import { COLORS } from '../../constants/colors';
 import { WP, WHATSAPP_URL } from '../../constants/urls';
 
 const HeroSection = ({ title, subtitle }) => (
@@ -8,10 +7,10 @@ const HeroSection = ({ title, subtitle }) => (
         <div className="absolute inset-0 z-0">
             <img
                 src={`${WP}/slide1.jpg`}
-                alt="Vista panorámica de Casa Rural Tío José María en Hinojares"
+                alt="Vista panoramica de Casa Rural Tio Jose Maria en Hinojares"
                 className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.55) 100%)' }} />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/25 to-black/55" />
         </div>
 
         <motion.div
@@ -23,11 +22,11 @@ const HeroSection = ({ title, subtitle }) => (
             <div className="flex justify-center mb-6">
                 <WeatherWidget isMinimal />
             </div>
-            <p className="text-white/70 uppercase tracking-[0.3em] text-sm mb-5 font-sans">Hinojares, Jaén</p>
+            <p className="text-white/70 uppercase tracking-[0.3em] text-sm mb-5 font-sans">Hinojares, Jaen</p>
             <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white font-bold mb-6 leading-tight">
-                {title.split(' en ')[0].replace('Tío José María', '')}
-                <span className="whitespace-nowrap">Tío José María</span>
-                <br className="hidden lg:block" /> en <span style={{ color: COLORS.accent }}>{title.split(' en ')[1] || 'Cazorla'}</span>
+                {title.split(' en ')[0].replace('Tio Jose Maria', '')}
+                <span className="whitespace-nowrap">Tio Jose Maria</span>
+                <br className="hidden lg:block" /> en <span className="text-accent">{title.split(' en ')[1] || 'Cazorla'}</span>
             </h1>
             <p className="text-white/80 text-lg md:text-xl mb-10 max-w-2xl mx-auto font-light leading-relaxed">
                 {subtitle}
@@ -35,8 +34,7 @@ const HeroSection = ({ title, subtitle }) => (
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a
                     href="#apartamentos"
-                    className="px-10 py-4 rounded-full text-lg font-bold shadow-2xl text-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-                    style={{ backgroundColor: COLORS.primary }}
+                    className="px-10 py-4 rounded-full text-lg font-bold shadow-2xl text-white bg-primary transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
                 >
                     Ver Apartamentos
                 </a>

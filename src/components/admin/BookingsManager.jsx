@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { COLORS } from '../../App';
+
 import { useAllBookings } from '../../hooks/useDatabase';
 import { logError, userErrorMessage } from '../../utils/logger';
 import {
@@ -159,7 +159,7 @@ const BookingsManager = () => {
             {/* Header */}
             <div className="flex justify-between items-center">
                 <div>
-                    <h3 className="text-2xl font-serif font-bold" style={{ color: COLORS.text }}>Reservas</h3>
+                    <h3 className="text-2xl font-serif font-bold text-text-primary">Reservas</h3>
                     <p className="text-sm text-gray-500">
                         {pendingCount > 0 ? `${pendingCount} reserva${pendingCount > 1 ? 's' : ''} pendiente${pendingCount > 1 ? 's' : ''} de aprobación` : 'Todas las reservas al día'}
                     </p>
@@ -178,8 +178,7 @@ const BookingsManager = () => {
                     <button
                         key={f.key}
                         onClick={() => setFilter(f.key)}
-                        className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${filter === f.key ? 'text-white shadow-md' : 'bg-white border border-gray-100 text-gray-500 hover:bg-gray-50'}`}
-                        style={filter === f.key ? { backgroundColor: COLORS.primary } : {}}
+                        className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${filter === f.key ? 'text-white shadow-md bg-primary' : 'bg-white border border-gray-100 text-gray-500 hover:bg-gray-50'}`}
                     >
                         {f.label} {f.count > 0 && <span className="ml-1 opacity-70">({f.count})</span>}
                     </button>
@@ -229,7 +228,7 @@ const BookingsManager = () => {
 
                                 <div className="hidden md:block text-right">
                                     {booking.total_price ? (
-                                        <p className="font-bold text-lg" style={{ color: COLORS.text }}>{booking.total_price}€</p>
+                                        <p className="font-bold text-lg text-text-primary">{booking.total_price}€</p>
                                     ) : (
                                         <p className="text-sm text-gray-400 italic">Sin precio</p>
                                     )}
@@ -272,7 +271,7 @@ const BookingsManager = () => {
                                                     {booking.price_breakdown.highNights > 0 && (
                                                         <p className="text-amber-600">{booking.price_breakdown.highNights} noches × {booking.price_breakdown.priceHigh}€ (alta)</p>
                                                     )}
-                                                    <p className="font-bold pt-1 border-t border-gray-200" style={{ color: COLORS.text }}>Total: {booking.total_price}€</p>
+                                                    <p className="font-bold pt-1 border-t border-gray-200 text-text-primary">Total: {booking.total_price}€</p>
                                                 </div>
                                             ) : (
                                                 <p className="text-sm text-gray-400 italic">Precio a confirmar</p>
@@ -353,7 +352,7 @@ const BookingsManager = () => {
                             <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
                                 <XCircle size={20} className="text-red-500" />
                             </div>
-                            <h4 className="font-serif font-bold text-lg" style={{ color: COLORS.text }}>Rechazar reserva</h4>
+                            <h4 className="font-serif font-bold text-lg text-text-primary">Rechazar reserva</h4>
                         </div>
                         <div>
                             <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Motivo (opcional)</label>
@@ -392,7 +391,7 @@ const BookingsManager = () => {
                             <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-3">
                                 <CheckCircle size={28} className="text-green-500" />
                             </div>
-                            <h4 className="font-serif font-bold text-xl" style={{ color: COLORS.text }}>Reserva confirmada</h4>
+                            <h4 className="font-serif font-bold text-xl text-text-primary">Reserva confirmada</h4>
                             <p className="text-sm text-gray-500 mt-1">
                                 Perfil de <strong>{showInviteModal.guest_name}</strong> creado. Enviale la invitacion para que acceda a su area de cliente.
                             </p>

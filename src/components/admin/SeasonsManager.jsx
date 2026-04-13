@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { COLORS } from '../../App';
+
 import { Calendar, Plus, Trash2, Loader2, Save, X, Pencil } from 'lucide-react';
 import { logError, userErrorMessage } from '../../utils/logger';
 
@@ -91,13 +91,12 @@ const SeasonsManager = () => {
         <div className="space-y-8">
             <div className="flex justify-between items-center">
                 <div>
-                    <h3 className="text-2xl font-serif font-bold" style={{ color: COLORS.text }}>Temporadas Altas</h3>
+                    <h3 className="text-2xl font-serif font-bold text-text-primary">Temporadas Altas</h3>
                     <p className="text-sm text-gray-500">Define los rangos de fechas con precios especiales y resáltalos en el calendario.</p>
                 </div>
                 <button
                     onClick={() => showForm ? resetForm() : startNew()}
-                    className="flex items-center gap-2 px-6 py-3 rounded-xl text-white font-bold transition-all hover:scale-105 shadow-md"
-                    style={{ backgroundColor: COLORS.primary }}
+                    className="flex items-center gap-2 px-6 py-3 rounded-xl text-white font-bold transition-all hover:scale-105 shadow-md bg-primary"
                 >
                     {showForm ? <X size={18} /> : <Plus size={18} />}
                     {showForm ? 'Cancelar' : 'Nueva Temporada'}
@@ -141,8 +140,7 @@ const SeasonsManager = () => {
                     <button
                         onClick={handleSave}
                         disabled={saving}
-                        className="w-full py-4 rounded-2xl text-white font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all"
-                        style={{ backgroundColor: COLORS.primary }}
+                        className="w-full py-4 rounded-2xl text-white font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all bg-primary"
                     >
                         {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
                         {saving ? 'Guardando...' : editingId ? 'Actualizar Temporada' : 'Guardar Temporada'}
@@ -160,7 +158,7 @@ const SeasonsManager = () => {
                             key={season.id}
                             className={`bg-white p-6 rounded-2xl border shadow-sm flex items-center gap-6 transition-all ${isEditing ? 'border-rural-300 ring-2 ring-rural-100' : 'border-gray-100'}`}
                         >
-                            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ color: COLORS.accent, backgroundColor: COLORS.primary }}>
+                            <div className="w-12 h-12 rounded-xl flex items-center justify-center text-accent bg-primary">
                                 <Calendar size={24} />
                             </div>
                             <div className="flex-grow">

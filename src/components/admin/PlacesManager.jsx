@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { COLORS } from '../../App';
+
 import { logError, userErrorMessage } from '../../utils/logger';
 import {
     Plus, Save, X, Trash2, Pencil, Loader2, MapPin,
@@ -81,20 +81,20 @@ const PlacesManager = () => {
         <div className="space-y-8">
             <div className="flex justify-between items-center">
                 <div>
-                    <h3 className="text-2xl font-serif font-bold" style={{ color: COLORS.text }}>Directorio Local</h3>
+                    <h3 className="text-2xl font-serif font-bold text-text-primary">Directorio Local</h3>
                     <p className="text-sm text-gray-500">{places.length} sitios en el directorio</p>
                 </div>
-                <button onClick={() => setEditingPlace({ ...EMPTY_PLACE })} className="flex items-center gap-2 px-6 py-3 rounded-xl text-white font-bold transition-all hover:scale-105 shadow-md" style={{ backgroundColor: COLORS.primary }}>
+                <button onClick={() => setEditingPlace({ ...EMPTY_PLACE })} className="flex items-center gap-2 px-6 py-3 rounded-xl text-white font-bold transition-all hover:scale-105 shadow-md bg-primary">
                     <Plus size={18} /> Nuevo Sitio
                 </button>
             </div>
 
             <div className="flex flex-wrap gap-2">
-                <button onClick={() => setFilterType('all')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterType === 'all' ? 'text-white' : 'bg-white border border-gray-100 text-gray-500'}`} style={filterType === 'all' ? { backgroundColor: COLORS.primary } : {}}>
+                <button onClick={() => setFilterType('all')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterType === 'all' ? 'text-white bg-primary' : 'bg-white border border-gray-100 text-gray-500'}`}>
                     Todos ({places.length})
                 </button>
                 {TYPE_OPTIONS.filter(t => typeCounts[t.value]).map(t => (
-                    <button key={t.value} onClick={() => setFilterType(t.value)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterType === t.value ? 'text-white' : 'bg-white border border-gray-100 text-gray-500'}`} style={filterType === t.value ? { backgroundColor: COLORS.primary } : {}}>
+                    <button key={t.value} onClick={() => setFilterType(t.value)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterType === t.value ? 'text-white bg-primary' : 'bg-white border border-gray-100 text-gray-500'}`}>
                         {t.label} ({typeCounts[t.value]})
                     </button>
                 ))}
@@ -152,7 +152,7 @@ const PlacesManager = () => {
                         </div>
                         <div className="p-6 border-t border-gray-100 flex gap-3 justify-end bg-gray-50/50 rounded-b-[2rem]">
                             <button onClick={resetForm} className="px-6 py-3 bg-white border border-gray-200 text-gray-500 font-bold rounded-2xl">Cancelar</button>
-                            <button onClick={handleSave} disabled={saving} className="px-8 py-3 text-white font-bold rounded-2xl shadow-lg flex items-center gap-2" style={{ backgroundColor: COLORS.primary }}>
+                            <button onClick={handleSave} disabled={saving} className="px-8 py-3 text-white font-bold rounded-2xl shadow-lg flex items-center gap-2 bg-primary">
                                 {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
                                 {editingPlace.id ? 'Actualizar' : 'Crear'}
                             </button>
@@ -168,7 +168,7 @@ const PlacesManager = () => {
                     return (
                         <div key={place.id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
                             <div className="w-10 h-10 rounded-xl bg-rural-50 flex items-center justify-center flex-shrink-0">
-                                <Icon size={18} style={{ color: COLORS.primary }} />
+                                <Icon size={18} className="text-primary" />
                             </div>
                             <div className="flex-grow min-w-0">
                                 <div className="flex items-center gap-2 mb-0.5">

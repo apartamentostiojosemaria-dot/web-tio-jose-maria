@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { COLORS } from '../../App';
+
 import { useGuestGuides } from '../../hooks/useDatabase';
 import { Plus, Trash2, Save, Pencil, X, Mountain, ChefHat, Tent, ChevronRight, MapPin, Trees, Landmark, Phone, Store } from 'lucide-react';
 import { logError, userErrorMessage } from '../../utils/logger';
@@ -92,7 +92,7 @@ const GuestGuidesManager = () => {
     return (
         <div className="space-y-8 animate-in fade-in duration-500 pb-20">
             <header>
-                <h2 className="text-2xl font-serif font-bold" style={{ color: COLORS.text }}>Mi Guía Exclusiva</h2>
+                <h2 className="text-2xl font-serif font-bold text-text-primary">Mi Guía Exclusiva</h2>
                 <p className="text-gray-500 text-sm">Gestiona visualmente lo que ven tus clientes (imágenes, vídeos, mapas...).</p>
             </header>
 
@@ -106,10 +106,9 @@ const GuestGuidesManager = () => {
                             key={cat.id}
                             onClick={() => { setActiveTab(cat.id); setIsAdding(false); setEditingId(null); }}
                             className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold whitespace-nowrap transition-all ${isActive
-                                ? 'text-white shadow-lg'
+                                ? 'text-white shadow-lg bg-primary'
                                 : 'bg-white text-gray-500 border border-gray-100 hover:border-rural-200 shadow-sm'
                                 }`}
-                            style={isActive ? { backgroundColor: COLORS.primary } : {}}
                         >
                             <Icon size={18} />
                             {cat.label}
@@ -123,10 +122,7 @@ const GuestGuidesManager = () => {
                 <div className="flex justify-start">
                     <button
                         onClick={() => setIsAdding(true)}
-                        className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all border-2 border-dashed hover:border-solid bg-transparent"
-                        style={{ color: COLORS.primary, borderColor: COLORS.primary + '40' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = COLORS.primary; e.currentTarget.style.backgroundColor = COLORS.bgWarm }}
-                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = COLORS.primary + '40'; e.currentTarget.style.backgroundColor = 'transparent' }}
+                        className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all border-2 border-dashed hover:border-solid bg-transparent text-primary border-primary/40 hover:border-primary hover:bg-surface-warm"
                     >
                         <Plus size={18} /> Añadir a {activeCategory?.label}
                     </button>
@@ -137,7 +133,7 @@ const GuestGuidesManager = () => {
             {isAdding && (
                 <div className="bg-white p-6 rounded-3xl border border-rural-100 shadow-2xl space-y-6 animate-in slide-in-from-top-4 duration-300">
                     <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-rural-50 rounded-full" style={{ color: COLORS.primary, backgroundColor: COLORS.bgWarm }}>
+                        <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full text-primary bg-surface-warm">
                             {editingId ? 'Editando Item' : 'Nuevo Item'}: {activeCategory?.label}
                         </span>
                         <button onClick={resetForm} className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-lg transition-colors"><X size={20} /></button>
@@ -232,8 +228,7 @@ const GuestGuidesManager = () => {
                     <div className="flex justify-end border-t border-gray-50 pt-4">
                         <button
                             onClick={handleSave}
-                            className="flex items-center gap-2 px-10 py-4 rounded-2xl text-white font-bold transition-all hover:scale-105 shadow-lg shadow-rural-200"
-                            style={{ backgroundColor: COLORS.primary }}
+                            className="flex items-center gap-2 px-10 py-4 rounded-2xl text-white font-bold transition-all hover:scale-105 shadow-lg shadow-rural-200 bg-primary"
                         >
                             <Save size={20} /> {editingId ? 'Guardar Cambios' : 'Publicar en Guía'}
                         </button>
@@ -256,7 +251,7 @@ const GuestGuidesManager = () => {
                         )}
                         <div className="p-6 flex-grow relative">
                             <h4 className="font-bold text-rural-900 mb-2 pr-16 flex items-center gap-2">
-                                <ChevronRight size={14} style={{ color: COLORS.accent }} />
+                                <ChevronRight size={14} className="text-accent" />
                                 {guide.title}
                             </h4>
                             <p className="text-sm text-gray-500 leading-relaxed mb-4 line-clamp-3">{guide.description}</p>

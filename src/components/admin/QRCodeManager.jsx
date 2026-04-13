@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { COLORS } from '../../constants/colors';
+
 import { QrCode, Wifi, DoorOpen, Mountain, Calendar, Star, Printer, Link, Download } from 'lucide-react';
 
 const BASE_URL = 'https://tiojosemaria.com';
@@ -207,12 +207,11 @@ const QRCard = ({ title, description, location, url, icon: Icon, color }) => {
                         <Icon size={20} style={{ color }} />
                     </div>
                     <div className="min-w-0">
-                        <h3 className="font-serif font-bold text-base" style={{ color: COLORS.text }}>
+                        <h3 className="font-serif font-bold text-base text-text-primary">
                             {title}
                         </h3>
                         <span
-                            className="text-[10px] uppercase tracking-widest font-semibold"
-                            style={{ color: COLORS.secondary }}
+                            className="text-[10px] uppercase tracking-widest font-semibold text-secondary"
                         >
                             {location}
                         </span>
@@ -253,8 +252,7 @@ const QRCard = ({ title, description, location, url, icon: Icon, color }) => {
 
                 {/* URL preview */}
                 <div
-                    className="text-[11px] text-center px-3 py-2 rounded-lg mb-4 font-mono truncate"
-                    style={{ backgroundColor: COLORS.bgWarm, color: COLORS.secondary }}
+                    className="text-[11px] text-center px-3 py-2 rounded-lg mb-4 font-mono truncate bg-surface-warm text-secondary"
                 >
                     {url}
                 </div>
@@ -286,13 +284,12 @@ const QRCodeManager = () => {
             <header className="mb-8">
                 <div className="flex items-center gap-3 mb-2">
                     <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center"
-                        style={{ backgroundColor: `${COLORS.primary}15` }}
+                        className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary/10"
                     >
-                        <QrCode size={22} style={{ color: COLORS.primary }} />
+                        <QrCode size={22} className="text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-serif font-bold" style={{ color: COLORS.text }}>
+                        <h1 className="text-2xl font-serif font-bold text-text-primary">
                             Codigos QR
                         </h1>
                         <p className="text-sm text-gray-400">
@@ -304,15 +301,11 @@ const QRCodeManager = () => {
 
             {/* Info banner */}
             <div
-                className="mb-8 p-4 rounded-2xl border flex items-start gap-3"
-                style={{
-                    backgroundColor: `${COLORS.primary}08`,
-                    borderColor: `${COLORS.primary}20`,
-                }}
+                className="mb-8 p-4 rounded-2xl border flex items-start gap-3 bg-primary/5 border-primary/15"
             >
-                <QrCode size={20} className="flex-shrink-0 mt-0.5" style={{ color: COLORS.primary }} />
+                <QrCode size={20} className="flex-shrink-0 mt-0.5 text-primary" />
                 <div>
-                    <p className="text-sm font-semibold" style={{ color: COLORS.text }}>
+                    <p className="text-sm font-semibold text-text-primary">
                         Como funciona
                     </p>
                     <p className="text-sm text-gray-500 mt-1 leading-relaxed">
@@ -333,7 +326,7 @@ const QRCodeManager = () => {
                         location={qr.location}
                         url={`${BASE_URL}${qr.path}`}
                         icon={qr.icon}
-                        color={COLORS.primary}
+                        color="#556B2F"
                     />
                 ))}
 
@@ -345,7 +338,7 @@ const QRCodeManager = () => {
                         location={customLocation || 'Personalizado'}
                         url={customUrl.startsWith('http') ? customUrl : `${BASE_URL}${customUrl}`}
                         icon={Link}
-                        color={COLORS.primary}
+                        color="#556B2F"
                     />
                 )}
             </div>
@@ -357,23 +350,18 @@ const QRCodeManager = () => {
                     className="flex items-center gap-3 w-full text-left"
                 >
                     <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center"
-                        style={{ backgroundColor: `${COLORS.primary}15` }}
+                        className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary/10"
                     >
-                        <Link size={20} style={{ color: COLORS.primary }} />
+                        <Link size={20} className="text-primary" />
                     </div>
                     <div className="flex-grow">
-                        <h3 className="font-serif font-bold" style={{ color: COLORS.text }}>
+                        <h3 className="font-serif font-bold text-text-primary">
                             QR Personalizado
                         </h3>
                         <p className="text-sm text-gray-400">Crea un codigo QR con cualquier URL</p>
                     </div>
                     <span
-                        className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg"
-                        style={{
-                            color: COLORS.primary,
-                            backgroundColor: `${COLORS.primary}10`,
-                        }}
+                        className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg text-primary bg-primary/10"
                     >
                         {showCustom ? 'Ocultar' : 'Abrir'}
                     </span>
@@ -390,8 +378,7 @@ const QRCodeManager = () => {
                                 value={customTitle}
                                 onChange={(e) => setCustomTitle(e.target.value)}
                                 placeholder="Ej: Menu del Restaurante"
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 transition-shadow"
-                                style={{ focusRingColor: COLORS.primary }}
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-shadow"
                             />
                         </div>
                         <div>
@@ -452,7 +439,7 @@ const QRCodeManager = () => {
                                 <div class="qr-item">
                                     <div class="brand">Tio Jose Maria</div>
                                     <div class="brand-sub">Apartamentos Rurales</div>
-                                    <div class="qr-placeholder" data-url="${url}" data-color="${COLORS.primary}"></div>
+                                    <div class="qr-placeholder" data-url="${url}" data-color="#556B2F"></div>
                                     <div class="title">${qr.title}</div>
                                     <div class="location">${qr.location}</div>
                                 </div>
@@ -471,7 +458,7 @@ const QRCodeManager = () => {
                                     body { font-family: 'Inter', sans-serif; padding: 20px; }
                                     .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
                                     .qr-item {
-                                        border: 2px solid ${COLORS.primary};
+                                        border: 2px solid #556B2F;
                                         border-radius: 20px;
                                         padding: 28px 20px 20px;
                                         text-align: center;
@@ -482,15 +469,15 @@ const QRCodeManager = () => {
                                         content: '';
                                         position: absolute;
                                         inset: 5px;
-                                        border: 1px solid ${COLORS.primary}33;
+                                        border: 1px solid #556B2F33;
                                         border-radius: 15px;
                                         pointer-events: none;
                                     }
-                                    .brand { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: ${COLORS.primary}; }
+                                    .brand { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: #556B2F; }
                                     .brand-sub { font-size: 8px; text-transform: uppercase; letter-spacing: 3px; color: #8C8468; margin-bottom: 16px; font-weight: 600; }
                                     .qr-placeholder canvas { display: block; margin: 0 auto 16px; }
                                     .title { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: #2C3319; margin-bottom: 4px; }
-                                    .location { font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: ${COLORS.primary}; font-weight: 600; }
+                                    .location { font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: #556B2F; font-weight: 600; }
                                     @media print {
                                         body { padding: 10px; }
                                         .grid { gap: 16px; }
@@ -516,8 +503,7 @@ const QRCodeManager = () => {
                         `);
                         printWindow.document.close();
                     }}
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-white transition-all hover:opacity-90 active:scale-[0.98]"
-                    style={{ backgroundColor: COLORS.primary }}
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-white transition-all hover:opacity-90 active:scale-[0.98] bg-primary"
                 >
                     <Printer size={18} />
                     Imprimir Todos los QR

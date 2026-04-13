@@ -3,12 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { logError } from '../../utils/logger';
 import FadeInUp from '../shared/FadeInUp';
-import { COLORS } from '../../constants/colors';
 import { WP } from '../../constants/urls';
 
 const GuiaSection = () => {
     const [email, setEmail] = useState('');
-    const [status, setStatus] = useState('idle'); // idle | sending | success | error
+    const [status, setStatus] = useState('idle');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -33,16 +32,16 @@ const GuiaSection = () => {
     };
 
     return (
-        <section id="guia" className="py-24 relative overflow-hidden text-white" style={{ backgroundColor: COLORS.primaryDark }}>
+        <section id="guia" className="py-24 relative overflow-hidden text-white bg-primary-dark">
             <div className="absolute inset-0 opacity-20">
-                <img src={`${WP}/slide-1.jpg`} alt="Paisaje del entorno natural de Cazorla" className="w-full h-full object-cover" style={{ filter: 'grayscale(100%)' }} />
+                <img src={`${WP}/slide-1.jpg`} alt="Paisaje del entorno natural de Cazorla" className="w-full h-full object-cover grayscale" />
             </div>
             <div className="max-w-3xl mx-auto px-6 relative z-10 text-center">
                 <FadeInUp>
-                    <p className="text-4xl md:text-5xl mb-6">🗺️</p>
-                    <h2 className="font-serif text-2xl md:text-5xl font-bold mb-5">Descubre el Cazorla <br className="md:hidden" /> que no sale en las guías</h2>
-                    <p className="text-base md:text-lg mb-10 opacity-90 leading-relaxed" style={{ color: COLORS.accent }}>
-                        Hemos preparado una guía exclusiva con nuestras rutas favoritas, los mejores sitios para comer en Hinojares y secretos locales.
+                    <p className="text-4xl md:text-5xl mb-6" aria-hidden="true">&#x1F5FA;&#xFE0F;</p>
+                    <h2 className="font-serif text-2xl md:text-5xl font-bold mb-5">Descubre el Cazorla <br className="md:hidden" /> que no sale en las guias</h2>
+                    <p className="text-base md:text-lg mb-10 opacity-90 leading-relaxed text-accent">
+                        Hemos preparado una guia exclusiva con nuestras rutas favoritas, los mejores sitios para comer en Hinojares y secretos locales.
                     </p>
 
                     <AnimatePresence mode="wait">
@@ -53,10 +52,11 @@ const GuiaSection = () => {
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0 }}
                                 className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 max-w-md mx-auto"
+                                role="alert"
                             >
-                                <p className="text-3xl mb-3">✅</p>
-                                <p className="font-bold text-lg mb-1">¡Perfecto!</p>
-                                <p className="text-sm opacity-80">Pronto recibirás nuestra guía exclusiva en tu correo.</p>
+                                <p className="text-3xl mb-3" aria-hidden="true">&#x2705;</p>
+                                <p className="font-bold text-lg mb-1">Perfecto!</p>
+                                <p className="text-sm opacity-80">Pronto recibiras nuestra guia exclusiva en tu correo.</p>
                             </motion.div>
                         ) : (
                             <motion.form
@@ -67,30 +67,30 @@ const GuiaSection = () => {
                                 className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto"
                                 onSubmit={handleSubmit}
                             >
+                                <label htmlFor="guia-email" className="sr-only">Tu correo electronico</label>
                                 <input
+                                    id="guia-email"
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="Tu correo electrónico"
+                                    placeholder="Tu correo electronico"
                                     required
                                     disabled={status === 'sending'}
-                                    className="px-6 py-4 rounded-full text-gray-900 focus:outline-none focus:ring-2 flex-grow disabled:opacity-50"
-                                    style={{ '--tw-ring-color': COLORS.accent }}
+                                    className="px-6 py-4 rounded-full text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent flex-grow disabled:opacity-50"
                                 />
                                 <button
                                     type="submit"
                                     disabled={status === 'sending'}
-                                    className="px-8 py-4 font-bold rounded-full transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:hover:scale-100"
-                                    style={{ backgroundColor: COLORS.accent, color: COLORS.text }}
+                                    className="px-8 py-4 font-bold rounded-full bg-accent text-text-primary transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:hover:scale-100"
                                 >
-                                    {status === 'sending' ? 'Enviando...' : 'Enviar Guía'}
+                                    {status === 'sending' ? 'Enviando...' : 'Enviar Guia'}
                                 </button>
                             </motion.form>
                         )}
                     </AnimatePresence>
 
                     {status === 'error' && (
-                        <p className="text-xs mt-4 text-red-300">Ha ocurrido un error. Inténtalo de nuevo.</p>
+                        <p className="text-xs mt-4 text-red-300" role="alert">Ha ocurrido un error. Intentalo de nuevo.</p>
                     )}
                     {status !== 'success' && (
                         <p className="text-xs mt-5 opacity-60">Prometemos no enviar spam. Solo cosas bonitas del campo.</p>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { COLORS } from '../../App';
+
 import { regenerateICalExport } from '../../utils/syncService';
 import { logError, userErrorMessage } from '../../utils/logger';
 import {
@@ -127,7 +127,7 @@ const AvailabilityManager = () => {
         <div className="space-y-8">
             <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div>
-                    <h3 className="text-2xl font-serif font-bold" style={{ color: COLORS.text }}>Gestor de Disponibilidad</h3>
+                    <h3 className="text-2xl font-serif font-bold text-text-primary">Gestor de Disponibilidad</h3>
                     <p className="text-sm text-gray-400">Controla manualmente las fechas ocupadas y sincronizadas</p>
                 </div>
                 <div className="flex gap-2 bg-gray-50 p-1.5 rounded-2xl border border-gray-100 overflow-x-auto max-w-full">

@@ -1,5 +1,4 @@
 import { useWebConfig, useApartments, useReviews, useLocalPlaces, useRoutes } from '../hooks/useDatabase';
-import { COLORS } from '../constants/colors';
 import { HomeJsonLd, BreadcrumbJsonLd } from '../components/seo/JsonLd';
 import { HomePageSkeleton } from '../components/shared/Skeleton';
 import Navigation from '../components/home/Navigation';
@@ -24,7 +23,7 @@ const HomePage = () => {
     }
 
     return (
-        <div style={{ backgroundColor: COLORS.bg, fontFamily: '"Lato", sans-serif' }}>
+        <div className="bg-surface" style={{ fontFamily: '"Lato", sans-serif' }}>
             <HomeJsonLd reviews={reviews} apartments={apartments} />
             <BreadcrumbJsonLd items={[
                 { name: 'Inicio', url: 'https://tiojosemaria.com/' }

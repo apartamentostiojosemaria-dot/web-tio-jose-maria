@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { COLORS } from '../../constants/colors';
+// Hex values for Leaflet HTML templates (Tailwind classes don't work in Leaflet's raw HTML)
+const PRIMARY_HEX = '#556B2F';
 
 const DIFFICULTY_COLORS = {
     'Fácil': '#22c55e',
@@ -46,7 +47,7 @@ const InteractiveMap = ({ routes, selectedRoute, onSelectRoute, compact = false 
 
         // Hinojares marker (home)
         const homeIcon = L.divIcon({
-            html: `<div style="background:${COLORS.primary};color:white;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.3);border:3px solid white;">🏠</div>`,
+            html: `<div style="background:${PRIMARY_HEX};color:white;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.3);border:3px solid white;">🏠</div>`,
             className: '',
             iconSize: [36, 36],
             iconAnchor: [18, 18],
@@ -56,7 +57,7 @@ const InteractiveMap = ({ routes, selectedRoute, onSelectRoute, compact = false 
             .addTo(map)
             .bindPopup(`
                 <div style="text-align:center;font-family:serif;">
-                    <strong style="color:${COLORS.primary}">Tío José María</strong><br/>
+                    <strong style="color:${PRIMARY_HEX}">Tío José María</strong><br/>
                     <span style="font-size:12px;color:#666;">Hinojares, Jaén</span>
                 </div>
             `);
@@ -85,11 +86,11 @@ const InteractiveMap = ({ routes, selectedRoute, onSelectRoute, compact = false 
 
             const coords = route.coordinates.map(c => [c.lat, c.lng]);
             const isSelected = selectedRoute?.id === route.id;
-            const color = DIFFICULTY_COLORS[route.difficulty] || COLORS.primary;
+            const color = DIFFICULTY_COLORS[route.difficulty] || PRIMARY_HEX;
 
             // Polyline
             const polyline = L.polyline(coords, {
-                color: isSelected ? COLORS.primary : color,
+                color: isSelected ? PRIMARY_HEX : color,
                 weight: isSelected ? 5 : 3,
                 opacity: selectedRoute && !isSelected ? 0.3 : 0.85,
                 dashArray: isSelected ? null : '8 4',
