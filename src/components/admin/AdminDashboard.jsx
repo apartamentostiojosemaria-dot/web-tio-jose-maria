@@ -16,8 +16,9 @@ import ReviewsManager from './ReviewsManager';
 import EventsManager from './EventsManager';
 import PlacesManager from './PlacesManager';
 import BlogManager from './BlogManager';
+import InstructionsManager from './InstructionsManager';
 import { usePendingBookingsCount } from '../../hooks/useDatabase';
-import { LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar, Star, Eye, Users, BarChart3, QrCode, CalendarCheck, Route, MessageSquare, PartyPopper, MapPin, Menu, X, BookOpen } from 'lucide-react';
+import { LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar, Star, Eye, Users, BarChart3, QrCode, CalendarCheck, Route, MessageSquare, PartyPopper, MapPin, Menu, X, BookOpen, ClipboardList } from 'lucide-react';
 
 const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -85,6 +86,7 @@ const AdminDashboard = () => {
                     <SidebarLink icon={<PartyPopper size={18} />} label="Eventos" active={activeTab === 'eventos'} onClick={() => handleTabChange('eventos')} />
                     <SidebarLink icon={<MapPin size={18} />} label="Directorio Local" active={activeTab === 'directorio'} onClick={() => handleTabChange('directorio')} />
                     <SidebarLink icon={<BookOpen size={18} />} label="Blog" active={activeTab === 'blog'} onClick={() => handleTabChange('blog')} />
+                    <SidebarLink icon={<ClipboardList size={18} />} label="Guia Apartamento" active={activeTab === 'instrucciones'} onClick={() => handleTabChange('instrucciones')} />
                     <SidebarLink icon={<BarChart3 size={18} />} label="Analitica" active={activeTab === 'analitica'} onClick={() => handleTabChange('analitica')} />
                     <SidebarLink icon={<MessageSquare size={18} />} label="Resenas" active={activeTab === 'resenas'} onClick={() => handleTabChange('resenas')} />
                     <SidebarLink icon={<QrCode size={18} />} label="Codigos QR" active={activeTab === 'qrcodes'} onClick={() => handleTabChange('qrcodes')} />
@@ -130,6 +132,7 @@ const AdminDashboard = () => {
                 {activeTab === 'eventos' && <EventsManager />}
                 {activeTab === 'directorio' && <PlacesManager />}
                 {activeTab === 'blog' && <BlogManager />}
+                {activeTab === 'instrucciones' && <InstructionsManager />}
                 {activeTab === 'qrcodes' && <QRCodeManager />}
                 {activeTab === 'vista_huesped' && (
                     <div className="max-w-4xl mx-auto">
