@@ -45,6 +45,8 @@ const IntroSection = ({ config = {}, text }) => {
                         <img
                             src={imageUrl}
                             alt="Interior rústico de los apartamentos Tío José María"
+                            loading="lazy"
+                            decoding="async"
                             className="rounded-2xl shadow-2xl w-full h-[300px] md:h-[500px] object-cover"
                         />
                         <div className="absolute -bottom-6 -right-6 p-6 rounded-xl shadow-lg hidden md:block bg-surface-warm">

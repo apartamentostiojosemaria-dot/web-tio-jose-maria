@@ -91,7 +91,7 @@ const EventsPage = () => {
             <div className="relative h-[340px] md:h-[420px] overflow-hidden">
                 <AnimatePresence mode="wait">
                     <motion.div key={heroImage} initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.8 }} className="absolute inset-0">
-                        <img src={heroImage} alt="Sierra de Cazorla" className="w-full h-full object-cover" />
+                        <img src={heroImage} alt="Sierra de Cazorla" fetchpriority="high" decoding="async" className="w-full h-full object-cover" />
                         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/60" />
                     </motion.div>
                 </AnimatePresence>
@@ -206,7 +206,7 @@ const EventCard = ({ event }) => {
         <motion.article layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.3 }} className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden border border-gray-100">
             <div className="relative h-48 overflow-hidden">
                 {event.image_url ? (
-                    <img src={event.image_url} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                    <img src={event.image_url} alt={event.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center bg-surface-warm">
                         <CategoryIcon size={40} className="text-secondary opacity-40" />

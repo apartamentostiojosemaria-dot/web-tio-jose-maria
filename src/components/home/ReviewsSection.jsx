@@ -65,7 +65,7 @@ const ReviewsSection = ({ reviews }) => {
                         <h2 className="font-serif text-3xl md:text-5xl font-bold mt-3 text-text-primary">Lo que dicen nuestros huéspedes</h2>
                     </div>
                     <a href="https://www.booking.com/hotel/es/casa-rural-tio-jose-maria.es.html#tab-reviews" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 bg-white px-4 md:px-6 py-3 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/b/be/Booking.com_logo.svg" alt="Booking.com" className="h-4 md:h-5" />
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/b/be/Booking.com_logo.svg" alt="Booking.com" loading="lazy" decoding="async" className="h-4 md:h-5" />
                         <div className="text-right">
                             <p className="text-xs md:text-sm font-bold leading-none">9.5/10</p>
                             <p className="text-[9px] md:text-[10px] opacity-60">Puntuación Excepcional</p>

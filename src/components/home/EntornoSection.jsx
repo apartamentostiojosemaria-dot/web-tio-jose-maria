@@ -103,7 +103,7 @@ const EntornoSection = ({ places, routes }) => {
             <FadeInUp>
                 <div id="como-llegar" className="rounded-3xl p-10 md:p-16 text-white relative overflow-hidden shadow-2xl bg-primary">
                     <div className="absolute inset-0 opacity-10">
-                        <img src={`${WP}/slide3.jpg`} alt="Paisaje" className="w-full h-full object-cover" />
+                        <img src={`${WP}/slide3.jpg`} alt="Paisaje" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                     </div>
                     <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
                         <div className="text-center lg:text-left">
