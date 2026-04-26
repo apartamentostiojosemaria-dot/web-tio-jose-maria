@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "node scripts/generate-sitemap.js && vite build",
     "sitemap": "node scripts/generate-sitemap.js",
+    "pwa-icons": "node scripts/generate-pwa-icons.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
@@ -21,6 +22,7 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "shadcn": "^4.2.0",
+    "sharp": "^0.34.5",
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.2.1",
     "vite": "^7.3.1"
