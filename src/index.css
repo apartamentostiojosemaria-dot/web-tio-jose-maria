@@ -101,3 +101,16 @@ body {
 .skip-link:focus {
   top: 0;
 }
+
+/* Hero fade-in (reemplaza framer-motion en LCP) */
+@keyframes heroFadeIn {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hero-fade-in {
+  animation: heroFadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: opacity, transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-fade-in { animation: none; }
+}

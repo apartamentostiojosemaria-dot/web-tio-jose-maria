@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import WeatherWidget from '../WeatherWidget';
 import { WP, WHATSAPP_URL } from '../../constants/urls';
 
@@ -26,12 +25,7 @@ const HeroSection = ({ title, subtitle, config = {} }) => {
                 <div className="absolute inset-0 bg-gradient-to-b from-black/25 to-black/55" />
             </div>
 
-            <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1.2, ease: 'easeOut' }}
-                className="relative z-10 text-center px-6 max-w-5xl pt-20"
-            >
+            <div className="relative z-10 text-center px-6 max-w-5xl pt-20 hero-fade-in">
                 <div className="flex justify-center mb-6">
                     <WeatherWidget isMinimal />
                 </div>
@@ -61,7 +55,7 @@ const HeroSection = ({ title, subtitle, config = {} }) => {
                         {ctaSecondary}
                     </a>
                 </div>
-            </motion.div>
+            </div>
         </header>
     );
 };
