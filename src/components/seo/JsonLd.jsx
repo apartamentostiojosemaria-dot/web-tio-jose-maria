@@ -33,7 +33,7 @@ export const HomeJsonLd = ({ reviews, apartments }) => {
         '@context': 'https://schema.org',
         '@type': 'LodgingBusiness',
         name: 'Apartamentos Rurales Tío José María',
-        description: 'Alojamiento rural con encanto en Hinojares, Sierra de Cazorla. Casona del S.XIX restaurada con 4 apartamentos exclusivos.',
+        description: 'Alojamiento rural con encanto en Hinojares, Sierra de Cazorla. Casa del siglo XVII restaurada con 4 apartamentos exclusivos.',
         url: 'https://tiojosemaria.com',
         telephone: '+34676344675',
         email: 'info@tiojosemaria.com',

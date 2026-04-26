@@ -27,7 +27,7 @@ const HomePage = () => {
         <div className="bg-surface" style={{ fontFamily: '"Lato", sans-serif' }}>
             <PageHead
                 title="Apartamentos Rurales en Hinojares, Cazorla"
-                description="Reserva en Apartamentos Rurales Tío José María. Alojamiento con encanto en Hinojares, Sierra de Cazorla. Historia, confort y chimenea en una casona del S.XIX."
+                description="Reserva en Apartamentos Rurales Tío José María. Alojamiento con encanto en Hinojares, Sierra de Cazorla. Historia, confort y chimenea en una casa del siglo XVII."
                 path="/"
             />
             <HomeJsonLd reviews={reviews} apartments={apartments} />
