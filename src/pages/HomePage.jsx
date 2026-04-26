@@ -38,6 +38,7 @@ const HomePage = () => {
             <HeroSection
                 title={config.hero_title || 'Apartamentos Rurales Tío José María'}
                 subtitle={config.hero_subtitle || 'Tu refugio histórico en Cazorla'}
+                config={config}
             />
             <IntroSection config={config} />
             <ReviewsSection reviews={reviews} />
