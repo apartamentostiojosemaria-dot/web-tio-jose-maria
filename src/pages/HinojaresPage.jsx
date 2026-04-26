@@ -22,9 +22,9 @@ const TYPE_CONFIG = {
 
 const HISTORY_SECTIONS = [
     { title: 'Origenes ancestrales', content: 'Hinojares tiene raices que se remontan al menos al siglo IV a.C. El yacimiento iberico de Castellones de Ceal, descubierto en 1955 a 5 km del pueblo, revela un oppidum fortificado con ~90 tumbas y ceramica griega, punto clave en la ruta entre el Guadalquivir y el Sureste peninsular.' },
-    { title: 'De Traxinum a Hins-Nojar', content: 'Los romanos lo llamaron Traxinum. En epoca arabe paso a ser Hins-Nojar, por la abundancia de hinojos silvestres en la zona. Durante siglos fue una aldea dependiente de Pozo Alcon.' },
+    { title: 'De Traxinum a Hins-Nojar', content: 'Los romanos lo llamaron Traxinum. En época árabe pasó a ser Hins-Nojar, por la abundancia de hinojos silvestres en la zona. Durante siglos fue una aldea dependiente de Pozo Alcón.' },
     { title: 'Marquesado de Hinojares (1690)', content: 'El rey Carlos II creo el Marquesado de Hinojares, otorgando al pueblo estatus de villa. Hoy conserva tres barrios historicos: el Barrio Bajo (el mas antiguo, con la Iglesia de San Marcos del s.XVII), el Barrio Alto (junto al rio, con huertos familiares) y Cuevas Nuevas (viviendas trogloditas del s.XX que mantienen 18-22 grados).' },
-    { title: 'El pueblo mas pequeno de Jaen', content: 'Con ~343 habitantes, Hinojares es el municipio mas pequeno de la provincia. Su encanto reside en esa escala humana: calles blancas de greda, silencio, cielos estrellados y una comunidad que recibe al viajero como parte de la familia.' }
+    { title: 'El pueblo más pequeño de Jaén', content: 'Con ~343 habitantes, Hinojares es el municipio más pequeño de la provincia. Su encanto reside en esa escala humana: calles blancas de greda, silencio, cielos estrellados y una comunidad que recibe al viajero como parte de la familia.' }
 ];
 
 const TRADITIONS = [
@@ -249,7 +249,7 @@ export default function HinojaresPage() {
                     <FadeInUp>
                         <h2 className="font-serif text-3xl md:text-4xl font-bold mb-6 text-text-primary">Vive Hinojares desde dentro</h2>
                         <p className="text-gray-500 mb-10 max-w-xl mx-auto">
-                            Alojate en Tio Jose Maria y descubre por que este rincon de la Sierra de Cazorla enamora a quien lo visita.
+                            Alójate en Tío José María y descubre por qué este rincón de la Sierra de Cazorla enamora a quien lo visita.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
                             <Link to="/" className="px-8 py-4 rounded-full text-white font-bold bg-primary shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
@@ -264,7 +264,7 @@ export default function HinojaresPage() {
             </section>
 
             <footer className="py-8 px-6 border-t border-gray-100 text-center">
-                <Link to="/" className="text-sm font-medium text-primary">&larr; Volver a Apartamentos Tio Jose Maria</Link>
+                <Link to="/" className="text-sm font-medium text-primary">&larr; Volver a Apartamentos Tío José María</Link>
             </footer>
         </div>
     );

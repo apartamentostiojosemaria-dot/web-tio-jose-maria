@@ -128,7 +128,7 @@ const MapPage = () => {
                                                         )}
                                                         {route.map_url && (
                                                             <a href={route.map_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-bold bg-primary transition-all hover:shadow-lg hover:-translate-y-0.5">
-                                                                <Navigation size={16} /> Como llegar
+                                                                <Navigation size={16} /> Cómo llegar
                                                             </a>
                                                         )}
                                                     </motion.div>

@@ -85,6 +85,21 @@ export default defineConfig({
         }),
     ],
     root: '.',
+    build: {
+        chunkSizeWarningLimit: 700,
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+                    'motion': ['framer-motion'],
+                    'supabase': ['@supabase/supabase-js'],
+                    'leaflet': ['leaflet', 'react-leaflet'],
+                    'charts': ['recharts'],
+                    'seo': ['react-helmet-async'],
+                },
+            },
+        },
+    },
     server: {
         port: 3000,
         open: '/index.html'

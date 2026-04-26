@@ -17,12 +17,12 @@ const BlogPostJsonLd = ({ post }) => {
         dateModified: post.updated_at,
         author: {
             '@type': 'Organization',
-            name: 'Apartamentos Rurales Tio Jose Maria',
+            name: 'Apartamentos Rurales Tío José María',
             url: 'https://tiojosemaria.com'
         },
         publisher: {
             '@type': 'Organization',
-            name: 'Apartamentos Rurales Tio Jose Maria',
+            name: 'Apartamentos Rurales Tío José María',
             url: 'https://tiojosemaria.com',
             logo: { '@type': 'ImageObject', url: 'https://tiojosemaria.com/assets/logo.jpg' }
         },
@@ -41,8 +41,8 @@ const BlogPostJsonLd = ({ post }) => {
 };
 
 const CATEGORY_LABELS = {
-    guia: 'Guia', pueblo: 'Pueblo', naturaleza: 'Naturaleza',
-    gastronomia: 'Gastronomia', practico: 'Practico',
+    guia: 'Guía', pueblo: 'Pueblo', naturaleza: 'Naturaleza',
+    gastronomia: 'Gastronomía', practico: 'Práctico',
 };
 
 const BlogPostDetail = () => {
@@ -53,7 +53,7 @@ const BlogPostDetail = () => {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-surface">
-                <div className="animate-pulse text-rural-700 font-serif italic">Cargando articulo...</div>
+                <div className="animate-pulse text-rural-700 font-serif italic">Cargando artículo...</div>
             </div>
         );
     }
@@ -61,8 +61,8 @@ const BlogPostDetail = () => {
     if (!post) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-surface px-6">
-                <h1 className="font-serif text-3xl font-bold text-text-primary mb-4">Articulo no encontrado</h1>
-                <p className="text-secondary mb-8">Este articulo no existe o no esta publicado.</p>
+                <h1 className="font-serif text-3xl font-bold text-text-primary mb-4">Artículo no encontrado</h1>
+                <p className="text-secondary mb-8">Este artículo no existe o no está publicado.</p>
                 <Link to="/blog" className="px-6 py-3 bg-primary text-white rounded-full font-bold">Volver al blog</Link>
             </div>
         );
@@ -95,7 +95,7 @@ const BlogPostDetail = () => {
                         <ChevronLeft size={16} /> Blog
                     </Link>
                     <Link to="/" className="text-xs font-medium text-secondary hover:text-primary transition-colors">
-                        Tio Jose Maria
+                        Tío José María
                     </Link>
                 </div>
             </nav>
@@ -179,9 +179,9 @@ const BlogPostDetail = () => {
                 {/* CTA */}
                 <FadeInUp>
                     <div className="rounded-2xl p-8 mt-8 text-center bg-primary text-white">
-                        <h2 className="font-serif text-2xl md:text-3xl font-bold mb-3">Quieres vivir todo esto?</h2>
+                        <h2 className="font-serif text-2xl md:text-3xl font-bold mb-3">¿Quieres vivir todo esto?</h2>
                         <p className="text-white/80 mb-6 max-w-lg mx-auto">
-                            Alojate en Apartamentos Tio Jose Maria, en el corazon de Hinojares, y descubre la Sierra de Cazorla desde dentro.
+                            Alójate en Apartamentos Tío José María, en el corazón de Hinojares, y descubre la Sierra de Cazorla desde dentro.
                         </p>
                         <Link to="/" className="inline-flex items-center gap-2 px-8 py-3 bg-white text-primary rounded-full font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
                             Ver apartamentos <ArrowRight size={16} />

@@ -227,7 +227,7 @@ const ApartmentDetail = () => {
                                     exit={{ opacity: 0 }}
                                     transition={{ duration: 0.5 }}
                                     src={images[activeImg]}
-                                    alt={`${apartment.name} - Apartamento Rural Tio Jose Maria`}
+                                    alt={`${apartment.name} - Apartamento Rural Tío José María`}
                                     className="w-full h-full object-cover"
                                 />
                             </AnimatePresence>

@@ -118,7 +118,7 @@ const EntornoSection = ({ places, routes }) => {
                                 className="inline-flex items-center gap-2 px-10 py-4 bg-white rounded-full text-lg font-bold text-primary transition-all duration-300 hover:shadow-xl hover:-translate-y-1 shadow-md"
                             >
                                 <MapPin size={20} />
-                                Como llegar al alojamiento
+                                Cómo llegar al alojamiento
                             </a>
                         </div>
                         <div className="rounded-2xl overflow-hidden shadow-lg w-full h-64 md:h-80">

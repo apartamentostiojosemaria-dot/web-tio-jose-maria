@@ -147,7 +147,7 @@ export const ClientAreaContent = ({ docs = [], userEmail = '', profile = null })
 
     const TABS = [
         { key: 'estancia', label: 'Mi Estancia', icon: Home },
-        { key: 'guia', label: 'Guia', icon: Map },
+        { key: 'guia', label: 'Guía', icon: Map },
         { key: 'zona', label: 'La Zona', icon: MapPin },
         { key: 'docs', label: 'Documentos', icon: FileText },
     ];
@@ -280,7 +280,7 @@ export const ClientAreaContent = ({ docs = [], userEmail = '', profile = null })
                             {restaurants.length > 0 && (
                                 <section>
                                     <h3 className="text-lg font-serif font-bold mb-3 flex items-center gap-2 text-text-primary">
-                                        <Utensils size={18} className="text-primary" /> Donde comer
+                                        <Utensils size={18} className="text-primary" /> Dónde comer
                                     </h3>
                                     <div className="grid sm:grid-cols-2 gap-3">
                                         {restaurants.map(r => (
@@ -309,7 +309,7 @@ export const ClientAreaContent = ({ docs = [], userEmail = '', profile = null })
                             <section className="grid md:grid-cols-2 gap-4">
                                 <div className="bg-white p-5 rounded-xl border border-gray-100 space-y-3">
                                     <h4 className="font-bold text-sm text-text-primary flex items-center gap-2"><MapPin size={14} className="text-primary" /> Ubicacion</h4>
-                                    <p className="text-sm text-gray-600">Calle Baja 1, 23486 Hinojares, Jaen</p>
+                                    <p className="text-sm text-gray-600">Calle Baja 1, 23486 Hinojares, Jaén</p>
                                     <a href="https://maps.app.goo.gl/EPzh8j2HivLfqUeN8" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-bold text-primary">Google Maps <ExternalLink size={10} /></a>
                                 </div>
                                 <div className="bg-primary-dark rounded-xl p-5 text-white">
@@ -466,7 +466,7 @@ const GuestGuide = () => {
         emergencias: { icon: ShieldAlert, title: 'Emergencias' }
     };
 
-    if (loading) return <div className="p-8 text-center text-gray-400 font-serif italic">Cargando guia...</div>;
+    if (loading) return <div className="p-8 text-center text-gray-400 font-serif italic">Cargando guía...</div>;
 
     const filteredGuides = guides.filter(g => g.category === activeTab);
 
@@ -512,7 +512,7 @@ const GuestGuide = () => {
                                 <p className="text-xs text-gray-500 leading-relaxed mb-4">{item.description}</p>
                                 {item.location_url && (
                                     <a href={item.location_url} target="_blank" rel="noopener noreferrer" className="mt-auto flex items-center justify-center gap-2 w-full py-2.5 rounded-xl font-bold text-xs bg-gray-50 text-gray-500 hover:bg-rural-50 hover:text-rural-600 transition-all">
-                                        <MapPin size={14} /> Como llegar
+                                        <MapPin size={14} /> Cómo llegar
                                     </a>
                                 )}
                             </div>

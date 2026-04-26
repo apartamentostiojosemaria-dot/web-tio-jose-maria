@@ -187,7 +187,7 @@ const EventsPage = () => {
             <div className="max-w-7xl mx-auto px-4 pb-12">
                 <div className="rounded-2xl p-6 md:p-8 text-center bg-surface-warm">
                     <p className="font-serif text-lg md:text-xl mb-2 text-text-primary">Quieres vivir alguna de estas experiencias?</p>
-                    <p className="text-sm mb-5 text-secondary">Reserva tu alojamiento en Apartamentos Tio Jose Maria y te ayudamos a planificar tu visita.</p>
+                    <p className="text-sm mb-5 text-secondary">Reserva tu alojamiento en Apartamentos Tío José María y te ayudamos a planificar tu visita.</p>
                     <Link to="/" className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold text-white bg-primary shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5">
                         Ver Apartamentos
                     </Link>

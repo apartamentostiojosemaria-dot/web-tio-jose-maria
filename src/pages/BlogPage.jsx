@@ -9,7 +9,7 @@ import FadeInUp from '../components/shared/FadeInUp';
 
 const CATEGORIES = [
     { key: 'todas', label: 'Todas' },
-    { key: 'guia', label: 'Guias' },
+    { key: 'guia', label: 'Guías' },
     { key: 'pueblo', label: 'Pueblo' },
     { key: 'naturaleza', label: 'Naturaleza' },
     { key: 'gastronomia', label: 'Gastronomia' },
@@ -151,7 +151,7 @@ const BlogPage = () => {
             <div className="max-w-5xl mx-auto px-6 pb-12">
                 <div className="rounded-2xl p-8 text-center bg-surface-warm">
                     <p className="font-serif text-lg md:text-xl mb-2 text-text-primary">Quieres vivir todo esto en primera persona?</p>
-                    <p className="text-sm mb-5 text-secondary">Alojate en Apartamentos Tio Jose Maria y te ayudamos a planificar tu escapada perfecta.</p>
+                    <p className="text-sm mb-5 text-secondary">Alójate en Apartamentos Tío José María y te ayudamos a planificar tu escapada perfecta.</p>
                     <Link to="/" className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold text-white bg-primary shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5">
                         Ver Apartamentos
                     </Link>

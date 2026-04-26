@@ -67,7 +67,7 @@ const GuiaSection = () => {
                                 className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto"
                                 onSubmit={handleSubmit}
                             >
-                                <label htmlFor="guia-email" className="sr-only">Tu correo electronico</label>
+                                <label htmlFor="guia-email" className="sr-only">Tu correo electrónico</label>
                                 <input
                                     id="guia-email"
                                     type="email"
@@ -83,7 +83,7 @@ const GuiaSection = () => {
                                     disabled={status === 'sending'}
                                     className="px-8 py-4 font-bold rounded-full bg-accent text-text-primary transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:hover:scale-100"
                                 >
-                                    {status === 'sending' ? 'Enviando...' : 'Enviar Guia'}
+                                    {status === 'sending' ? 'Enviando...' : 'Enviar Guía'}
                                 </button>
                             </motion.form>
                         )}

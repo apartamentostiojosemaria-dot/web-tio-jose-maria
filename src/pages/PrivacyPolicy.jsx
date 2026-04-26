@@ -5,8 +5,8 @@ import PageHead from '../components/seo/PageHead';
 const PrivacyPolicy = () => (
     <div className="min-h-screen bg-white">
         <PageHead
-            title="Politica de Privacidad"
-            description="Politica de privacidad de Apartamentos Rurales Tio Jose Maria. Informacion sobre el tratamiento de datos personales, cookies y derechos del usuario."
+            title="Política de Privacidad"
+            description="Política de privacidad de Apartamentos Rurales Tío José María. Información sobre el tratamiento de datos personales, cookies y derechos del usuario."
             path="/privacidad"
             noindex={true}
         />
