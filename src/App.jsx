@@ -19,6 +19,7 @@ const ClientLogin = lazy(() => import('./components/client/ClientLogin'));
 const ClientArea = lazy(() => import('./components/client/ClientArea'));
 const BlogPage = lazy(() => import('./pages/BlogPage'));
 const BlogPostDetail = lazy(() => import('./pages/BlogPostDetail'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 const PageLoader = () => (
     <div className="min-h-screen flex items-center justify-center bg-rural-50">
@@ -88,7 +89,7 @@ export default function App() {
                             path="/clientes"
                             element={!session ? <ClientLogin /> : <ClientArea />}
                         />
-                        <Route path="*" element={<Navigate to="/" replace />} />
+                        <Route path="*" element={<NotFound />} />
                     </Routes>
                 </div>
             </Suspense>
