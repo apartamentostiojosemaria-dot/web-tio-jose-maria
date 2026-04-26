@@ -21,13 +21,14 @@ const JsonLd = ({ data }) => {
 };
 
 export const HomeJsonLd = ({ reviews, apartments }) => {
+    // Las reviews usan 'rating' (1-5). Si por alguna razon falta, usa 5.
     const avgRating = reviews.length > 0
-        ? reviews.reduce((sum, r) => sum + (parseFloat(r.score) || 10), 0) / reviews.length
-        : 9.5;
+        ? reviews.reduce((sum, r) => sum + (parseFloat(r.rating) || 5), 0) / reviews.length
+        : 4.75;
 
     const priceRange = apartments.length > 0
-        ? `${Math.min(...apartments.map(a => a.price_low || 60))}€ - ${Math.max(...apartments.map(a => a.price_high || 90))}€`
-        : '60€ - 90€';
+        ? `${Math.min(...apartments.map(a => Number(a.price_low) || 60))}€ - ${Math.max(...apartments.map(a => Number(a.price_high) || 110))}€`
+        : '60€ - 110€';
 
     const businessData = {
         '@context': 'https://schema.org',
@@ -58,8 +59,9 @@ export const HomeJsonLd = ({ reviews, apartments }) => {
         },
         aggregateRating: {
             '@type': 'AggregateRating',
-            ratingValue: (avgRating / 2).toFixed(1),
+            ratingValue: avgRating.toFixed(1),
             bestRating: '5',
+            worstRating: '1',
             reviewCount: String(Math.max(reviews.length, 1))
         },
         amenityFeature: [
@@ -75,8 +77,33 @@ export const HomeJsonLd = ({ reviews, apartments }) => {
     return <JsonLd data={businessData} />;
 };
 
+// Mapeo de codigos internos de amenities a nombres humanos para Schema.org
+const AMENITY_LABELS = {
+    wifi: 'WiFi gratis',
+    tv: 'TV de pantalla plana',
+    heating: 'Calefacción',
+    ac: 'Aire acondicionado',
+    fireplace: 'Chimenea de leña',
+    kitchen: 'Vitrocerámica y menaje',
+    fridge: 'Frigorífico',
+    microwave: 'Microondas y tostadora',
+    bath: 'Baño con gel y toallas',
+    hairdryer: 'Secador de pelo',
+    no_pets: 'No se admiten mascotas',
+};
+
+// Deduce numero de dormitorios a partir de bed_config o capacidad
+const inferBedrooms = (apt) => {
+    const cfg = (apt.bed_config || '').toLowerCase();
+    if (cfg.includes('individual')) return 2; // matrimonio + 2 individuales = 2 dormitorios
+    if (cfg.includes('matrimonio')) return 1;
+    return apt.capacity_people && apt.capacity_people > 2 ? 2 : 1;
+};
+
 export const ApartmentJsonLd = ({ apartment, reviews }) => {
     if (!apartment) return null;
+
+    const numberOfBedrooms = inferBedrooms(apartment);
 
     const data = {
         '@context': 'https://schema.org',
@@ -85,19 +112,16 @@ export const ApartmentJsonLd = ({ apartment, reviews }) => {
         description: apartment.description || `Apartamento rural ${apartment.name} en Hinojares, Sierra de Cazorla`,
         url: `https://tiojosemaria.com/apartamento/${apartment.slug}`,
         image: apartment.images?.[0] || 'https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/general/slide3.jpg',
-        numberOfRooms: 1,
+        numberOfBedrooms,
         numberOfBathroomsTotal: apartment.bathrooms || 1,
         occupancy: {
             '@type': 'QuantitativeValue',
-            value: apartment.capacity_people || 2
+            value: apartment.capacity_people || 2,
+            unitCode: 'C62'
         },
-        floorSize: {
-            '@type': 'QuantitativeValue',
-            unitCode: 'MTK'
-        },
-        amenityFeature: (apartment.amenities || []).map(a => ({
+        amenityFeature: (apartment.amenities || []).map(code => ({
             '@type': 'LocationFeatureSpecification',
-            name: a,
+            name: AMENITY_LABELS[code] || code,
             value: true
         })),
         containedInPlace: {
@@ -123,7 +147,7 @@ export const ApartmentJsonLd = ({ apartment, reviews }) => {
             },
             {
                 '@type': 'Offer',
-                name: 'Temporada Alta',
+                name: 'Temporada Alta (Navidad, Semana Santa y puentes)',
                 price: String(apartment.price_high || 70),
                 priceCurrency: 'EUR',
                 unitCode: 'DAY',
