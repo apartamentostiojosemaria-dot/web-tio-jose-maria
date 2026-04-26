@@ -32,7 +32,7 @@ const MapPage = () => {
         <div className="min-h-screen bg-rural-50">
             <PageHead
                 title="Rutas y Excursiones cerca de Hinojares"
-                description="Paseos, cascadas, rios turquesa y pueblos con encanto. Rutas de senderismo desde la puerta de casa hasta las joyas de la Sierra de Cazorla."
+                description="Paseos, cascadas, ríos turquesa y pueblos con encanto. Rutas de senderismo desde la puerta de casa hasta las joyas de la Sierra de Cazorla."
                 path="/rutas"
             />
             <BreadcrumbJsonLd items={[
@@ -44,9 +44,9 @@ const MapPage = () => {
                     <Link to="/" className="inline-flex items-center gap-1 text-sm font-medium mb-6 text-primary hover:opacity-70 transition-opacity">
                         <ChevronLeft size={18} /> Volver al inicio
                     </Link>
-                    <h1 className="font-serif text-3xl md:text-4xl font-bold mb-3 text-text-primary">Que ver y hacer cerca de Hinojares</h1>
+                    <h1 className="font-serif text-3xl md:text-4xl font-bold mb-3 text-text-primary">Qué ver y hacer cerca de Hinojares</h1>
                     <p className="text-base md:text-lg max-w-2xl text-secondary">
-                        Paseos, cascadas, rios turquesa y pueblos con encanto. Desde rutas que salen de la puerta de casa hasta las joyas de la Sierra de Cazorla.
+                        Paseos, cascadas, ríos turquesa y pueblos con encanto. Desde rutas que salen de la puerta de casa hasta las joyas de la Sierra de Cazorla.
                     </p>
                     <button
                         onClick={() => setShowMap(!showMap)}

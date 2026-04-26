@@ -56,9 +56,10 @@ export default function HinojaresPage() {
     return (
         <div className="min-h-screen bg-white">
             <PageHead
-                title="Descubre Hinojares — Historia, Tradiciones y Gastronomia"
-                description="Hinojares, el pueblo mas pequeno de Jaen con 2.500 anos de historia. Descubre sus tradiciones, gastronomia tipica y directorio de servicios en la Sierra de Cazorla."
+                title="Descubre Hinojares — Historia, Tradiciones y Gastronomía"
+                description="Hinojares, el pueblo más pequeño de Jaén con 2.500 años de historia. Descubre sus tradiciones, gastronomía típica y directorio de servicios en la Sierra de Cazorla."
                 path="/hinojares"
+                image={`${WP}/hinojaresPueblo.jpg`}
             />
             <BreadcrumbJsonLd items={[
                 { name: 'Inicio', url: 'https://tiojosemaria.com/' },
@@ -76,7 +77,7 @@ export default function HinojaresPage() {
                     </Link>
                     <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4">Descubre Hinojares</h1>
                     <p className="text-white/80 text-lg md:text-xl max-w-2xl leading-relaxed">
-                        El pueblo mas pequeno de Jaen, con 2.500 anos de historia entre gredas blancas y la Sierra de Cazorla
+                        El pueblo más pequeño de Jaén, con 2.500 años de historia entre gredas blancas y la Sierra de Cazorla
                     </p>
                 </div>
             </section>
@@ -86,7 +87,7 @@ export default function HinojaresPage() {
                 <div className="max-w-7xl mx-auto px-6 flex flex-wrap gap-8 justify-center text-center">
                     {[
                         { value: '~343', label: 'Habitantes' },
-                        { value: 's.IV a.C.', label: 'Origenes' },
+                        { value: 's.IV a.C.', label: 'Orígenes' },
                         { value: '780m', label: 'Altitud' },
                         { value: '3', label: 'Barrios historicos' },
                     ].map((stat, i) => (

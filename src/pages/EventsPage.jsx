@@ -13,14 +13,14 @@ const SEASONS = [
     { key: 'todas', label: 'Todas', icon: Calendar },
     { key: 'primavera', label: 'Primavera', icon: Leaf },
     { key: 'verano', label: 'Verano', icon: Sun },
-    { key: 'otoño', label: 'Otono', icon: CloudRain },
+    { key: 'otoño', label: 'Otoño', icon: CloudRain },
     { key: 'invierno', label: 'Invierno', icon: Snowflake },
 ];
 
 const CATEGORIES = [
     { key: 'todas', label: 'Todas', icon: Filter },
     { key: 'naturaleza', label: 'Naturaleza', icon: TreePine },
-    { key: 'gastronomía', label: 'Gastronomia', icon: UtensilsCrossed },
+    { key: 'gastronomía', label: 'Gastronomía', icon: UtensilsCrossed },
     { key: 'cultura', label: 'Cultura', icon: Palette },
     { key: 'fiestas', label: 'Fiestas', icon: PartyPopper },
     { key: 'deportes', label: 'Deportes', icon: Mountain },
@@ -43,8 +43,8 @@ const SEASON_HERO = {
 };
 
 const SEASON_LABELS = {
-    primavera: 'Primavera', verano: 'Verano', otoño: 'Otono',
-    invierno: 'Invierno', todo_el_año: 'Todo el Ano',
+    primavera: 'Primavera', verano: 'Verano', otoño: 'Otoño',
+    invierno: 'Invierno', todo_el_año: 'Todo el Año',
 };
 
 function formatDate(dateStr) {
@@ -80,7 +80,7 @@ const EventsPage = () => {
         <div className="min-h-screen bg-surface">
             <PageHead
                 title="Eventos y Experiencias en la Sierra de Cazorla"
-                description="Descubre la magia de la Sierra de Cazorla a lo largo de las estaciones. Naturaleza, cultura, gastronomia y tradicion en Hinojares y alrededores."
+                description="Descubre la magia de la Sierra de Cazorla a lo largo de las estaciones. Naturaleza, cultura, gastronomía y tradición en Hinojares y alrededores."
                 path="/eventos"
             />
             <BreadcrumbJsonLd items={[

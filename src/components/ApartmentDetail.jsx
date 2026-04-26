@@ -15,6 +15,15 @@ import {
     ChevronRight, AlertCircle
 } from 'lucide-react';
 
+function truncateForMeta(text, max = 155) {
+    if (!text) return '';
+    const clean = text.replace(/\s+/g, ' ').trim();
+    if (clean.length <= max) return clean;
+    const cut = clean.slice(0, max);
+    const lastSpace = cut.lastIndexOf(' ');
+    return (lastSpace > 100 ? cut.slice(0, lastSpace) : cut).replace(/[,;:.\-]+$/, '') + '…';
+}
+
 const AMENITIES_ICONS = {
     tv: { label: 'TV Pantalla Plana', icon: Tv },
     wifi: { label: 'WiFi Gratis', icon: Wifi },
@@ -187,7 +196,7 @@ const ApartmentDetail = () => {
             ]} />
             <PageHead
                 title={`${apartment.name} — Apartamento Rural en Hinojares`}
-                description={apartment.description?.substring(0, 155) || `Apartamento ${apartment.name} en Casa Rural Tio Jose Maria, Hinojares. Reserva directa sin comisiones.`}
+                description={apartment.seo_description || truncateForMeta(apartment.description) || `Apartamento ${apartment.name} en Casa Rural Tío José María, Hinojares. Reserva directa sin comisiones.`}
                 path={`/apartamento/${apartment.slug}`}
                 image={apartment.images?.[0]}
             />

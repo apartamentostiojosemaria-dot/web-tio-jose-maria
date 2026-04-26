@@ -32,8 +32,8 @@ const BlogPage = () => {
     return (
         <div className="min-h-screen bg-surface">
             <PageHead
-                title="Blog — Guia de Hinojares y Sierra de Cazorla"
-                description="Guias, consejos y articulos sobre Hinojares, la Sierra de Cazorla, rutas de senderismo, gastronomia local y todo lo que necesitas saber para tu visita."
+                title="Blog — Guía de Hinojares y Sierra de Cazorla"
+                description="Guías, consejos y artículos sobre Hinojares, la Sierra de Cazorla, rutas de senderismo, gastronomía local y todo lo que necesitas saber para tu visita."
                 path="/blog"
             />
             <BreadcrumbJsonLd items={[
@@ -47,9 +47,9 @@ const BlogPage = () => {
                     <Link to="/" className="inline-flex items-center gap-1 text-white/70 hover:text-white text-sm font-medium mb-6 transition-colors">
                         <ChevronLeft size={16} /> Volver al inicio
                     </Link>
-                    <h1 className="font-serif text-3xl md:text-5xl font-bold mb-4">Guia de Hinojares y Sierra de Cazorla</h1>
+                    <h1 className="font-serif text-3xl md:text-5xl font-bold mb-4">Guía de Hinojares y Sierra de Cazorla</h1>
                     <p className="text-white/80 text-lg max-w-2xl leading-relaxed">
-                        Todo lo que necesitas saber para disfrutar de la comarca: rutas, gastronomia, historia, consejos practicos y secretos locales.
+                        Todo lo que necesitas saber para disfrutar de la comarca: rutas, gastronomía, historia, consejos prácticos y secretos locales.
                     </p>
                 </div>
             </header>
