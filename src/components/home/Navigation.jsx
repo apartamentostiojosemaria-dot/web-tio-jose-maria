@@ -16,7 +16,7 @@ const Navigation = () => {
         { label: 'Apartamentos', href: '/#apartamentos' },
         { label: 'El Entorno', href: '/#entorno' },
         { label: 'Hinojares', href: '/hinojares' },
-        { label: 'Que ver', href: '/rutas' },
+        { label: 'Qué ver', href: '/rutas' },
         { label: 'Eventos', href: '/eventos' },
         { label: 'Blog', href: '/blog' },
         { label: 'Mi Estancia', href: '/clientes' },
@@ -24,7 +24,7 @@ const Navigation = () => {
     ];
 
     return (
-        <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-6xl" role="navigation" aria-label="Navegacion principal">
+        <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-6xl" role="navigation" aria-label="Navegación principal">
             <div
                 className={`flex items-center justify-between px-4 md:px-6 py-2 md:py-3 rounded-2xl shadow-xl transition-all duration-500 backdrop-blur-xl ${
                     isScrolled

@@ -57,18 +57,18 @@ const ReviewsSection = ({ reviews }) => {
     }
 
     return (
-        <section className="py-24 px-6 bg-rural-100/30 overflow-hidden" aria-label="Resenas de huespedes">
+        <section className="py-24 px-6 bg-rural-100/30 overflow-hidden" aria-label="Reseñas de huéspedes">
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 md:mb-16 gap-6">
                     <div>
                         <span className="uppercase tracking-[0.2em] text-xs font-bold text-primary">Opiniones Reales</span>
-                        <h2 className="font-serif text-3xl md:text-5xl font-bold mt-3 text-text-primary">Lo que dicen nuestros huespedes</h2>
+                        <h2 className="font-serif text-3xl md:text-5xl font-bold mt-3 text-text-primary">Lo que dicen nuestros huéspedes</h2>
                     </div>
                     <a href="https://www.booking.com/hotel/es/casa-rural-tio-jose-maria.es.html#tab-reviews" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 bg-white px-4 md:px-6 py-3 rounded-xl shadow-sm hover:shadow-md transition-shadow">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/b/be/Booking.com_logo.svg" alt="Booking.com" className="h-4 md:h-5" />
                         <div className="text-right">
                             <p className="text-xs md:text-sm font-bold leading-none">9.5/10</p>
-                            <p className="text-[9px] md:text-[10px] opacity-60">Puntuacion Excepcional</p>
+                            <p className="text-[9px] md:text-[10px] opacity-60">Puntuación Excepcional</p>
                         </div>
                     </a>
                 </div>
@@ -79,21 +79,21 @@ const ReviewsSection = ({ reviews }) => {
                     onMouseLeave={() => setPaused(false)}
                     role="region"
                     aria-roledescription="carrusel"
-                    aria-label="Resenas de clientes"
+                    aria-label="Reseñas de clientes"
                 >
                     {displayReviews.length > reviewsPerPage && (
                         <>
                             <button
                                 onClick={goPrev}
                                 className="absolute -left-3 md:-left-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-rural-50 transition-colors border border-gray-100"
-                                aria-label="Resenas anteriores"
+                                aria-label="Reseñas anteriores"
                             >
                                 <ChevronLeft size={18} className="text-text-primary" />
                             </button>
                             <button
                                 onClick={goNext}
                                 className="absolute -right-3 md:-right-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-rural-50 transition-colors border border-gray-100"
-                                aria-label="Siguientes resenas"
+                                aria-label="Siguientes reseñas"
                             >
                                 <ChevronRight size={18} className="text-text-primary" />
                             </button>
@@ -135,14 +135,14 @@ const ReviewsSection = ({ reviews }) => {
                 </div>
 
                 {displayReviews.length > reviewsPerPage && (
-                    <div className="flex justify-center gap-1.5 mt-8" role="tablist" aria-label="Paginas de resenas">
+                    <div className="flex justify-center gap-1.5 mt-8" role="tablist" aria-label="Páginas de reseñas">
                         {displayReviews.map((_, i) => (
                             <button
                                 key={i}
                                 onClick={() => { setDirection(1); setIndex(i); }}
                                 className="h-2 rounded-full transition-all"
                                 style={{ width: i === index ? 24 : 8 }}
-                                aria-label={`Resena ${i + 1}`}
+                                aria-label={`Reseña ${i + 1}`}
                                 aria-selected={i === index}
                                 role="tab"
                             >

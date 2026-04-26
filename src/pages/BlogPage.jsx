@@ -12,8 +12,8 @@ const CATEGORIES = [
     { key: 'guia', label: 'Guías' },
     { key: 'pueblo', label: 'Pueblo' },
     { key: 'naturaleza', label: 'Naturaleza' },
-    { key: 'gastronomia', label: 'Gastronomia' },
-    { key: 'practico', label: 'Practico' },
+    { key: 'gastronomia', label: 'Gastronomía' },
+    { key: 'practico', label: 'Práctico' },
 ];
 
 const BlogPage = () => {
@@ -78,7 +78,7 @@ const BlogPage = () => {
                             type="text"
                             value={search}
                             onChange={e => setSearch(e.target.value)}
-                            placeholder="Buscar articulos..."
+                            placeholder="Buscar artículos..."
                             className="w-full pl-9 pr-4 py-2 rounded-full border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-rural-200"
                         />
                     </div>
@@ -102,7 +102,7 @@ const BlogPage = () => {
                     </div>
                 ) : (
                     <>
-                        <h2 className="sr-only">Articulos del blog</h2>
+                        <h2 className="sr-only">Artículos del blog</h2>
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                             <AnimatePresence mode="popLayout">
                                 {filteredPosts.map((post, idx) => (
@@ -150,7 +150,7 @@ const BlogPage = () => {
             {/* CTA */}
             <div className="max-w-5xl mx-auto px-6 pb-12">
                 <div className="rounded-2xl p-8 text-center bg-surface-warm">
-                    <p className="font-serif text-lg md:text-xl mb-2 text-text-primary">Quieres vivir todo esto en primera persona?</p>
+                    <p className="font-serif text-lg md:text-xl mb-2 text-text-primary">¿Quieres vivir todo esto en primera persona?</p>
                     <p className="text-sm mb-5 text-secondary">Alójate en Apartamentos Tío José María y te ayudamos a planificar tu escapada perfecta.</p>
                     <Link to="/" className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold text-white bg-primary shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5">
                         Ver Apartamentos

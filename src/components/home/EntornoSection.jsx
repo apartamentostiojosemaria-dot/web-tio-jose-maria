@@ -7,7 +7,7 @@ import { WP } from '../../constants/urls';
 const GRID_IMAGES = [
     { fallback: `${WP}/hinojaresPueblo.jpg`, alt: 'Hinojares pueblo blanco' },
     { fallback: `${WP}/MG_9540-1024x561.jpg`, alt: 'Rutas de senderismo en la Sierra' },
-    { fallback: `${WP}/chuletas-de-cordero-al-horno2-1024x724.jpg`, alt: 'Gastronomia local' },
+    { fallback: `${WP}/chuletas-de-cordero-al-horno2-1024x724.jpg`, alt: 'Gastronomía local'},
     { fallback: `${WP}/10-1024x768.jpg`, alt: 'Kayak en el Embalse de la Bolera' },
 ];
 

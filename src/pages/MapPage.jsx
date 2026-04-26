@@ -16,8 +16,8 @@ const CATEGORIES = [
 
 const LEVEL_LABEL = {
     'Facil': { label: 'Para todos', color: 'var(--color-level-easy)', bg: 'var(--color-level-easy-bg)', icon: '\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67\u200D\uD83D\uDC66' },
-    'Media': { label: 'Algo de forma fisica', color: 'var(--color-level-medium)', bg: 'var(--color-level-medium-bg)', icon: '\uD83E\uDD7E' },
-    'Media-Alta': { label: 'Buena forma fisica', color: 'var(--color-level-hard)', bg: 'var(--color-level-hard-bg)', icon: '\uD83D\uDCAA' },
+    'Media': { label: 'Algo de forma física', color: 'var(--color-level-medium)', bg: 'var(--color-level-medium-bg)', icon: '\uD83E\uDD7E' },
+    'Media-Alta': { label: 'Buena forma física', color: 'var(--color-level-hard)', bg: 'var(--color-level-hard-bg)', icon: '\uD83D\uDCAA' },
     'Alta': { label: 'Solo expertos', color: 'var(--color-level-expert)', bg: 'var(--color-level-expert-bg)', icon: '\u26F0\uFE0F' },
 };
 
@@ -141,7 +141,7 @@ const MapPage = () => {
                         );
                     })}
                     <div className="text-center py-8">
-                        <p className="text-sm text-secondary">Necesitas mas ideas? Preguntanos por WhatsApp — conocemos cada rincon de la zona.</p>
+                        <p className="text-sm text-secondary">¿Necesitas más ideas? Pregúntanos por WhatsApp — conocemos cada rincón de la zona.</p>
                     </div>
                 </div>
             )}

@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApartment, useBlockedDates, useHighSeasons } from '../hooks/useDatabase';
-import { syncApartmentDates } from '../utils/syncService';
-import { logError } from '../utils/logger';
 import { ApartmentJsonLd, BreadcrumbJsonLd } from './seo/JsonLd';
 import PageHead from './seo/PageHead';
 import BookingWidget from './booking/BookingWidget';
@@ -144,28 +142,7 @@ const ApartmentDetail = () => {
     const { slug } = useParams();
     const { apartment, loading } = useApartment(slug);
     const [activeImg, setActiveImg] = useState(0);
-    const [isSyncing, setIsSyncing] = useState(false);
     const [showBooking, setShowBooking] = useState(false);
-
-    // Auto-sync background
-    React.useEffect(() => {
-        if (apartment && (apartment.airbnb_ical_url || apartment.booking_ical_url)) {
-            const autoSync = async () => {
-                setIsSyncing(true);
-                try {
-                    await syncApartmentDates(apartment);
-                    // No refrescamos forzosamente para no molestar al usuario, 
-                    // la próxima vez que se cargue useBlockedDates ya tendrá los datos.
-                    // O si queremos refrescar el estado local, podríamos llamar a una función de refresh.
-                } catch (e) {
-                    logError('ApartmentDetail.autoSync', e);
-                } finally {
-                    setIsSyncing(false);
-                }
-            };
-            autoSync();
-        }
-    }, [apartment?.id]);
 
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center bg-rural-50 font-serif italic text-rural-700 animate-pulse">

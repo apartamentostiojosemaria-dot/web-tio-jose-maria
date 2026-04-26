@@ -23,7 +23,7 @@ const TYPE_CONFIG = {
 const HISTORY_SECTIONS = [
     { title: 'Origenes ancestrales', content: 'Hinojares tiene raices que se remontan al menos al siglo IV a.C. El yacimiento iberico de Castellones de Ceal, descubierto en 1955 a 5 km del pueblo, revela un oppidum fortificado con ~90 tumbas y ceramica griega, punto clave en la ruta entre el Guadalquivir y el Sureste peninsular.' },
     { title: 'De Traxinum a Hins-Nojar', content: 'Los romanos lo llamaron Traxinum. En época árabe pasó a ser Hins-Nojar, por la abundancia de hinojos silvestres en la zona. Durante siglos fue una aldea dependiente de Pozo Alcón.' },
-    { title: 'Marquesado de Hinojares (1690)', content: 'El rey Carlos II creo el Marquesado de Hinojares, otorgando al pueblo estatus de villa. Hoy conserva tres barrios historicos: el Barrio Bajo (el mas antiguo, con la Iglesia de San Marcos del s.XVII), el Barrio Alto (junto al rio, con huertos familiares) y Cuevas Nuevas (viviendas trogloditas del s.XX que mantienen 18-22 grados).' },
+    { title: 'Marquesado de Hinojares (1690)', content: 'El rey Carlos II creó el Marquesado de Hinojares, otorgando al pueblo estatus de villa. Hoy conserva tres barrios históricos: el Barrio Bajo (el más antiguo, con la Iglesia de San Marcos del s.XVII), el Barrio Alto (junto al río, con huertos familiares) y Cuevas Nuevas (viviendas trogloditas del s.XX que mantienen 18-22 grados).' },
     { title: 'El pueblo más pequeño de Jaén', content: 'Con ~343 habitantes, Hinojares es el municipio más pequeño de la provincia. Su encanto reside en esa escala humana: calles blancas de greda, silencio, cielos estrellados y una comunidad que recibe al viajero como parte de la familia.' }
 ];
 
@@ -89,7 +89,7 @@ export default function HinojaresPage() {
                         { value: '~343', label: 'Habitantes' },
                         { value: 's.IV a.C.', label: 'Orígenes' },
                         { value: '780m', label: 'Altitud' },
-                        { value: '3', label: 'Barrios historicos' },
+                        { value: '3', label: 'Barrios históricos' },
                     ].map((stat, i) => (
                         <div key={i} className="px-6">
                             <p className="text-2xl md:text-3xl font-serif font-bold text-primary">{stat.value}</p>
@@ -145,7 +145,7 @@ export default function HinojaresPage() {
                 <div className="max-w-4xl mx-auto">
                     <FadeInUp>
                         <span className="uppercase tracking-[0.2em] text-xs font-bold text-primary">Sabor serrano</span>
-                        <h2 className="font-serif text-3xl md:text-5xl font-bold mt-3 mb-12 text-text-primary">Gastronomia tipica</h2>
+                        <h2 className="font-serif text-3xl md:text-5xl font-bold mt-3 mb-12 text-text-primary">Gastronomía típica</h2>
                     </FadeInUp>
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {GASTRONOMY.map((dish, i) => (

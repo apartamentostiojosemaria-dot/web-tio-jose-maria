@@ -131,7 +131,7 @@ const EventsPage = () => {
                             );
                         })}
                     </div>
-                    <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pt-1" role="tablist" aria-label="Filtrar por categoria">
+                    <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pt-1" role="tablist" aria-label="Filtrar por categoría">
                         {CATEGORIES.map((c) => {
                             const Icon = c.icon;
                             const isActive = categoryFilter === c.key;
@@ -165,7 +165,7 @@ const EventsPage = () => {
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20">
                         <Calendar size={48} className="mx-auto mb-4 opacity-30 text-secondary" />
                         <p className="font-serif text-xl mb-2 text-text-primary">No hay eventos para estos filtros</p>
-                        <p className="text-sm mb-6 text-secondary">Prueba con otra temporada o categoria</p>
+                        <p className="text-sm mb-6 text-secondary">Prueba con otra temporada o categoría</p>
                         <button onClick={() => { setSeasonFilter('todas'); setCategoryFilter('todas'); }} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold text-white bg-primary transition-all hover:shadow-lg">
                             <RefreshCw size={14} /> Ver todos los eventos
                         </button>
@@ -186,7 +186,7 @@ const EventsPage = () => {
             {/* CTA */}
             <div className="max-w-7xl mx-auto px-4 pb-12">
                 <div className="rounded-2xl p-6 md:p-8 text-center bg-surface-warm">
-                    <p className="font-serif text-lg md:text-xl mb-2 text-text-primary">Quieres vivir alguna de estas experiencias?</p>
+                    <p className="font-serif text-lg md:text-xl mb-2 text-text-primary">¿Quieres vivir alguna de estas experiencias?</p>
                     <p className="text-sm mb-5 text-secondary">Reserva tu alojamiento en Apartamentos Tío José María y te ayudamos a planificar tu visita.</p>
                     <Link to="/" className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold text-white bg-primary shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5">
                         Ver Apartamentos

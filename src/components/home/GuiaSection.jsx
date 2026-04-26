@@ -73,7 +73,7 @@ const GuiaSection = () => {
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="Tu correo electronico"
+                                    placeholder="Tu correo electrónico"
                                     required
                                     disabled={status === 'sending'}
                                     className="px-6 py-4 rounded-full text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent flex-grow disabled:opacity-50"
