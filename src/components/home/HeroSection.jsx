@@ -7,7 +7,7 @@ const HeroSection = ({ title, subtitle }) => (
         <div className="absolute inset-0 z-0">
             <img
                 src={`${WP}/slide1.jpg`}
-                alt="Vista panoramica de Casa Rural Tio Jose Maria en Hinojares"
+                alt="Vista panorámica de Casa Rural Tío José María en Hinojares"
                 fetchpriority="high"
                 className="w-full h-full object-cover"
             />
@@ -23,11 +23,11 @@ const HeroSection = ({ title, subtitle }) => (
             <div className="flex justify-center mb-6">
                 <WeatherWidget isMinimal />
             </div>
-            <p className="text-white/70 uppercase tracking-[0.3em] text-sm mb-5 font-sans">Hinojares, Jaen</p>
+            <p className="text-white/70 uppercase tracking-[0.3em] text-sm mb-5 font-sans">Hinojares, Jaén</p>
             <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white font-bold mb-6 leading-tight">
-                {title.split(' en ')[0].replace('Tio Jose Maria', '')}
-                <span className="whitespace-nowrap">Tio Jose Maria</span>
-                <br className="hidden lg:block" /> en <span className="text-accent">{title.split(' en ')[1] || 'Cazorla'}</span>
+                {title}
+                <br className="hidden lg:block" />
+                <span className="text-accent">en la Sierra de Cazorla</span>
             </h1>
             <p className="text-white/80 text-lg md:text-xl mb-10 max-w-2xl mx-auto font-light leading-relaxed">
                 {subtitle}

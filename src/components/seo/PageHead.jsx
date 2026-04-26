@@ -1,6 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 
-const SITE_NAME = 'Tio Jose Maria';
+const SITE_NAME = 'Tío José María';
+const HOME_TITLE = 'Apartamentos Rurales Tío José María | Hinojares';
 const BASE_URL = 'https://tiojosemaria.com';
 const DEFAULT_IMAGE = 'https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/general/slide3.jpg';
 
@@ -13,7 +14,7 @@ const PageHead = ({
     noindex = false,
 }) => {
     const fullTitle = path === '/'
-        ? `${SITE_NAME} | Apartamentos Rurales en Hinojares, Cazorla`
+        ? HOME_TITLE
         : `${title} | ${SITE_NAME}`;
     const url = `${BASE_URL}${path}`;
 

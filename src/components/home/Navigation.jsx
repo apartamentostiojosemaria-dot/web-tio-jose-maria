@@ -35,7 +35,7 @@ const Navigation = () => {
                 <a href="#" className="flex items-center gap-3">
                     <img
                         src="/assets/logo.jpg"
-                        alt="Logo Tio Jose Maria Apartamentos Rurales"
+                        alt="Logo Tío José María Apartamentos Rurales"
                         className="h-8 md:h-10 object-contain"
                     />
                 </a>

@@ -5,9 +5,9 @@ const Footer = () => (
     <footer id="contacto" className="py-16 md:py-20 px-6 text-white bg-footer">
         <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-10 md:gap-16 mb-14">
             <div>
-                <h3 className="font-serif text-2xl font-bold mb-6">Tio Jose Maria</h3>
+                <h3 className="font-serif text-2xl font-bold mb-6">Tío José María</h3>
                 <p className="text-white/50 text-sm leading-relaxed max-w-xs mb-6">
-                    Vivienda turistica de Alojamiento Rural registrada en la Junta de Andalucia (VTAR/JA/00044). Tu casa en Hinojares.
+                    Vivienda turística de Alojamiento Rural registrada en la Junta de Andalucía (VTAR/JA/00044). Tu casa en Hinojares.
                 </p>
                 <div className="flex gap-3">
                     <a href="https://www.instagram.com/tiojosemaria_hinojares/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-footer-muted hover:bg-primary flex items-center justify-center transition-colors duration-300">
@@ -26,7 +26,7 @@ const Footer = () => (
                             rel="noopener noreferrer"
                             className="hover:text-white transition-colors leading-relaxed"
                         >
-                            Calle Baja 1,<br />23486 Hinojares, Jaen
+                            Calle Baja 1,<br />23486 Hinojares, Jaén
                         </a>
                     </li>
                     <li className="flex items-center gap-3">
@@ -40,10 +40,10 @@ const Footer = () => (
                 </ul>
             </div>
             <div>
-                <h4 className="text-sm font-bold uppercase tracking-widest mb-8 text-accent">Donde estamos?</h4>
+                <h4 className="text-sm font-bold uppercase tracking-widest mb-8 text-accent">¿Dónde estamos?</h4>
                 <div className="rounded-xl overflow-hidden h-48 relative group">
                     <iframe
-                        title="Ubicacion Apartamentos Tio Jose Maria"
+                        title="Ubicación Apartamentos Tío José María"
                         src="https://maps.google.com/maps?q=Apartamentos+Rurales+Tio+Jose+Maria+Hinojares&z=14&output=embed"
                         width="100%"
                         height="100%"
@@ -64,13 +64,13 @@ const Footer = () => (
             </div>
         </div>
         <div className="border-t border-white/10 pt-8 text-center text-white/40 text-sm flex flex-col md:flex-row justify-center items-center gap-4">
-            <span>&copy; {new Date().getFullYear()} Apartamentos Tio Jose Maria.</span>
+            <span>&copy; {new Date().getFullYear()} Apartamentos Tío José María.</span>
             <div className="flex gap-4">
                 <Link to="/privacidad" className="hover:text-white transition-colors">Privacidad</Link>
                 <span className="opacity-20">|</span>
-                <Link to="/admin" className="hover:text-white transition-colors">Acceso Administracion</Link>
+                <Link to="/admin" className="hover:text-white transition-colors">Acceso Administración</Link>
                 <span className="opacity-20">|</span>
-                <Link to="/clientes" className="hover:text-white transition-colors">Area Clientes</Link>
+                <Link to="/clientes" className="hover:text-white transition-colors">Área Clientes</Link>
             </div>
         </div>
     </footer>

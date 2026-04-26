@@ -39,9 +39,9 @@ const GuiaSection = () => {
             <div className="max-w-3xl mx-auto px-6 relative z-10 text-center">
                 <FadeInUp>
                     <p className="text-4xl md:text-5xl mb-6" aria-hidden="true">&#x1F5FA;&#xFE0F;</p>
-                    <h2 className="font-serif text-2xl md:text-5xl font-bold mb-5">Descubre el Cazorla <br className="md:hidden" /> que no sale en las guias</h2>
+                    <h2 className="font-serif text-2xl md:text-5xl font-bold mb-5">Descubre el Cazorla <br className="md:hidden" /> que no sale en las guías</h2>
                     <p className="text-base md:text-lg mb-10 opacity-90 leading-relaxed text-accent">
-                        Hemos preparado una guia exclusiva con nuestras rutas favoritas, los mejores sitios para comer en Hinojares y secretos locales.
+                        Hemos preparado una guía exclusiva con nuestras rutas favoritas, los mejores sitios para comer en Hinojares y secretos locales.
                     </p>
 
                     <AnimatePresence mode="wait">
@@ -55,8 +55,8 @@ const GuiaSection = () => {
                                 role="alert"
                             >
                                 <p className="text-3xl mb-3" aria-hidden="true">&#x2705;</p>
-                                <p className="font-bold text-lg mb-1">Perfecto!</p>
-                                <p className="text-sm opacity-80">Pronto recibiras nuestra guia exclusiva en tu correo.</p>
+                                <p className="font-bold text-lg mb-1">¡Perfecto!</p>
+                                <p className="text-sm opacity-80">Pronto recibirás nuestra guía exclusiva en tu correo.</p>
                             </motion.div>
                         ) : (
                             <motion.form

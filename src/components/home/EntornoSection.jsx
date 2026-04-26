@@ -29,9 +29,9 @@ const EntornoSection = ({ places, routes }) => {
             <div className="grid lg:grid-cols-2 gap-10 md:gap-16 items-center mb-12 md:mb-20">
                 <FadeInUp>
                     <span className="uppercase tracking-[0.2em] text-xs font-bold text-primary">Hinojares y el Valle del Turrilla</span>
-                    <h2 className="font-serif text-3xl md:text-5xl font-bold mt-3 mb-6 md:mb-8 text-text-primary">Un paraiso de contrastes entre desierto y pinar</h2>
+                    <h2 className="font-serif text-3xl md:text-5xl font-bold mt-3 mb-6 md:mb-8 text-text-primary">Un paraíso de contrastes entre desierto y pinar</h2>
                     <p className="text-base md:text-lg leading-relaxed mb-6 text-secondary">
-                        Tio Jose Maria se ubica en <strong>Hinojares</strong>, un pueblo magico de gredas blancas al sur del <strong>Parque Natural de la Sierra de Cazorla</strong>. Es un destino donde el agua de los rios y embalses se funde con paisajes semidesertos y bosques virgenes.
+                        Tío José María se ubica en <strong>Hinojares</strong>, un pueblo mágico de gredas blancas al sur del <strong>Parque Natural de la Sierra de Cazorla</strong>. Es un destino donde el agua de los ríos y embalses se funde con paisajes semidesérticos y bosques vírgenes.
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-10">
                         <Link to="/rutas" className="p-6 rounded-2xl border border-rural-100 bg-rural-50 hover:bg-white hover:shadow-xl transition-all group block">
@@ -123,7 +123,7 @@ const EntornoSection = ({ places, routes }) => {
                         </div>
                         <div className="rounded-2xl overflow-hidden shadow-lg w-full h-64 md:h-80">
                             <iframe
-                                title="Ubicacion Apartamentos Tio Jose Maria"
+                                title="Ubicación Apartamentos Tío José María"
                                 src="https://maps.google.com/maps?q=Apartamentos+Rurales+Tio+Jose+Maria+Hinojares+Jaen&z=15&ie=UTF8&iwloc=&output=embed"
                                 width="100%"
                                 height="100%"
