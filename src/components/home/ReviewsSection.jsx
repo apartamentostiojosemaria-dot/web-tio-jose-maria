@@ -10,12 +10,25 @@ const ReviewsSection = ({ reviews }) => {
             score: r.rating ? (r.rating * 2).toString() : '10',
             source: r.source || 'Booking.com'
         }))
-        : [
-            { name: 'Alejandro', text: 'El alojamiento estaba genial. Era un apartamento muy acogedor y bien equipado.', score: '10', source: 'Booking.com' },
-            { name: 'Antonio', text: 'Acogedor y tranquilo. Muy limpio. Perfecto para desconectar.', score: '10', source: 'Booking.com' },
-            { name: 'Ruben', text: 'Casa del siglo XVII reformada. Nos encanto el pueblo, muy tranquilo.', score: '10', source: 'Booking.com' },
-            { name: 'Sebastian', text: 'El trato de los anfitriones. El apartamento es muy bonito, acogedor y todo estaba muy limpio.', score: '10', source: 'Booking.com' }
-        ];
+        : [];
+
+    if (displayReviews.length === 0) {
+        return (
+            <section className="py-24 px-6 bg-rural-100/30" aria-label="Reseñas">
+                <div className="max-w-4xl mx-auto text-center">
+                    <span className="uppercase tracking-[0.2em] text-xs font-bold text-primary">Opiniones reales</span>
+                    <h2 className="font-serif text-3xl md:text-5xl font-bold mt-3 mb-8 text-text-primary">Lee las opiniones de nuestros huéspedes</h2>
+                    <a href="https://www.booking.com/hotel/es/casa-rural-tio-jose-maria.es.html#tab-reviews" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-4 bg-white px-8 py-5 rounded-2xl shadow-md hover:shadow-xl transition-shadow">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/b/be/Booking.com_logo.svg" alt="Booking.com" loading="lazy" decoding="async" className="h-6" />
+                        <div className="text-left">
+                            <p className="text-2xl font-bold leading-none text-text-primary">9.5/10</p>
+                            <p className="text-xs opacity-70 mt-1">Puntuación Excepcional · Ver reseñas</p>
+                        </div>
+                    </a>
+                </div>
+            </section>
+        );
+    }
 
     const [index, setIndex] = useState(0);
     const [paused, setPaused] = useState(false);
