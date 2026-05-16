@@ -35,7 +35,7 @@ const Footer = () => (
                     </li>
                     <li className="flex items-center gap-3">
                         <Mail size={16} className="flex-shrink-0 text-primary" />
-                        <a href="mailto:info@tiojosemaria.com" className="hover:text-white transition-colors">info@tiojosemaria.com</a>
+                        <a href="mailto:apartamentostiojosemaria@gmail.com" className="hover:text-white transition-colors">apartamentostiojosemaria@gmail.com</a>
                     </li>
                 </ul>
             </div>
@@ -69,8 +69,6 @@ const Footer = () => (
                 <Link to="/privacidad" className="hover:text-white transition-colors">Privacidad</Link>
                 <span className="opacity-20">|</span>
                 <Link to="/admin" className="hover:text-white transition-colors">Acceso Administración</Link>
-                <span className="opacity-20">|</span>
-                <Link to="/clientes" className="hover:text-white transition-colors">Área Clientes</Link>
             </div>
         </div>
     </footer>
