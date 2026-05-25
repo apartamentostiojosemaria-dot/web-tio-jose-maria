@@ -42,7 +42,7 @@ const ApartmentsGrid = ({ apartments }) => {
                             <Link to={apt.href} className="block group">
                                 <article className="bg-white rounded-2xl overflow-hidden shadow-lg border border-transparent hover:border-accent transition-all duration-500 group-hover:shadow-2xl group-hover:-translate-y-2">
                                     <div className="h-72 overflow-hidden relative">
-                                        <img src={apt.img} alt={`Apartamento ${apt.name} - Casa Rural Tío José María`} loading="lazy" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                        <img src={apt.img} alt={`Apartamento ${apt.name} - Casa Rural Tío José María`} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                                         <div className="absolute top-5 right-5 bg-white/90 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm text-primary-dark">
                                             {apt.tag}
                                         </div>

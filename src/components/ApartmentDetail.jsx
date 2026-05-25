@@ -252,6 +252,7 @@ const ApartmentDetail = () => {
                                     src={images[activeImg]}
                                     alt={`${apartment.name} - Apartamento Rural Tío José María`}
                                     className="w-full h-full object-cover"
+                                    decoding="async"
                                 />
                             </AnimatePresence>
                             <div className="absolute bottom-6 right-6 bg-black/50 backdrop-blur-md text-white px-4 py-2 rounded-full text-xs font-bold tracking-widest">
@@ -266,7 +267,7 @@ const ApartmentDetail = () => {
                                     onClick={() => setActiveImg(idx)}
                                     className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-300 ${activeImg === idx ? 'ring-3 ring-rural-600 scale-95 opacity-100' : 'opacity-60 hover:opacity-100'}`}
                                 >
-                                    <img src={img} alt={`${apartment.name} foto ${idx + 1}`} loading="lazy" className="w-full h-full object-cover" />
+                                    <img src={img} alt={`${apartment.name} foto ${idx + 1}`} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                                 </button>
                             ))}
                         </div>
