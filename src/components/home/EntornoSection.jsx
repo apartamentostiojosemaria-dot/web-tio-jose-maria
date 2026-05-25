@@ -50,6 +50,7 @@ const EntornoSection = ({ places, routes }) => {
     const uniqueSources = [...new Set(allSources)];
     const gridImages = GRID_IMAGES.map((img, i) => ({
         src: uniqueSources[i] || img.fallback,
+        fallback: img.fallback,
         alt: img.alt,
     }));
 
@@ -98,7 +99,12 @@ const EntornoSection = ({ places, routes }) => {
                                 alt={img.alt}
                                 loading="lazy"
                                 decoding="async"
-                                className="rounded-2xl shadow-lg w-full h-44 md:h-64 object-cover"
+                                onError={(e) => {
+                                    if (e.currentTarget.src !== img.fallback) {
+                                        e.currentTarget.src = img.fallback;
+                                    }
+                                }}
+                                className="rounded-2xl shadow-lg w-full h-44 md:h-64 object-cover bg-rural-50"
                             />
                         </FadeInUp>
                     ))}
