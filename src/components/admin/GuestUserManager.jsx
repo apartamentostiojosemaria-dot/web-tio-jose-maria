@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 
-import { useGuestBookings } from '../../hooks/useDatabase';
+import { useGuestBookings, useApartments } from '../../hooks/useDatabase';
 import {
     Users, Search, Calendar, Save, Mail, User,
     FileText, Heart, History, Plus, ChevronRight, X,
@@ -135,7 +135,8 @@ const GuestDetailView = ({ guest, onBack }) => {
 
     const [saving, setSaving] = useState(false);
     const [isAddingBooking, setIsAddingBooking] = useState(false);
-    const [newBooking, setNewBooking] = useState({ apartment_name: '', check_in: '', check_out: '', status: 'completed' });
+    const [newBooking, setNewBooking] = useState({ apartment_id: '', check_in: '', check_out: '', status: 'completed' });
+    const { apartments: aptList } = useApartments();
 
     const handleUpdateProfile = async (overrides = {}) => {
         setSaving(true);
@@ -164,18 +165,31 @@ const GuestDetailView = ({ guest, onBack }) => {
     };
 
     const handleAddBooking = async () => {
+        if (!newBooking.apartment_id) return alert('Selecciona un apartamento');
         if (!newBooking.check_in || !newBooking.check_out) return alert('Fechas obligatorias');
 
         const { error } = await supabase
             .from('guest_bookings')
-            .insert([{ ...newBooking, profile_id: guest.id }]);
+            .insert([{
+                apartment_id: parseInt(newBooking.apartment_id, 10),
+                check_in: newBooking.check_in,
+                check_out: newBooking.check_out,
+                status: newBooking.status || 'completed',
+                profile_id: guest.id,
+                // Copiamos datos del perfil para coherencia con reservas que llegan
+                // desde la web (que rellenan estos campos directamente)
+                guest_name: guest.full_name || guest.name || '',
+                guest_email: guest.email || '',
+                guest_phone: guest.phone || '',
+                source: 'admin',
+            }]);
 
         if (error) {
             logError('GuestUserManager.handleAddBooking', error);
             alert(userErrorMessage('Error al añadir la estancia.'));
         } else {
             setIsAddingBooking(false);
-            setNewBooking({ apartment_name: '', check_in: '', check_out: '', status: 'completed' });
+            setNewBooking({ apartment_id: '', check_in: '', check_out: '', status: 'completed' });
 
             // Si es la reserva más futura, actualizar las fechas de "estancia actual" del perfil automáticamente
             const isLatest = !guest.check_in || new Date(newBooking.check_in) >= new Date(guest.check_in);
@@ -363,13 +377,16 @@ const GuestDetailView = ({ guest, onBack }) => {
                         {isAddingBooking && (
                             <div className="mb-8 p-6 bg-rural-50 rounded-3xl border border-rural-100 animate-in zoom-in-95 duration-200">
                                 <div className="grid md:grid-cols-2 gap-4 mb-4">
-                                    <input
-                                        type="text"
-                                        placeholder="Apartamento"
-                                        value={newBooking.apartment_name}
-                                        onChange={(e) => setNewBooking({ ...newBooking, apartment_name: e.target.value })}
-                                        className="px-4 py-2 rounded-xl border border-white text-sm"
-                                    />
+                                    <select
+                                        value={newBooking.apartment_id}
+                                        onChange={(e) => setNewBooking({ ...newBooking, apartment_id: e.target.value })}
+                                        className="px-4 py-2 rounded-xl border border-white text-sm bg-white"
+                                    >
+                                        <option value="">Selecciona apartamento...</option>
+                                        {aptList?.map(a => (
+                                            <option key={a.id} value={a.id}>{a.name}</option>
+                                        ))}
+                                    </select>
                                     <div className="flex gap-2">
                                         <input type="date" value={newBooking.check_in} onChange={(e) => setNewBooking({ ...newBooking, check_in: e.target.value })} className="flex-1 px-4 py-2 rounded-xl border border-white text-sm" />
                                         <input type="date" value={newBooking.check_out} onChange={(e) => setNewBooking({ ...newBooking, check_out: e.target.value })} className="flex-1 px-4 py-2 rounded-xl border border-white text-sm" />
@@ -383,14 +400,16 @@ const GuestDetailView = ({ guest, onBack }) => {
                         )}
 
                         <div className="space-y-4">
-                            {bookings.map((booking) => (
+                            {bookings.map((booking) => {
+                                const aptName = aptList?.find(a => a.id === booking.apartment_id)?.name || 'Apartamento';
+                                return (
                                 <div key={booking.id} className="flex items-center justify-between p-5 rounded-2xl border border-gray-50 hover:bg-gray-50/50 transition-colors group">
                                     <div className="flex items-center gap-6">
                                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${booking.status === 'completed' ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600'}`}>
                                             {booking.status === 'completed' ? <CheckCircle2 size={20} /> : <Clock size={20} />}
                                         </div>
                                         <div>
-                                            <p className="font-bold text-rural-900 text-sm">{booking.apartment_name || 'Apartamento Rural'}</p>
+                                            <p className="font-bold text-rural-900 text-sm">{aptName}</p>
                                             <p className="text-xs text-gray-500">
                                                 {new Date(booking.check_in).toLocaleDateString()} - {new Date(booking.check_out).toLocaleDateString()}
                                             </p>
@@ -398,7 +417,8 @@ const GuestDetailView = ({ guest, onBack }) => {
                                     </div>
                                     <button onClick={() => handleDeleteBooking(booking.id)} className="p-2 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"><X size={16} /></button>
                                 </div>
-                            ))}
+                                );
+                            })}
                             {!loadingHistory && bookings.length === 0 && (
                                 <p className="text-center py-10 text-gray-300 italic text-sm">No hay registros de estancias.</p>
                             )}
