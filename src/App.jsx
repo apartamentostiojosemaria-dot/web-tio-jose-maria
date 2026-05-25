@@ -18,6 +18,7 @@ const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard'));
 const AdminResponse = lazy(() => import('./pages/AdminResponse'));
 const BlogPage = lazy(() => import('./pages/BlogPage'));
 const BlogPostDetail = lazy(() => import('./pages/BlogPostDetail'));
+const GuiaCazorla = lazy(() => import('./pages/GuiaCazorla'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 const PageLoader = () => (
@@ -80,6 +81,7 @@ export default function App() {
                         <Route path="/hinojares" element={<HinojaresPage />} />
                         <Route path="/blog" element={<BlogPage />} />
                         <Route path="/blog/:slug" element={<BlogPostDetail />} />
+                        <Route path="/guia-cazorla" element={<GuiaCazorla />} />
                         <Route
                             path="/admin"
                             element={!session ? <AdminLogin /> : (userProfile?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/" replace />)}

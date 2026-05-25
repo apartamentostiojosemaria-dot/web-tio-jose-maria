@@ -17,15 +17,21 @@ const GuiaSection = () => {
             .from('email_subscribers')
             .insert({ email, source: 'guia_section' });
 
-        if (error) {
-            if (error.code === '23505') {
-                setStatus('success');
-            } else {
-                logError('GuiaSection.subscribe', error);
-                setStatus('error');
+        // Si el insert fue OK o si ya estaba suscrito (23505), enviamos la guía
+        const alreadyExists = error?.code === '23505';
+        const inserted = !error;
+
+        if (inserted || alreadyExists) {
+            try {
+                await supabase.functions.invoke('send-guide', { body: { email } });
+            } catch (e) {
+                logError('GuiaSection.sendGuide', e);
+                // No bloqueamos el éxito visual aunque falle el email — el subscriber está guardado
             }
-        } else {
             setStatus('success');
+        } else {
+            logError('GuiaSection.subscribe', error);
+            setStatus('error');
         }
 
         setEmail('');
@@ -41,7 +47,7 @@ const GuiaSection = () => {
                     <p className="text-4xl md:text-5xl mb-6" aria-hidden="true">&#x1F5FA;&#xFE0F;</p>
                     <h2 className="font-serif text-2xl md:text-5xl font-bold mb-5">Descubre el Cazorla <br className="md:hidden" /> que no sale en las guías</h2>
                     <p className="text-base md:text-lg mb-10 opacity-90 leading-relaxed text-accent">
-                        Estamos terminando una guía exclusiva con nuestras rutas favoritas, los mejores sitios para comer en Hinojares y secretos locales. Déjanos tu correo y serás de los primeros en recibirla.
+                        Hemos preparado una guía exclusiva con nuestras rutas favoritas, los mejores sitios para comer, las almazaras de la zona y secretos locales. Déjanos tu correo y te la enviamos al momento.
                     </p>
 
                     <AnimatePresence mode="wait">
@@ -55,8 +61,8 @@ const GuiaSection = () => {
                                 role="alert"
                             >
                                 <p className="text-3xl mb-3" aria-hidden="true">&#x2705;</p>
-                                <p className="font-bold text-lg mb-1">¡Apuntado!</p>
-                                <p className="text-sm opacity-80">Te avisaremos por email en cuanto la guía esté lista. Mientras tanto, si tienes cualquier duda escríbenos por WhatsApp al 676 34 46 75.</p>
+                                <p className="font-bold text-lg mb-1">¡Enviada!</p>
+                                <p className="text-sm opacity-80">Mira tu correo. Si no la ves en unos minutos, revisa la carpeta de promociones o spam.</p>
                             </motion.div>
                         ) : (
                             <motion.form

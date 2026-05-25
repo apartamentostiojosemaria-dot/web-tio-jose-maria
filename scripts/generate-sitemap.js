@@ -58,6 +58,7 @@ async function main() {
         urlEntry({ loc: `${SITE_URL}/hinojares`, priority: '0.9', changefreq: 'weekly' }),
         urlEntry({ loc: `${SITE_URL}/rutas`, priority: '0.9', changefreq: 'weekly' }),
         urlEntry({ loc: `${SITE_URL}/eventos`, priority: '0.9', changefreq: 'weekly' }),
+        urlEntry({ loc: `${SITE_URL}/guia-cazorla`, priority: '0.9', changefreq: 'monthly' }),
         urlEntry({ loc: `${SITE_URL}/blog`, priority: '0.9', changefreq: 'weekly' }),
         urlEntry({ loc: `${SITE_URL}/privacidad`, priority: '0.3', changefreq: 'yearly' }),
     ];
