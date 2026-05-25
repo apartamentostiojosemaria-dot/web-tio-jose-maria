@@ -18,6 +18,7 @@ const ApartmentsGrid = ({ apartments }) => {
             name: apt.name,
             tag: apt.capacity_people <= 2 ? 'Romántico' : 'Familiar',
             capacity: `${apt.capacity_people} plazas`,
+            priceFrom: apt.price_low,
             href: `/apartamento/${apt.slug}`,
             img: apt.images?.[0] || `${WP}/ALBAHACA-1.jpg`,
             desc: apt.description,
@@ -51,7 +52,12 @@ const ApartmentsGrid = ({ apartments }) => {
                                             <h3 className="font-serif text-xl md:text-2xl font-bold text-text-primary">{apt.name}</h3>
                                             <span className="text-xs md:text-sm text-secondary">{apt.capacity}</span>
                                         </div>
-                                        <p className="text-xs md:text-sm leading-relaxed mb-6 text-secondary">{apt.desc}</p>
+                                        <p className="text-xs md:text-sm leading-relaxed mb-5 text-secondary">{apt.desc}</p>
+                                        {apt.priceFrom && (
+                                            <p className="text-sm text-secondary mb-4">
+                                                Desde <span className="font-serif text-lg font-bold text-text-primary">{apt.priceFrom}€</span> <span className="text-xs">/ noche</span>
+                                            </p>
+                                        )}
                                         <div className="flex items-center justify-between">
                                             <div className="flex gap-3">
                                                 {apt.icons.map((Icon, i) => (
@@ -59,7 +65,7 @@ const ApartmentsGrid = ({ apartments }) => {
                                                 ))}
                                             </div>
                                             <span className="text-sm font-bold text-primary transition-colors duration-300">
-                                                Ver Detalles &rarr;
+                                                Ver disponibilidad &rarr;
                                             </span>
                                         </div>
                                     </div>

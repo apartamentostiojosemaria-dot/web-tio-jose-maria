@@ -312,14 +312,21 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
                         <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
                             <Check size={32} className="text-primary" />
                         </div>
-                        <h3 className="font-serif font-bold text-xl text-text-primary">Solicitud enviada</h3>
-                        <p className="text-sm text-gray-500">Hemos recibido tu solicitud de reserva para <strong>{apartment.name}</strong>. Te confirmaremos la disponibilidad a <strong>{form.email}</strong> en las proximas horas.</p>
+                        <h3 className="font-serif font-bold text-xl text-text-primary">Solicitud recibida</h3>
+                        <p className="text-sm text-gray-500">
+                            Hemos bloqueado provisionalmente estas fechas para <strong>{apartment.name}</strong>.
+                            Te confirmamos por email a <strong>{form.email}</strong> antes de 24 h (normalmente mucho antes).
+                        </p>
                         <div className="p-4 rounded-xl bg-rural-50 border border-rural-100">
                             <p className="text-xs text-gray-400 mb-1">Resumen</p>
                             <p className="font-bold text-sm text-text-primary">
-                                {checkIn?.toLocaleDateString('es-ES')} \u2192 {checkOut?.toLocaleDateString('es-ES')} \u00B7 {priceBreakdown?.nights} noches{priceBreakdown?.hasPrices ? ` \u00B7 ${priceBreakdown.total}\u20AC` : ''}
+                                {checkIn?.toLocaleDateString('es-ES')} {'\u2192'} {checkOut?.toLocaleDateString('es-ES')} {'\u00B7'} {priceBreakdown?.nights} noches{priceBreakdown?.hasPrices ? ` \u00B7 ${priceBreakdown.total}\u20AC` : ''}
                             </p>
                         </div>
+                        <p className="text-xs text-gray-400">
+                            La reserva no es firme hasta que la confirmamos.
+                            Si tienes prisa o dudas, escr&iacute;benos directamente:
+                        </p>
                         <a href={`https://api.whatsapp.com/send?phone=34676344675&text=Hola, acabo de solicitar una reserva para ${apartment.name} del ${checkIn?.toLocaleDateString('es-ES')} al ${checkOut?.toLocaleDateString('es-ES')}.`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-bold text-primary transition-colors hover:opacity-80">
                             <Phone size={16} /> Contactar por WhatsApp
                         </a>

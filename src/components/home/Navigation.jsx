@@ -51,7 +51,7 @@ const Navigation = () => {
                         href="/#apartamentos"
                         className="px-5 py-2.5 rounded-full text-sm font-bold text-white bg-primary shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
                     >
-                        Reservar
+                        Ver disponibilidad
                     </a>
                 </div>
 

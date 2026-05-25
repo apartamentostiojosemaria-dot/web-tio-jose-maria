@@ -142,7 +142,6 @@ const ApartmentDetail = () => {
     const { slug } = useParams();
     const { apartment, loading } = useApartment(slug);
     const [activeImg, setActiveImg] = useState(0);
-    const [showBooking, setShowBooking] = useState(false);
 
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center bg-rural-50 font-serif italic text-rural-700 animate-pulse">
