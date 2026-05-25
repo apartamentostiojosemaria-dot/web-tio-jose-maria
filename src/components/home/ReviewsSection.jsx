@@ -2,13 +2,32 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
+// Paleta tierra/olivo coherente con la marca para los avatares de iniciales.
+const AVATAR_COLORS = [
+    { bg: '#556B2F', fg: '#FFFFFF' }, // primary olivo
+    { bg: '#8B7355', fg: '#FFFFFF' }, // marron tierra
+    { bg: '#A0522D', fg: '#FFFFFF' }, // siena
+    { bg: '#6B8E3D', fg: '#FFFFFF' }, // olivo claro
+    { bg: '#7D8C5A', fg: '#FFFFFF' }, // verde salvia
+    { bg: '#9B7E47', fg: '#FFFFFF' }, // ocre
+];
+
+const colorForName = (name) => {
+    let h = 0;
+    for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) | 0;
+    return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
+};
+
+const initialOf = (name) => (name || '?').trim().charAt(0).toUpperCase();
+
 const ReviewsSection = ({ reviews }) => {
     const displayReviews = reviews && reviews.length > 0
         ? reviews.map(r => ({
             name: r.author,
             text: r.content,
             score: r.rating ? (r.rating * 2).toString() : '10',
-            source: r.source || 'Booking.com'
+            source: r.source || 'Booking.com',
+            avatarUrl: r.avatar_url,
         }))
         : [];
 
@@ -138,7 +157,25 @@ const ReviewsSection = ({ reviews }) => {
                                         &ldquo;{rev.text}&rdquo;
                                     </p>
                                     <div className="pt-4 border-t border-gray-100 flex justify-between items-center">
-                                        <span className="font-bold text-sm text-text-primary">{rev.name}</span>
+                                        <div className="flex items-center gap-2.5">
+                                            {rev.avatarUrl ? (
+                                                <img
+                                                    src={rev.avatarUrl}
+                                                    alt={rev.name}
+                                                    loading="lazy"
+                                                    className="w-8 h-8 rounded-full object-cover"
+                                                />
+                                            ) : (
+                                                <span
+                                                    aria-hidden="true"
+                                                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold font-serif flex-shrink-0"
+                                                    style={{ backgroundColor: colorForName(rev.name).bg, color: colorForName(rev.name).fg }}
+                                                >
+                                                    {initialOf(rev.name)}
+                                                </span>
+                                            )}
+                                            <span className="font-bold text-sm text-text-primary">{rev.name}</span>
+                                        </div>
                                         <span className="bg-rural-100 px-2.5 py-1 rounded-lg text-[11px] font-bold text-primary">{rev.score}</span>
                                     </div>
                                 </article>
