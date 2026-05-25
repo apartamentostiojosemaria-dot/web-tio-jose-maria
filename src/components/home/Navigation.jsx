@@ -17,8 +17,6 @@ const Navigation = () => {
         { label: 'El Entorno', href: '/#entorno' },
         { label: 'Hinojares', href: '/hinojares' },
         { label: 'Qué ver', href: '/rutas' },
-        { label: 'Eventos', href: '/eventos' },
-        { label: 'Blog', href: '/blog' },
         { label: 'Contacto', href: '/#contacto' },
     ];
 
