@@ -76,7 +76,7 @@ const GuiaSection = () => {
                                     placeholder="Tu correo electrónico"
                                     required
                                     disabled={status === 'sending'}
-                                    className="px-6 py-4 rounded-full text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent flex-grow disabled:opacity-50"
+                                    className="px-6 py-4 rounded-full bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-accent flex-grow disabled:opacity-50"
                                 />
                                 <button
                                     type="submit"
