@@ -3,20 +3,24 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const STORAGE_KEY = 'tjm_cookie_consent';
+// Si cambia la politica de privacidad, sube esta version y se vuelve a
+// mostrar el aviso a quien acepto la version anterior.
+const CONSENT_VERSION = '2026-05-25';
 
 const CookieConsent = () => {
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
         const consent = localStorage.getItem(STORAGE_KEY);
-        if (!consent) {
+        // Solo se considera valido si fue aceptado para la version actual
+        if (consent !== CONSENT_VERSION) {
             const timer = setTimeout(() => setVisible(true), 2000);
             return () => clearTimeout(timer);
         }
     }, []);
 
     const accept = () => {
-        localStorage.setItem(STORAGE_KEY, 'accepted');
+        localStorage.setItem(STORAGE_KEY, CONSENT_VERSION);
         setVisible(false);
     };
 
@@ -39,7 +43,7 @@ const CookieConsent = () => {
                             onClick={accept}
                             className="px-6 py-2.5 bg-rural-700 text-white rounded-full text-sm font-bold hover:bg-rural-800 transition-colors whitespace-nowrap"
                         >
-                            Entendido
+                            De acuerdo
                         </button>
                     </div>
                 </motion.div>

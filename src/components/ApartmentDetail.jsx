@@ -5,6 +5,7 @@ import { useApartment, useBlockedDates, useHighSeasons } from '../hooks/useDatab
 import { ApartmentJsonLd, BreadcrumbJsonLd } from './seo/JsonLd';
 import PageHead from './seo/PageHead';
 import BookingWidget from './booking/BookingWidget';
+import { whatsappLink } from '../constants/urls';
 import {
     ChevronLeft, Users, Flame, Wifi, Tv,
     UtensilsCrossed, Baby, MapPin, Calendar,
@@ -97,7 +98,7 @@ const AvailabilityCalendar = ({ apartmentId }) => {
             </div>
 
             <div className="grid grid-cols-7 gap-1 text-center mb-2">
-                {dayNames.map(d => <span key={d} className="text-[10px] font-bold text-gray-400 uppercase">{d}</span>)}
+                {dayNames.map(d => <span key={d} className="text-[10px] font-bold text-gray-600 uppercase">{d}</span>)}
             </div>
 
             <div className="grid grid-cols-7 gap-1">
@@ -167,7 +168,7 @@ const StickyMobileCTA = ({ apartment, bookingRef }) => {
             aria-label="Reservar este apartamento"
         >
             <div className="leading-tight">
-                <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Desde</p>
+                <p className="text-[10px] uppercase tracking-widest text-gray-600 font-bold">Desde</p>
                 <p className="font-serif text-lg font-bold text-text-primary">
                     {apartment.price_low}€ <span className="text-xs font-normal text-secondary">/ noche</span>
                 </p>
@@ -228,8 +229,8 @@ const ApartmentDetail = () => {
                         <ChevronLeft size={20} /> Volver
                     </Link>
                     <div className="hidden md:flex gap-4">
-                        <button className="p-2 hover:bg-gray-50 rounded-full transition-colors"><Share2 size={20} /></button>
-                        <button className="p-2 hover:bg-gray-50 rounded-full transition-colors"><Heart size={20} /></button>
+                        <button aria-label="Compartir apartamento" className="p-2 hover:bg-gray-50 rounded-full transition-colors"><Share2 size={20} /></button>
+                        <button aria-label="Añadir a favoritos" className="p-2 hover:bg-gray-50 rounded-full transition-colors"><Heart size={20} /></button>
                     </div>
                 </div>
             </nav>
@@ -290,11 +291,11 @@ const ApartmentDetail = () => {
 
                             <div className="grid sm:grid-cols-2 gap-4 mb-8">
                                 <div className="p-4 md:p-6 bg-gray-50 rounded-3xl border border-gray-100 text-center space-y-1">
-                                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Temporada Baja</p>
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-600">Temporada Baja</p>
                                     {apartment.price_low ? (
                                         <>
                                             <p className="text-3xl md:text-4xl font-serif font-bold text-rural-800">{apartment.price_low}<span className="text-lg">€</span></p>
-                                            <p className="text-[10px] text-gray-400 leading-none italic">/ por noche</p>
+                                            <p className="text-[10px] text-gray-600 leading-none italic">/ por noche</p>
                                         </>
                                     ) : (
                                         <p className="text-xl font-serif font-bold text-rural-600 italic">Consultar</p>
@@ -316,6 +317,15 @@ const ApartmentDetail = () => {
                             <div id="booking-widget" ref={bookingRef} className="scroll-mt-24">
                                 <BookingWidgetSection apartment={apartment} />
                             </div>
+
+                            <a
+                                href={whatsappLink(`Hola, ¿tenéis disponible el apartamento ${apartment.name} en Hinojares? Quería preguntar por las fechas y resolver alguna duda antes de reservar.`)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block text-center py-3 text-sm text-secondary hover:text-primary transition-colors"
+                            >
+                                ¿Dudas? <span className="font-bold underline">Pregunta por {apartment.name} en WhatsApp</span>
+                            </a>
                         </div>
 
                         <div className="space-y-6">

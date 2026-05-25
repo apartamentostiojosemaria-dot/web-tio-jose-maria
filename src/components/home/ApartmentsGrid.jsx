@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Flame, Wifi, Tv, UtensilsCrossed, Baby, Eye } from 'lucide-react';
 import FadeInUp from '../shared/FadeInUp';
-import { WP } from '../../constants/urls';
+import { WP, whatsappLink } from '../../constants/urls';
 
 const ApartmentsGrid = ({ apartments }) => {
     const defaultApartments = [
@@ -78,7 +78,7 @@ const ApartmentsGrid = ({ apartments }) => {
                 <FadeInUp>
                     <div className="text-center mt-14">
                         <p className="italic mb-3 text-secondary">Todos nuestros apartamentos están equipados con ropa de cama, toallas y menaje de cocina.</p>
-                        <a href="https://wa.me/34676344675" target="_blank" rel="noopener noreferrer" className="inline-block font-bold text-primary hover:underline">
+                        <a href={whatsappLink('Hola, estoy viendo los apartamentos y tengo dudas sobre cuál es el mejor para nosotros. ¿Me podríais ayudar a elegir?')} target="_blank" rel="noopener noreferrer" className="inline-block font-bold text-primary hover:underline">
                             ¿Tienes dudas sobre cuál elegir? Escríbenos &rarr;
                         </a>
                     </div>

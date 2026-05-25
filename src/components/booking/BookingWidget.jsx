@@ -141,14 +141,14 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
         const firstDay = (new Date(year, month, 1).getDay() + 6) % 7;
 
         return (
-            <div role="grid" aria-label={`Calendario ${MONTH_NAMES[month]} ${year}`}>
+            <div role="group" aria-label={`Calendario ${MONTH_NAMES[month]} ${year}`}>
                 <div className="flex justify-between items-center mb-4">
                     <button onClick={() => setCurrentMonth(new Date(year, month - 1, 1))} className="p-2 hover:bg-gray-100 rounded-full" aria-label="Mes anterior"><ChevronLeft size={16} /></button>
                     <span className="font-serif font-bold text-sm text-text-primary">{MONTH_NAMES[month]} {year}</span>
                     <button onClick={() => setCurrentMonth(new Date(year, month + 1, 1))} className="p-2 hover:bg-gray-100 rounded-full" aria-label="Mes siguiente"><ChevronRight size={16} /></button>
                 </div>
-                <div className="grid grid-cols-7 gap-1 mb-1" role="row">
-                    {DAY_NAMES.map(d => <span key={d} className="text-center text-[10px] font-bold text-gray-400" role="columnheader">{d}</span>)}
+                <div className="grid grid-cols-7 gap-1 mb-1" aria-hidden="true">
+                    {DAY_NAMES.map(d => <span key={d} className="text-center text-[10px] font-bold text-gray-500">{d}</span>)}
                 </div>
                 <div className="grid grid-cols-7 gap-1">
                     {Array.from({ length: firstDay }).map((_, i) => <div key={`e${i}`} />)}
@@ -196,7 +196,7 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
                     <h3 className="font-serif font-bold text-lg text-text-primary">Reserva Directa</h3>
                     <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-green-50 text-green-700">Sin comisiones</span>
                 </div>
-                <p className="text-xs text-gray-400">Mejor precio garantizado. Sin intermediarios.</p>
+                <p className="text-xs text-gray-600">Mejor precio garantizado. Sin intermediarios.</p>
             </div>
 
             <AnimatePresence mode="wait">
@@ -213,7 +213,7 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
                             </button>
                         </div>
                         {renderCalendar()}
-                        <div className="flex flex-wrap gap-3 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                        <div className="flex flex-wrap gap-3 text-[10px] font-bold uppercase tracking-widest text-gray-600">
                             <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-rural-700" /> Seleccionado</span>
                             <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-gray-200 line-through" /> Ocupado</span>
                         </div>
@@ -224,7 +224,7 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
                                     <span className="font-bold text-text-primary">{priceBreakdown.hasPrices ? `${priceBreakdown.total}€` : 'Precio a confirmar'}</span>
                                 </div>
                                 {priceBreakdown.hasPrices && priceBreakdown.lowNights > 0 && (
-                                    <div className="flex justify-between text-xs text-gray-400">
+                                    <div className="flex justify-between text-xs text-gray-600">
                                         <span>{priceBreakdown.lowNights} × {priceBreakdown.priceLow}€ (temp. baja)</span>
                                         <span>{priceBreakdown.lowNights * priceBreakdown.priceLow}€</span>
                                     </div>
@@ -235,7 +235,7 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
                                         <span>{priceBreakdown.highNights * priceBreakdown.priceHigh}€</span>
                                     </div>
                                 )}
-                                {!priceBreakdown.hasPrices && <p className="text-xs text-gray-400 italic">El precio final te lo confirmaremos tras enviar la solicitud.</p>}
+                                {!priceBreakdown.hasPrices && <p className="text-xs text-gray-600 italic">El precio final te lo confirmaremos tras enviar la solicitud.</p>}
                             </motion.div>
                         )}
                         {error && <p className="text-xs text-red-500 flex items-center gap-1" role="alert"><AlertCircle size={12} /> {error}</p>}
@@ -247,7 +247,7 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
 
                 {step === 2 && (
                     <motion.div key="details" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-5 space-y-4">
-                        <button onClick={() => setStep(1)} className="flex items-center gap-1 text-xs font-bold text-gray-400 hover:text-gray-600"><ChevronLeft size={14} /> Cambiar fechas</button>
+                        <button onClick={() => setStep(1)} className="flex items-center gap-1 text-xs font-bold text-gray-600 hover:text-gray-600"><ChevronLeft size={14} /> Cambiar fechas</button>
                         <div className="p-3 rounded-xl bg-rural-50 border border-rural-100 flex items-center justify-between text-sm">
                             <span className="font-bold text-text-primary">{formatDate(checkIn)} → {formatDate(checkOut)}</span>
                             <span className="font-bold text-primary">{priceBreakdown?.hasPrices ? `${priceBreakdown.total}€` : 'Precio a confirmar'}</span>
@@ -299,7 +299,7 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
 
                 {step === 3 && (
                     <motion.div key="confirm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-5 space-y-4">
-                        <button onClick={() => setStep(2)} className="flex items-center gap-1 text-xs font-bold text-gray-400 hover:text-gray-600"><ChevronLeft size={14} /> Modificar datos</button>
+                        <button onClick={() => setStep(2)} className="flex items-center gap-1 text-xs font-bold text-gray-600 hover:text-gray-600"><ChevronLeft size={14} /> Modificar datos</button>
                         <div className="p-5 rounded-2xl bg-rural-50 border border-rural-100 space-y-3">
                             <h4 className="font-serif font-bold text-text-primary">Resumen de tu reserva</h4>
                             <div className="space-y-2 text-sm">
@@ -338,12 +338,12 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
                             Te confirmamos por email a <strong>{form.email}</strong> antes de 24 h (normalmente mucho antes).
                         </p>
                         <div className="p-4 rounded-xl bg-rural-50 border border-rural-100">
-                            <p className="text-xs text-gray-400 mb-1">Resumen</p>
+                            <p className="text-xs text-gray-600 mb-1">Resumen</p>
                             <p className="font-bold text-sm text-text-primary">
                                 {checkIn?.toLocaleDateString('es-ES')} {'→'} {checkOut?.toLocaleDateString('es-ES')} {'·'} {priceBreakdown?.nights} noches{priceBreakdown?.hasPrices ? ` · ${priceBreakdown.total}€` : ''}
                             </p>
                         </div>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-gray-600">
                             La reserva no es firme hasta que la confirmamos.
                             Si tienes prisa o dudas, escr&iacute;benos directamente:
                         </p>

@@ -10,8 +10,8 @@ const Footer = () => (
                     Vivienda turística de Alojamiento Rural registrada en la Junta de Andalucía (VTAR/JA/00044). Tu casa en Hinojares.
                 </p>
                 <div className="flex gap-3">
-                    <a href="https://www.instagram.com/tiojosemaria_hinojares/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-footer-muted hover:bg-primary flex items-center justify-center transition-colors duration-300">
-                        <Instagram size={16} />
+                    <a href="https://www.instagram.com/tiojosemaria_hinojares/" target="_blank" rel="noopener noreferrer" aria-label="Síguenos en Instagram" className="w-10 h-10 rounded-full bg-footer-muted hover:bg-primary flex items-center justify-center transition-colors duration-300">
+                        <Instagram size={16} aria-hidden="true" />
                     </a>
                 </div>
             </div>

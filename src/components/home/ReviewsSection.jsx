@@ -148,10 +148,10 @@ const ReviewsSection = ({ reviews }) => {
                                     className="bg-white p-8 rounded-2xl shadow-sm h-full flex flex-col border border-gray-50 hover:shadow-md transition-shadow"
                                 >
                                     <div className="flex justify-between items-center mb-4">
-                                        <div className="flex gap-1 text-xs text-yellow-400" aria-label="5 estrellas">
+                                        <div role="img" aria-label="Valoración: 5 estrellas" className="flex gap-1 text-xs text-yellow-400">
                                             {[...Array(5)].map((_, star) => <span key={star} aria-hidden="true">&#9733;</span>)}
                                         </div>
-                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">{rev.source}</span>
+                                        <span className="text-[9px] font-bold text-gray-600 uppercase tracking-wider">{rev.source}</span>
                                     </div>
                                     <p className="text-sm italic flex-grow mb-6 leading-relaxed text-text-primary">
                                         &ldquo;{rev.text}&rdquo;
@@ -202,7 +202,7 @@ const ReviewsSection = ({ reviews }) => {
                     </div>
                 )}
 
-                <p className="text-center mt-4 text-xs text-gray-400">
+                <p className="text-center mt-4 text-xs text-gray-600">
                     {displayReviews.length} opiniones verificadas
                 </p>
             </div>

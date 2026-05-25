@@ -75,9 +75,18 @@ const PrivacyPolicy = () => (
                     Para ejercer estos derechos, contacta con nosotros en <a href="mailto:info@tiojosemaria.com" className="underline text-primary">info@tiojosemaria.com</a>. También puedes presentar una reclamación ante la <a href="https://www.aepd.es" target="_blank" rel="noopener noreferrer" className="underline text-primary">Agencia Española de Protección de Datos</a>.
                 </p>
 
-                <h2 className="font-serif text-xl font-bold mt-8 mb-3 text-text-primary">8. Cookies</h2>
+                <h2 className="font-serif text-xl font-bold mt-8 mb-3 text-text-primary">8. Cookies y almacenamiento local</h2>
+                <p className="text-gray-600 leading-relaxed mb-2">
+                    Este sitio utiliza únicamente cookies técnicas y almacenamiento local necesarios para el funcionamiento del sitio, en aplicación del artículo 22.2 de la LSSI (exentas de consentimiento previo). No utilizamos cookies de seguimiento, publicidad ni analíticas de terceros.
+                </p>
+                <p className="text-gray-600 leading-relaxed mb-2">Detalle de lo que se almacena en tu navegador:</p>
+                <ul className="text-gray-600 space-y-1 mb-4 list-disc pl-6">
+                    <li><strong>tjm_cookie_consent</strong> (localStorage): registra que has visto el aviso de cookies para no mostrarlo en cada visita.</li>
+                    <li><strong>sb-* (Supabase auth)</strong> (localStorage): token de sesión solo cuando inicias sesión en el área de cliente o admin. Se borra al cerrar sesión.</li>
+                    <li><strong>Service Worker y caché PWA</strong>: guarda recursos del sitio (HTML, imágenes, mapas) para que funcione offline y cargue más rápido. No contiene datos personales.</li>
+                </ul>
                 <p className="text-gray-600 leading-relaxed mb-4">
-                    Este sitio web utiliza únicamente cookies técnicas necesarias para el funcionamiento de la autenticación de usuarios. No utilizamos cookies de seguimiento, publicidad ni analíticas de terceros.
+                    Puedes eliminar estos datos en cualquier momento desde la configuración de tu navegador (sección de privacidad o cookies de cada navegador).
                 </p>
             </div>
         </main>
