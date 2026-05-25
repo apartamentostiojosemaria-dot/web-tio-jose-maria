@@ -30,7 +30,7 @@
   "dependencies": {
     "@google/stitch-sdk": "^0.0.3",
     "@supabase/supabase-js": "^2.97.0",
-    "dompurify": "^3.2.4",
+    "dompurify": "^3.4.5",
     "leaflet": "^1.9.4",
     "qrcode.react": "^4.2.0",
     "react-helmet-async": "^3.0.0",
