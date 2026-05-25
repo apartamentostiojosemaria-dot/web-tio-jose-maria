@@ -1,8 +1,38 @@
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Map, ArrowRight } from 'lucide-react';
 import FadeInUp from '../shared/FadeInUp';
-import InteractiveMap from '../maps/InteractiveMap';
 import { WP } from '../../constants/urls';
+
+// Leaflet pesa ~146 KB. Lo aislamos en su propio chunk y solo lo cargamos
+// cuando la seccion del mapa entra en viewport — la mayoria de visitantes
+// movil se quedan arriba mirando apartamentos y nunca llegan a verlo.
+const InteractiveMap = lazy(() => import('../maps/InteractiveMap'));
+
+const MapWhenVisible = ({ routes }) => {
+    const ref = useRef(null);
+    const [visible, setVisible] = useState(false);
+    useEffect(() => {
+        if (visible) return;
+        const obs = new IntersectionObserver(
+            (entries) => entries.forEach(e => e.isIntersecting && setVisible(true)),
+            { rootMargin: '200px' }
+        );
+        if (ref.current) obs.observe(ref.current);
+        return () => obs.disconnect();
+    }, [visible]);
+    return (
+        <div ref={ref} className="rounded-2xl overflow-hidden shadow-lg border border-gray-100 min-h-[300px] bg-rural-50">
+            {visible ? (
+                <Suspense fallback={<div className="h-[300px] flex items-center justify-center text-rural-700 italic font-serif animate-pulse">Cargando mapa...</div>}>
+                    <InteractiveMap routes={routes} compact />
+                </Suspense>
+            ) : (
+                <div className="h-[300px]" aria-hidden="true" />
+            )}
+        </div>
+    );
+};
 
 const GRID_IMAGES = [
     { fallback: `${WP}/hinojaresPueblo.jpg`, alt: 'Hinojares pueblo blanco' },
@@ -93,9 +123,7 @@ const EntornoSection = ({ places, routes }) => {
                                 <ArrowRight size={14} />
                             </Link>
                         </div>
-                        <div className="rounded-2xl overflow-hidden shadow-lg border border-gray-100">
-                            <InteractiveMap routes={routes} compact />
-                        </div>
+                        <MapWhenVisible routes={routes} />
                     </div>
                 </FadeInUp>
             )}
