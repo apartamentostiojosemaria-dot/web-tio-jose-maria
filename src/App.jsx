@@ -15,6 +15,7 @@ const EventsPage = lazy(() => import('./pages/EventsPage'));
 const HinojaresPage = lazy(() => import('./pages/HinojaresPage'));
 const AdminLogin = lazy(() => import('./components/admin/AdminLogin'));
 const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard'));
+const AdminResponse = lazy(() => import('./pages/AdminResponse'));
 const BlogPage = lazy(() => import('./pages/BlogPage'));
 const BlogPostDetail = lazy(() => import('./pages/BlogPostDetail'));
 const NotFound = lazy(() => import('./pages/NotFound'));
@@ -83,6 +84,7 @@ export default function App() {
                             path="/admin"
                             element={!session ? <AdminLogin /> : (userProfile?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/" replace />)}
                         />
+                        <Route path="/admin/respuesta" element={<AdminResponse />} />
                         <Route path="/clientes" element={<Navigate to="/" replace />} />
                         <Route path="*" element={<NotFound />} />
                     </Routes>
