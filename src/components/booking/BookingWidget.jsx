@@ -318,11 +318,11 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
                         </div>
                         <div className="p-3 rounded-xl bg-amber-50 border border-amber-100 text-xs text-amber-700 flex items-start gap-2">
                             <AlertCircle size={14} className="shrink-0 mt-0.5" />
-                            <span>Al confirmar, recibiras un email con los detalles. El pago se realiza directamente con el propietario. La reserva queda sujeta a confirmacion.</span>
+                            <span>Al enviar la solicitud bloqueamos provisionalmente estas fechas y te confirmamos la disponibilidad antes de 24 h. El pago se realiza directamente con el propietario.</span>
                         </div>
                         {error && <p className="text-xs text-red-500 flex items-center gap-1" role="alert"><AlertCircle size={12} /> {error}</p>}
                         <button disabled={submitting} onClick={handleSubmit} className="w-full py-3.5 rounded-2xl font-bold text-white text-sm flex items-center justify-center gap-2 bg-primary transition-all hover:shadow-lg disabled:opacity-60">
-                            {submitting ? 'Enviando...' : 'Confirmar reserva'} {!submitting && <Check size={16} />}
+                            {submitting ? 'Enviando...' : 'Enviar solicitud'} {!submitting && <Check size={16} />}
                         </button>
                     </motion.div>
                 )}
