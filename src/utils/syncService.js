@@ -1,12 +1,44 @@
 import { supabase } from '../lib/supabase';
 import { logError } from './logger';
 
+// Whitelist defensiva: solo permitimos URLs iCal de Airbnb y Booking.
+// Sin esto, un admin malicioso (o admin con sesion comprometida) podria
+// meter cualquier URL — incluido endpoints internos via los proxies
+// publicos — y exfiltrar info o escanear redes desde nuestra IP origen.
+const ALLOWED_ICAL_HOSTS = [
+    'airbnb.com', 'airbnb.es', 'airbnb.it', 'airbnb.fr', 'airbnb.de',
+    'ical.booking.com', 'admin.booking.com',
+];
+
+export const isValidIcalUrl = (url) => {
+    if (!url || typeof url !== 'string') return false;
+    try {
+        const u = new URL(url);
+        if (u.protocol !== 'https:' && u.protocol !== 'http:') return false;
+        return ALLOWED_ICAL_HOSTS.some(h => u.hostname === h || u.hostname.endsWith('.' + h));
+    } catch {
+        return false;
+    }
+};
+
 export const syncApartmentDates = async (apt) => {
     let syncCount = 0;
     let diagnosticMsg = '';
 
     // 1. Intentar sincronización desde Airbnb/Booking/Holidu
     if (apt.airbnb_ical_url || apt.booking_ical_url) {
+        // Filtrar URLs no permitidas (defense in depth contra SSRF)
+        if (apt.airbnb_ical_url && !isValidIcalUrl(apt.airbnb_ical_url)) {
+            diagnosticMsg += `\n- airbnb: URL no permitida (solo hosts oficiales Airbnb).`;
+            apt = { ...apt, airbnb_ical_url: null };
+        }
+        if (apt.booking_ical_url && !isValidIcalUrl(apt.booking_ical_url)) {
+            diagnosticMsg += `\n- booking: URL no permitida (solo ical.booking.com).`;
+            apt = { ...apt, booking_ical_url: null };
+        }
+        if (!apt.airbnb_ical_url && !apt.booking_ical_url) {
+            return { count: 0, message: diagnosticMsg };
+        }
         try {
             const allBlockedDates = [];
             const urls = [

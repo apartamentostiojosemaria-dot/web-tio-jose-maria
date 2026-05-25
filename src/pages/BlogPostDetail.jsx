@@ -1,9 +1,13 @@
 import { Link, useParams } from 'react-router-dom';
 import { ChevronLeft, Clock, Calendar, Tag, ArrowRight } from 'lucide-react';
+import DOMPurify from 'dompurify';
 import { useBlogPost, useBlogPosts } from '../hooks/useDatabase';
 import { BreadcrumbJsonLd } from '../components/seo/JsonLd';
 import PageHead from '../components/seo/PageHead';
 import FadeInUp from '../components/shared/FadeInUp';
+
+// Escapar </script> en JSON-LD para evitar XSS si algún campo del post lo contiene
+const safeJson = (data) => JSON.stringify(data).replace(/</g, '\\u003c');
 
 const BlogPostJsonLd = ({ post }) => {
     if (!post) return null;
@@ -35,7 +39,7 @@ const BlogPostJsonLd = ({ post }) => {
     return (
         <script
             type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+            dangerouslySetInnerHTML={{ __html: safeJson(data) }}
         />
     );
 };
@@ -160,7 +164,7 @@ const BlogPostDetail = () => {
                             [&_img]:rounded-xl [&_img]:shadow-lg [&_img]:my-6
                             [&_blockquote]:border-l-4 [&_blockquote]:border-primary/30 [&_blockquote]:pl-6 [&_blockquote]:italic [&_blockquote]:text-secondary
                             [&_strong]:text-text-primary"
-                        dangerouslySetInnerHTML={{ __html: post.content }}
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content || '', { ADD_ATTR: ['target', 'rel'] }) }}
                     />
 
                     {/* Tags */}
