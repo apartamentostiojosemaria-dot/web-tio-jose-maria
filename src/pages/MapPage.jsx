@@ -137,6 +137,9 @@ const MapPage = () => {
                                                                 <Navigation size={16} /> Cómo llegar al inicio
                                                             </a>
                                                         )}
+                                                        {route.image_credit && (
+                                                            <p className="mt-4 text-[10px] text-gray-400 italic">Foto: {route.image_credit}</p>
+                                                        )}
                                                     </motion.div>
                                                 )}
                                             </motion.div>
