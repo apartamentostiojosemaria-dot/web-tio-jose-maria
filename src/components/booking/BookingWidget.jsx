@@ -85,28 +85,48 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
 
     const formatDate = (d) => d ? `${d.getDate()} ${MONTH_NAMES[d.getMonth()].substring(0, 3)}` : '\u2014';
 
+    // Formato YYYY-MM-DD respetando zona horaria local (toISOString convierte
+    // a UTC y rompe fechas en zonas con offset positivo: 2026-09-08 00:00 CEST
+    // pasa a 2026-09-07 22:00 UTC y queda guardado como 7 en BD).
+    const toLocalDateString = (d) => {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    };
+
     const handleSubmit = async () => {
         if (!form.name || !form.email || !checkIn || !checkOut) return;
         setSubmitting(true);
         setError(null);
-        const checkInStr = checkIn.toISOString().split('T')[0];
-        const checkOutStr = checkOut.toISOString().split('T')[0];
+        const checkInStr = toLocalDateString(checkIn);
+        const checkOutStr = toLocalDateString(checkOut);
 
-        const { error: insertError } = await supabase.from('guest_bookings').insert({
-            apartment_id: apartment.id, guest_name: form.name, guest_email: form.email,
-            guest_phone: form.phone, pax_count: form.pax, check_in: checkInStr, check_out: checkOutStr,
-            total_price: priceBreakdown.total, price_breakdown: priceBreakdown, notes: form.notes, source: 'web',
-        });
+        const { data: insertedRow, error: insertError } = await supabase
+            .from('guest_bookings')
+            .insert({
+                apartment_id: apartment.id, guest_name: form.name, guest_email: form.email,
+                guest_phone: form.phone, pax_count: form.pax, check_in: checkInStr, check_out: checkOutStr,
+                total_price: priceBreakdown.total, price_breakdown: priceBreakdown, notes: form.notes, source: 'web',
+            })
+            .select('id')
+            .single();
 
         if (insertError) {
             logError('BookingWidget.submit', insertError);
             setError('Ha ocurrido un error. Intentalo de nuevo o contacta por WhatsApp.');
             setSubmitting(false);
         } else {
-            await supabase.from('blocked_dates').insert({ apartment_id: apartment.id, start_date: checkInStr, end_date: checkOutStr, source: 'booking_pending' });
+            // El bloqueo de fechas y el envio de emails los hace la edge function
+            // con service role (el anon key no tiene permiso para insert en
+            // blocked_dates). Pasamos el booking_id para que pueda releerlo si
+            // lo necesita.
             try {
                 await supabase.functions.invoke('notify-booking', {
-                    body: { booking_data: { apartment_name: apartment.name, apartments: { name: apartment.name }, guest_name: form.name, guest_email: form.email, guest_phone: form.phone, pax_count: form.pax, check_in: checkInStr, check_out: checkOutStr, total_price: priceBreakdown?.total, notes: form.notes } },
+                    body: {
+                        booking_id: insertedRow?.id,
+                        booking_data: { apartment_name: apartment.name, apartments: { name: apartment.name }, guest_name: form.name, guest_email: form.email, guest_phone: form.phone, pax_count: form.pax, check_in: checkInStr, check_out: checkOutStr, total_price: priceBreakdown?.total, notes: form.notes }
+                    },
                 });
             } catch (e) { logError('BookingWidget.notify', e); }
             setStep(4);
@@ -201,18 +221,18 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 rounded-2xl bg-rural-50 border border-rural-100 space-y-2">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-gray-600">{priceBreakdown.nights} {priceBreakdown.nights === 1 ? 'noche' : 'noches'}</span>
-                                    <span className="font-bold text-text-primary">{priceBreakdown.hasPrices ? `${priceBreakdown.total}\u20AC` : 'Precio a confirmar'}</span>
+                                    <span className="font-bold text-text-primary">{priceBreakdown.hasPrices ? `${priceBreakdown.total}€` : 'Precio a confirmar'}</span>
                                 </div>
                                 {priceBreakdown.hasPrices && priceBreakdown.lowNights > 0 && (
                                     <div className="flex justify-between text-xs text-gray-400">
-                                        <span>{priceBreakdown.lowNights} \u00D7 {priceBreakdown.priceLow}\u20AC (temp. baja)</span>
-                                        <span>{priceBreakdown.lowNights * priceBreakdown.priceLow}\u20AC</span>
+                                        <span>{priceBreakdown.lowNights} × {priceBreakdown.priceLow}€ (temp. baja)</span>
+                                        <span>{priceBreakdown.lowNights * priceBreakdown.priceLow}€</span>
                                     </div>
                                 )}
                                 {priceBreakdown.hasPrices && priceBreakdown.highNights > 0 && (
                                     <div className="flex justify-between text-xs text-amber-600">
-                                        <span>{priceBreakdown.highNights} \u00D7 {priceBreakdown.priceHigh}\u20AC (temp. alta)</span>
-                                        <span>{priceBreakdown.highNights * priceBreakdown.priceHigh}\u20AC</span>
+                                        <span>{priceBreakdown.highNights} × {priceBreakdown.priceHigh}€ (temp. alta)</span>
+                                        <span>{priceBreakdown.highNights * priceBreakdown.priceHigh}€</span>
                                     </div>
                                 )}
                                 {!priceBreakdown.hasPrices && <p className="text-xs text-gray-400 italic">El precio final te lo confirmaremos tras enviar la solicitud.</p>}
@@ -229,8 +249,8 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
                     <motion.div key="details" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-5 space-y-4">
                         <button onClick={() => setStep(1)} className="flex items-center gap-1 text-xs font-bold text-gray-400 hover:text-gray-600"><ChevronLeft size={14} /> Cambiar fechas</button>
                         <div className="p-3 rounded-xl bg-rural-50 border border-rural-100 flex items-center justify-between text-sm">
-                            <span className="font-bold text-text-primary">{formatDate(checkIn)} \u2192 {formatDate(checkOut)}</span>
-                            <span className="font-bold text-primary">{priceBreakdown?.hasPrices ? `${priceBreakdown.total}\u20AC` : 'Precio a confirmar'}</span>
+                            <span className="font-bold text-text-primary">{formatDate(checkIn)} → {formatDate(checkOut)}</span>
+                            <span className="font-bold text-primary">{priceBreakdown?.hasPrices ? `${priceBreakdown.total}€` : 'Precio a confirmar'}</span>
                         </div>
                         <div className="space-y-3">
                             <div>
@@ -293,7 +313,7 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
                                 <div className="flex justify-between"><span className="text-gray-500">Email</span><span className="font-bold text-xs">{form.email}</span></div>
                                 {form.phone && <div className="flex justify-between"><span className="text-gray-500">Telefono</span><span className="font-bold">{form.phone}</span></div>}
                                 <hr className="border-rural-200" />
-                                <div className="flex justify-between text-lg"><span className="font-bold text-text-primary">Total</span><span className="font-bold text-primary">{priceBreakdown?.hasPrices ? `${priceBreakdown.total}\u20AC` : 'A confirmar'}</span></div>
+                                <div className="flex justify-between text-lg"><span className="font-bold text-text-primary">Total</span><span className="font-bold text-primary">{priceBreakdown?.hasPrices ? `${priceBreakdown.total}€` : 'A confirmar'}</span></div>
                             </div>
                         </div>
                         <div className="p-3 rounded-xl bg-amber-50 border border-amber-100 text-xs text-amber-700 flex items-start gap-2">
@@ -320,7 +340,7 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
                         <div className="p-4 rounded-xl bg-rural-50 border border-rural-100">
                             <p className="text-xs text-gray-400 mb-1">Resumen</p>
                             <p className="font-bold text-sm text-text-primary">
-                                {checkIn?.toLocaleDateString('es-ES')} {'\u2192'} {checkOut?.toLocaleDateString('es-ES')} {'\u00B7'} {priceBreakdown?.nights} noches{priceBreakdown?.hasPrices ? ` \u00B7 ${priceBreakdown.total}\u20AC` : ''}
+                                {checkIn?.toLocaleDateString('es-ES')} {'→'} {checkOut?.toLocaleDateString('es-ES')} {'·'} {priceBreakdown?.nights} noches{priceBreakdown?.hasPrices ? ` · ${priceBreakdown.total}€` : ''}
                             </p>
                         </div>
                         <p className="text-xs text-gray-400">
