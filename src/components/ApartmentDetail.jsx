@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApartment, useBlockedDates, useHighSeasons } from '../hooks/useDatabase';
@@ -138,10 +138,56 @@ const BookingWidgetSection = ({ apartment }) => {
     return <BookingWidget apartment={apartment} blockedDates={blockedDates} highSeasons={seasons} />;
 };
 
+// Botón flotante en móvil que lleva al BookingWidget. Se oculta cuando el
+// widget ya está a la vista para no tapar nada.
+const StickyMobileCTA = ({ apartment, bookingRef }) => {
+    const [visible, setVisible] = useState(true);
+    useEffect(() => {
+        const target = bookingRef.current;
+        if (!target) return;
+        const obs = new IntersectionObserver(
+            ([entry]) => setVisible(!entry.isIntersecting),
+            { threshold: 0.1 }
+        );
+        obs.observe(target);
+        return () => obs.disconnect();
+    }, [bookingRef]);
+
+    if (!visible) return null;
+
+    const scrollToWidget = (e) => {
+        e.preventDefault();
+        bookingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    return (
+        <div
+            className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-100 shadow-[0_-4px_12px_rgba(0,0,0,0.06)] px-4 py-3 flex items-center justify-between gap-3"
+            role="region"
+            aria-label="Reservar este apartamento"
+        >
+            <div className="leading-tight">
+                <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Desde</p>
+                <p className="font-serif text-lg font-bold text-text-primary">
+                    {apartment.price_low}€ <span className="text-xs font-normal text-secondary">/ noche</span>
+                </p>
+            </div>
+            <a
+                href="#booking-widget"
+                onClick={scrollToWidget}
+                className="flex-1 max-w-[200px] py-3 rounded-full text-center text-sm font-bold text-white bg-primary shadow-lg active:scale-95 transition-transform"
+            >
+                Reservar
+            </a>
+        </div>
+    );
+};
+
 const ApartmentDetail = () => {
     const { slug } = useParams();
     const { apartment, loading } = useApartment(slug);
     const [activeImg, setActiveImg] = useState(0);
+    const bookingRef = useRef(null);
 
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center bg-rural-50 font-serif italic text-rural-700 animate-pulse">
@@ -267,7 +313,9 @@ const ApartmentDetail = () => {
                                 </div>
                             </div>
 
-                            <BookingWidgetSection apartment={apartment} />
+                            <div id="booking-widget" ref={bookingRef} className="scroll-mt-24">
+                                <BookingWidgetSection apartment={apartment} />
+                            </div>
                         </div>
 
                         <div className="space-y-6">
@@ -309,6 +357,8 @@ const ApartmentDetail = () => {
                     </Link>
                 </div>
             </section>
+
+            <StickyMobileCTA apartment={apartment} bookingRef={bookingRef} />
         </div>
     );
 };
