@@ -6,7 +6,7 @@ import {
     TreePine, UtensilsCrossed, Palette, PartyPopper, Mountain, RefreshCw
 } from 'lucide-react';
 import PageHead from '../components/seo/PageHead';
-import { BreadcrumbJsonLd } from '../components/seo/JsonLd';
+import { BreadcrumbJsonLd, EventsListJsonLd } from '../components/seo/JsonLd';
 import { useLocalEvents } from '../hooks/useDatabase';
 
 const SEASONS = [
@@ -87,6 +87,7 @@ const EventsPage = () => {
                 { name: 'Inicio', url: 'https://tiojosemaria.com/' },
                 { name: 'Eventos', url: 'https://tiojosemaria.com/eventos' }
             ]} />
+            <EventsListJsonLd events={events} />
             {/* Hero */}
             <div className="relative h-[340px] md:h-[420px] overflow-hidden">
                 <AnimatePresence mode="wait">

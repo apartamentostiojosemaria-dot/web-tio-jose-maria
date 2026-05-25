@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MapPin, Phone, Clock, ChevronDown, ArrowLeft, ExternalLink, Utensils, Shield, Landmark, TreePine, ShoppingBag, Activity } from 'lucide-react';
 import PageHead from '../components/seo/PageHead';
-import { BreadcrumbJsonLd } from '../components/seo/JsonLd';
+import { BreadcrumbJsonLd, TouristDestinationJsonLd } from '../components/seo/JsonLd';
 import { WP } from '../constants/urls';
 import { useLocalPlaces } from '../hooks/useDatabase';
 import FadeInUp from '../components/shared/FadeInUp';
@@ -65,6 +65,7 @@ export default function HinojaresPage() {
                 { name: 'Inicio', url: 'https://tiojosemaria.com/' },
                 { name: 'Hinojares', url: 'https://tiojosemaria.com/hinojares' }
             ]} />
+            <TouristDestinationJsonLd />
             {/* Hero */}
             <section className="relative h-[70vh] min-h-[500px] flex items-end overflow-hidden">
                 <div className="absolute inset-0">

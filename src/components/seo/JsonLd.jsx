@@ -135,6 +135,138 @@ export const ApartmentJsonLd = ({ apartment, reviews }) => {
     return <JsonLd data={data} />;
 };
 
+export const TouristDestinationJsonLd = () => {
+    const data = {
+        '@context': 'https://schema.org',
+        '@type': 'TouristDestination',
+        '@id': 'https://tiojosemaria.com/hinojares#destination',
+        name: 'Hinojares',
+        alternateName: ['Hins-Nojar', 'Traxinum'],
+        description: 'Hinojares es el municipio más pequeño de la provincia de Jaén, con unos 343 habitantes y 2.500 años de historia. Ubicado en la Sierra de Cazorla, conserva tres barrios históricos: Barrio Bajo, Barrio Alto y Cuevas Nuevas.',
+        url: 'https://tiojosemaria.com/hinojares',
+        image: 'https://tiojosemaria.com/og-default.jpg',
+        geo: {
+            '@type': 'GeoCoordinates',
+            latitude: 37.7167,
+            longitude: -2.9
+        },
+        address: {
+            '@type': 'PostalAddress',
+            addressLocality: 'Hinojares',
+            addressRegion: 'Jaén',
+            postalCode: '23486',
+            addressCountry: 'ES'
+        },
+        containedInPlace: {
+            '@type': 'AdministrativeArea',
+            name: 'Sierra de Cazorla, Segura y Las Villas'
+        },
+        touristType: ['Cultural', 'Naturaleza', 'Gastronómico', 'Rural']
+    };
+    return <JsonLd data={data} />;
+};
+
+const ROUTE_DIFFICULTY_MAP = {
+    'Facil': 'easy',
+    'Media': 'moderate',
+    'Media-Alta': 'difficult',
+    'Alta': 'difficult',
+};
+
+export const RoutesListJsonLd = ({ routes }) => {
+    if (!routes || routes.length === 0) return null;
+
+    const data = {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        '@id': 'https://tiojosemaria.com/rutas#list',
+        name: 'Rutas y Excursiones cerca de Hinojares',
+        description: 'Senderos, cascadas y pueblos con encanto en la Sierra de Cazorla, desde la puerta de Apartamentos Tío José María.',
+        numberOfItems: routes.length,
+        itemListElement: routes.map((route, i) => ({
+            '@type': 'ListItem',
+            position: i + 1,
+            item: {
+                '@type': 'TouristAttraction',
+                name: route.title,
+                description: route.description,
+                image: route.image_url || undefined,
+                url: route.map_url || `https://tiojosemaria.com/rutas#ruta-${route.id}`,
+                touristType: ROUTE_DIFFICULTY_MAP[route.difficulty] || 'moderate',
+                isAccessibleForFree: true
+            }
+        }))
+    };
+    return <JsonLd data={data} />;
+};
+
+const SEASON_DATES = {
+    primavera: { start: '03-21', end: '06-20' },
+    verano: { start: '06-21', end: '09-20' },
+    otoño: { start: '09-21', end: '12-20' },
+    invierno: { start: '12-21', end: '03-20' },
+};
+
+const buildEventDates = (event) => {
+    if (event.event_date) {
+        return {
+            startDate: event.event_date,
+            endDate: event.end_date || event.event_date
+        };
+    }
+    // Recurrente sin fecha exacta: aproxima por estacion en el año actual
+    const season = SEASON_DATES[event.season];
+    if (!season) return {};
+    const year = new Date().getFullYear();
+    return { startDate: `${year}-${season.start}`, endDate: `${year}-${season.end}` };
+};
+
+export const EventsListJsonLd = ({ events }) => {
+    if (!events || events.length === 0) return null;
+
+    const items = events.map((event, i) => {
+        const dates = buildEventDates(event);
+        return {
+            '@type': 'ListItem',
+            position: i + 1,
+            item: {
+                '@type': 'Event',
+                name: event.title,
+                description: event.description,
+                image: event.image_url || undefined,
+                ...dates,
+                eventStatus: 'https://schema.org/EventScheduled',
+                eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+                location: {
+                    '@type': 'Place',
+                    name: event.location || 'Hinojares, Sierra de Cazorla',
+                    address: {
+                        '@type': 'PostalAddress',
+                        addressLocality: 'Hinojares',
+                        addressRegion: 'Jaén',
+                        addressCountry: 'ES'
+                    }
+                },
+                organizer: {
+                    '@type': 'Organization',
+                    name: 'Apartamentos Rurales Tío José María',
+                    url: 'https://tiojosemaria.com'
+                }
+            }
+        };
+    });
+
+    const data = {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        '@id': 'https://tiojosemaria.com/eventos#list',
+        name: 'Eventos y Experiencias en la Sierra de Cazorla',
+        numberOfItems: items.length,
+        itemListElement: items
+    };
+    return <JsonLd data={data} />;
+};
+
 export const BreadcrumbJsonLd = ({ items }) => {
     const data = {
         '@context': 'https://schema.org',

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronLeft, MapPin, Clock, Car, Footprints, Star, ChevronDown, Navigation } from 'lucide-react';
 import PageHead from '../components/seo/PageHead';
-import { BreadcrumbJsonLd } from '../components/seo/JsonLd';
+import { BreadcrumbJsonLd, RoutesListJsonLd } from '../components/seo/JsonLd';
 import { useRoutes } from '../hooks/useDatabase';
 import InteractiveMap from '../components/maps/InteractiveMap';
 
@@ -39,6 +39,7 @@ const MapPage = () => {
                 { name: 'Inicio', url: 'https://tiojosemaria.com/' },
                 { name: 'Rutas y Excursiones', url: 'https://tiojosemaria.com/rutas' }
             ]} />
+            <RoutesListJsonLd routes={routes} />
             <header className="relative bg-white border-b border-gray-100">
                 <div className="max-w-5xl mx-auto px-4 pt-6 pb-8">
                     <Link to="/" className="inline-flex items-center gap-1 text-sm font-medium mb-6 text-primary hover:opacity-70 transition-opacity">
