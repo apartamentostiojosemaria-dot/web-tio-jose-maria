@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 const SITE_NAME = 'Tío José María';
 const HOME_TITLE = 'Apartamentos Rurales Tío José María | Hinojares';
 const BASE_URL = 'https://tiojosemaria.com';
-const DEFAULT_IMAGE = 'https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/general/slide3.jpg';
+const DEFAULT_IMAGE = 'https://tiojosemaria.com/og-default.jpg';
 
 const PageHead = ({
     title,

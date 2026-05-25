@@ -8,7 +8,6 @@ const PrivacyPolicy = () => (
             title="Política de Privacidad"
             description="Política de privacidad de Apartamentos Rurales Tío José María. Información sobre el tratamiento de datos personales, cookies y derechos del usuario."
             path="/privacidad"
-            noindex={true}
         />
         <nav className="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4">
             <div className="max-w-4xl mx-auto flex items-center">

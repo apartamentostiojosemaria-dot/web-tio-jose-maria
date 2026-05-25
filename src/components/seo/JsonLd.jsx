@@ -5,7 +5,8 @@ const JsonLd = ({ data }) => {
         const script = document.createElement('script');
         script.type = 'application/ld+json';
         script.text = JSON.stringify(data);
-        script.id = `jsonld-${data['@type'] || 'generic'}`;
+        // Usa @id si existe para evitar colisiones (p.ej. dos LodgingBusiness)
+        script.id = `jsonld-${data['@id'] || data['@type'] || 'generic'}`;
 
         const existing = document.getElementById(script.id);
         if (existing) existing.remove();
@@ -20,8 +21,10 @@ const JsonLd = ({ data }) => {
     return null;
 };
 
+// El LodgingBusiness base esta inyectado estatico en index.html para que sea
+// visible a todos los rastreadores sin JS. Aqui solo añadimos los datos
+// dinamicos (reviews + rango de precios real) como un nodo complementario.
 export const HomeJsonLd = ({ reviews, apartments }) => {
-    // Las reviews usan 'rating' (1-5). Si por alguna razon falta, usa 5.
     const avgRating = reviews.length > 0
         ? reviews.reduce((sum, r) => sum + (parseFloat(r.rating) || 5), 0) / reviews.length
         : 4.75;
@@ -30,51 +33,24 @@ export const HomeJsonLd = ({ reviews, apartments }) => {
         ? `${Math.min(...apartments.map(a => Number(a.price_low) || 60))}€ - ${Math.max(...apartments.map(a => Number(a.price_high) || 110))}€`
         : '60€ - 110€';
 
-    const businessData = {
+    const data = {
         '@context': 'https://schema.org',
         '@type': 'LodgingBusiness',
+        '@id': 'https://tiojosemaria.com/#lodging',
         name: 'Apartamentos Rurales Tío José María',
-        description: 'Alojamiento rural con encanto en Hinojares, Sierra de Cazorla. Casa del siglo XVII restaurada con 4 apartamentos exclusivos.',
         url: 'https://tiojosemaria.com',
-        telephone: '+34676344675',
-        email: 'info@tiojosemaria.com',
         priceRange,
-        address: {
-            '@type': 'PostalAddress',
-            streetAddress: 'Calle Baja 1',
-            addressLocality: 'Hinojares',
-            addressRegion: 'Jaén',
-            postalCode: '23486',
-            addressCountry: 'ES'
-        },
-        geo: {
-            '@type': 'GeoCoordinates',
-            latitude: 37.7167,
-            longitude: -2.9
-        },
-        image: 'https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/general/slide3.jpg',
-        starRating: {
-            '@type': 'Rating',
-            ratingValue: '4'
-        },
+        numberOfRooms: apartments.length || 4,
         aggregateRating: {
             '@type': 'AggregateRating',
             ratingValue: avgRating.toFixed(1),
             bestRating: '5',
             worstRating: '1',
             reviewCount: String(Math.max(reviews.length, 1))
-        },
-        amenityFeature: [
-            { '@type': 'LocationFeatureSpecification', name: 'WiFi Gratis', value: true },
-            { '@type': 'LocationFeatureSpecification', name: 'Chimenea', value: true },
-            { '@type': 'LocationFeatureSpecification', name: 'Calefacción', value: true },
-            { '@type': 'LocationFeatureSpecification', name: 'Cocina equipada', value: true }
-        ],
-        numberOfRooms: apartments.length || 4,
-        petsAllowed: false
+        }
     };
 
-    return <JsonLd data={businessData} />;
+    return <JsonLd data={data} />;
 };
 
 // Mapeo de codigos internos de amenities a nombres humanos para Schema.org

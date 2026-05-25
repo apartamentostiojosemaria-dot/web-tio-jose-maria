@@ -16,7 +16,7 @@
     <meta property="og:title" content="Apartamentos Rurales Tío José María | Hinojares">
     <meta property="og:description"
         content="Alojamiento rural con alma en el sur de Cazorla. 4 apartamentos en una casa del siglo XVII restaurada.">
-    <meta property="og:image" content="https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/general/slide3.jpg">
+    <meta property="og:image" content="https://tiojosemaria.com/og-default.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="Vista de la casa del siglo XVII de Apartamentos Tío José María en Hinojares">
@@ -27,11 +27,66 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Apartamentos Rurales Tío José María | Hinojares">
     <meta name="twitter:description" content="Alojamiento rural con alma en el sur de Cazorla. 4 apartamentos en una casa del siglo XVII restaurada.">
-    <meta name="twitter:image" content="https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/general/slide3.jpg">
+    <meta name="twitter:image" content="https://tiojosemaria.com/og-default.jpg">
+
+    <!-- Geo -->
+    <meta name="geo.region" content="ES-J">
+    <meta name="geo.placename" content="Hinojares, Jaén">
+    <meta name="geo.position" content="37.7167;-2.9">
+    <meta name="ICBM" content="37.7167, -2.9">
 
     <!-- PWA -->
     <meta name="theme-color" content="#556B2F">
+    <link rel="icon" type="image/png" href="/assets/pwa-192.png">
     <link rel="apple-touch-icon" href="/assets/pwa-192.png">
+
+    <!-- JSON-LD: LodgingBusiness estatico (visible para todos los rastreadores sin JS) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LodgingBusiness",
+      "name": "Apartamentos Rurales Tío José María",
+      "description": "Alojamiento rural con encanto en Hinojares, Sierra de Cazorla. Casa del siglo XVII restaurada con 4 apartamentos exclusivos.",
+      "url": "https://tiojosemaria.com",
+      "telephone": "+34676344675",
+      "email": "info@tiojosemaria.com",
+      "priceRange": "60€ - 110€",
+      "image": "https://tiojosemaria.com/og-default.jpg",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Calle Baja 1",
+        "addressLocality": "Hinojares",
+        "addressRegion": "Jaén",
+        "postalCode": "23486",
+        "addressCountry": "ES"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 37.7167,
+        "longitude": -2.9
+      },
+      "starRating": { "@type": "Rating", "ratingValue": "4" },
+      "amenityFeature": [
+        { "@type": "LocationFeatureSpecification", "name": "WiFi Gratis", "value": true },
+        { "@type": "LocationFeatureSpecification", "name": "Chimenea", "value": true },
+        { "@type": "LocationFeatureSpecification", "name": "Calefacción", "value": true },
+        { "@type": "LocationFeatureSpecification", "name": "Cocina equipada", "value": true }
+      ],
+      "numberOfRooms": 4,
+      "petsAllowed": false
+    }
+    </script>
+
+    <!-- SPA redirect: recupera la ruta guardada por 404.html y la restaura -->
+    <script>
+        (function () {
+            var redirect = sessionStorage.getItem('spa-redirect');
+            if (redirect && redirect !== '/') {
+                sessionStorage.removeItem('spa-redirect');
+                history.replaceState(null, '', redirect);
+            }
+        })();
+    </script>
 
     <!-- Preconnect a CDN de imagenes (Supabase Storage) -->
     <link rel="preconnect" href="https://nmtukksbzbnuzqsksdmw.supabase.co" crossorigin>
