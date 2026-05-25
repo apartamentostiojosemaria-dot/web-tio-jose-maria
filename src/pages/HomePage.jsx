@@ -8,7 +8,7 @@ import IntroSection from '../components/home/IntroSection';
 import ReviewsSection from '../components/home/ReviewsSection';
 import ApartmentsGrid from '../components/home/ApartmentsGrid';
 import EntornoSection from '../components/home/EntornoSection';
-import GuiaSection from '../components/home/GuiaSection';
+// import GuiaSection from '../components/home/GuiaSection'; // ocultado MVP, reactivar cuando se relance lead magnet
 import Footer from '../components/home/Footer';
 import WhatsAppFab from '../components/home/WhatsAppFab';
 
@@ -44,7 +44,7 @@ const HomePage = () => {
             <ReviewsSection reviews={reviews} />
             <ApartmentsGrid apartments={apartments} />
             <EntornoSection places={places} routes={routes} />
-            <GuiaSection />
+            {/* <GuiaSection /> ocultado MVP — reactivar cuando se relance lead magnet */}
             <Footer />
             <WhatsAppFab />
         </div>
