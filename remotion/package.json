@@ -1,0 +1,27 @@
+{
+  "name": "tio-jose-maria-remotion",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Videos programáticos (hero + reels + welcome) para Apartamentos Tío José María",
+  "scripts": {
+    "start": "remotion studio src/index.ts",
+    "render:hero": "remotion render src/index.ts KenBurnsHero out/hero.mp4 --concurrency=2",
+    "render:review": "remotion render src/index.ts ReviewReel out/review.mp4 --concurrency=2",
+    "render:welcome": "remotion render src/index.ts WelcomeVideo out/welcome.mp4 --concurrency=2",
+    "upgrade": "remotion upgrade"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.260",
+    "@remotion/google-fonts": "4.0.260",
+    "@remotion/media-utils": "4.0.260",
+    "@remotion/zod-types": "4.0.260",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "remotion": "4.0.260",
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "@types/react": "19.0.1",
+    "typescript": "5.6.3"
+  }
+}

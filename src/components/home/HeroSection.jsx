@@ -6,8 +6,11 @@ const DEFAULT_LOCATION = 'Hinojares, Jaén';
 const DEFAULT_CTA_PRIMARY = 'Ver Apartamentos';
 const DEFAULT_CTA_SECONDARY = 'Consultar Dudas';
 
+const DEFAULT_HERO_VIDEO = `${WP}/hero.mp4`;
+
 const HeroSection = ({ title, subtitle, config = {} }) => {
     const heroImage = config.hero_image_url || DEFAULT_HERO_IMAGE;
+    const heroVideo = config.hero_video_url ?? DEFAULT_HERO_VIDEO;
     const location = config.hero_location_text || DEFAULT_LOCATION;
     const ctaPrimary = config.hero_cta_primary || DEFAULT_CTA_PRIMARY;
     const ctaSecondary = config.hero_cta_secondary || DEFAULT_CTA_SECONDARY;
@@ -15,6 +18,7 @@ const HeroSection = ({ title, subtitle, config = {} }) => {
     return (
         <header className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden">
             <div className="absolute inset-0 z-0">
+                {/* Imagen como fallback (LCP), siempre presente */}
                 <img
                     src={heroImage}
                     alt="Vista panorámica de Casa Rural Tío José María en Hinojares"
@@ -22,6 +26,22 @@ const HeroSection = ({ title, subtitle, config = {} }) => {
                     decoding="async"
                     className="w-full h-full object-cover"
                 />
+                {/* Vídeo Remotion encima si existe (Ken Burns loop silencioso).
+                    onError oculta el <video> y deja la imagen debajo. */}
+                {heroVideo && (
+                    <video
+                        src={heroVideo}
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        preload="metadata"
+                        poster={heroImage}
+                        aria-hidden="true"
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        className="absolute inset-0 w-full h-full object-cover"
+                    />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-b from-black/25 to-black/55" />
             </div>
 

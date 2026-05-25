@@ -1,0 +1,103 @@
+name: Render Review Reel
+
+on:
+  workflow_dispatch:
+    inputs:
+      review_id:
+        description: 'UUID de la review (lee de la BD)'
+        required: true
+      rating:
+        description: 'Rating (1-5)'
+        required: true
+        default: '5'
+      author:
+        description: 'Nombre del autor'
+        required: true
+      comment:
+        description: 'Comentario de la review'
+        required: true
+      apartmentName:
+        description: 'Nombre del apartamento'
+        required: true
+      apartmentImage:
+        description: 'URL imagen del apartamento'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: remotion/package.json
+
+      - name: Install
+        working-directory: remotion
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          npm install --no-audit --no-fund
+
+      - name: Build props JSON
+        id: props
+        run: |
+          cat > /tmp/props.json <<EOF
+          {
+            "rating": ${{ inputs.rating }},
+            "author": $(jq -Rs . <<< "${{ inputs.author }}"),
+            "comment": $(jq -Rs . <<< "${{ inputs.comment }}"),
+            "apartmentName": $(jq -Rs . <<< "${{ inputs.apartmentName }}"),
+            "apartmentImage": "${{ inputs.apartmentImage }}"
+          }
+          EOF
+          cat /tmp/props.json
+
+      - name: Render ReviewReel
+        working-directory: remotion
+        run: |
+          mkdir -p out
+          npx remotion render src/index.ts ReviewReel out/review-${{ inputs.review_id }}.mp4 \
+            --props=/tmp/props.json \
+            --concurrency=2
+
+      - name: Upload to Supabase Storage
+        id: upload
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          FILENAME="reels/review-${{ inputs.review_id }}.mp4"
+          curl -X POST \
+            "$SUPABASE_URL/storage/v1/object/apartments/$FILENAME" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Content-Type: video/mp4" \
+            -H "x-upsert: true" \
+            --data-binary @remotion/out/review-${{ inputs.review_id }}.mp4
+          echo "url=$SUPABASE_URL/storage/v1/object/public/apartments/$FILENAME" >> $GITHUB_OUTPUT
+
+      - name: Notify admin via Resend
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          REEL_URL: ${{ steps.upload.outputs.url }}
+        run: |
+          curl -X POST https://api.resend.com/emails \
+            -H "Authorization: Bearer $RESEND_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d @- <<EOF
+          {
+            "from": "Tío José María <noreply@tiojosemaria.com>",
+            "to": ["$ADMIN_EMAIL"],
+            "subject": "🎬 Reel listo: review de ${{ inputs.author }}",
+            "html": "<h2>Tu reel está listo</h2><p><b>${{ inputs.author }}</b> sobre el apartamento <b>${{ inputs.apartmentName }}</b> (${{ inputs.rating }}★).</p><p><a href=\"$REEL_URL\" style=\"background:#c97a3c;color:white;padding:14px 28px;border-radius:999px;text-decoration:none;font-weight:bold;\">Descargar MP4</a></p><p style=\"color:#666;font-size:14px\">Súbelo a Instagram/TikTok cuando quieras.</p>"
+          }
+          EOF

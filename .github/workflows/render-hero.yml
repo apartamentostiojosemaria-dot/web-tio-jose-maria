@@ -1,0 +1,64 @@
+name: Render Hero Video
+
+on:
+  workflow_dispatch:
+    inputs:
+      images:
+        description: 'JSON array de URLs (deja vacío para usar defaults)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: remotion/package.json
+
+      - name: Install dependencies (Remotion + system libs)
+        working-directory: remotion
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          npm install --no-audit --no-fund
+
+      - name: Render KenBurnsHero
+        working-directory: remotion
+        run: |
+          mkdir -p out
+          if [ -n "${{ inputs.images }}" ]; then
+            npx remotion render src/index.ts KenBurnsHero out/hero.mp4 \
+              --props='{"images": ${{ inputs.images }} }' \
+              --concurrency=2
+          else
+            npx remotion render src/index.ts KenBurnsHero out/hero.mp4 --concurrency=2
+          fi
+
+      - name: Upload to Supabase Storage
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          curl -X POST \
+            "$SUPABASE_URL/storage/v1/object/apartments/website/general/hero.mp4" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Content-Type: video/mp4" \
+            -H "x-upsert: true" \
+            --data-binary @remotion/out/hero.mp4
+
+      - name: Upload artifact (backup)
+        uses: actions/upload-artifact@v4
+        with:
+          name: hero-mp4
+          path: remotion/out/hero.mp4
+          retention-days: 7
