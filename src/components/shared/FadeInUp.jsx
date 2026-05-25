@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
  * lo que permite que componentes que solo usaban FadeInUp no carguen
  * motion en absoluto si no usan otras features.
  */
-const FadeInUp = ({ children, delay = 0 }) => {
+const FadeInUp = ({ children, delay = 0, className = '' }) => {
     const ref = useRef(null);
     const [visible, setVisible] = useState(false);
 
@@ -46,7 +46,7 @@ const FadeInUp = ({ children, delay = 0 }) => {
         willChange: visible ? 'auto' : 'opacity, transform',
     };
 
-    return <div ref={ref} style={style}>{children}</div>;
+    return <div ref={ref} style={style} className={className}>{children}</div>;
 };
 
 export default FadeInUp;

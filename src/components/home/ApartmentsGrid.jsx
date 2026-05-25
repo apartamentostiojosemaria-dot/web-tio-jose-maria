@@ -36,29 +36,29 @@ const ApartmentsGrid = ({ apartments }) => {
                     </div>
                 </FadeInUp>
 
-                <div className="grid md:grid-cols-2 gap-10">
+                <div className="grid md:grid-cols-2 gap-10 items-stretch">
                     {displayApartments.map((apt, idx) => (
-                        <FadeInUp key={apt.name} delay={idx * 0.1}>
-                            <Link to={apt.href} className="block group">
-                                <article className="bg-white rounded-2xl overflow-hidden shadow-lg border border-transparent hover:border-accent transition-all duration-500 group-hover:shadow-2xl group-hover:-translate-y-2">
-                                    <div className="h-72 overflow-hidden relative">
+                        <FadeInUp key={apt.name} delay={idx * 0.1} className="h-full">
+                            <Link to={apt.href} className="block group h-full">
+                                <article className="bg-white rounded-2xl overflow-hidden shadow-lg border border-transparent hover:border-accent transition-all duration-500 group-hover:shadow-2xl group-hover:-translate-y-2 h-full flex flex-col">
+                                    <div className="h-72 overflow-hidden relative flex-shrink-0">
                                         <img src={apt.img} alt={`Apartamento ${apt.name} - Casa Rural Tío José María`} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                                         <div className="absolute top-5 right-5 bg-white/90 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm text-primary-dark">
                                             {apt.tag}
                                         </div>
                                     </div>
-                                    <div className="p-6 md:p-8">
+                                    <div className="p-6 md:p-8 flex-grow flex flex-col">
                                         <div className="flex justify-between items-baseline mb-3">
                                             <h3 className="font-serif text-xl md:text-2xl font-bold text-text-primary">{apt.name}</h3>
                                             <span className="text-xs md:text-sm text-secondary">{apt.capacity}</span>
                                         </div>
-                                        <p className="text-xs md:text-sm leading-relaxed mb-5 text-secondary">{apt.desc}</p>
+                                        <p className="text-xs md:text-sm leading-relaxed mb-5 text-secondary flex-grow">{apt.desc}</p>
                                         {apt.priceFrom && (
                                             <p className="text-sm text-secondary mb-4">
                                                 Desde <span className="font-serif text-lg font-bold text-text-primary">{apt.priceFrom}€</span> <span className="text-xs">/ noche</span>
                                             </p>
                                         )}
-                                        <div className="flex items-center justify-between">
+                                        <div className="flex items-center justify-between mt-auto">
                                             <div className="flex gap-3">
                                                 {apt.icons.map((Icon, i) => (
                                                     <Icon key={i} size={16} className="text-accent" />

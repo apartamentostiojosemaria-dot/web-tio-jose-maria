@@ -90,19 +90,18 @@ const EntornoSection = ({ places, routes }) => {
                         </Link>
                     </div>
                 </FadeInUp>
-                <div className="grid grid-cols-2 gap-3 md:gap-4 md:mt-0">
-                    <FadeInUp delay={0.2}>
-                        <img src={gridImages[0].src} alt={gridImages[0].alt} loading="lazy" className="rounded-2xl shadow-lg w-full h-40 md:h-64 object-cover md:mt-8" />
-                    </FadeInUp>
-                    <FadeInUp delay={0.3}>
-                        <img src={gridImages[1].src} alt={gridImages[1].alt} loading="lazy" className="rounded-2xl shadow-lg w-full h-48 md:h-80 object-cover" />
-                    </FadeInUp>
-                    <FadeInUp delay={0.4}>
-                        <img src={gridImages[2].src} alt={gridImages[2].alt} loading="lazy" className="rounded-2xl shadow-lg w-full h-40 md:h-64 object-cover md:-mt-16" />
-                    </FadeInUp>
-                    <FadeInUp delay={0.5}>
-                        <img src={gridImages[3].src} alt={gridImages[3].alt} loading="lazy" className="rounded-2xl shadow-lg w-full h-40 md:h-64 object-cover mt-4" />
-                    </FadeInUp>
+                <div className="grid grid-cols-2 gap-3 md:gap-4">
+                    {gridImages.map((img, i) => (
+                        <FadeInUp key={i} delay={0.2 + i * 0.1}>
+                            <img
+                                src={img.src}
+                                alt={img.alt}
+                                loading="lazy"
+                                decoding="async"
+                                className="rounded-2xl shadow-lg w-full h-44 md:h-64 object-cover"
+                            />
+                        </FadeInUp>
+                    ))}
                 </div>
             </div>
 
