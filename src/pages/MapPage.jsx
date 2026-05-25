@@ -127,9 +127,14 @@ const MapPage = () => {
                                                                 ))}
                                                             </div>
                                                         )}
-                                                        {route.map_url && (
-                                                            <a href={route.map_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-bold bg-primary transition-all hover:shadow-lg hover:-translate-y-0.5">
-                                                                <Navigation size={16} /> Cómo llegar
+                                                        {(route.map_url || (route.start_lat && route.start_lon)) && (
+                                                            <a
+                                                                href={route.map_url || `https://www.google.com/maps/dir/?api=1&destination=${route.start_lat},${route.start_lon}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-bold bg-primary transition-all hover:shadow-lg hover:-translate-y-0.5"
+                                                            >
+                                                                <Navigation size={16} /> Cómo llegar al inicio
                                                             </a>
                                                         )}
                                                     </motion.div>
