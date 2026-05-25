@@ -50,8 +50,11 @@ const HeroSection = ({ title, subtitle, config = {} }) => {
                     <WeatherWidget isMinimal />
                 </div>
                 <p className="text-white/70 uppercase tracking-[0.3em] text-sm mb-5 font-sans">{location}</p>
-                <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white font-bold mb-6 leading-tight">
-                    {title}
+                <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white font-bold mb-6 leading-tight text-balance">
+                    {/* NBSP entre "Tío", "José" y "María" para que el nombre
+                        no se rompa entre líneas — el resto del título sí
+                        puede romper si el ancho lo exige. */}
+                    {title.replace(/Tío José María/g, 'Tío José María')}
                     <br className="hidden lg:block" />
                     <span className="text-accent">en la Sierra de Cazorla</span>
                 </h1>
