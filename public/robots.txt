@@ -1,4 +1,65 @@
+# Apartamentos Rurales Tío José María — robots.txt
+# Permitimos crawl completo a buscadores tradicionales y motores de IA generativa.
+# Bloqueamos áreas privadas (admin, portal cliente, callbacks de auth).
+
+# --- Buscadores generales ---
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /clientes
+Disallow: /clientes/
+Disallow: /auth
+Disallow: /api/
 
+# --- Motores de IA generativa (transparencia + permiso explícito) ---
+User-agent: GPTBot
+Allow: /
+Disallow: /admin/
+Disallow: /clientes/
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /admin/
+Disallow: /clientes/
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /admin/
+Disallow: /clientes/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /admin/
+Disallow: /clientes/
+
+User-agent: Claude-Web
+Allow: /
+Disallow: /admin/
+Disallow: /clientes/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /admin/
+Disallow: /clientes/
+
+User-agent: Perplexity-User
+Allow: /
+Disallow: /admin/
+Disallow: /clientes/
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /admin/
+Disallow: /clientes/
+
+User-agent: CCBot
+Allow: /
+Disallow: /admin/
+Disallow: /clientes/
+
+User-agent: Bytespider
+Disallow: /
+
+# --- Sitemap ---
 Sitemap: https://tiojosemaria.com/sitemap.xml

@@ -35,10 +35,12 @@
     <meta name="geo.position" content="37.7167;-2.9">
     <meta name="ICBM" content="37.7167, -2.9">
 
-    <!-- PWA -->
+    <!-- Favicon + PWA -->
     <meta name="theme-color" content="#556B2F">
-    <link rel="icon" type="image/png" href="/assets/pwa-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/pwa-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/assets/pwa-512.png">
     <link rel="apple-touch-icon" href="/assets/pwa-192.png">
+    <link rel="manifest" href="/manifest.webmanifest">
 
     <!-- JSON-LD: LodgingBusiness estatico (visible para todos los rastreadores sin JS) -->
     <script type="application/ld+json">
@@ -49,7 +51,7 @@
       "description": "Alojamiento rural con encanto en Hinojares, Sierra de Cazorla. Casa del siglo XVII restaurada con 4 apartamentos exclusivos.",
       "url": "https://tiojosemaria.com",
       "telephone": "+34676344675",
-      "email": "info@tiojosemaria.com",
+      "email": "apartamentostiojosemaria@gmail.com",
       "priceRange": "60€ - 110€",
       "image": "https://tiojosemaria.com/og-default.jpg",
       "address": {
@@ -92,7 +94,8 @@
     <link rel="preconnect" href="https://nmtukksbzbnuzqsksdmw.supabase.co" crossorigin>
     <link rel="dns-prefetch" href="https://nmtukksbzbnuzqsksdmw.supabase.co">
 
-    <!-- Google Fonts -->
+    <!-- Google Fonts (display=swap evita FOIT y mejora LCP) -->
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link

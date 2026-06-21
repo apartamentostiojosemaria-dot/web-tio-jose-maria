@@ -43,7 +43,7 @@ const ApartmentsGrid = ({ apartments }) => {
                                 <article className="bg-white rounded-2xl overflow-hidden shadow-lg border border-transparent hover:border-accent transition-all duration-500 group-hover:shadow-2xl group-hover:-translate-y-2 h-full flex flex-col">
                                     <div className="h-72 overflow-hidden relative flex-shrink-0">
                                         <img src={apt.img} alt={`Apartamento ${apt.name} - Casa Rural Tío José María`} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                                        <div className="absolute top-5 right-5 bg-white/90 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm text-primary-dark">
+                                        <div className="absolute top-5 right-5 bg-white px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm text-rural-900">
                                             {apt.tag}
                                         </div>
                                     </div>
@@ -59,7 +59,7 @@ const ApartmentsGrid = ({ apartments }) => {
                                             </p>
                                         )}
                                         <div className="flex items-center justify-between mt-auto">
-                                            <div className="flex gap-3">
+                                            <div className="flex gap-3" aria-hidden="true">
                                                 {apt.icons.map((Icon, i) => (
                                                     <Icon key={i} size={16} className="text-accent" />
                                                 ))}

@@ -60,6 +60,7 @@ async function main() {
         urlEntry({ loc: `${SITE_URL}/eventos`, priority: '0.9', changefreq: 'weekly' }),
         // /guia-cazorla ocultado del sitemap mientras lead magnet esta inactivo
         urlEntry({ loc: `${SITE_URL}/blog`, priority: '0.9', changefreq: 'weekly' }),
+        urlEntry({ loc: `${SITE_URL}/aviso-legal`, priority: '0.2', changefreq: 'yearly' }),
         urlEntry({ loc: `${SITE_URL}/privacidad`, priority: '0.3', changefreq: 'yearly' }),
     ];
 

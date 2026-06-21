@@ -9,7 +9,7 @@ export default defineConfig({
         tailwindcss(),
         VitePWA({
             registerType: 'autoUpdate',
-            includeAssets: ['assets/logo.jpg', 'assets/favicon.ico'],
+            includeAssets: ['assets/logo.jpg', 'assets/pwa-192.png', 'assets/pwa-512.png'],
             manifest: {
                 name: 'Tío José María - Apartamentos Rurales',
                 short_name: 'Tío José María',
