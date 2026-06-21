@@ -6,8 +6,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/generate-sitemap.js && vite build",
+    "build": "node scripts/generate-sitemap.js && vite build && node scripts/prerender.js",
+    "build:fast": "node scripts/generate-sitemap.js && vite build",
     "sitemap": "node scripts/generate-sitemap.js",
+    "prerender": "node scripts/prerender.js",
     "pwa-icons": "node scripts/generate-pwa-icons.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
