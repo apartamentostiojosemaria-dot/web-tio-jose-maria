@@ -183,10 +183,22 @@ export const RoutesListJsonLd = ({ routes }) => {
         name: 'Rutas y Excursiones cerca de Hinojares',
         description: 'Senderos, cascadas y pueblos con encanto en la Sierra de Cazorla, desde la puerta de Apartamentos Tío José María.',
         numberOfItems: routes.length,
-        itemListElement: routes.map((route, i) => ({
-            '@type': 'ListItem',
-            position: i + 1,
-            item: {
+        itemListElement: routes.map((route, i) => {
+            const additionalProperty = [];
+            if (route.distance_km) {
+                additionalProperty.push({ '@type': 'PropertyValue', name: 'Distancia', value: `${route.distance_km} km`, unitText: 'kilometer' });
+            }
+            if (route.duration) {
+                additionalProperty.push({ '@type': 'PropertyValue', name: 'Duración', value: route.duration });
+            }
+            if (route.difficulty) {
+                additionalProperty.push({ '@type': 'PropertyValue', name: 'Dificultad', value: route.difficulty });
+            }
+            if (route.elevation_gain) {
+                additionalProperty.push({ '@type': 'PropertyValue', name: 'Desnivel positivo', value: `${route.elevation_gain} m`, unitText: 'meter' });
+            }
+
+            const item = {
                 '@type': 'TouristAttraction',
                 name: route.title,
                 description: route.description,
@@ -194,8 +206,26 @@ export const RoutesListJsonLd = ({ routes }) => {
                 url: route.map_url || `https://tiojosemaria.com/rutas#ruta-${route.id}`,
                 touristType: ROUTE_DIFFICULTY_MAP[route.difficulty] || 'moderate',
                 isAccessibleForFree: true
+            };
+
+            if (route.start_lat && route.start_lon) {
+                item.geo = {
+                    '@type': 'GeoCoordinates',
+                    latitude: route.start_lat,
+                    longitude: route.start_lon
+                };
             }
-        }))
+
+            if (additionalProperty.length) {
+                item.additionalProperty = additionalProperty;
+            }
+
+            return {
+                '@type': 'ListItem',
+                position: i + 1,
+                item
+            };
+        })
     };
     return <JsonLd data={data} />;
 };
@@ -263,6 +293,49 @@ export const EventsListJsonLd = ({ events }) => {
         name: 'Eventos y Experiencias en la Sierra de Cazorla',
         numberOfItems: items.length,
         itemListElement: items
+    };
+    return <JsonLd data={data} />;
+};
+
+// FAQPage — para responder queries naturales en Google + LLMs.
+// items = [{ question, answer }]
+export const FAQPageJsonLd = ({ items, id }) => {
+    if (!items || items.length === 0) return null;
+    const data = {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        '@id': id,
+        mainEntity: items.map(({ question, answer }) => ({
+            '@type': 'Question',
+            name: question,
+            acceptedAnswer: {
+                '@type': 'Answer',
+                text: answer
+            }
+        }))
+    };
+    return <JsonLd data={data} />;
+};
+
+// HowTo — para guías paso a paso (ej. cómo llegar a Hinojares).
+// steps = [{ name, text, url? }]
+export const HowToJsonLd = ({ name, description, steps, totalTime, id, image }) => {
+    if (!steps || steps.length === 0) return null;
+    const data = {
+        '@context': 'https://schema.org',
+        '@type': 'HowTo',
+        '@id': id,
+        name,
+        description,
+        ...(totalTime && { totalTime }),
+        ...(image && { image }),
+        step: steps.map((s, i) => ({
+            '@type': 'HowToStep',
+            position: i + 1,
+            name: s.name,
+            text: s.text,
+            ...(s.url && { url: s.url })
+        }))
     };
     return <JsonLd data={data} />;
 };

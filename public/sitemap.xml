@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:image="http://www.google.com/schemas/sitemaps-image/1.1">
   <url>
     <loc>https://tiojosemaria.com/</loc>
     <lastmod>2026-06-21</lastmod>
@@ -9,26 +11,26 @@
   <url>
     <loc>https://tiojosemaria.com/hinojares</loc>
     <lastmod>2026-06-21</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
   </url>
   <url>
     <loc>https://tiojosemaria.com/rutas</loc>
     <lastmod>2026-06-21</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
   </url>
   <url>
     <loc>https://tiojosemaria.com/eventos</loc>
     <lastmod>2026-06-21</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.9</priority>
   </url>
   <url>
     <loc>https://tiojosemaria.com/blog</loc>
     <lastmod>2026-06-21</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.9</priority>
   </url>
   <url>
     <loc>https://tiojosemaria.com/aviso-legal</loc>
@@ -43,27 +45,165 @@
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://tiojosemaria.com/apartamento/albahaca</loc>
-    <lastmod>2026-06-21</lastmod>
+    <loc>https://tiojosemaria.com/apartamento/lavanda</loc>
+    <lastmod>2026-04-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/lavanda/1d79f49a-31ee-4b8a-8b90-b649c6658f5d-1024x768.webp</image:loc>
+      <image:caption>Esquina izquierda de la primera planta. Cuatro plazas, dos baños y balcones al Valle del Guadiana.</image:caption>
+      <image:title>Apartamento Lavanda</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/lavanda/1d79f49a-31ee-4b8a-8b90-b649c6658f5d-1110x500.webp</image:loc>
+      <image:caption>Apartamento Lavanda en Casa Rural Tío José María, Hinojares (foto 2)</image:caption>
+      <image:title>Apartamento Lavanda</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/lavanda/272238d4-d730-4f4c-b63a-756bf83b43cc-683x1024.jpg</image:loc>
+      <image:caption>Apartamento Lavanda en Casa Rural Tío José María, Hinojares (foto 3)</image:caption>
+      <image:title>Apartamento Lavanda</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/lavanda/33735e3a-bc58-4a40-938f-caf66b1833b0-768x1024.jpg</image:loc>
+      <image:caption>Apartamento Lavanda en Casa Rural Tío José María, Hinojares (foto 4)</image:caption>
+      <image:title>Apartamento Lavanda</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/lavanda/38997ab5-ad56-4236-b795-6ca2615a4c6f-1024x768.jpeg</image:loc>
+      <image:caption>Apartamento Lavanda en Casa Rural Tío José María, Hinojares (foto 5)</image:caption>
+      <image:title>Apartamento Lavanda</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/lavanda/38997ab5-ad56-4236-b795-6ca2615a4c6f-1110x500.jpeg</image:loc>
+      <image:caption>Apartamento Lavanda en Casa Rural Tío José María, Hinojares (foto 6)</image:caption>
+      <image:title>Apartamento Lavanda</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tiojosemaria.com/apartamento/albahaca</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/albahaca/00f8fcdf-a6ef-45bb-aafb-408b8679a750-1024x768.webp</image:loc>
+      <image:caption>Primera planta con balcón de forja, vistas al Valle del Guadiana y muros de piedra del XIX. Para dos.</image:caption>
+      <image:title>Apartamento Albahaca</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/albahaca/00f8fcdf-a6ef-45bb-aafb-408b8679a750-1110x500.webp</image:loc>
+      <image:caption>Apartamento Albahaca en Casa Rural Tío José María, Hinojares (foto 2)</image:caption>
+      <image:title>Apartamento Albahaca</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/albahaca/188afcc1-56e7-4da9-96ae-1c7dc83d76b5-1024x768.jpeg</image:loc>
+      <image:caption>Apartamento Albahaca en Casa Rural Tío José María, Hinojares (foto 3)</image:caption>
+      <image:title>Apartamento Albahaca</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/albahaca/188afcc1-56e7-4da9-96ae-1c7dc83d76b5-1110x500.jpeg</image:loc>
+      <image:caption>Apartamento Albahaca en Casa Rural Tío José María, Hinojares (foto 4)</image:caption>
+      <image:title>Apartamento Albahaca</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/albahaca/1febf30f-e1c2-403d-a5f5-8628b0fec18a-1024x683.jpg</image:loc>
+      <image:caption>Apartamento Albahaca en Casa Rural Tío José María, Hinojares (foto 5)</image:caption>
+      <image:title>Apartamento Albahaca</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/albahaca/272238d4-d730-4f4c-b63a-756bf83b43cc-683x1024.jpg</image:loc>
+      <image:caption>Apartamento Albahaca en Casa Rural Tío José María, Hinojares (foto 6)</image:caption>
+      <image:title>Apartamento Albahaca</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://tiojosemaria.com/apartamento/tomillo</loc>
-    <lastmod>2026-06-21</lastmod>
+    <lastmod>2026-04-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tiojosemaria.com/apartamento/lavanda</loc>
-    <lastmod>2026-06-21</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/general/TOMILLOHOME1.jpg</image:loc>
+      <image:caption>Dormitorio abuhardillado en lo alto de la casona, con techos de madera originales y vistas a la sierra.</image:caption>
+      <image:title>Apartamento Tomillo</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/tomillo/3a93fa10-6ec0-43fa-8d7b-6d070fcdeb20-1024x768.webp</image:loc>
+      <image:caption>Apartamento Tomillo en Casa Rural Tío José María, Hinojares (foto 2)</image:caption>
+      <image:title>Apartamento Tomillo</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/tomillo/tomi2-1024x683.webp</image:loc>
+      <image:caption>Apartamento Tomillo en Casa Rural Tío José María, Hinojares (foto 3)</image:caption>
+      <image:title>Apartamento Tomillo</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/tomillo/1febf30f-e1c2-403d-a5f5-8628b0fec18a-1024x683.jpg</image:loc>
+      <image:caption>Apartamento Tomillo en Casa Rural Tío José María, Hinojares (foto 4)</image:caption>
+      <image:title>Apartamento Tomillo</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/tomillo/3cfb0541-489f-4c2d-94e0-9cf9623fe350-1024x768.jpg</image:loc>
+      <image:caption>Apartamento Tomillo en Casa Rural Tío José María, Hinojares (foto 5)</image:caption>
+      <image:title>Apartamento Tomillo</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/tomillo/8c3d02a4-493c-4634-9520-a56c8aa2b309-1024x768.jpg</image:loc>
+      <image:caption>Apartamento Tomillo en Casa Rural Tío José María, Hinojares (foto 6)</image:caption>
+      <image:title>Apartamento Tomillo</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://tiojosemaria.com/apartamento/romero</loc>
-    <lastmod>2026-06-21</lastmod>
+    <lastmod>2026-04-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/romero/10e6d58a-78ef-4923-8ebf-b4558b8302a6-1110x500.jpeg</image:loc>
+      <image:caption>Esquina izquierda de la segunda planta. Cuatro plazas, dos baños y vistas al Valle del Guadiana Menor.</image:caption>
+      <image:title>Apartamento Romero</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/romero/153e936e-85d4-4fea-8f4a-f96859578ac2-1110x500.jpeg</image:loc>
+      <image:caption>Apartamento Romero en Casa Rural Tío José María, Hinojares (foto 2)</image:caption>
+      <image:title>Apartamento Romero</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/romero/1febf30f-e1c2-403d-a5f5-8628b0fec18a-1110x500.jpg</image:loc>
+      <image:caption>Apartamento Romero en Casa Rural Tío José María, Hinojares (foto 3)</image:caption>
+      <image:title>Apartamento Romero</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/romero/20fbd7b6-db3a-492c-9f79-211238d7f678-1110x500.jpg</image:loc>
+      <image:caption>Apartamento Romero en Casa Rural Tío José María, Hinojares (foto 4)</image:caption>
+      <image:title>Apartamento Romero</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/romero/272238d4-d730-4f4c-b63a-756bf83b43cc-1110x500.jpg</image:loc>
+      <image:caption>Apartamento Romero en Casa Rural Tío José María, Hinojares (foto 5)</image:caption>
+      <image:title>Apartamento Romero</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/romero/33735e3a-bc58-4a40-938f-caf66b1833b0-1110x500.jpg</image:loc>
+      <image:caption>Apartamento Romero en Casa Rural Tío José María, Hinojares (foto 6)</image:caption>
+      <image:title>Apartamento Romero</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tiojosemaria.com/blog/10-cosas-que-hacer-en-hinojares</loc>
+    <lastmod>2026-04-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://tiojosemaria.com/blog/como-llegar-a-hinojares</loc>
+    <lastmod>2026-04-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://tiojosemaria.com/blog/gastronomia-sierra-de-cazorla</loc>
+    <lastmod>2026-04-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
 </urlset>

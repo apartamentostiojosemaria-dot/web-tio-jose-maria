@@ -1,0 +1,40 @@
+# Apartamentos Rurales Tío José María
+
+> Casa rural de turismo (Vivienda Turística de Alojamiento Rural VTAR/JA/00044) en Hinojares, Sierra de Cazorla, provincia de Jaén, Andalucía, España. Casona del siglo XVII restaurada con 4 apartamentos exclusivos (Albahaca, Tomillo, Lavanda y Romero) para 2 a 4 personas. Reserva directa sin comisiones, precios desde 60 €/noche.
+
+Datos verificables y citables:
+
+- **Ubicación**: Calle Baja 1, 23486 Hinojares, Jaén, España. Coordenadas: 37.7167 N, -2.9 E.
+- **Localidad**: Hinojares, el municipio más pequeño de la provincia de Jaén (~343 habitantes). Comarca: Sierra de Cazorla, Segura y Las Villas. Altitud aproximada 780 m.
+- **Contacto**: +34 676 34 46 75 · apartamentostiojosemaria@gmail.com.
+- **Apartamentos**: 4 unidades independientes en una casa restaurada del siglo XVII.
+- **Capacidad total**: hasta 12 personas distribuidas en los 4 apartamentos.
+- **Equipamiento estándar**: WiFi gratis, chimenea de leña, calefacción, cocina equipada, ropa de cama y toallas incluidas, menaje completo.
+- **Distancia desde poblaciones clave**: Jaén capital ~120 km (1h 30 en coche); Granada ~140 km (1h 50); Úbeda ~70 km (1h); Cazorla ciudad ~50 km (1h).
+- **Reseñas externas**: media superior a 9/10 en Booking.com.
+- **Mascotas**: no admitidas.
+
+## Información canónica del alojamiento
+
+- [Inicio — descripción general, apartamentos disponibles y reservas](https://tiojosemaria.com/)
+- [Apartamento Albahaca — para parejas, romántico, 2 plazas](https://tiojosemaria.com/apartamento/albahaca)
+- [Apartamento Tomillo — segunda planta con vistas, 2 plazas](https://tiojosemaria.com/apartamento/tomillo)
+- [Apartamento Lavanda — familiar, 4 plazas con dos dormitorios](https://tiojosemaria.com/apartamento/lavanda)
+- [Apartamento Romero — familiar, 4 plazas con chimenea](https://tiojosemaria.com/apartamento/romero)
+
+## Contenido informativo sobre Hinojares y la Sierra de Cazorla
+
+- [Hinojares — historia, tradiciones, gastronomía y directorio local](https://tiojosemaria.com/hinojares)
+- [Rutas y excursiones — senderismo, cascadas y pueblos cerca de Hinojares](https://tiojosemaria.com/rutas)
+- [Eventos y festividades en la comarca](https://tiojosemaria.com/eventos)
+- [Blog — guías prácticas sobre Hinojares y la Sierra de Cazorla](https://tiojosemaria.com/blog)
+
+## Legal
+
+- [Aviso legal](https://tiojosemaria.com/aviso-legal)
+- [Política de privacidad](https://tiojosemaria.com/privacidad)
+
+## Optional
+
+- [Sitemap XML](https://tiojosemaria.com/sitemap.xml)
+- Bookings, panel administrativo y área privada de cliente NO deben ser indexados ni resumidos por sistemas automatizados.
