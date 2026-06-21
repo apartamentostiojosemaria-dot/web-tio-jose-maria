@@ -30,15 +30,16 @@ const LegalNotice = () => (
                     titular de este sitio web:
                 </p>
                 <ul className="text-gray-700 leading-relaxed mb-6 list-disc pl-6">
-                    <li><strong>Denominación:</strong> Apartamentos Rurales Tío José María</li>
+                    <li><strong>Titular:</strong> Jesús Martínez Sánchez (persona física, autónomo)</li>
+                    <li><strong>NIF:</strong> 26433801Q</li>
+                    <li><strong>Denominación comercial:</strong> Apartamentos Rurales Tío José María</li>
                     <li><strong>Domicilio:</strong> Calle Baja 1, 23486 Hinojares, Jaén (España)</li>
                     <li><strong>Teléfono:</strong> +34 676 34 46 75</li>
-                    <li><strong>Email:</strong> info@tiojosemaria.com</li>
+                    <li><strong>Email:</strong> apartamentostiojosemaria@gmail.com</li>
                     <li>
                         <strong>Inscripción turística:</strong> Vivienda Turística de Alojamiento Rural inscrita en el
                         Registro de Turismo de Andalucía con código <strong>VTAR/JA/00044</strong>.
                     </li>
-                    <li><strong>NIF:</strong> 26433801Q</li>
                 </ul>
 
                 <h2 className="font-serif text-xl font-bold mt-8 mb-3 text-text-primary">2. Objeto y ámbito</h2>
