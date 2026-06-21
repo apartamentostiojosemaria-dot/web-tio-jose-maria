@@ -14,6 +14,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
+    "@prerenderer/prerenderer": "^1.2.5",
+    "@prerenderer/renderer-puppeteer": "^1.2.4",
     "@tailwindcss/vite": "^4.2.1",
     "@vitejs/plugin-react": "^5.1.4",
     "autoprefixer": "^10.4.24",
@@ -21,6 +23,7 @@
     "framer-motion": "^12.34.3",
     "lucide-react": "^0.575.0",
     "postcss": "^8.5.6",
+    "puppeteer": "^25.1.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "shadcn": "^4.2.0",
