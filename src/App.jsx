@@ -28,6 +28,7 @@ const MapPage = lazy(() => import('./pages/MapPage'));
 const EventsPage = lazy(() => import('./pages/EventsPage'));
 const HinojaresPage = lazy(() => import('./pages/HinojaresPage'));
 const ReservarPage = lazy(() => import('./pages/ReservarPage'));
+const ReservaConfirmada = lazy(() => import('./pages/ReservaConfirmada'));
 const AdminLogin = lazy(() => import('./components/admin/AdminLogin'));
 const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard'));
 const AdminResponse = lazy(() => import('./pages/AdminResponse'));
@@ -96,6 +97,7 @@ export default function App() {
                         <Route path="/eventos" element={<EventsPage />} />
                         <Route path="/hinojares" element={<HinojaresPage />} />
                         <Route path="/reservar" element={<ReservarPage />} />
+                        <Route path="/reservar/confirmada" element={<ReservaConfirmada />} />
                         <Route path="/blog" element={<BlogPage />} />
                         <Route path="/blog/:slug" element={<BlogPostDetail />} />
                         <Route path="/guia-cazorla" element={<GuiaCazorla />} />

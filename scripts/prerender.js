@@ -25,6 +25,7 @@ const ROUTES = [
     '/eventos',
     '/blog',
     '/reservar',
+    // /reservar/confirmada NO se prerendiza (es post-pago, requiere query string ?code=)
     '/aviso-legal',
     '/privacidad',
     '/apartamento/albahaca',

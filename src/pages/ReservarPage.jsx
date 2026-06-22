@@ -56,6 +56,7 @@ const ReservarPage = () => {
         setHolding(true);
         setHoldError(null);
         try {
+            // 1. Crear hold en Supabase (15 min TTL, anti-overbooking via EXCLUDE)
             const { data, error } = await supabase.rpc('create_booking_hold', {
                 p_apartment_id: selected.apartment_id,
                 p_check_in: checkIn,
@@ -68,7 +69,31 @@ const ReservarPage = () => {
             if (error) throw error;
             const row = Array.isArray(data) ? data[0] : data;
             setHoldResult(row);
-            setStep('done');
+
+            // 2. Pedir sesión Stripe Checkout y redirigir. Si la edge function
+            //    no está configurada todavía (sin STRIPE_SECRET_KEY), el hold
+            //    queda creado y mostramos pantalla de cierre por WhatsApp.
+            try {
+                const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+                const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+                const res = await fetch(`${supabaseUrl}/functions/v1/create-payment-session`, {
+                    method: 'POST',
+                    headers: {
+                        'content-type': 'application/json',
+                        apikey: anonKey,
+                        authorization: `Bearer ${anonKey}`,
+                    },
+                    body: JSON.stringify({ bookingCode: row.booking_code }),
+                });
+                if (res.ok) {
+                    const { url } = await res.json();
+                    if (url) { window.location.href = url; return; }
+                }
+                // Stripe no configurado o error → fallback a pantalla WhatsApp
+                setStep('done');
+            } catch {
+                setStep('done');
+            }
         } catch (err) {
             const msg = err.message || '';
             if (msg.includes('apartment_not_available') || msg.includes('no_overlap_bookings')) {

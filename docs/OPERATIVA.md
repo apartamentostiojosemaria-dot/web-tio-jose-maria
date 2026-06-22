@@ -143,7 +143,56 @@ Fecha de adopción: 2026-06-22
 6. Conservar registro interno 5 años (art. 33.5 RGPD).
 ```
 
-## 5. Roadmap pendiente — construir lo que MisterPlan hace hoy
+## 5. Sprint 5c — Stripe Checkout (acabado a nivel código)
+
+Las edge functions `create-payment-session` y `stripe-webhook` están listas.
+Para activarlas:
+
+### 5.1. Crear cuenta Stripe (test)
+
+1. dashboard.stripe.com → Sign up → modo Test por defecto.
+2. Settings → API keys → copiar `Secret key` (`sk_test_...`).
+
+### 5.2. Configurar webhook
+
+1. Stripe Dashboard → Developers → Webhooks → "Add endpoint".
+2. URL: `https://nmtukksbzbnuzqsksdmw.supabase.co/functions/v1/stripe-webhook`
+3. Eventos a escuchar:
+   - `checkout.session.completed`
+   - `checkout.session.expired`
+   - `charge.refunded`
+4. Copiar el **Signing secret** (`whsec_...`).
+
+### 5.3. Secrets en Supabase Edge Functions
+
+| Secret | Valor |
+|---|---|
+| `STRIPE_SECRET_KEY` | `sk_test_...` (o `sk_live_...` en producción) |
+| `STRIPE_WEBHOOK_SECRET` | `whsec_...` |
+| `PUBLIC_SITE_URL` | `https://tiojosemaria.com` |
+
+### 5.4. Desplegar
+
+```bash
+supabase functions deploy create-payment-session --project-ref nmtukksbzbnuzqsksdmw --no-verify-jwt
+supabase functions deploy stripe-webhook        --project-ref nmtukksbzbnuzqsksdmw --no-verify-jwt
+```
+
+### 5.5. Probar end-to-end
+
+1. En `/reservar` hacer una búsqueda y reserva con tarjeta de prueba:
+   `4242 4242 4242 4242`, fecha futura, CVC 123.
+2. Stripe redirige a `/reservar/confirmada?code=TJM-XXXXXX`.
+3. La página hace polling de la BD durante ~10s hasta que el webhook
+   marca `status=confirmed`.
+4. Verificar en Stripe Dashboard → Events que el webhook devolvió 200.
+
+### 5.6. Saltar a producción
+
+Cuando estés listo: en Stripe activar cuenta real, copiar `sk_live_...` y
+`whsec_...` de producción a las secrets de Supabase, redeploy.
+
+## 6. Roadmap pendiente — construir lo que MisterPlan hace hoy
 
 El alojamiento sigue pagando MisterPlan hasta que el sistema propio lo cubra.
 Sprints adicionales planificados en `brief.md` (sección "Sprints PENDIENTES"):
