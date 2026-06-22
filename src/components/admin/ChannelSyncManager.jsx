@@ -62,7 +62,9 @@ const ChannelSyncManager = () => {
     };
 
     const copyExportUrl = (slug) => {
-        const url = `${supabaseUrl}/functions/v1/ical-export?slug=${slug}`;
+        // URL bonita terminada en .ics — Airbnb (y otros) exige ese sufijo.
+        // nginx redirige a la edge function ical-export.
+        const url = `https://tiojosemaria.com/ical/${slug}.ics`;
         navigator.clipboard.writeText(url);
         alert('URL copiada al portapapeles. Pégala en el iCal import de Booking/Airbnb/Vrbo.');
     };
