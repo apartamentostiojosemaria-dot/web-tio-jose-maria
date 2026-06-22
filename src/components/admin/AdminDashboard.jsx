@@ -5,7 +5,7 @@ import {
     LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar, Star, Eye, Users,
     BarChart3, QrCode, CalendarCheck, Route, MessageSquare, PartyPopper, MapPin, Menu, X,
     BookOpen, ClipboardList,
-    Shield, Brush, KeyRound, Euro, Link2, Bot, Tag, Wrench,
+    Shield, Brush, KeyRound, Euro, Link2, Bot, Tag, Wrench, Inbox, ShoppingBag,
 } from 'lucide-react';
 
 // Operaciones core (carga inmediata, son los más usados)
@@ -41,6 +41,9 @@ const Customer360           = lazy(() => import('./Customer360'));
 const ProtocolsManager      = lazy(() => import('./ProtocolsManager'));
 const InternalDocsManager   = lazy(() => import('./InternalDocsManager'));
 const InternalTasksManager  = lazy(() => import('./InternalTasksManager'));
+const GuidebookManager      = lazy(() => import('./GuidebookManager'));
+const AddonsManager         = lazy(() => import('./AddonsManager'));
+const InboxManager          = lazy(() => import('./InboxManager'));
 
 // Sidebar pensado para personas sin formación técnica.
 // Cero anglicismos, cero jerga, cero acrónimos.
@@ -67,8 +70,11 @@ const NAV_GROUPS = [
     {
         title: 'Huéspedes',
         items: [
+            { id: 'inbox',        label: 'Bandeja de mensajes',              icon: Inbox },
             { id: 'channel_sync', label: 'Sincronizar con Airbnb y Booking', icon: Link2 },
             { id: 'customer_360', label: 'Ficha de huéspedes',               icon: Users },
+            { id: 'guidebook',    label: 'Manual digital del huésped',       icon: BookOpen },
+            { id: 'addons',       label: 'Extras opcionales',                icon: ShoppingBag },
             { id: 'huespedes',    label: 'Acceso de huéspedes a la web',     icon: Users },
             { id: 'resenas',      label: 'Opiniones de huéspedes',           icon: MessageSquare },
         ],
@@ -190,6 +196,9 @@ const AdminDashboard = () => {
                     {activeTab === 'protocols'      && <ProtocolsManager />}
                     {activeTab === 'internal_docs'  && <InternalDocsManager />}
                     {activeTab === 'internal_tasks' && <InternalTasksManager />}
+                    {activeTab === 'guidebook'      && <GuidebookManager />}
+                    {activeTab === 'addons'         && <AddonsManager />}
+                    {activeTab === 'inbox'          && <InboxManager />}
                     {activeTab === 'bot_logs'       && <BotLogsManager />}
                     {activeTab === 'analitica'      && <AnalyticsDashboard />}
                     {activeTab === 'documentos'     && <DocumentsManager />}

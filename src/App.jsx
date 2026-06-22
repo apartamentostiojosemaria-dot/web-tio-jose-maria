@@ -28,6 +28,7 @@ const ApartmentDetail = lazy(() => import('./components/ApartmentDetail'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const LegalNotice = lazy(() => import('./pages/LegalNotice'));
 const UnsubscribePage = lazy(() => import('./pages/UnsubscribePage'));
+const GuidebookPage = lazy(() => import('./pages/GuidebookPage'));
 const MapPage = lazy(() => import('./pages/MapPage'));
 const EventsPage = lazy(() => import('./pages/EventsPage'));
 const HinojaresPage = lazy(() => import('./pages/HinojaresPage'));
@@ -126,6 +127,7 @@ export default function App() {
                         <Route path="/privacidad" element={<PrivacyPolicy />} />
                         <Route path="/aviso-legal" element={<LegalNotice />} />
                         <Route path="/baja" element={<UnsubscribePage />} />
+                        <Route path="/guia/:code" element={<GuidebookPage />} />
                         <Route path="/rutas" element={<MapPage />} />
                         <Route path="/eventos" element={<EventsPage />} />
                         <Route path="/hinojares" element={<HinojaresPage />} />
