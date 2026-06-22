@@ -397,7 +397,72 @@ PDF: pendiente de iteración futura (Sprint 11). De momento la factura
 existe como registro fiscal completo en BD; envío al huésped por email
 manual desde el panel admin si lo pide.
 
-## 10. Roadmap pendiente
+## 10. Sprint 10 — Operaciones (limpieza + cerraduras + revenue)
+
+### 10.1. Limpieza/turnover
+
+Cada vez que una reserva pasa a `status='confirmed'`, un trigger BD crea
+automáticamente una `cleaning_tasks` para el día de check_out. Estructura:
+
+```sql
+SELECT scheduled_date, apartment_id, status, assigned_to
+FROM cleaning_tasks
+WHERE scheduled_date >= current_date
+ORDER BY scheduled_date;
+```
+
+La UI admin de gestión de limpieza queda pendiente (iteración futura).
+De momento, consultas directas con SQL desde el panel Supabase.
+
+### 10.2. Cerraduras electrónicas
+
+Mapeo apartamento → cerradura:
+
+```sql
+UPDATE apartments SET lock_provider = 'nuki', lock_device_id = '17....'
+WHERE slug = 'albahaca';
+```
+
+Providers soportados:
+
+- **Nuki** — secret `NUKI_API_TOKEN` (Account API → Web Settings → API). Listo
+  para producción en cuanto haya cerraduras instaladas.
+- **TTLock** — shape preparado (`TTLOCK_*` secrets). La integración real
+  se cierra cuando se instale la primera cerradura física (requiere OAuth
+  con username+password MD5).
+- **manual** — genera código de 6 dígitos al confirmar reserva pero no
+  hace nada físico; útil para validar flujo o cerraduras tipo CISA con
+  panel de números cambiables.
+
+Despliegue:
+
+```bash
+supabase functions deploy provision-access-code --project-ref nmtukksbzbnuzqsksdmw --no-verify-jwt
+```
+
+Disparo (a integrar en stripe-webhook iteración futura, o manual desde
+admin):
+
+```bash
+curl -X POST .../provision-access-code -d '{"bookingCode":"TJM-XXXXXX"}'
+```
+
+### 10.3. Pricing rules (revenue management)
+
+Tabla `pricing_rules` con 5 tipos:
+
+- `weekend_premium` — multiplier o flat_extra los días de `weekday_mask`
+- `last_minute` — descuento si la reserva es a <N días del check_in
+- `early_bird` — descuento si la reserva es a >N días del check_in
+- `min_nights` — fuerza estancia mínima en temporada
+- `occupancy_boost` — sube precio si la ocupación del apartamento >% en ese mes
+
+Insertar reglas vía SQL. La aplicación al motor de reservas
+(`check_availability`) queda pendiente: por ahora el motor sigue usando
+`price_low/price_high + high_seasons`, y `pricing_rules` está disponible
+para iteración cuando quieras activarlas.
+
+## 11. Roadmap pendiente
 
 El alojamiento sigue pagando MisterPlan hasta que el sistema propio lo cubra.
 Sprints adicionales planificados en `brief.md` (sección "Sprints PENDIENTES"):
