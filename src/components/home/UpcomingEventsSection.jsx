@@ -72,14 +72,16 @@ const UpcomingEventsSection = () => {
                             transition={{ delay: idx * 0.1, duration: 0.5 }}>
                             <Link to="/eventos"
                                 className="group block bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all overflow-hidden border border-gray-100 h-full">
-                                <div className="relative h-48 overflow-hidden bg-gray-100">
+                                <div className="relative h-48 overflow-hidden">
                                     {ev.image_url ? (
                                         <img src={ev.image_url} alt={ev.title}
                                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                                             loading="lazy" decoding="async" />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center">
-                                            <Calendar size={36} className="text-secondary opacity-40" />
+                                        <div className="w-full h-full flex flex-col items-center justify-center px-4 text-center"
+                                            style={{ background: 'linear-gradient(135deg, var(--color-surface-warm) 0%, #E8DFC9 100%)' }}>
+                                            <Sparkles size={32} style={{ color: 'var(--color-primary)' }} className="opacity-60 mb-2" strokeWidth={1.5} />
+                                            <p className="font-serif text-sm text-text-primary leading-tight line-clamp-2">{ev.title}</p>
                                         </div>
                                     )}
                                 </div>

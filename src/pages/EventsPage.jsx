@@ -241,11 +241,9 @@ const EventCard = ({ event, onOpen }) => {
                     {event.image_url ? (
                         <img src={event.image_url} alt={event.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-surface-warm">
-                            <CategoryIcon size={40} className="text-secondary opacity-40" />
-                        </div>
+                        <EventPlaceholder event={event} size="large" />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
                     <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-bold"
                         style={{ backgroundColor: seasonStyle.bg, color: seasonStyle.text, border: `1px solid ${seasonStyle.border}` }}>
                         {SEASON_LABELS[event.season] || event.season}
@@ -291,6 +289,26 @@ const EventCard = ({ event, onOpen }) => {
     );
 };
 
+// Placeholder visual para eventos sin imagen: gradiente cálido + icono de categoría grande
+const EventPlaceholder = ({ event, size = 'large' }) => {
+    const categoryObj = CATEGORIES.find((c) => c.key === event.category);
+    const CategoryIcon = categoryObj?.icon || Calendar;
+    const sizes = {
+        small: { icon: 22, padding: 'p-3' },
+        large: { icon: 48, padding: 'p-6' },
+    };
+    const s = sizes[size];
+    return (
+        <div className={`w-full h-full ${s.padding} flex flex-col items-center justify-center text-center`}
+            style={{ background: 'linear-gradient(135deg, var(--color-surface-warm) 0%, #E8DFC9 100%)' }}>
+            <CategoryIcon size={s.icon} style={{ color: 'var(--color-primary)' }} className="opacity-60 mb-2" strokeWidth={1.5} />
+            {size === 'large' && (
+                <p className="font-serif text-sm text-text-primary leading-tight line-clamp-2 px-2 max-w-[220px]">{event.title}</p>
+            )}
+        </div>
+    );
+};
+
 // Tarjeta horizontal compacta para "Próximos eventos" arriba
 const UpcomingEventCard = ({ event, onOpen }) => {
     const dateStr = formatDateRange(event);
@@ -298,13 +316,14 @@ const UpcomingEventCard = ({ event, onOpen }) => {
         <button onClick={onOpen}
             className="group block w-full text-left bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all overflow-hidden border border-gray-100">
             <div className="flex gap-3 p-3">
-                {event.image_url ? (
-                    <img src={event.image_url} alt={event.title} className="w-24 h-24 rounded-xl object-cover shrink-0" loading="lazy" />
-                ) : (
-                    <div className="w-24 h-24 rounded-xl bg-surface-warm flex items-center justify-center shrink-0">
-                        <Calendar size={20} className="text-secondary opacity-40" />
-                    </div>
-                )}
+                <div className="w-24 h-24 rounded-xl overflow-hidden shrink-0 bg-surface-warm">
+                    {event.image_url ? (
+                        <img src={event.image_url} alt={event.title} className="w-full h-full object-cover"
+                            loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                    ) : (
+                        <EventPlaceholder event={event} size="small" />
+                    )}
+                </div>
                 <div className="flex-1 min-w-0">
                     <p className="text-[10px] uppercase tracking-widest font-bold text-primary">{dateStr}</p>
                     <h3 className="font-serif text-base font-bold text-text-primary leading-tight mt-0.5 group-hover:text-primary transition-colors line-clamp-2">{event.title}</h3>
