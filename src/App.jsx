@@ -10,6 +10,9 @@ const BotChat = lazy(() => import('./components/shared/BotChat'));
 const PublicBotChat = () => {
     const { pathname } = useLocation();
     if (pathname.startsWith('/admin') || pathname.startsWith('/clientes')) return null;
+    // Bot deshabilitado por defecto. Activar con VITE_BOT_ENABLED=true cuando
+    // AWS Bedrock + indexer KB estén configurados y verificados.
+    if (import.meta.env.VITE_BOT_ENABLED !== 'true') return null;
     return (
         <Suspense fallback={null}>
             <BotChat />

@@ -3,8 +3,16 @@
 // Supabase Storage permite query params para servir imágenes optimizadas:
 //   ?width=W&height=H&resize=cover&format=origin|webp&quality=Q
 //
+// IMPORTANTE: Image Transformations es feature de Supabase Pro. En plan
+// Free devuelve 403. Por defecto el helper está DESACTIVADO y devuelve la
+// URL original sin tocar. Para activar webp+srcset:
+//   1. Upgrade del proyecto Supabase a Pro
+//   2. .env: VITE_SUPABASE_IMAGE_TRANSFORM=true
+//
 // Sólo aplica a URLs del bucket público de Supabase. Otras URLs (WordPress
 // histórico, externas) se devuelven sin tocar para no romperlas.
+
+const TRANSFORM_ENABLED = import.meta.env.VITE_SUPABASE_IMAGE_TRANSFORM === 'true';
 
 const SUPABASE_STORAGE_HOST = 'nmtukksbzbnuzqsksdmw.supabase.co';
 const PUBLIC_PREFIX = '/storage/v1/object/public/';
@@ -31,6 +39,7 @@ const toRenderUrl = (url) => url.replace(PUBLIC_PREFIX, RENDER_PREFIX);
  * @returns {string}
  */
 export const optimizedImage = (url, opts = {}) => {
+    if (!TRANSFORM_ENABLED) return url;
     if (!isSupabaseStorageUrl(url)) return url;
     const { width, height, resize = 'cover', quality = 80, format = 'webp' } = opts;
     const params = new URLSearchParams();
@@ -48,6 +57,7 @@ export const optimizedImage = (url, opts = {}) => {
  * está en Supabase. Para imágenes no-Supabase devuelve undefined.
  */
 export const srcSetFor = (url, width) => {
+    if (!TRANSFORM_ENABLED) return undefined;
     if (!isSupabaseStorageUrl(url) || !width) return undefined;
     return [
         `${optimizedImage(url, { width })} 1x`,
@@ -61,7 +71,11 @@ export const srcSetFor = (url, width) => {
  * más si la URL no es de Supabase.
  */
 export const imgAttrs = (url, { width, height, ...rest } = {}) => {
-    if (!isSupabaseStorageUrl(url)) return { src: url };
+    if (!TRANSFORM_ENABLED || !isSupabaseStorageUrl(url)) {
+        // Sin transformer: solo devolvemos src. width/height como atributos
+        // mejoran CLS aunque la imagen no esté optimizada.
+        return { src: url, ...(width && { width }), ...(height && { height }) };
+    }
     return {
         src: optimizedImage(url, { width, height, ...rest }),
         srcSet: srcSetFor(url, width),
