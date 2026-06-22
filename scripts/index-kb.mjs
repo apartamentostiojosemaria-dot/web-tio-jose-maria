@@ -224,6 +224,16 @@ const CONTACT_INFO = `Contacto Apartamentos Tío José María:
 - Cancelaciones, modificaciones, dudas sobre apartamentos o estancia: por WhatsApp o email.
 - Para temas médicos, citas oficiales o pagos: no se gestionan por chat, se redirige al canal apropiado.`;
 
+const CHECKIN_INFO = `Check-in y llegada — Tío José María:
+- El recibimiento es SIEMPRE personal. Te esperamos nosotros, te enseñamos la casa y te entregamos la llave en mano.
+- Horario de check-in: entre las 16:00 y las 20:00.
+- Para llegadas fuera de horario (madrugada, antes de las 16:00, después de las 20:00) hay que coordinarlo previamente por WhatsApp al +34 676 34 46 75. Casi siempre nos encajamos sin problema, pero queremos saberlo con un par de horas de antelación mínimo.
+- Hinojares es un pueblo muy pequeño (~343 habitantes). Al llegar, sigue Google Maps a "Calle Baja 1, Hinojares" o pregunta a cualquier vecino, todos saben dónde es Tío José María.
+- Aparcamiento gratuito al lado de la casa.
+- NO hay cerraduras electrónicas, código de acceso por SMS, cajas de llaves automáticas ni nada similar. Es un alojamiento rural pequeño y la entrega de llaves es personal — eso forma parte del trato cercano que ofrecemos.
+- Check-out: hasta las 12:00. La salida la puedes dejar tú mismo cerrando la puerta y dejando la llave en la cerradura por dentro, o coordinarte con nosotros para despedirnos.
+- Precheckin online: 7 días antes de la llegada recibirás un email con el enlace para rellenar el formulario obligatorio del Ministerio del Interior (RD 933/2021). Si lo completas online, en la llegada solo nos chocamos los cinco.`;
+
 const HARDCODED_CHUNKS = [
     ...FAQ_ITEMS.map((it, i) => ({
         sourceType: 'faq',
@@ -239,6 +249,7 @@ const HARDCODED_CHUNKS = [
     { sourceType: 'how_to', sourceId: 'how-to-visit-hinojares', title: 'Cómo visitar Hinojares paso a paso', content: HOW_TO_VISIT_TEXT, metadata: { origin: 'HinojaresPage.jsx' } },
     { sourceType: 'apartment', sourceId: 'apartments-overview', title: 'Apartamentos Tío José María — visión general', content: APARTMENTS_INFO, metadata: { origin: 'static' } },
     { sourceType: 'custom', sourceId: 'contact-info', title: 'Contacto y datos generales', content: CONTACT_INFO, metadata: { origin: 'static' } },
+    { sourceType: 'custom', sourceId: 'checkin-info', title: 'Cómo es el check-in y la llegada', content: CHECKIN_INFO, metadata: { origin: 'static' } },
 ];
 
 // ============================================================

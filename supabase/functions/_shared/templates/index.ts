@@ -107,10 +107,10 @@ const renderReminder24h = (b: BookingPayload): RenderedEmail => ({
     from: EMAIL_FROM,
     subject: `Mañana te esperamos — ${b.booking_code}`,
     html: shell(
-        `Mañana abrimos ${b.apartment_name} para ti`,
+        `Mañana te recibimos en ${b.apartment_name}`,
         `<p>Hola ${firstName(b.guest_name)}, recta final.</p>
-        <p><strong>Check-in:</strong> entre las 16:00 y las 20:00. Si vas a llegar fuera de ese horario, dinos por WhatsApp para coordinarnos.</p>
-        <p><strong>Dirección:</strong> Calle Baja 1, 23486 Hinojares. Cuando llegues al pueblo, búscanos con Google Maps; cualquier vecino te indica.</p>
+        <p><strong>Check-in:</strong> entre las 16:00 y las 20:00. Te recibimos en persona y te enseñamos la casa. Si vas a llegar fuera de ese horario, dinos por WhatsApp para coordinarnos.</p>
+        <p><strong>Dirección:</strong> Calle Baja 1, 23486 Hinojares. Cuando llegues al pueblo, búscanos con Google Maps; cualquier vecino te indica también.</p>
         ${bookingSummary(b)}
         <p>Te enviamos también el <strong>enlace al formulario de precheckin</strong> que tenemos que rellenar todos los huéspedes (obligación legal del Ministerio del Interior). Si lo completas antes, en la llegada solo nos chocamos los cinco y a disfrutar.</p>`,
         "Rellenar precheckin",
@@ -123,7 +123,7 @@ const renderArrival = (b: BookingPayload): RenderedEmail => ({
     subject: `Bienvenido a Tío José María`,
     html: shell(
         `Estás en casa, ${firstName(b.guest_name)}`,
-        `<p>Esperamos que el viaje haya ido bien. Aquí tienes lo básico para los primeros minutos:</p>
+        `<p>Esperamos que el viaje haya ido bien. Una vez te hayamos recibido y enseñado el apartamento, aquí tienes lo básico para los primeros minutos a solas:</p>
         <ul style="padding-left:20px;">
           <li><strong>WiFi:</strong> nombre y clave en la tarjeta de la mesa de la cocina.</li>
           <li><strong>Calefacción:</strong> termostato junto a la puerta del salón. Sube poco a poco, la casa retiene bien.</li>

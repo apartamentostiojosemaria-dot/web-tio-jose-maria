@@ -206,15 +206,18 @@ const BookingDetail = ({ b, busy, onAction }) => {
                     busy={busy === `email-${b.id}`}
                     disabled={!b.booking_code} />
                 <ActionButton
+                    icon={Mail} label="Recordatorio 24h"
+                    onClick={() => onAction('send-booking-email', { bookingCode: b.booking_code, template: 'reminder_24h' }, `email24-${b.id}`)}
+                    busy={busy === `email24-${b.id}`}
+                    disabled={!b.booking_code} />
+                <ActionButton
                     icon={FileCheck} label="Emitir factura"
                     onClick={() => onAction('issue-invoice', { bookingCode: b.booking_code }, `invoice-${b.id}`)}
                     busy={busy === `invoice-${b.id}`}
                     disabled={!b.booking_code || b.status !== 'confirmed'} />
-                <ActionButton
-                    icon={KeyRound} label="Provisionar código cerradura"
-                    onClick={() => onAction('provision-access-code', { bookingCode: b.booking_code }, `lock-${b.id}`)}
-                    busy={busy === `lock-${b.id}`}
-                    disabled={!b.booking_code || b.status !== 'confirmed'} />
+                {/* Botón "Provisionar código cerradura" oculto: TJM check-in personal.
+                    Si en futuro se instala cerradura electrónica, descomentar:
+                    <ActionButton icon={KeyRound} label="Provisionar código cerradura" ... /> */}
             </div>
         </div>
     );

@@ -44,7 +44,8 @@ const NAV_GROUPS = [
             { id: 'dashboard',     label: 'Cockpit',          icon: LayoutDashboard },
             { id: 'reservas',      label: 'Reservas',         icon: CalendarCheck, badgeKey: 'pendingBookings' },
             { id: 'cleaning',      label: 'Limpieza',         icon: Brush },
-            { id: 'access_codes',  label: 'Códigos cerradura',icon: KeyRound },
+            // 'access_codes' ocultado (TJM no tiene cerraduras electrónicas).
+            // Componente sigue disponible vía URL si en el futuro se instalan.
             { id: 'travelers',     label: 'Viajeros (SES)',   icon: Shield },
             { id: 'disponibilidad',label: 'Disponibilidad',   icon: Calendar },
         ],
