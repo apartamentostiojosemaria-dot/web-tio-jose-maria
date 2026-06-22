@@ -6,3 +6,7 @@ dist
 skills-lock.json
 *.log
 .DS_Store
+
+# Local secrets (no commit)
+.env.local
+.env.*.local
