@@ -193,7 +193,7 @@ const Layout = ({ profile, booking, allBookings, invoices, guidebook, addons, do
                                 {activeSection === 'estancia'    && <StayPanel booking={booking} guidebook={guidebook} onOpen={setActiveSheet} />}
                                 {activeSection === 'apartamento' && <ApartmentPanel booking={booking} guidebook={guidebook} />}
                                 {activeSection === 'guia'        && <GuidePanel />}
-                                {activeSection === 'zona'        && <ZonePanel />}
+                                {activeSection === 'zona'        && <ZonePanel booking={booking} />}
                                 {activeSection === 'extras'      && <ExtrasPanel addons={addons} booking={booking} onOpen={setActiveSheet} />}
                                 {activeSection === 'reservas'    && <BookingsPanel allBookings={allBookings} invoices={invoices} activeBookingId={booking?.id} />}
                                 {activeSection === 'docs'        && <DocsPanel docs={docs} phase={phase} />}
@@ -471,8 +471,33 @@ const GuidePanel = () => {
 // PANEL: La zona (local_places: emergencias + restaurantes)
 // ────────────────────────────────────────────────────────────────────────────
 
-const ZonePanel = () => {
+const ZonePanel = ({ booking }) => {
     const { places, loading } = useLocalPlaces();
+    const [events, setEvents] = useState([]);
+    const [eventsLoading, setEventsLoading] = useState(true);
+    const [openEvent, setOpenEvent] = useState(null);
+
+    useEffect(() => {
+        (async () => {
+            if (!booking?.check_in || !booking?.check_out) { setEventsLoading(false); return; }
+            // Eventos cuyo rango (event_date - end_date) se solapa con la estancia
+            const { data } = await supabase.from('local_events')
+                .select('*')
+                .eq('active', true)
+                .lte('event_date', booking.check_out)
+                .or(`end_date.gte.${booking.check_in},end_date.is.null`)
+                .order('event_date');
+            // Filtro extra: si end_date es null tratar como event_date
+            const filtered = (data || []).filter(e => {
+                const start = e.event_date;
+                const end = e.end_date || e.event_date;
+                return start && end && start <= booking.check_out && end >= booking.check_in;
+            });
+            setEvents(filtered);
+            setEventsLoading(false);
+        })();
+    }, [booking?.check_in, booking?.check_out]);
+
     if (loading) return <div className="text-center py-12 text-gray-400 text-sm">Cargando…</div>;
 
     const emergencies = places.filter(p => p.type === 'emergencia' || p.type === 'farmacia');
@@ -480,6 +505,22 @@ const ZonePanel = () => {
 
     return (
         <div className="space-y-5">
+            {/* Eventos durante la estancia — destacado arriba */}
+            {!eventsLoading && events.length > 0 && (
+                <Section title="Durante tu estancia" icon={Sparkles}>
+                    <p className="text-sm text-gray-600 mb-3">
+                        {events.length === 1 ? 'Esto pasa en la zona mientras estás aquí:' : `${events.length} eventos coinciden con tus fechas:`}
+                    </p>
+                    <div className="space-y-3">
+                        {events.map(ev => <EventCard key={ev.id} event={ev} onOpen={() => setOpenEvent(ev)} />)}
+                    </div>
+                </Section>
+            )}
+
+            {openEvent && (
+                <EventDetailSheet event={openEvent} onClose={() => setOpenEvent(null)} />
+            )}
+
             <Section title="Emergencias" icon={ShieldAlert}>
                 <a href="tel:112" className="block p-4 rounded-xl bg-red-50 border border-red-200 mb-2">
                     <div className="flex items-center gap-3">
@@ -550,6 +591,121 @@ const ZonePanel = () => {
         </div>
     );
 };
+
+// ────────────────────────────────────────────────────────────────────────────
+// Event Card + sheet detalle
+// ────────────────────────────────────────────────────────────────────────────
+
+const CATEGORY_LABEL = {
+    fiestas: 'Fiestas y romerías',
+    gastronomía: 'Gastronomía',
+    cultura: 'Cultura',
+    naturaleza: 'Naturaleza',
+    deportes: 'Deportes',
+};
+
+const fmtEventDate = (start, end) => {
+    if (!start) return '—';
+    const s = new Date(start);
+    if (!end || start === end) return s.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+    const e = new Date(end);
+    if (s.getMonth() === e.getMonth() && s.getFullYear() === e.getFullYear()) {
+        return `${s.getDate()} – ${e.getDate()} ${s.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}`;
+    }
+    return `${s.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} – ${e.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+};
+
+const EventCard = ({ event, onOpen }) => (
+    <button onClick={onOpen}
+        className="w-full bg-white rounded-2xl border border-gray-200 overflow-hidden text-left hover:shadow-md transition-shadow active:scale-[0.99]">
+        {event.image_url && (
+            <div className="h-40 bg-gray-100 overflow-hidden">
+                <img src={event.image_url} alt={event.title} className="w-full h-full object-cover" loading="lazy" />
+            </div>
+        )}
+        <div className="p-4">
+            <div className="flex items-center gap-2 mb-1">
+                <span className="text-[9px] uppercase tracking-widest font-bold text-rural-700 bg-rural-50 px-2 py-0.5 rounded-full">
+                    {CATEGORY_LABEL[event.category] || event.category}
+                </span>
+                {Array.isArray(event.program) && event.program.length > 0 && (
+                    <span className="text-[9px] uppercase font-bold text-gray-500 inline-flex items-center gap-1">
+                        <Clock size={9} /> Con programa
+                    </span>
+                )}
+            </div>
+            <h3 className="font-bold text-sm text-gray-900 leading-tight">{event.title}</h3>
+            <p className="text-xs text-gray-500 mt-1 tabular-nums">{fmtEventDate(event.event_date, event.end_date)}</p>
+            {event.location && (
+                <p className="text-xs text-gray-500 mt-0.5 inline-flex items-center gap-1">
+                    <MapPin size={10} /> {event.location}
+                </p>
+            )}
+            {event.description && (
+                <p className="text-xs text-gray-600 mt-2 line-clamp-2 leading-relaxed">{event.description}</p>
+            )}
+        </div>
+    </button>
+);
+
+const EventDetailSheet = ({ event, onClose }) => (
+    <BottomSheet onClose={onClose}>
+        <div>
+            {event.image_url && (
+                <div className="bg-gray-100">
+                    <img src={event.image_url} alt={event.title} className="w-full max-h-[60vh] object-contain" />
+                </div>
+            )}
+            <div className="p-5 space-y-4">
+                <div>
+                    <span className="text-[10px] uppercase tracking-widest font-bold text-rural-700 bg-rural-50 px-2 py-0.5 rounded-full">
+                        {CATEGORY_LABEL[event.category] || event.category}
+                    </span>
+                    <h2 className="font-serif text-2xl font-bold text-gray-900 mt-2 leading-tight">{event.title}</h2>
+                    <p className="text-sm text-gray-600 mt-1 tabular-nums font-medium">{fmtEventDate(event.event_date, event.end_date)}</p>
+                </div>
+
+                {event.description && (
+                    <p className="text-sm text-gray-700 leading-relaxed">{event.description}</p>
+                )}
+
+                <div className="grid grid-cols-2 gap-3 pt-3 border-t border-gray-100">
+                    {event.location && (
+                        <div>
+                            <p className="text-[10px] uppercase font-bold text-gray-500 mb-0.5">Lugar</p>
+                            <p className="text-sm text-gray-900">{event.location}</p>
+                        </div>
+                    )}
+                    {event.organizer && (
+                        <div>
+                            <p className="text-[10px] uppercase font-bold text-gray-500 mb-0.5">Organiza</p>
+                            <p className="text-sm text-gray-900">{event.organizer}</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Programa horario */}
+                {Array.isArray(event.program) && event.program.length > 0 && (
+                    <div className="pt-3 border-t border-gray-100">
+                        <p className="text-[10px] uppercase tracking-widest font-bold text-gray-500 mb-3 flex items-center gap-1">
+                            <Clock size={11} /> Programa
+                        </p>
+                        <div className="space-y-2.5">
+                            {event.program.map((item, idx) => (
+                                <div key={idx} className="flex gap-3">
+                                    <div className="w-14 shrink-0">
+                                        <span className="font-mono font-bold text-sm text-rural-700 tabular-nums">{item.time || '—'}</span>
+                                    </div>
+                                    <p className="text-sm text-gray-700 leading-snug flex-1">{item.description}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    </BottomSheet>
+);
 
 // ────────────────────────────────────────────────────────────────────────────
 // PANEL: Extras (addons, solo pre-llegada)
