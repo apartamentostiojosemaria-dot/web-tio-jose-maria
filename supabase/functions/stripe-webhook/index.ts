@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
                     .eq("booking_code", code)
                     .in("status", ["hold", "pending"]);    // evita pisar cancelaciones
 
-                // Disparar email de confirmacion inmediatamente
+                // Disparar email de confirmacion al huésped + notificacion al operador
                 fetch(`${SUPABASE_URL}/functions/v1/send-booking-email`, {
                     method: "POST",
                     headers: {
@@ -101,6 +101,15 @@ Deno.serve(async (req) => {
                     },
                     body: JSON.stringify({ bookingCode: code, template: "confirmation" }),
                 }).catch(e => console.warn("[stripe-webhook] confirmation email fire-and-forget failed:", e));
+
+                fetch(`${SUPABASE_URL}/functions/v1/send-booking-email`, {
+                    method: "POST",
+                    headers: {
+                        "content-type": "application/json",
+                        authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+                    },
+                    body: JSON.stringify({ bookingCode: code, template: "operator_new_booking" }),
+                }).catch(e => console.warn("[stripe-webhook] operator notification fire-and-forget failed:", e));
 
                 // Emitir factura (RPC idempotente) + disparar Verifactu
                 fetch(`${SUPABASE_URL}/functions/v1/issue-invoice`, {

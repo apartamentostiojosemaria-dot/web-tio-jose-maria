@@ -67,7 +67,7 @@ const bookingSummary = (b: BookingPayload) => `
   </td></tr>
 </table>`;
 
-type TemplateKey = "confirmation" | "reminder_7d" | "reminder_24h" | "arrival" | "departure" | "review_request" | "reactivation";
+type TemplateKey = "confirmation" | "reminder_7d" | "reminder_24h" | "arrival" | "departure" | "review_request" | "reactivation" | "operator_new_booking";
 
 interface RenderedEmail { subject: string; html: string; from: string; }
 
@@ -176,26 +176,48 @@ const renderReactivation = (b: BookingPayload): RenderedEmail => ({
     ),
 });
 
+const renderOperatorNewBooking = (b: BookingPayload): RenderedEmail => ({
+    from: EMAIL_FROM,
+    subject: `🎉 Nueva reserva ${b.booking_code} — ${b.apartment_name}`,
+    html: shell(
+        `Nueva reserva confirmada`,
+        `<p>Entra reserva nueva en el sistema. Datos al día:</p>
+        ${bookingSummary(b)}
+        <p><strong>Huésped:</strong> ${escapeHtml(b.guest_name)} · <a href="mailto:${b.guest_email}">${b.guest_email}</a></p>
+        <p>Para gestionarla (factura, recordatorios, precheckin, notas internas) entra al panel.</p>`,
+        "Abrir cockpit",
+        `${SITE_URL}/admin`
+    ),
+});
+
+// Pequeño helper porque la plantilla interpola guest_name en texto
+function escapeHtml(s: string | null | undefined): string {
+    if (!s) return "";
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 export const render = (key: TemplateKey, b: BookingPayload): RenderedEmail => {
     switch (key) {
-        case "confirmation":    return renderConfirmation(b);
-        case "reminder_7d":     return renderReminder7d(b);
-        case "reminder_24h":    return renderReminder24h(b);
-        case "arrival":         return renderArrival(b);
-        case "departure":       return renderDeparture(b);
-        case "review_request":  return renderReviewRequest(b);
-        case "reactivation":    return renderReactivation(b);
+        case "confirmation":            return renderConfirmation(b);
+        case "reminder_7d":             return renderReminder7d(b);
+        case "reminder_24h":            return renderReminder24h(b);
+        case "arrival":                 return renderArrival(b);
+        case "departure":               return renderDeparture(b);
+        case "review_request":          return renderReviewRequest(b);
+        case "reactivation":            return renderReactivation(b);
+        case "operator_new_booking":    return renderOperatorNewBooking(b);
     }
 };
 
 export const TEMPLATE_TO_FLAG: Record<TemplateKey, string> = {
-    confirmation:    "confirmation_email_sent_at",
-    reminder_7d:     "reminder_7d_email_sent_at",
-    reminder_24h:    "reminder_24h_email_sent_at",
-    arrival:         "arrival_email_sent_at",
-    departure:       "departure_email_sent_at",
-    review_request:  "review_request_email_sent_at",
-    reactivation:    "reactivation_email_sent_at",
+    confirmation:           "confirmation_email_sent_at",
+    reminder_7d:            "reminder_7d_email_sent_at",
+    reminder_24h:           "reminder_24h_email_sent_at",
+    arrival:                "arrival_email_sent_at",
+    departure:              "departure_email_sent_at",
+    review_request:         "review_request_email_sent_at",
+    reactivation:           "reactivation_email_sent_at",
+    operator_new_booking:   "operator_notified_at",       // anotamos pero no bloqueamos reenvíos
 };
 
 export type { BookingPayload, TemplateKey, RenderedEmail };

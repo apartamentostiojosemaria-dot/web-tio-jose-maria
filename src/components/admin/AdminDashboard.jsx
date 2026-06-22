@@ -35,6 +35,8 @@ const AccessCodesManager    = lazy(() => import('./AccessCodesManager'));
 const PricingRulesManager   = lazy(() => import('./PricingRulesManager'));
 const ChannelSyncManager    = lazy(() => import('./ChannelSyncManager'));
 const BotLogsManager        = lazy(() => import('./BotLogsManager'));
+const PlanningCalendar      = lazy(() => import('./PlanningCalendar'));
+const Customer360           = lazy(() => import('./Customer360'));
 
 // Sidebar agrupado por dominios operativos
 const NAV_GROUPS = [
@@ -42,6 +44,7 @@ const NAV_GROUPS = [
         title: 'Operaciones',
         items: [
             { id: 'dashboard',     label: 'Cockpit',          icon: LayoutDashboard },
+            { id: 'planning',      label: 'Planning',         icon: Calendar },
             { id: 'reservas',      label: 'Reservas',         icon: CalendarCheck, badgeKey: 'pendingBookings' },
             { id: 'cleaning',      label: 'Limpieza',         icon: Brush },
             // 'access_codes' ocultado (TJM no tiene cerraduras electrónicas).
@@ -62,7 +65,8 @@ const NAV_GROUPS = [
         title: 'Canales y huéspedes',
         items: [
             { id: 'channel_sync', label: 'Channel Manager', icon: Link2 },
-            { id: 'huespedes',    label: 'Huéspedes',       icon: Users },
+            { id: 'customer_360', label: 'Customer 360',    icon: Users },
+            { id: 'huespedes',    label: 'Huéspedes (auth)', icon: Users },
             { id: 'resenas',      label: 'Reseñas',         icon: MessageSquare },
         ],
     },
@@ -152,6 +156,7 @@ const AdminDashboard = () => {
             <main className="flex-grow p-4 md:p-8 pt-18 md:pt-8 h-screen overflow-y-auto">
                 <Suspense fallback={FALLBACK}>
                     {activeTab === 'dashboard'      && <AdminHome onNavigate={go} />}
+                    {activeTab === 'planning'       && <PlanningCalendar />}
                     {activeTab === 'reservas'       && <BookingsManagerV2 />}
                     {activeTab === 'cleaning'       && <CleaningManager />}
                     {activeTab === 'access_codes'   && <AccessCodesManager />}
@@ -161,6 +166,7 @@ const AdminDashboard = () => {
                     {activeTab === 'pricing'        && <PricingRulesManager />}
                     {activeTab === 'temporadas'     && <SeasonsManager />}
                     {activeTab === 'channel_sync'   && <ChannelSyncManager />}
+                    {activeTab === 'customer_360'   && <Customer360 />}
                     {activeTab === 'huespedes'      && <GuestUserManager />}
                     {activeTab === 'resenas'        && <ReviewsManager />}
                     {activeTab === 'apartamentos'   && <ApartmentsManager />}

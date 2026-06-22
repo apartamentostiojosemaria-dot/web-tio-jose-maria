@@ -18,6 +18,7 @@ import { render, TEMPLATE_TO_FLAG, type TemplateKey } from "../_shared/templates
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const OPERATOR_NOTIFY_EMAIL = Deno.env.get("OPERATOR_NOTIFY_EMAIL") || "apartamentostiojosemaria@gmail.com";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false },
@@ -25,7 +26,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 
 const VALID_TEMPLATES: TemplateKey[] = [
     "confirmation", "reminder_7d", "reminder_24h", "arrival",
-    "departure", "review_request", "reactivation",
+    "departure", "review_request", "reactivation", "operator_new_booking",
 ];
 
 const json = (status: number, body: unknown) =>
@@ -97,9 +98,12 @@ Deno.serve(async (req) => {
 
     const { subject, html, from } = render(template, payload);
 
+    // El destinatario depende del template: operator_new_booking va al operador.
+    const recipient = template === "operator_new_booking" ? OPERATOR_NOTIFY_EMAIL : booking.guest_email;
+
     let resendId: string | undefined;
     try {
-        const r = await sendResend({ from, to: booking.guest_email, subject, html });
+        const r = await sendResend({ from, to: recipient, subject, html });
         resendId = r.id;
     } catch (e) {
         return json(502, { error: "resend_error", detail: e instanceof Error ? e.message : String(e) });
