@@ -91,6 +91,18 @@ Deno.serve(async (req) => {
                     })
                     .eq("booking_code", code)
                     .in("status", ["hold", "pending"]);    // evita pisar cancelaciones
+
+                // Disparar email de confirmacion inmediatamente (no esperar al cron).
+                // Si Resend no está configurado, send-booking-email devuelve 503 y
+                // el cron diario lo intentará al día siguiente.
+                fetch(`${SUPABASE_URL}/functions/v1/send-booking-email`, {
+                    method: "POST",
+                    headers: {
+                        "content-type": "application/json",
+                        authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+                    },
+                    body: JSON.stringify({ bookingCode: code, template: "confirmation" }),
+                }).catch(e => console.warn("[stripe-webhook] confirmation email fire-and-forget failed:", e));
                 break;
             }
             case "checkout.session.expired": {

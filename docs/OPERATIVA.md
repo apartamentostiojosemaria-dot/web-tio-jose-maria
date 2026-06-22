@@ -192,7 +192,57 @@ supabase functions deploy stripe-webhook        --project-ref nmtukksbzbnuzqsksd
 Cuando estés listo: en Stripe activar cuenta real, copiar `sk_live_...` y
 `whsec_...` de producción a las secrets de Supabase, redeploy.
 
-## 6. Roadmap pendiente — construir lo que MisterPlan hace hoy
+## 6. Sprint 6 — Email automation (Resend + Trigger.dev)
+
+### 6.1. Resend
+
+1. Crear cuenta en resend.com (o usar la que ya tienes en OFM con multi-dominio).
+2. Añadir dominio `tiojosemaria.com`. Resend te da 3 registros DNS (SPF
+   TXT + DKIM CNAME + return-path CNAME). Configurarlos donde tengas el
+   DNS de TJM (Cloudflare, registrador, etc.).
+3. Esperar verificación (5-20 min). Cuando esté verde, copiar la API key.
+4. Crear identidad "hola@tiojosemaria.com" o usar la del dominio raíz.
+
+### 6.2. Supabase secrets
+
+| Secret | Valor |
+|---|---|
+| `RESEND_API_KEY` | `re_...` |
+
+### 6.3. Desplegar edge function
+
+```bash
+supabase functions deploy send-booking-email --project-ref nmtukksbzbnuzqsksdmw --no-verify-jwt
+```
+
+### 6.4. Trigger.dev — proyecto `tjm-jobs`
+
+1. cloud.trigger.dev → org `padron-ia` → New Project → nombre `tjm-jobs`.
+   Anotar el `project ref` (forma `proj_xxx_xxx`).
+2. En el dashboard del proyecto → Environment Variables → añadir:
+   - `SUPABASE_URL` = `https://nmtukksbzbnuzqsksdmw.supabase.co`
+   - `SUPABASE_SERVICE_ROLE_KEY` = (service role TJM)
+3. En local (`tjm-jobs/`):
+   ```bash
+   cd tjm-jobs
+   npm install
+   npx trigger.dev@latest login
+   # Editar trigger.config.ts → project: "proj_xxx_xxx"
+   npm run dev       # probar local
+   npm run deploy    # subir a cloud
+   ```
+4. Verificar en dashboard que `daily-booking-emails` aparece como task
+   programada con cron `0 9 * * *` (Europe/Madrid).
+
+### 6.5. Probar end-to-end
+
+1. Crear reserva de prueba en `/reservar` y completar pago (tarjeta test).
+2. El webhook Stripe debe disparar la edge `send-booking-email` con
+   `template: confirmation` → email llega en segundos.
+3. Para probar los recordatorios sin esperar al cron real, en
+   cloud.trigger.dev → tasks → `daily-booking-emails` → "Test task".
+
+## 7. Roadmap pendiente — construir lo que MisterPlan hace hoy
 
 El alojamiento sigue pagando MisterPlan hasta que el sistema propio lo cubra.
 Sprints adicionales planificados en `brief.md` (sección "Sprints PENDIENTES"):

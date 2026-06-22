@@ -1,0 +1,115 @@
+// Edge function: send-booking-email
+// ==================================
+// Recibe { bookingCode, template } y envía el email transaccional
+// correspondiente vía Resend. Idempotente: si el flag *_email_sent_at ya
+// está marcado, no reenvía.
+//
+// Disparadores:
+//   - stripe-webhook tras marcar booking confirmed → confirmation
+//   - Trigger.dev cron diario daily-booking-emails → resto
+//
+// Env vars requeridas:
+//   RESEND_API_KEY                 re_...
+//   PUBLIC_SITE_URL                https://tiojosemaria.com (opcional)
+
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { render, TEMPLATE_TO_FLAG, type TemplateKey } from "../_shared/templates/index.ts";
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false },
+});
+
+const VALID_TEMPLATES: TemplateKey[] = [
+    "confirmation", "reminder_7d", "reminder_24h", "arrival",
+    "departure", "review_request", "reactivation",
+];
+
+const json = (status: number, body: unknown) =>
+    new Response(JSON.stringify(body), {
+        status,
+        headers: { "content-type": "application/json" },
+    });
+
+async function sendResend(opts: { from: string; to: string; subject: string; html: string }) {
+    const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ from: opts.from, to: opts.to, subject: opts.subject, html: opts.html }),
+    });
+    if (!res.ok) {
+        const err = await res.text();
+        throw new Error(`Resend ${res.status}: ${err.slice(0, 400)}`);
+    }
+    return await res.json() as { id?: string };
+}
+
+Deno.serve(async (req) => {
+    if (req.method !== "POST") return json(405, { error: "method_not_allowed" });
+    if (!RESEND_API_KEY) return json(503, { error: "resend_not_configured" });
+
+    let body: { bookingCode?: string; template?: string };
+    try { body = await req.json(); } catch { return json(400, { error: "invalid_json" }); }
+
+    const code = (body.bookingCode || "").trim().toUpperCase();
+    const template = body.template as TemplateKey | undefined;
+    if (!code || !/^TJM-[A-Z0-9]{6}$/.test(code)) return json(400, { error: "invalid_booking_code" });
+    if (!template || !VALID_TEMPLATES.includes(template)) return json(400, { error: "invalid_template" });
+
+    const flag = TEMPLATE_TO_FLAG[template];
+
+    // Cargar booking + apartment
+    const { data: booking, error: bErr } = await supabase
+        .from("guest_bookings")
+        .select(`id, booking_code, guest_name, guest_email, check_in, check_out,
+                 total_price, apartment_id, status,
+                 ${flag},
+                 apartments(name, slug)`)
+        .eq("booking_code", code)
+        .single();
+
+    if (bErr || !booking) return json(404, { error: "booking_not_found" });
+    if (!booking.guest_email) return json(400, { error: "no_guest_email" });
+
+    // Idempotencia: si ya se envió, no reenviar
+    if (booking[flag as keyof typeof booking]) {
+        return json(200, { ok: true, skipped: "already_sent", sentAt: booking[flag as keyof typeof booking] });
+    }
+
+    const apt = (booking.apartments as unknown as { name: string; slug: string }) || { name: "Apartamento", slug: "" };
+
+    const payload = {
+        booking_code: booking.booking_code,
+        guest_name: booking.guest_name,
+        guest_email: booking.guest_email,
+        apartment_name: apt.name,
+        apartment_slug: apt.slug,
+        check_in: booking.check_in,
+        check_out: booking.check_out,
+        total_price: Number(booking.total_price),
+    };
+
+    const { subject, html, from } = render(template, payload);
+
+    let resendId: string | undefined;
+    try {
+        const r = await sendResend({ from, to: booking.guest_email, subject, html });
+        resendId = r.id;
+    } catch (e) {
+        return json(502, { error: "resend_error", detail: e instanceof Error ? e.message : String(e) });
+    }
+
+    // Marcar flag como enviado (idempotencia)
+    await supabase
+        .from("guest_bookings")
+        .update({ [flag]: new Date().toISOString() })
+        .eq("id", booking.id);
+
+    return json(200, { ok: true, template, resendId, sentTo: booking.guest_email });
+});
