@@ -62,19 +62,19 @@ const ChannelSyncManager = () => {
     };
 
     const copyExportUrl = (slug) => {
-        // URL bonita terminada en .ics — Airbnb (y otros) exige ese sufijo.
-        // nginx redirige a la edge function ical-export.
         const url = `https://tiojosemaria.com/ical/${slug}.ics`;
         navigator.clipboard.writeText(url);
-        alert('URL copiada al portapapeles. Pégala en el iCal import de Booking/Airbnb/Vrbo.');
+        alert('Enlace copiado. Ahora pégalo en Airbnb (Calendario → "Vincular otro calendario" → "Conéctate a una web externa") o en Booking Extranet → Sincronización iCal.');
     };
 
     return (
         <div className="max-w-6xl">
             <header className="mb-6 flex justify-between items-end">
                 <div>
-                    <h1 className="font-serif text-3xl font-bold text-text-primary">Channel Manager iCal</h1>
-                    <p className="text-sm text-gray-500">Sync bidireccional con Booking, Airbnb, Vrbo y otros</p>
+                    <h1 className="font-serif text-3xl font-bold text-text-primary">Sincronizar con Airbnb y Booking</h1>
+                    <p className="text-sm text-gray-600 max-w-2xl mt-1">
+                        Aquí conectas Airbnb, Booking y otros canales. Las reservas que entren por allí bloquean automáticamente las fechas en tu web, y al revés.
+                    </p>
                 </div>
                 <div className="flex gap-2">
                     <button onClick={runSync} disabled={syncing}
@@ -82,7 +82,7 @@ const ChannelSyncManager = () => {
                         <Send size={14} /> {syncing ? 'Sincronizando…' : 'Sincronizar ahora'}
                     </button>
                     <button onClick={load} className="inline-flex items-center gap-2 text-sm font-bold text-rural-700 hover:text-primary">
-                        <RefreshCw size={14} /> Recargar
+                        <RefreshCw size={14} /> Actualizar
                     </button>
                 </div>
             </header>
@@ -99,10 +99,10 @@ const ChannelSyncManager = () => {
                         </div>
 
                         <div className="space-y-3">
-                            <UrlField label="URL iCal Airbnb (import)" icon={Calendar}
+                            <UrlField label="Enlace del calendario de Airbnb" icon={Calendar}
                                 value={a.airbnb_ical_url || ''} onChange={(v) => updateIcal(a.id, 'airbnb_ical_url', v)}
                                 count={blocks[`${a.id}-airbnb`] || 0} sourceLabel="Airbnb" />
-                            <UrlField label="URL iCal Booking (import)" icon={Calendar}
+                            <UrlField label="Enlace del calendario de Booking" icon={Calendar}
                                 value={a.booking_ical_url || ''} onChange={(v) => updateIcal(a.id, 'booking_ical_url', v)}
                                 count={blocks[`${a.id}-booking`] || 0} sourceLabel="Booking" />
                         </div>
@@ -110,11 +110,11 @@ const ChannelSyncManager = () => {
                         <div className="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between flex-wrap gap-2">
                             <div className="text-xs text-gray-600">
                                 <Link2 size={12} className="inline mr-1" />
-                                Nuestro export iCal para Booking/Airbnb/Vrbo:
+                                Tu enlace para meter en Airbnb, Booking, Vrbo:
                             </div>
                             <button onClick={() => copyExportUrl(a.slug)}
                                 className="inline-flex items-center gap-1.5 text-xs font-bold text-rural-700 hover:text-primary px-3 py-1.5 rounded-lg hover:bg-rural-50">
-                                <Copy size={12} /> Copiar URL export
+                                <Copy size={12} /> Copiar enlace
                             </button>
                         </div>
                     </li>

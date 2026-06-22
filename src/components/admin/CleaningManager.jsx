@@ -10,7 +10,13 @@ const STATUS_CLS = {
     issue:       'bg-red-50 text-red-700 border-red-200',
 };
 
-const STATUSES = ['pending', 'in_progress', 'done', 'skipped', 'issue'];
+const STATUSES = [
+    { value: 'pending',     label: 'Pendiente' },
+    { value: 'in_progress', label: 'En curso' },
+    { value: 'done',        label: 'Hecha' },
+    { value: 'skipped',     label: 'Sin hacer' },
+    { value: 'issue',       label: 'Hay un problema' },
+];
 
 const CleaningManager = () => {
     const [tasks, setTasks] = useState([]);
@@ -48,8 +54,8 @@ const CleaningManager = () => {
         <div className="max-w-6xl">
             <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <h1 className="font-serif text-3xl font-bold text-text-primary">Limpieza y turnover</h1>
-                    <p className="text-sm text-gray-500">{tasks.length} tarea{tasks.length !== 1 ? 's' : ''}</p>
+                    <h1 className="font-serif text-3xl font-bold text-text-primary">Limpiezas</h1>
+                    <p className="text-sm text-gray-600">Cada vez que sale un huésped se crea una tarea de limpieza · {tasks.length} {tasks.length === 1 ? 'tarea' : 'tareas'}</p>
                 </div>
                 <div className="flex gap-2">
                     <FilterPill active={filter === 'today'} onClick={() => setFilter('today')}>Hoy</FilterPill>
@@ -95,7 +101,7 @@ const CleaningManager = () => {
                                         started_at: e.target.value === 'in_progress' && !t.started_at ? new Date().toISOString() : t.started_at,
                                         completed_at: e.target.value === 'done' ? new Date().toISOString() : null,
                                     })} className={`w-full text-xs font-bold px-2 py-1.5 rounded-lg border cursor-pointer ${STATUS_CLS[t.status] || STATUS_CLS.pending}`}>
-                                        {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                                        {STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                                     </select>
                                 </div>
                                 <div className="sm:col-span-1 text-right">

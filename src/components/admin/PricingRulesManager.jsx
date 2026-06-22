@@ -3,11 +3,11 @@ import { supabase } from '../../lib/supabase';
 import { RefreshCw, Plus, Trash2, Edit3, X, Power } from 'lucide-react';
 
 const RULE_TYPES = [
-    { value: 'weekend_premium',  label: 'Recargo fin de semana' },
-    { value: 'last_minute',      label: 'Descuento última hora' },
-    { value: 'early_bird',       label: 'Descuento reserva anticipada' },
-    { value: 'min_nights',       label: 'Estancia mínima' },
-    { value: 'occupancy_boost',  label: 'Subida por ocupación' },
+    { value: 'weekend_premium',  label: 'Cobrar más los fines de semana' },
+    { value: 'last_minute',      label: 'Descuento por reservar a última hora' },
+    { value: 'early_bird',       label: 'Descuento por reservar con mucha antelación' },
+    { value: 'min_nights',       label: 'Mínimo de noches obligatorias' },
+    { value: 'occupancy_boost',  label: 'Subir precio cuando hay alta ocupación' },
 ];
 
 const emptyRule = () => ({
@@ -64,16 +64,16 @@ const PricingRulesManager = () => {
         <div className="max-w-6xl">
             <header className="mb-6 flex justify-between items-end">
                 <div>
-                    <h1 className="font-serif text-3xl font-bold text-text-primary">Reglas de pricing</h1>
-                    <p className="text-sm text-gray-500">Recargos y descuentos dinámicos · {rules.length} regla{rules.length !== 1 ? 's' : ''}</p>
+                    <h1 className="font-serif text-3xl font-bold text-text-primary">Recargos y descuentos</h1>
+                    <p className="text-sm text-gray-600">Sube o baja el precio según el día, la antelación o la ocupación · {rules.length} {rules.length === 1 ? 'regla' : 'reglas'}</p>
                 </div>
                 <div className="flex gap-2">
                     <button onClick={() => setEditing(emptyRule())}
                         className="inline-flex items-center gap-2 text-sm font-bold text-white bg-primary px-4 py-2 rounded-xl shadow hover:shadow-md">
-                        <Plus size={14} /> Nueva regla
+                        <Plus size={14} /> Crear regla nueva
                     </button>
                     <button onClick={load} className="inline-flex items-center gap-2 text-sm font-bold text-rural-700 hover:text-primary">
-                        <RefreshCw size={14} /> Recargar
+                        <RefreshCw size={14} /> Actualizar
                     </button>
                 </div>
             </header>

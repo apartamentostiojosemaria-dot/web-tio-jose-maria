@@ -38,58 +38,57 @@ const BotLogsManager        = lazy(() => import('./BotLogsManager'));
 const PlanningCalendar      = lazy(() => import('./PlanningCalendar'));
 const Customer360           = lazy(() => import('./Customer360'));
 
-// Sidebar agrupado por dominios operativos
+// Sidebar pensado para personas sin formación técnica.
+// Cero anglicismos, cero jerga, cero acrónimos.
 const NAV_GROUPS = [
     {
-        title: 'Operaciones',
+        title: 'Día a día',
         items: [
-            { id: 'dashboard',     label: 'Cockpit',          icon: LayoutDashboard },
-            { id: 'planning',      label: 'Planning',         icon: Calendar },
-            { id: 'reservas',      label: 'Reservas',         icon: CalendarCheck, badgeKey: 'pendingBookings' },
-            { id: 'cleaning',      label: 'Limpieza',         icon: Brush },
-            // 'access_codes' ocultado (TJM no tiene cerraduras electrónicas).
-            // Componente sigue disponible vía URL si en el futuro se instalan.
-            { id: 'travelers',     label: 'Viajeros (SES)',   icon: Shield },
-            { id: 'disponibilidad',label: 'Disponibilidad',   icon: Calendar },
+            { id: 'dashboard',     label: 'Inicio',                 icon: LayoutDashboard },
+            { id: 'planning',      label: 'Calendario de reservas', icon: Calendar },
+            { id: 'reservas',      label: 'Lista de reservas',      icon: CalendarCheck, badgeKey: 'pendingBookings' },
+            { id: 'cleaning',      label: 'Limpiezas',              icon: Brush },
+            { id: 'travelers',     label: 'Parte de viajeros',      icon: Shield },
+            { id: 'disponibilidad',label: 'Bloquear fechas',        icon: Calendar },
         ],
     },
     {
-        title: 'Financiero',
+        title: 'Dinero',
         items: [
-            { id: 'invoices',  label: 'Facturas',     icon: FileText },
-            { id: 'pricing',   label: 'Pricing rules', icon: Tag },
-            { id: 'temporadas',label: 'Temporadas',    icon: Star },
+            { id: 'invoices',  label: 'Facturas',               icon: FileText },
+            { id: 'pricing',   label: 'Recargos y descuentos',  icon: Tag },
+            { id: 'temporadas',label: 'Temporada alta y baja',  icon: Star },
         ],
     },
     {
-        title: 'Canales y huéspedes',
+        title: 'Huéspedes',
         items: [
-            { id: 'channel_sync', label: 'Channel Manager', icon: Link2 },
-            { id: 'customer_360', label: 'Customer 360',    icon: Users },
-            { id: 'huespedes',    label: 'Huéspedes (auth)', icon: Users },
-            { id: 'resenas',      label: 'Reseñas',         icon: MessageSquare },
+            { id: 'channel_sync', label: 'Sincronizar con Airbnb y Booking', icon: Link2 },
+            { id: 'customer_360', label: 'Ficha de huéspedes',               icon: Users },
+            { id: 'huespedes',    label: 'Acceso de huéspedes a la web',     icon: Users },
+            { id: 'resenas',      label: 'Opiniones de huéspedes',           icon: MessageSquare },
         ],
     },
     {
-        title: 'Marketing y contenido',
+        title: 'Tu página web',
         items: [
-            { id: 'apartamentos',  label: 'Apartamentos',     icon: Home },
-            { id: 'rutas',         label: 'Rutas',            icon: Route },
-            { id: 'eventos',       label: 'Eventos',          icon: PartyPopper },
-            { id: 'directorio',    label: 'Directorio local', icon: MapPin },
-            { id: 'blog',          label: 'Blog',             icon: BookOpen },
-            { id: 'guias',         label: 'Guía huésped',     icon: Star },
-            { id: 'instrucciones', label: 'Guía apartamento', icon: ClipboardList },
+            { id: 'apartamentos',  label: 'Apartamentos',            icon: Home },
+            { id: 'rutas',         label: 'Rutas y excursiones',     icon: Route },
+            { id: 'eventos',       label: 'Eventos y fiestas',       icon: PartyPopper },
+            { id: 'directorio',    label: 'Restaurantes y servicios',icon: MapPin },
+            { id: 'blog',          label: 'Blog y artículos',        icon: BookOpen },
+            { id: 'guias',         label: 'Guía para el huésped',    icon: Star },
+            { id: 'instrucciones', label: 'Instrucciones del apartamento', icon: ClipboardList },
         ],
     },
     {
-        title: 'Sistema',
+        title: 'Más',
         items: [
-            { id: 'bot_logs',     label: 'Bot IA',         icon: Bot },
-            { id: 'analitica',    label: 'Analítica',      icon: BarChart3 },
-            { id: 'documentos',   label: 'Documentos',     icon: FileText },
-            { id: 'qrcodes',      label: 'Códigos QR',     icon: QrCode },
-            { id: 'configuracion',label: 'Configuración',  icon: Settings },
+            { id: 'bot_logs',     label: 'Conversaciones del asistente', icon: Bot },
+            { id: 'analitica',    label: 'Estadísticas',                 icon: BarChart3 },
+            { id: 'documentos',   label: 'Documentos',                   icon: FileText },
+            { id: 'qrcodes',      label: 'Códigos QR',                   icon: QrCode },
+            { id: 'configuracion',label: 'Ajustes generales',            icon: Settings },
         ],
     },
 ];
@@ -126,7 +125,7 @@ const AdminDashboard = () => {
             <aside className={`fixed md:static z-50 md:z-auto top-0 left-0 h-full w-72 bg-white border-r border-gray-100 flex flex-col transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
                 <div className="p-6 border-b border-gray-50 hidden md:block">
                     <h2 className="font-serif text-xl font-bold text-text-primary">Tío José María</h2>
-                    <p className="text-[10px] uppercase font-bold tracking-widest text-gray-400 mt-1">Cockpit operativo</p>
+                    <p className="text-[10px] uppercase font-bold tracking-widest text-gray-400 mt-1">Panel de gestión</p>
                 </div>
                 <div className="h-14 md:hidden" />
 

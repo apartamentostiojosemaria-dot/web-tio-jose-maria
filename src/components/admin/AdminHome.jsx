@@ -45,38 +45,38 @@ const AdminHome = ({ onNavigate }) => {
     return (
         <div className="space-y-8 max-w-7xl">
             <header>
-                <h1 className="font-serif text-3xl font-bold text-text-primary">Cockpit Tío José María</h1>
-                <p className="text-gray-500 text-sm">Estado del alojamiento ahora mismo</p>
+                <h1 className="font-serif text-3xl font-bold text-text-primary">Hola 👋</h1>
+                <p className="text-gray-600 text-sm mt-1">Aquí tienes un resumen de cómo va el alojamiento.</p>
             </header>
 
-            {/* Alertas operativas — solo si hay */}
+            {/* Avisos importantes — solo si hay */}
             {alerts.length > 0 && (
                 <section aria-labelledby="alerts-h">
-                    <h2 id="alerts-h" className="sr-only">Alertas operativas</h2>
+                    <h2 id="alerts-h" className="text-sm font-bold text-text-primary mb-2">Cosas que necesitan tu atención</h2>
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {alerts.map((a, i) => <AlertCard key={i} {...a} onClick={() => onNavigate?.(a.tab)} />)}
                     </div>
                 </section>
             )}
 
-            {/* KPIs principales */}
+            {/* Resumen general */}
             <section aria-labelledby="kpi-h">
-                <h2 id="kpi-h" className="text-xs uppercase tracking-widest font-bold text-gray-400 mb-3">Resumen</h2>
+                <h2 id="kpi-h" className="text-sm font-bold text-text-primary mb-3">Resumen del mes</h2>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <KpiCard icon={BedDouble} label="Ocupación 30 días" value={formatPct(k.ocupacion_30d_pct)} accent="primary" />
-                    <KpiCard icon={Euro} label="Ingresos últimos 30 días" value={formatEur(k.ingresos_30d)} accent="primary" />
-                    <KpiCard icon={TrendingUp} label="Ingresos próximos 30 días" value={formatEur(k.ingresos_proximos_30d)} accent="primary" />
+                    <KpiCard icon={BedDouble} label="Ocupación próximos 30 días" value={formatPct(k.ocupacion_30d_pct)} accent="primary" />
+                    <KpiCard icon={Euro} label="Ingresado en los últimos 30 días" value={formatEur(k.ingresos_30d)} accent="primary" />
+                    <KpiCard icon={TrendingUp} label="Reservado para los próximos 30 días" value={formatEur(k.ingresos_proximos_30d)} accent="primary" />
                     <KpiCard icon={Calendar} label="Reservas activas" value={k.reservas_activas || 0} accent="primary" />
                 </div>
             </section>
 
             {/* Hoy y semana */}
             <section aria-labelledby="today-h">
-                <h2 id="today-h" className="text-xs uppercase tracking-widest font-bold text-gray-400 mb-3">Hoy y próximos días</h2>
+                <h2 id="today-h" className="text-sm font-bold text-text-primary mb-3">Hoy y esta semana</h2>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <KpiCard icon={ArrowDownRight} label="Llegadas hoy" value={k.checkins_hoy || 0} accent="rural" />
-                    <KpiCard icon={ArrowUpRight} label="Salidas hoy" value={k.checkouts_hoy || 0} accent="rural" />
-                    <KpiCard icon={Calendar} label="Llegadas próximos 7 días" value={k.llegadas_7d || 0} accent="rural" />
+                    <KpiCard icon={ArrowDownRight} label="Llegan hoy" value={k.checkins_hoy || 0} accent="rural" />
+                    <KpiCard icon={ArrowUpRight} label="Se van hoy" value={k.checkouts_hoy || 0} accent="rural" />
+                    <KpiCard icon={Calendar} label="Llegadas en los próximos 7 días" value={k.llegadas_7d || 0} accent="rural" />
                     <KpiCard icon={Brush} label="Limpiezas pendientes" value={k.limpiezas_pendientes || 0} accent="rural" />
                 </div>
             </section>
@@ -84,7 +84,7 @@ const AdminHome = ({ onNavigate }) => {
             {/* Próximas llegadas/salidas */}
             {upcoming.length > 0 && (
                 <section aria-labelledby="upcoming-h">
-                    <h2 id="upcoming-h" className="text-xs uppercase tracking-widest font-bold text-gray-400 mb-3">Próximos 14 días</h2>
+                    <h2 id="upcoming-h" className="text-sm font-bold text-text-primary mb-3">Quién entra y quién sale (próximos 14 días)</h2>
                     <UpcomingTable rows={upcoming} />
                 </section>
             )}
@@ -92,19 +92,19 @@ const AdminHome = ({ onNavigate }) => {
             {/* Gráfica ingresos */}
             {revenue.length > 0 && (
                 <section aria-labelledby="rev-h">
-                    <h2 id="rev-h" className="text-xs uppercase tracking-widest font-bold text-gray-400 mb-3">Ingresos mensuales (últimos 12 meses)</h2>
+                    <h2 id="rev-h" className="text-sm font-bold text-text-primary mb-3">Cuánto se ha ingresado cada mes (último año)</h2>
                     <RevenueChart data={revenue} />
                 </section>
             )}
 
-            {/* Bot IA */}
+            {/* Asistente virtual */}
             <section aria-labelledby="bot-h">
-                <h2 id="bot-h" className="text-xs uppercase tracking-widest font-bold text-gray-400 mb-3">Asistente virtual</h2>
+                <h2 id="bot-h" className="text-sm font-bold text-text-primary mb-3">Asistente virtual de la web</h2>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <KpiCard icon={Bot} label="Sesiones últimas 24h" value={k.bot_sesiones_24h || 0} accent="rural" />
-                    <KpiCard icon={MessageSquare} label="Errores últimos 7d" value={k.bot_errores_7d || 0}
+                    <KpiCard icon={Bot} label="Conversaciones de las últimas 24 horas" value={k.bot_sesiones_24h || 0} accent="rural" />
+                    <KpiCard icon={MessageSquare} label="Errores en los últimos 7 días" value={k.bot_errores_7d || 0}
                         accent={(k.bot_errores_7d || 0) > 0 ? 'warning' : 'rural'} />
-                    <KpiCard icon={Sparkles} label="Bot RAG + Bedrock UE" value="activo" accent="primary" small />
+                    <KpiCard icon={Sparkles} label="Asistente virtual" value="funcionando" accent="primary" small />
                 </div>
             </section>
         </div>
@@ -115,15 +115,30 @@ const AdminHome = ({ onNavigate }) => {
 const buildAlerts = (k) => {
     const a = [];
     if ((k.ses_pendientes || 0) > 0)
-        a.push({ kind: 'urgent', icon: Shield, title: `${k.ses_pendientes} parte(s) SES sin enviar al MIR`, desc: 'Check-in pasado, registro pendiente. RD 933/2021 exige 24h.', tab: 'travelers' });
+        a.push({ kind: 'urgent', icon: Shield,
+            title: `${k.ses_pendientes} parte${k.ses_pendientes !== 1 ? 's' : ''} de viajeros sin enviar a la Policía`,
+            desc: 'El huésped ya ha entrado. La ley nos da 24 horas para enviar sus datos.',
+            tab: 'travelers' });
     if ((k.ses_errores || 0) > 0)
-        a.push({ kind: 'urgent', icon: Shield, title: `${k.ses_errores} envío(s) SES con error`, desc: 'Revisa el detalle y reintenta.', tab: 'travelers' });
+        a.push({ kind: 'urgent', icon: Shield,
+            title: `${k.ses_errores} envío${k.ses_errores !== 1 ? 's' : ''} de viajeros con error`,
+            desc: 'Algo falló al mandar los datos. Revisa y reintenta.',
+            tab: 'travelers' });
     if ((k.precheckin_pendiente_24h || 0) > 0)
-        a.push({ kind: 'warning', icon: Clock, title: `${k.precheckin_pendiente_24h} reserva(s) sin precheckin para mañana`, desc: 'El huésped llega en <24h y no ha rellenado.', tab: 'reservas' });
+        a.push({ kind: 'warning', icon: Clock,
+            title: `${k.precheckin_pendiente_24h} huésped${k.precheckin_pendiente_24h !== 1 ? 'es' : ''} sin rellenar sus datos para mañana`,
+            desc: 'Llegan en menos de 24 horas y todavía no han mandado el formulario de la Policía. Recuérdaselo por WhatsApp.',
+            tab: 'reservas' });
     if ((k.holds_expirando || 0) > 0)
-        a.push({ kind: 'info', icon: Clock, title: `${k.holds_expirando} hold(s) expirando en 30min`, desc: 'Reservas en proceso de pago — vigila si se quedan a medias.', tab: 'reservas' });
+        a.push({ kind: 'info', icon: Clock,
+            title: `${k.holds_expirando} reserva${k.holds_expirando !== 1 ? 's' : ''} a punto de caer (menos de 30 min)`,
+            desc: 'Hay huéspedes que han empezado a reservar pero todavía no han pagado. Si se les pasa el tiempo, se libera.',
+            tab: 'reservas' });
     if ((k.facturas_verifactu_pendientes || 0) > 0)
-        a.push({ kind: 'warning', icon: FileCheck, title: `${k.facturas_verifactu_pendientes} factura(s) sin envío Verifactu`, desc: 'En stub o con error. Activa AEAT cuando puedas.', tab: 'invoices' });
+        a.push({ kind: 'warning', icon: FileCheck,
+            title: `${k.facturas_verifactu_pendientes} factura${k.facturas_verifactu_pendientes !== 1 ? 's' : ''} sin enviar a Hacienda`,
+            desc: 'Falta conectar Verifactu o algo no se ha podido enviar. Pendiente del operador.',
+            tab: 'invoices' });
     return a;
 };
 

@@ -50,11 +50,11 @@ const BotLogsManager = () => {
         <div className="max-w-6xl">
             <header className="mb-6 flex justify-between items-end">
                 <div>
-                    <h1 className="font-serif text-3xl font-bold text-text-primary">Logs del Bot IA</h1>
-                    <p className="text-sm text-gray-500">{sessions.length} sesión{sessions.length !== 1 ? 'es' : ''} · retención 12 meses</p>
+                    <h1 className="font-serif text-3xl font-bold text-text-primary">Conversaciones del asistente virtual</h1>
+                    <p className="text-sm text-gray-600">Lo que los visitantes le preguntan al chat de la web · {sessions.length} {sessions.length === 1 ? 'conversación' : 'conversaciones'} · se borran a los 12 meses</p>
                 </div>
                 <button onClick={load} className="inline-flex items-center gap-2 text-sm font-bold text-rural-700 hover:text-primary">
-                    <RefreshCw size={14} /> Recargar
+                    <RefreshCw size={14} /> Actualizar
                 </button>
             </header>
 

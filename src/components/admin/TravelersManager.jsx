@@ -80,16 +80,18 @@ const TravelersManager = () => {
         <div className="max-w-7xl">
             <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <h1 className="font-serif text-3xl font-bold text-text-primary">Registro de viajeros</h1>
-                    <p className="text-sm text-gray-500">RD 933/2021 · SES.HOSPEDAJES · {filtered.length} registro{filtered.length !== 1 ? 's' : ''}</p>
+                    <h1 className="font-serif text-3xl font-bold text-text-primary">Parte de viajeros</h1>
+                    <p className="text-sm text-gray-600 max-w-2xl mt-1">
+                        Los datos que la Policía (Ministerio del Interior) nos pide de cada huésped. Se envían automáticamente cuando entran. · {filtered.length} {filtered.length === 1 ? 'huésped' : 'huéspedes'}
+                    </p>
                 </div>
                 <div className="flex gap-2">
                     <button onClick={forceSubmit} disabled={busy}
                         className="inline-flex items-center gap-2 text-sm font-bold text-white bg-primary px-4 py-2 rounded-xl shadow hover:shadow-md disabled:opacity-50">
-                        <Send size={14} /> {busy ? 'Enviando…' : 'Forzar envío MIR'}
+                        <Send size={14} /> {busy ? 'Enviando…' : 'Enviar a la Policía ahora'}
                     </button>
                     <button onClick={load} className="inline-flex items-center gap-2 text-sm font-bold text-rural-700 hover:text-primary">
-                        <RefreshCw size={14} /> Recargar
+                        <RefreshCw size={14} /> Actualizar
                     </button>
                 </div>
             </header>
@@ -111,12 +113,12 @@ const TravelersManager = () => {
                         <thead className="bg-gray-50 border-b border-gray-100 text-xs uppercase tracking-widest font-bold text-gray-500">
                             <tr>
                                 <th className="text-left px-4 py-3">Reserva</th>
-                                <th className="text-left px-4 py-3">Viajero</th>
+                                <th className="text-left px-4 py-3">Huésped</th>
                                 <th className="text-left px-4 py-3">Documento</th>
                                 <th className="text-left px-4 py-3">Apartamento</th>
-                                <th className="text-left px-4 py-3">Fechas</th>
-                                <th className="text-center px-4 py-3">Envío MIR</th>
-                                <th className="text-right px-4 py-3">Acciones</th>
+                                <th className="text-left px-4 py-3">Fechas estancia</th>
+                                <th className="text-center px-4 py-3">¿Enviado a la Policía?</th>
+                                <th className="text-right px-4 py-3"></th>
                             </tr>
                         </thead>
                         <tbody>

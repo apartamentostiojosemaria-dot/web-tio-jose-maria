@@ -81,10 +81,10 @@ const InvoicesManager = () => {
             <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
                 <div>
                     <h1 className="font-serif text-3xl font-bold text-text-primary">Facturas</h1>
-                    <p className="text-sm text-gray-500">Correlativas + Verifactu hash chain · {filtered.length} factura{filtered.length !== 1 ? 's' : ''}</p>
+                    <p className="text-sm text-gray-600">Todas las facturas emitidas a los huéspedes · {filtered.length} {filtered.length === 1 ? 'factura' : 'facturas'}</p>
                 </div>
                 <button onClick={load} className="inline-flex items-center gap-2 text-sm font-bold text-rural-700 hover:text-primary">
-                    <RefreshCw size={14} /> Recargar
+                    <RefreshCw size={14} /> Actualizar
                 </button>
             </header>
 
@@ -104,15 +104,15 @@ const InvoicesManager = () => {
                     <table className="w-full text-sm">
                         <thead className="bg-gray-50 border-b border-gray-100 text-xs uppercase tracking-widest font-bold text-gray-500">
                             <tr>
-                                <th className="text-left px-4 py-3">Nº</th>
+                                <th className="text-left px-4 py-3">Nº factura</th>
                                 <th className="text-left px-4 py-3">Fecha</th>
                                 <th className="text-left px-4 py-3">Reserva</th>
-                                <th className="text-left px-4 py-3">Receptor</th>
-                                <th className="text-right px-4 py-3">Base</th>
-                                <th className="text-right px-4 py-3">IVA</th>
+                                <th className="text-left px-4 py-3">A nombre de</th>
+                                <th className="text-right px-4 py-3">Sin IVA</th>
+                                <th className="text-right px-4 py-3">IVA (10%)</th>
                                 <th className="text-right px-4 py-3">Total</th>
-                                <th className="text-center px-4 py-3">Verifactu</th>
-                                <th className="text-right px-4 py-3">Acciones</th>
+                                <th className="text-center px-4 py-3">¿Enviada a Hacienda?</th>
+                                <th className="text-right px-4 py-3"></th>
                             </tr>
                         </thead>
                         <tbody>

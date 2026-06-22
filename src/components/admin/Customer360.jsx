@@ -44,20 +44,20 @@ const Customer360 = () => {
         <div className="max-w-7xl">
             <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <h1 className="font-serif text-3xl font-bold text-text-primary">Huéspedes</h1>
-                    <p className="text-sm text-gray-500">Customer 360 · ficha agregada por email</p>
+                    <h1 className="font-serif text-3xl font-bold text-text-primary">Fichas de huéspedes</h1>
+                    <p className="text-sm text-gray-600">Cada huésped con su historial de estancias y cuánto ha gastado en total</p>
                 </div>
                 <button onClick={load} className="inline-flex items-center gap-2 text-sm font-bold text-rural-700 hover:text-primary">
-                    <RefreshCw size={14} /> Recargar
+                    <RefreshCw size={14} /> Actualizar
                 </button>
             </header>
 
             {/* Tarjetas resumen */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-                <SummaryCard label="Huéspedes únicos" value={totals.customers} />
+                <SummaryCard label="Huéspedes distintos" value={totals.customers} />
                 <SummaryCard label="Estancias totales" value={totals.stays} />
-                <SummaryCard label="LTV agregado" value={fmtEur(totals.revenue)} />
-                <SummaryCard label="Recurrentes" value={`${totals.recurrent} (${totals.customers > 0 ? Math.round(100 * totals.recurrent / totals.customers) : 0}%)`} />
+                <SummaryCard label="Ingresado por todos" value={fmtEur(totals.revenue)} />
+                <SummaryCard label="Que han vuelto más de una vez" value={`${totals.recurrent} (${totals.customers > 0 ? Math.round(100 * totals.recurrent / totals.customers) : 0}%)`} />
             </div>
 
             <div className="relative mb-6">
@@ -74,12 +74,12 @@ const Customer360 = () => {
                     <thead className="bg-gray-50 border-b border-gray-100 text-xs uppercase tracking-widest font-bold text-gray-500">
                         <tr>
                             <th className="text-left px-4 py-3">Huésped</th>
-                            <th className="text-left px-4 py-3">Apto favorito</th>
+                            <th className="text-left px-4 py-3">Apartamento favorito</th>
                             <th className="text-center px-4 py-3">Estancias</th>
                             <th className="text-center px-4 py-3">Noches</th>
-                            <th className="text-right px-4 py-3">LTV</th>
+                            <th className="text-right px-4 py-3">Ha gastado en total</th>
                             <th className="text-left px-4 py-3">Última visita</th>
-                            <th className="text-center px-4 py-3">Rating</th>
+                            <th className="text-center px-4 py-3">Valoración</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -161,8 +161,8 @@ const CustomerSheet = ({ customer, onClose }) => {
                 <div className="p-6 grid grid-cols-2 lg:grid-cols-4 gap-3 border-b border-gray-50">
                     <Metric icon={Calendar} label="Estancias" value={customer.total_stays} />
                     <Metric icon={MessageCircle} label="Noches" value={customer.total_nights} />
-                    <Metric icon={Euro} label="LTV" value={fmtEur(customer.lifetime_value)} />
-                    <Metric icon={Award} label="Rating medio" value={customer.avg_rating ? `${customer.avg_rating} ★` : '—'} />
+                    <Metric icon={Euro} label="Ha gastado" value={fmtEur(customer.lifetime_value)} />
+                    <Metric icon={Award} label="Valoración" value={customer.avg_rating ? `${customer.avg_rating} ★` : '—'} />
                 </div>
 
                 {customer.favorite_apartment && (

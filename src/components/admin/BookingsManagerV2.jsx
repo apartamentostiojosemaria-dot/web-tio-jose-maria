@@ -10,12 +10,12 @@ import {
 // Acciones admin: emitir factura, reenviar email, provisionar código
 
 const STATUS = {
-    hold:      { label: 'Hold',      cls: 'bg-blue-50 text-blue-700 border-blue-200',     icon: Clock },
-    pending:   { label: 'Pendiente', cls: 'bg-amber-50 text-amber-700 border-amber-200',   icon: Clock },
-    confirmed: { label: 'Confirmada',cls: 'bg-green-50 text-green-700 border-green-200',   icon: CheckCircle },
-    cancelled: { label: 'Cancelada', cls: 'bg-red-50 text-red-700 border-red-200',         icon: XCircle },
-    completed: { label: 'Completada',cls: 'bg-gray-100 text-gray-700 border-gray-200',     icon: CalendarCheck },
-    expired:   { label: 'Expirada',  cls: 'bg-gray-100 text-gray-500 border-gray-200',     icon: XCircle },
+    hold:      { label: 'Pagando…',      cls: 'bg-blue-50 text-blue-700 border-blue-200',   icon: Clock },
+    pending:   { label: 'Sin confirmar', cls: 'bg-amber-50 text-amber-700 border-amber-200', icon: Clock },
+    confirmed: { label: 'Confirmada',    cls: 'bg-green-50 text-green-700 border-green-200', icon: CheckCircle },
+    cancelled: { label: 'Cancelada',     cls: 'bg-red-50 text-red-700 border-red-200',       icon: XCircle },
+    completed: { label: 'Finalizada',    cls: 'bg-gray-100 text-gray-700 border-gray-200',   icon: CalendarCheck },
+    expired:   { label: 'Caducada',      cls: 'bg-gray-100 text-gray-500 border-gray-200',   icon: XCircle },
 };
 
 const fmtEur = (n) => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(Number(n) || 0);
@@ -89,10 +89,10 @@ const BookingsManagerV2 = () => {
             <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
                 <div>
                     <h1 className="font-serif text-3xl font-bold text-text-primary">Reservas</h1>
-                    <p className="text-sm text-gray-500">Motor de reservas propio · {filtered.length} resultado{filtered.length !== 1 ? 's' : ''}</p>
+                    <p className="text-sm text-gray-600">Todas las reservas. Aquí ves quién viene, cuándo y cuánto paga · {filtered.length} reserva{filtered.length !== 1 ? 's' : ''}</p>
                 </div>
                 <button onClick={load} className="inline-flex items-center gap-2 text-sm font-bold text-rural-700 hover:text-primary">
-                    <RefreshCw size={14} /> Recargar
+                    <RefreshCw size={14} /> Actualizar
                 </button>
             </header>
 
@@ -105,8 +105,12 @@ const BookingsManagerV2 = () => {
                 </div>
                 <select value={status} onChange={(e) => setStatus(e.target.value)}
                     className="px-4 py-2.5 bg-white border border-gray-100 rounded-xl outline-none cursor-pointer">
-                    <option value="all">Todos los estados</option>
-                    {Object.keys(STATUS).map(k => <option key={k} value={k}>{STATUS[k].label}</option>)}
+                    <option value="all">Ver todas</option>
+                    <option value="confirmed">Solo confirmadas</option>
+                    <option value="hold">Solo pagando ahora</option>
+                    <option value="pending">Sin confirmar</option>
+                    <option value="completed">Ya finalizadas</option>
+                    <option value="cancelled">Canceladas</option>
                 </select>
             </div>
 
@@ -162,18 +166,18 @@ const BookingRow = ({ b, expanded, onToggle, busy, onAction }) => {
 
 const BookingDetail = ({ b, busy, onAction }) => {
     const emails = [
-        { key: 'confirmation', label: 'Confirmación', sent: !!b.confirmation_email_sent_at },
-        { key: 'reminder_7d', label: 'Recordatorio 7d', sent: !!b.reminder_7d_email_sent_at },
-        { key: 'reminder_24h', label: 'Recordatorio 24h', sent: !!b.reminder_24h_email_sent_at },
-        { key: 'arrival', label: 'Bienvenida', sent: !!b.arrival_email_sent_at },
-        { key: 'departure', label: 'Despedida', sent: !!b.departure_email_sent_at },
-        { key: 'review_request', label: 'Reseña', sent: !!b.review_request_email_sent_at },
+        { key: 'confirmation', label: 'Email de confirmación', sent: !!b.confirmation_email_sent_at },
+        { key: 'reminder_7d', label: 'Recordatorio una semana antes', sent: !!b.reminder_7d_email_sent_at },
+        { key: 'reminder_24h', label: 'Recordatorio el día antes', sent: !!b.reminder_24h_email_sent_at },
+        { key: 'arrival', label: 'Bienvenida (día de entrada)', sent: !!b.arrival_email_sent_at },
+        { key: 'departure', label: 'Despedida (día de salida)', sent: !!b.departure_email_sent_at },
+        { key: 'review_request', label: 'Pedir opinión', sent: !!b.review_request_email_sent_at },
     ];
 
     return (
         <div className="px-4 pb-4 pt-2 border-t border-gray-50 grid sm:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
             <div>
-                <p className="text-[10px] uppercase tracking-widest font-bold text-gray-500 mb-2">Huésped</p>
+                <p className="text-[10px] uppercase tracking-widest font-bold text-gray-500 mb-2">Datos del huésped</p>
                 <p className="text-text-primary font-medium">{b.guest_name}</p>
                 <p className="text-gray-600 text-xs"><a href={`mailto:${b.guest_email}`} className="hover:underline">{b.guest_email}</a></p>
                 {b.guest_phone && <p className="text-gray-600 text-xs"><a href={`tel:${b.guest_phone}`} className="hover:underline">{b.guest_phone}</a></p>}
@@ -181,14 +185,19 @@ const BookingDetail = ({ b, busy, onAction }) => {
             </div>
             <div>
                 <p className="text-[10px] uppercase tracking-widest font-bold text-gray-500 mb-2">Pago</p>
-                <p className="text-text-primary text-xs">Estado: <strong>{b.payment_status || 'pending'}</strong></p>
-                {b.payment_intent_id && <p className="text-gray-500 text-[10px] font-mono break-all mt-1">{b.payment_intent_id}</p>}
+                <p className="text-text-primary text-xs">
+                    {b.payment_status === 'paid' ? '✓ Pagado' :
+                     b.payment_status === 'partial' ? 'Pagada la señal' :
+                     b.payment_status === 'refunded' ? 'Reembolsado' :
+                     b.payment_status === 'failed' ? 'Pago fallido' :
+                     'Pendiente de pago'}
+                </p>
                 {b.expires_at && b.status === 'hold' && (
-                    <p className="text-amber-700 text-xs mt-1">Hold hasta {new Date(b.expires_at).toLocaleTimeString('es-ES')}</p>
+                    <p className="text-amber-700 text-xs mt-1">Se libera a las {new Date(b.expires_at).toLocaleTimeString('es-ES')} si no paga</p>
                 )}
             </div>
             <div>
-                <p className="text-[10px] uppercase tracking-widest font-bold text-gray-500 mb-2">Emails enviados</p>
+                <p className="text-[10px] uppercase tracking-widest font-bold text-gray-500 mb-2">Emails que ya hemos mandado</p>
                 <ul className="space-y-1 text-xs">
                     {emails.map(e => (
                         <li key={e.key} className="flex items-center gap-2">
@@ -201,12 +210,12 @@ const BookingDetail = ({ b, busy, onAction }) => {
 
             <div className="sm:col-span-2 lg:col-span-3 pt-3 border-t border-gray-50 flex flex-wrap gap-2">
                 <ActionButton
-                    icon={Mail} label="Reenviar confirmación"
+                    icon={Mail} label="Reenviar email de confirmación"
                     onClick={() => onAction('send-booking-email', { bookingCode: b.booking_code, template: 'confirmation' }, `email-${b.id}`)}
                     busy={busy === `email-${b.id}`}
                     disabled={!b.booking_code} />
                 <ActionButton
-                    icon={Mail} label="Recordatorio 24h"
+                    icon={Mail} label="Recordatorio del día antes"
                     onClick={() => onAction('send-booking-email', { bookingCode: b.booking_code, template: 'reminder_24h' }, `email24-${b.id}`)}
                     busy={busy === `email24-${b.id}`}
                     disabled={!b.booking_code} />

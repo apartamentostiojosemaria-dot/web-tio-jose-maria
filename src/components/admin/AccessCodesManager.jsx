@@ -40,8 +40,8 @@ const AccessCodesManager = () => {
         <div className="max-w-6xl">
             <header className="mb-6 flex justify-between items-end">
                 <div>
-                    <h1 className="font-serif text-3xl font-bold text-text-primary">Códigos de acceso</h1>
-                    <p className="text-sm text-gray-500">Cerraduras electrónicas · {codes.length} código{codes.length !== 1 ? 's' : ''}</p>
+                    <h1 className="font-serif text-3xl font-bold text-text-primary">Códigos de cerradura</h1>
+                    <p className="text-sm text-gray-600">Sin uso actualmente: el check-in en Tío José María es en persona · {codes.length} {codes.length === 1 ? 'código' : 'códigos'}</p>
                 </div>
                 <button onClick={load} className="inline-flex items-center gap-2 text-sm font-bold text-rural-700 hover:text-primary">
                     <RefreshCw size={14} /> Recargar
