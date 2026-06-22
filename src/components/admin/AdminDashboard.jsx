@@ -5,7 +5,7 @@ import {
     LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar, Star, Eye, Users,
     BarChart3, QrCode, CalendarCheck, Route, MessageSquare, PartyPopper, MapPin, Menu, X,
     BookOpen, ClipboardList,
-    Shield, Brush, KeyRound, Euro, Link2, Bot, Tag,
+    Shield, Brush, KeyRound, Euro, Link2, Bot, Tag, Wrench,
 } from 'lucide-react';
 
 // Operaciones core (carga inmediata, son los más usados)
@@ -40,6 +40,7 @@ const PlanningCalendar      = lazy(() => import('./PlanningCalendar'));
 const Customer360           = lazy(() => import('./Customer360'));
 const ProtocolsManager      = lazy(() => import('./ProtocolsManager'));
 const InternalDocsManager   = lazy(() => import('./InternalDocsManager'));
+const InternalTasksManager  = lazy(() => import('./InternalTasksManager'));
 
 // Sidebar pensado para personas sin formación técnica.
 // Cero anglicismos, cero jerga, cero acrónimos.
@@ -89,6 +90,7 @@ const NAV_GROUPS = [
         items: [
             { id: 'protocols',       label: 'Manual y protocolos',  icon: BookOpen },
             { id: 'internal_docs',   label: 'Documentos internos',  icon: FileText },
+            { id: 'internal_tasks',  label: 'Calendario de mantenimiento', icon: Wrench },
         ],
     },
     {
@@ -187,6 +189,7 @@ const AdminDashboard = () => {
                     {activeTab === 'instrucciones'  && <InstructionsManager />}
                     {activeTab === 'protocols'      && <ProtocolsManager />}
                     {activeTab === 'internal_docs'  && <InternalDocsManager />}
+                    {activeTab === 'internal_tasks' && <InternalTasksManager />}
                     {activeTab === 'bot_logs'       && <BotLogsManager />}
                     {activeTab === 'analitica'      && <AnalyticsDashboard />}
                     {activeTab === 'documentos'     && <DocumentsManager />}

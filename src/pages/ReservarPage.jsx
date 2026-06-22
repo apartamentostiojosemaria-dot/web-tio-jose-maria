@@ -24,7 +24,7 @@ const ReservarPage = () => {
     const [searchError, setSearchError] = useState(null);
     const [available, setAvailable] = useState([]);
     const [selected, setSelected] = useState(null);
-    const [guestForm, setGuestForm] = useState({ name: '', email: '', phone: '', accept: false });
+    const [guestForm, setGuestForm] = useState({ name: '', email: '', phone: '', accept: false, marketing: false });
     const [holdResult, setHoldResult] = useState(null);
     const [holdError, setHoldError] = useState(null);
     const [holding, setHolding] = useState(false);
@@ -70,6 +70,21 @@ const ReservarPage = () => {
             const row = Array.isArray(data) ? data[0] : data;
             setHoldResult(row);
 
+            // RGPD: registrar consentimiento de marketing si el huésped lo marcó.
+            // Fallo silencioso — no bloquea la reserva.
+            if (guestForm.marketing && guestForm.email) {
+                try {
+                    await supabase.rpc('record_marketing_consent', {
+                        p_email: guestForm.email.trim(),
+                        p_granted: true,
+                        p_source: 'booking_form',
+                        p_user_agent: navigator.userAgent,
+                        p_legal_version: '1.0',
+                        p_booking_code: row.booking_code,
+                    });
+                } catch { /* no rompe la reserva si la auditoría falla */ }
+            }
+
             // 2. Pedir sesión Stripe Checkout y redirigir. Si la edge function
             //    no está configurada todavía (sin STRIPE_SECRET_KEY), el hold
             //    queda creado y mostramos pantalla de cierre por WhatsApp.
@@ -109,7 +124,7 @@ const ReservarPage = () => {
     const reset = () => {
         setStep('search'); setAvailable([]); setSelected(null);
         setHoldResult(null); setHoldError(null); setSearchError(null);
-        setGuestForm({ name: '', email: '', phone: '', accept: false });
+        setGuestForm({ name: '', email: '', phone: '', accept: false, marketing: false });
     };
 
     return (
@@ -341,6 +356,16 @@ const GuestForm = ({ selected, checkIn, checkOut, guests, form, setForm, holding
                     <Link to="/privacidad" target="_blank" className="underline text-rural-700">política de privacidad</Link>{' '}
                     y el{' '}
                     <Link to="/aviso-legal" target="_blank" className="underline text-rural-700">aviso legal</Link>.
+                </span>
+            </label>
+
+            <label className="flex items-start gap-3 p-3 bg-rural-50/40 rounded-xl border border-gray-100">
+                <input type="checkbox" checked={form.marketing}
+                    onChange={(e) => setForm({ ...form, marketing: e.target.checked })}
+                    className="mt-1 h-5 w-5 accent-rural-700 cursor-pointer" />
+                <span className="text-sm text-gray-700 leading-relaxed">
+                    Quiero recibir ocasionalmente <strong>ofertas y novedades</strong> de Tío José María (opcional).
+                    <span className="block text-xs text-gray-500 mt-0.5">Puedes darte de baja en cualquier momento con el enlace que aparece en cada email.</span>
                 </span>
             </label>
         </div>

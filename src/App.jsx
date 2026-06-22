@@ -27,6 +27,7 @@ import HomePage from './pages/HomePage';
 const ApartmentDetail = lazy(() => import('./components/ApartmentDetail'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const LegalNotice = lazy(() => import('./pages/LegalNotice'));
+const UnsubscribePage = lazy(() => import('./pages/UnsubscribePage'));
 const MapPage = lazy(() => import('./pages/MapPage'));
 const EventsPage = lazy(() => import('./pages/EventsPage'));
 const HinojaresPage = lazy(() => import('./pages/HinojaresPage'));
@@ -124,6 +125,7 @@ export default function App() {
                         <Route path="/apartamento/:slug" element={<ApartmentDetail />} />
                         <Route path="/privacidad" element={<PrivacyPolicy />} />
                         <Route path="/aviso-legal" element={<LegalNotice />} />
+                        <Route path="/baja" element={<UnsubscribePage />} />
                         <Route path="/rutas" element={<MapPage />} />
                         <Route path="/eventos" element={<EventsPage />} />
                         <Route path="/hinojares" element={<HinojaresPage />} />

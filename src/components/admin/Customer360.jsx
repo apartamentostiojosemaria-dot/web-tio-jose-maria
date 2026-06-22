@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase';
 import {
     Search, RefreshCw, Star, Mail, Phone, MapPin, Calendar, Euro, Award, X, MessageCircle,
     AlertTriangle, Tag, Plus, Trash2, Save, MessageSquare, Loader2, User, Send, Download, BookOpen, Inbox,
+    Shield, Check, ShieldCheck, ShieldX,
 } from 'lucide-react';
 import { logError, userErrorMessage } from '../../utils/logger';
 
@@ -445,6 +446,7 @@ const CustomerSheet = ({ customer, onClose }) => {
                     <TabBtn active={tab === 'bookings'} onClick={() => setTab('bookings')} label={`Reservas (${bookings.length})`} icon={BookOpen} />
                     <TabBtn active={tab === 'emails'} onClick={() => setTab('emails')} label={`Emails (${emailEvents.length})`} icon={Send} />
                     <TabBtn active={tab === 'data'} onClick={() => setTab('data')} label="Datos" icon={User} />
+                    <TabBtn active={tab === 'privacy'} onClick={() => setTab('privacy')} label="Privacidad" icon={Shield} />
                 </nav>
 
                 {tab === 'notes' && (
@@ -569,10 +571,157 @@ const CustomerSheet = ({ customer, onClose }) => {
                     </section>
                 )}
 
+                {tab === 'privacy' && <PrivacyTab customer={customer} />}
+
                 {showNewBooking && <NewBookingModal customer={customer} editName={editName} editPhone={editPhone}
                     onClose={() => setShowNewBooking(false)} onSuccess={() => { setShowNewBooking(false); loadBookings(); }} />}
             </div>
         </div>
+    );
+};
+
+// ─────────────── Tab Privacidad y consentimientos ───────────────
+
+const PrivacyTab = ({ customer }) => {
+    const [profile, setProfile] = useState(null);
+    const [log, setLog] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [updating, setUpdating] = useState(false);
+
+    const load = async () => {
+        setLoading(true);
+        const [profileRes, logRes] = await Promise.all([
+            supabase.from('customers').select('marketing_consent, marketing_consent_at, marketing_consent_source, marketing_consent_revoked_at, review_optout, unsubscribe_token').eq('email', customer.email).maybeSingle(),
+            supabase.from('consent_log').select('*').eq('customer_email', customer.email).order('created_at', { ascending: false }).limit(50),
+        ]);
+        setProfile(profileRes.data);
+        setLog(logRes.data || []);
+        setLoading(false);
+    };
+
+    useEffect(() => { load(); }, [customer.email]);
+
+    const setMarketing = async (granted) => {
+        setUpdating(true);
+        const { data: { user } } = await supabase.auth.getUser();
+        const { error } = await supabase.rpc('record_marketing_consent', {
+            p_email: customer.email,
+            p_granted: granted,
+            p_source: `admin_panel:${user?.email || 'admin'}`,
+            p_legal_version: '1.0',
+        });
+        if (error) { logError('setMarketing', error); alert(userErrorMessage('Error al guardar.')); }
+        else load();
+        setUpdating(false);
+    };
+
+    const setReviewOptout = async (optout) => {
+        setUpdating(true);
+        await supabase.from('customers').update({ review_optout: optout, updated_at: new Date().toISOString() }).eq('email', customer.email);
+        await supabase.from('consent_log').insert({
+            customer_email: customer.email,
+            purpose: 'review_request',
+            granted: !optout,
+            source: 'admin_panel',
+            legal_version: '1.0',
+        });
+        load();
+        setUpdating(false);
+    };
+
+    if (loading) return <div className="p-6 text-center text-gray-400 italic">Cargando…</div>;
+
+    return (
+        <section className="p-6 space-y-5">
+            {/* Aviso explicativo */}
+            <div className="p-4 bg-rural-50 border border-rural-100 rounded-2xl text-sm text-rural-900">
+                <p className="font-bold mb-2 flex items-center gap-2"><Shield size={14} /> Sobre los emails que le mandamos</p>
+                <ul className="space-y-1 text-xs leading-relaxed">
+                    <li>· <strong>Confirmación + recordatorios + bienvenida + despedida</strong>: se mandan siempre. Son parte de gestionar la reserva (base legal: ejecución del contrato).</li>
+                    <li>· <strong>Pedir reseña</strong>: se manda salvo que se haya opuesto (base legal: interés legítimo).</li>
+                    <li>· <strong>Reactivación / promociones</strong>: solo si dio consentimiento expreso al reservar o aquí mismo.</li>
+                </ul>
+            </div>
+
+            {/* Estado consent marketing */}
+            <div className={`p-5 rounded-2xl border ${profile?.marketing_consent ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}`}>
+                <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div>
+                        <p className="text-[10px] uppercase tracking-widest font-bold text-gray-500 mb-1">Promociones por email</p>
+                        <p className="font-bold text-text-primary flex items-center gap-2">
+                            {profile?.marketing_consent ? <><ShieldCheck size={16} className="text-green-600" /> Consentimiento dado</> : <><ShieldX size={16} className="text-gray-400" /> Sin consentimiento</>}
+                        </p>
+                        {profile?.marketing_consent && profile?.marketing_consent_at && (
+                            <p className="text-xs text-gray-600 mt-1">
+                                Desde {new Date(profile.marketing_consent_at).toLocaleDateString('es-ES')}
+                                {profile.marketing_consent_source && <span> · vía {profile.marketing_consent_source.replace('admin_panel:', 'panel: ')}</span>}
+                            </p>
+                        )}
+                        {!profile?.marketing_consent && profile?.marketing_consent_revoked_at && (
+                            <p className="text-xs text-red-700 mt-1">Revocado el {new Date(profile.marketing_consent_revoked_at).toLocaleDateString('es-ES')}</p>
+                        )}
+                    </div>
+                    <div className="flex gap-2">
+                        {profile?.marketing_consent ? (
+                            <button onClick={() => setMarketing(false)} disabled={updating}
+                                className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 text-gray-700 text-xs font-bold rounded-xl hover:bg-red-50 hover:text-red-700">
+                                <ShieldX size={12} /> Revocar
+                            </button>
+                        ) : (
+                            <button onClick={() => setMarketing(true)} disabled={updating}
+                                className="inline-flex items-center gap-1.5 px-3 py-2 bg-green-600 text-white text-xs font-bold rounded-xl hover:bg-green-700">
+                                <ShieldCheck size={12} /> Registrar consentimiento
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Estado opt-out reseñas */}
+            <div className="p-5 rounded-2xl border border-gray-200 bg-white">
+                <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div>
+                        <p className="text-[10px] uppercase tracking-widest font-bold text-gray-500 mb-1">Petición de reseña tras estancia</p>
+                        <p className="font-bold text-text-primary">
+                            {profile?.review_optout ? 'No quiere que le pidamos reseñas' : 'Se le pide reseña (lo normal)'}
+                        </p>
+                        <p className="text-xs text-gray-600 mt-1">Si el huésped pide que no se le moleste con reseñas, márcalo aquí.</p>
+                    </div>
+                    <button onClick={() => setReviewOptout(!profile?.review_optout)} disabled={updating}
+                        className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 text-gray-700 text-xs font-bold rounded-xl hover:bg-gray-50">
+                        {profile?.review_optout ? <><Check size={12} /> Reactivar peticiones</> : <><X size={12} /> Excluir de reseñas</>}
+                    </button>
+                </div>
+            </div>
+
+            {/* Historial de cambios */}
+            <div>
+                <p className="text-[10px] uppercase tracking-widest font-bold text-gray-500 mb-3">Historial de consentimientos (auditoría RGPD)</p>
+                {log.length === 0 ? (
+                    <p className="text-xs text-gray-400 italic">Sin cambios registrados todavía.</p>
+                ) : (
+                    <ul className="space-y-1.5">
+                        {log.map(l => (
+                            <li key={l.id} className="bg-gray-50 rounded-xl p-3 text-xs flex items-start gap-2">
+                                {l.granted ? <ShieldCheck size={12} className="text-green-600 mt-0.5 shrink-0" /> : <ShieldX size={12} className="text-red-500 mt-0.5 shrink-0" />}
+                                <div className="flex-1">
+                                    <p className="font-medium">
+                                        <span className={l.granted ? 'text-green-800' : 'text-red-700'}>{l.granted ? 'Consentimiento dado' : 'Consentimiento retirado'}</span>
+                                        <span className="text-gray-500"> · {l.purpose === 'marketing' ? 'promociones' : l.purpose === 'review_request' ? 'reseñas' : l.purpose}</span>
+                                    </p>
+                                    <p className="text-[10px] text-gray-500 mt-0.5">
+                                        {new Date(l.created_at).toLocaleString('es-ES')}
+                                        {l.source && <span> · {l.source}</span>}
+                                        {l.legal_version && <span> · política v{l.legal_version}</span>}
+                                    </p>
+                                    {l.note && <p className="text-[11px] text-gray-600 mt-1 italic">{l.note}</p>}
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
+        </section>
     );
 };
 

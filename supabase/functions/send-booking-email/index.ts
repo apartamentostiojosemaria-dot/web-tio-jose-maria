@@ -90,6 +90,24 @@ Deno.serve(async (req) => {
         return json(200, { ok: true, skipped: "already_sent", sentAt: booking[flag as keyof typeof booking] });
     }
 
+    // RGPD: marketing requiere consentimiento explícito. review_request es interés legítimo
+    // con opt-out (review_optout en customers).
+    if (template === "reactivation" || template === "review_request") {
+        const emailKey = booking.guest_email.toLowerCase().trim();
+        const { data: c } = await supabase
+            .from("customers")
+            .select("marketing_consent, review_optout")
+            .eq("email", emailKey)
+            .maybeSingle();
+
+        if (template === "reactivation" && !c?.marketing_consent) {
+            return json(200, { ok: true, skipped: "no_marketing_consent", email: emailKey });
+        }
+        if (template === "review_request" && c?.review_optout) {
+            return json(200, { ok: true, skipped: "review_opted_out", email: emailKey });
+        }
+    }
+
     const apt = (booking.apartments as unknown as { name: string; slug: string; images?: string[] }) || { name: "Apartamento", slug: "" };
     const firstImage = Array.isArray(apt.images) && apt.images.length > 0 ? apt.images[0] : null;
 
