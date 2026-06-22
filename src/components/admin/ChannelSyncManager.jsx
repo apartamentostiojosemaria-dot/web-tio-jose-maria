@@ -85,11 +85,7 @@ const ChannelSyncManager = () => {
                 </div>
             </header>
 
-            {syncResult && (
-                <pre className="text-xs bg-gray-50 border border-gray-100 rounded-xl p-4 mb-6 overflow-x-auto">
-                    {JSON.stringify(syncResult, null, 2)}
-                </pre>
-            )}
+            {syncResult && <SyncResultPanel result={syncResult} />}
 
             {loading ? <p className="text-gray-500 font-serif italic">Cargando…</p> :
             <ul className="space-y-4">
@@ -123,6 +119,74 @@ const ChannelSyncManager = () => {
                 ))}
             </ul>}
         </div>
+    );
+};
+
+// Panel visual del resultado del sync (en vez de JSON crudo).
+const SyncResultPanel = ({ result }) => {
+    if (result.error) {
+        return (
+            <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-sm text-red-900">
+                <p className="font-bold">Error durante la sincronización</p>
+                <p className="font-mono text-xs mt-1">{result.error}</p>
+            </div>
+        );
+    }
+    const rows = result.results || [];
+    const totalInserted = rows.reduce((acc, r) => acc + (r.airbnb?.inserted || 0) + (r.booking?.inserted || 0), 0);
+    const totalRemoved = rows.reduce((acc, r) => acc + (r.airbnb?.removed || 0) + (r.booking?.removed || 0), 0);
+    const syncedAt = result.syncedAt ? new Date(result.syncedAt).toLocaleString('es-ES') : null;
+
+    return (
+        <div className="mb-6 rounded-2xl bg-rural-50 border border-rural-100 p-5">
+            <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+                <p className="font-bold text-text-primary">
+                    Sincronización completada
+                    {syncedAt && <span className="ml-2 text-xs text-gray-500 font-normal">· {syncedAt}</span>}
+                </p>
+                <p className="text-sm text-gray-700">
+                    <span className="font-bold text-rural-700">+{totalInserted}</span> bloque{totalInserted !== 1 ? 's' : ''} importado{totalInserted !== 1 ? 's' : ''}
+                    {' · '}
+                    <span className="font-bold text-gray-500">−{totalRemoved}</span> retirado{totalRemoved !== 1 ? 's' : ''}
+                </p>
+            </div>
+
+            {rows.length === 0 ? (
+                <p className="text-sm text-gray-600">Sin apartamentos configurados con URLs iCal todavía.</p>
+            ) : (
+                <table className="w-full text-sm">
+                    <thead className="text-xs uppercase tracking-widest font-bold text-gray-500">
+                        <tr>
+                            <th className="text-left py-2">Apartamento</th>
+                            <th className="text-center py-2">Airbnb</th>
+                            <th className="text-center py-2">Booking</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {rows.map(r => (
+                            <tr key={r.apartment} className="border-t border-rural-100">
+                                <td className="py-2 font-medium text-text-primary capitalize">{r.apartment}</td>
+                                <td className="py-2 text-center"><SourceBadge data={r.airbnb} /></td>
+                                <td className="py-2 text-center"><SourceBadge data={r.booking} /></td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
+        </div>
+    );
+};
+
+const SourceBadge = ({ data }) => {
+    if (!data) return <span className="text-xs text-gray-400">—</span>;
+    if (data.fetched === false) return <span className="text-xs text-amber-700">no se pudo descargar</span>;
+    return (
+        <span className="text-xs text-gray-700">
+            <span className="font-bold text-rural-700">+{data.inserted ?? 0}</span>
+            {' / '}
+            <span className="font-bold text-gray-500">−{data.removed ?? 0}</span>
+            <span className="block text-[10px] text-gray-400">{data.parsed ?? 0} en feed</span>
+        </span>
     );
 };
 
