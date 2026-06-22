@@ -9,7 +9,7 @@ import {
     ExternalLink, FileText, Flame, Home, Download,
     UtensilsCrossed, ThermometerSun, Shirt, DoorOpen, Clock, Key,
     ArrowRight, Loader2, Utensils, Play, AlertCircle, Receipt, History,
-    CheckCircle, XCircle, CalendarCheck,
+    CheckCircle, XCircle, CalendarCheck, MoreHorizontal, ChevronRight,
 } from 'lucide-react';
 import {
     useGuestGuides, useApartmentInstructions, useMyDiscountCodes, useLocalPlaces,
@@ -145,18 +145,40 @@ const Layout = ({ profile, booking, allBookings, invoices, guidebook, addons, do
         : (checkOut && today <= checkOut) ? 'during'
         : 'after';
 
-    const SECTIONS = [
-        { key: 'estancia',    label: 'Mi estancia', icon: Home, hide: !booking },
-        { key: 'apartamento', label: 'Apartamento', icon: Key, hide: !booking },
-        { key: 'guia',        label: 'Guía',        icon: BookOpen },
-        { key: 'zona',        label: 'La zona',     icon: MapPin },
-        { key: 'extras',      label: 'Extras',      icon: ShoppingBag, hide: phase !== 'before' || addons.length === 0 },
-        { key: 'reservas',    label: 'Mis reservas', icon: History },
-        { key: 'docs',        label: 'Documentos',  icon: FileText },
+    // Bottom navigation: 4 secciones principales + "Más" (resto)
+    // El criterio: lo que el huésped usa más en móvil va a la barra; el resto al sheet "Más".
+    const PRIMARY_NAV = [
+        { key: 'estancia',    label: 'Estancia',  icon: Home,    hide: !booking },
+        { key: 'apartamento', label: 'Casa',      icon: Key,     hide: !booking },
+        { key: 'zona',        label: 'La zona',   icon: MapPin },
+        { key: 'reservas',    label: 'Reservas',  icon: History },
     ].filter(s => !s.hide);
 
+    const SECONDARY_NAV = [
+        { key: 'guia',   label: 'Guía completa', icon: BookOpen, description: 'Rutas, naturaleza, gastronomía, cultura' },
+        { key: 'extras', label: 'Extras',        icon: ShoppingBag, description: 'Cesta de bienvenida, late check-out, desayuno...', hide: phase !== 'before' || addons.length === 0 },
+        { key: 'docs',   label: 'Documentos',    icon: FileText, description: 'Facturas, contratos y descargas' },
+    ].filter(s => !s.hide);
+
+    const allSections = [...PRIMARY_NAV, ...SECONDARY_NAV];
+    const activeMeta = allSections.find(s => s.key === activeSection);
+    // Si la sección activa NO está en PRIMARY_NAV, marcamos "Más" como activo en la barra
+    const isInPrimary = PRIMARY_NAV.some(s => s.key === activeSection);
+
+    const handleNavClick = (key) => {
+        if (key === '__more__') {
+            setActiveSheet({ type: 'more' });
+        } else {
+            setActiveSection(key);
+            setActiveSheet(null);
+            // Scroll al top al cambiar de sección
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-gray-50 pb-24">
+        // pb-24 móvil: deja sitio para la bottom tab bar fija
+        <div className="min-h-screen bg-gray-50 pb-24 md:pb-8">
             <TopBar profile={profile} onLogout={onLogout} userEmail={userEmail} />
 
             {!booking ? (
@@ -165,24 +187,15 @@ const Layout = ({ profile, booking, allBookings, invoices, guidebook, addons, do
                 <>
                     <HeroSummary booking={booking} daysLeft={daysLeft} phase={phase} />
 
-                    {/* Menú de secciones */}
-                    <nav className="sticky top-[60px] z-20 bg-gray-50/95 backdrop-blur-md border-b border-gray-200 mb-4">
-                        <div className="max-w-2xl mx-auto px-4 py-2 flex gap-1.5 overflow-x-auto scrollbar-hide">
-                            {SECTIONS.map(s => {
-                                const Icon = s.icon;
-                                const active = activeSection === s.key;
-                                return (
-                                    <button key={s.key} onClick={() => setActiveSection(s.key)}
-                                        className={`shrink-0 px-4 py-2 rounded-full text-sm font-semibold inline-flex items-center gap-1.5 transition-all whitespace-nowrap ${
-                                            active ? 'bg-rural-700 text-white shadow-sm' : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300'
-                                        }`}>
-                                        <Icon size={14} />
-                                        {s.label}
-                                    </button>
-                                );
-                            })}
+                    {/* Etiqueta de sección visible (lo que en desktop sería el título de tab) */}
+                    {activeMeta && (
+                        <div className="max-w-2xl mx-auto px-4 mb-2">
+                            <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400 inline-flex items-center gap-1.5">
+                                <activeMeta.icon size={11} />
+                                {activeMeta.label}
+                            </p>
                         </div>
-                    </nav>
+                    )}
 
                     {/* Contenido de la sección activa */}
                     <main className="max-w-2xl mx-auto px-4">
@@ -203,16 +216,108 @@ const Layout = ({ profile, booking, allBookings, invoices, guidebook, addons, do
                 </>
             )}
 
-            <StickyContact onClick={() => setActiveSheet({ type: 'contact' })} />
+            {/* BOTTOM TAB BAR — fija en móvil */}
+            {booking && (
+                <BottomNav
+                    primary={PRIMARY_NAV}
+                    hasSecondary={SECONDARY_NAV.length > 0}
+                    activeKey={activeSection}
+                    isInPrimary={isInPrimary}
+                    onNav={handleNavClick} />
+            )}
 
             <AnimatePresence>
                 {activeSheet && <BottomSheet onClose={() => setActiveSheet(null)}>
-                    <SheetContent type={activeSheet.type} data={activeSheet.data} guidebook={guidebook} booking={booking} />
+                    {activeSheet.type === 'more'
+                        ? <MoreSheet items={SECONDARY_NAV} activeKey={activeSection}
+                            onSelect={(key) => { setActiveSection(key); setActiveSheet(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                            onContact={() => setActiveSheet({ type: 'contact' })} />
+                        : <SheetContent type={activeSheet.type} data={activeSheet.data} guidebook={guidebook} booking={booking} />
+                    }
                 </BottomSheet>}
             </AnimatePresence>
         </div>
     );
 };
+
+// ────────────────────────────────────────────────────────────────────────────
+// BOTTOM TAB BAR — patrón mobile-first
+// ────────────────────────────────────────────────────────────────────────────
+
+const BottomNav = ({ primary, hasSecondary, activeKey, isInPrimary, onNav }) => {
+    const items = hasSecondary
+        ? [...primary, { key: '__more__', label: 'Más', icon: MoreHorizontal }]
+        : primary;
+
+    return (
+        <nav className="fixed bottom-0 inset-x-0 z-30 bg-white border-t border-gray-200 shadow-[0_-2px_12px_rgba(0,0,0,0.04)]"
+            style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+            aria-label="Navegación principal">
+            <div className="max-w-2xl mx-auto grid" style={{ gridTemplateColumns: `repeat(${items.length}, 1fr)` }}>
+                {items.map(item => {
+                    const Icon = item.icon;
+                    const isActive = item.key === '__more__'
+                        ? !isInPrimary
+                        : item.key === activeKey;
+                    return (
+                        <button key={item.key} onClick={() => onNav(item.key)}
+                            className="flex flex-col items-center justify-center gap-0.5 py-2.5 active:bg-gray-50 transition-colors relative"
+                            aria-current={isActive ? 'page' : undefined}>
+                            <Icon size={20} className={isActive ? 'text-rural-700' : 'text-gray-400'} strokeWidth={isActive ? 2.2 : 1.8} />
+                            <span className={`text-[10px] font-semibold ${isActive ? 'text-rural-700' : 'text-gray-500'}`}>
+                                {item.label}
+                            </span>
+                            {isActive && (
+                                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-rural-700" />
+                            )}
+                        </button>
+                    );
+                })}
+            </div>
+        </nav>
+    );
+};
+
+// Contenido del bottom sheet "Más" — lista de secciones secundarias + acceso a contacto
+const MoreSheet = ({ items, activeKey, onSelect, onContact }) => (
+    <div>
+        <div className="px-5 pt-2 pb-3 border-b border-gray-200">
+            <h2 className="font-serif text-xl font-bold text-gray-900">Más</h2>
+        </div>
+        <div className="p-3 space-y-1.5">
+            {items.map(item => {
+                const Icon = item.icon;
+                const isActive = item.key === activeKey;
+                return (
+                    <button key={item.key} onClick={() => onSelect(item.key)}
+                        className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-colors ${isActive ? 'bg-rural-50 border border-rural-200' : 'hover:bg-gray-50'}`}>
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isActive ? 'bg-rural-700 text-white' : 'bg-gray-100 text-rural-700'}`}>
+                            <Icon size={18} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="font-bold text-sm text-gray-900">{item.label}</p>
+                            {item.description && <p className="text-xs text-gray-500 truncate">{item.description}</p>}
+                        </div>
+                        <ChevronRight size={16} className="text-gray-300 shrink-0" />
+                    </button>
+                );
+            })}
+            <div className="pt-2 mt-2 border-t border-gray-100">
+                <button onClick={onContact}
+                    className="w-full flex items-center gap-3 p-3 rounded-xl bg-rural-700 text-white hover:bg-rural-800 transition-colors">
+                    <div className="w-10 h-10 rounded-lg bg-white/15 flex items-center justify-center shrink-0">
+                        <MessageCircle size={18} />
+                    </div>
+                    <div className="flex-1 text-left">
+                        <p className="font-bold text-sm">Contactar con nosotros</p>
+                        <p className="text-xs opacity-90">WhatsApp, llamar o correo</p>
+                    </div>
+                    <ArrowRight size={16} className="shrink-0" />
+                </button>
+            </div>
+        </div>
+    </div>
+);
 
 // ────────────────────────────────────────────────────────────────────────────
 // TopBar
@@ -1092,16 +1197,6 @@ const EmptyState = ({ message }) => (
     </div>
 );
 
-const StickyContact = ({ onClick }) => (
-    <div className="fixed bottom-0 inset-x-0 z-20 pointer-events-none">
-        <div className="max-w-2xl mx-auto px-4 pb-5 pt-3 bg-gradient-to-t from-gray-50 via-gray-50/90 to-transparent">
-            <button onClick={onClick}
-                className="pointer-events-auto w-full py-4 bg-rural-700 text-white rounded-xl font-bold shadow-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
-                <MessageCircle size={16} /> Contactar
-            </button>
-        </div>
-    </div>
-);
 
 // ────────────────────────────────────────────────────────────────────────────
 // BottomSheet + contenidos
