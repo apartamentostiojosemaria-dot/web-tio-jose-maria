@@ -18,6 +18,12 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false },
 });
 
+const CORS_HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
 interface ApartmentRow {
     id: number;
     slug: string;
@@ -35,7 +41,10 @@ interface ExistingBlock {
 }
 
 const json = (status: number, body: unknown) =>
-    new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
+    new Response(JSON.stringify(body), {
+        status,
+        headers: { ...CORS_HEADERS, "content-type": "application/json" },
+    });
 
 async function fetchFeed(url: string): Promise<string | null> {
     try {
@@ -103,6 +112,7 @@ async function syncApartmentSource(apt: ApartmentRow, source: "airbnb" | "bookin
 }
 
 Deno.serve(async (req) => {
+    if (req.method === "OPTIONS") return new Response(null, { headers: CORS_HEADERS });
     if (req.method !== "POST") return json(405, { error: "method_not_allowed" });
 
     const { data: apartments, error } = await supabase

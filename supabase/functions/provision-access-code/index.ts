@@ -23,8 +23,14 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false },
 });
 
+const CORS_HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
 const json = (status: number, body: unknown) =>
-    new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
+    new Response(JSON.stringify(body), { status, headers: { ...CORS_HEADERS, "content-type": "application/json" } });
 
 const random6 = () => String(Math.floor(100000 + Math.random() * 900000));
 
@@ -88,6 +94,7 @@ async function provisionNuki(opts: {
 }
 
 Deno.serve(async (req) => {
+    if (req.method === "OPTIONS") return new Response(null, { headers: CORS_HEADERS });
     if (req.method !== "POST") return json(405, { error: "method_not_allowed" });
 
     let body: { bookingCode?: string };

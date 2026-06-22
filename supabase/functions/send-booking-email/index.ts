@@ -29,10 +29,16 @@ const VALID_TEMPLATES: TemplateKey[] = [
     "departure", "review_request", "reactivation", "operator_new_booking",
 ];
 
+const CORS_HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
 const json = (status: number, body: unknown) =>
     new Response(JSON.stringify(body), {
         status,
-        headers: { "content-type": "application/json" },
+        headers: { ...CORS_HEADERS, "content-type": "application/json" },
     });
 
 async function sendResend(opts: { from: string; to: string; subject: string; html: string }) {
@@ -52,6 +58,7 @@ async function sendResend(opts: { from: string; to: string; subject: string; htm
 }
 
 Deno.serve(async (req) => {
+    if (req.method === "OPTIONS") return new Response(null, { headers: CORS_HEADERS });
     if (req.method !== "POST") return json(405, { error: "method_not_allowed" });
     if (!RESEND_API_KEY) return json(503, { error: "resend_not_configured" });
 
