@@ -1,8 +1,21 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { supabase } from './lib/supabase';
 import ScrollToTop from './components/shared/ScrollToTop';
 import CookieConsent from './components/shared/CookieConsent';
+
+// BotChat sólo se monta en rutas públicas (no admin, no panel de cliente).
+const BotChat = lazy(() => import('./components/shared/BotChat'));
+
+const PublicBotChat = () => {
+    const { pathname } = useLocation();
+    if (pathname.startsWith('/admin') || pathname.startsWith('/clientes')) return null;
+    return (
+        <Suspense fallback={null}>
+            <BotChat />
+        </Suspense>
+    );
+};
 
 // Eager load — always needed on first paint
 import HomePage from './pages/HomePage';
@@ -94,6 +107,7 @@ export default function App() {
                     </Routes>
                 </div>
             </Suspense>
+            <PublicBotChat />
             <CookieConsent />
         </>
     );
