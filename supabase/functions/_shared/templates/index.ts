@@ -67,7 +67,7 @@ const apartmentPhoto = (b: BookingPayload) => {
     </table>`;
 };
 
-const SIGNATURE = `<p style="margin:24px 0 0;color:#2C3319;">Un saludo,<br><strong style="font-family:'Playfair Display',Georgia,serif;font-size:17px;color:#556B2F;">Jesús y el equipo de Tío José María</strong></p>`;
+const SIGNATURE = `<p style="margin:24px 0 0;color:#2C3319;">Un abrazo,<br><strong style="font-family:'Playfair Display',Georgia,serif;font-size:17px;color:#556B2F;">Mari Carmen y Jesús</strong><br><span style="font-size:12px;color:#8C8468;">Apartamentos Rurales Tío José María</span></p>`;
 
 const bookingSummary = (b: BookingPayload) => `
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FCFBF9;border:1px solid #F0EDE6;border-radius:12px;margin:16px 0;">
