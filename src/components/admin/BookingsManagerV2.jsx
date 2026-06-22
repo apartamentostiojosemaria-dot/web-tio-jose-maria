@@ -3,7 +3,7 @@ import { supabase } from '../../lib/supabase';
 import {
     Search, Mail, FileCheck, ChevronDown, ChevronUp,
     Clock, CheckCircle, XCircle, CalendarCheck, AlertTriangle, RefreshCw,
-    LogIn, LogOut, Euro, User as UserIcon, ShieldCheck, ShieldOff, Lock,
+    LogIn, LogOut, Euro, User as UserIcon,
 } from 'lucide-react';
 
 const STATUS = {
@@ -39,7 +39,6 @@ const BookingsManagerV2 = () => {
             .select(`id, booking_code, guest_name, guest_email, guest_phone, pax_count,
                      check_in, check_out, total_price, status, payment_status, source,
                      expires_at, payment_intent_id, apartment_id,
-                     damage_deposit_status, damage_deposit_amount_cents,
                      confirmation_email_sent_at, reminder_7d_email_sent_at,
                      reminder_24h_email_sent_at, arrival_email_sent_at,
                      departure_email_sent_at, review_request_email_sent_at,
@@ -315,42 +314,6 @@ const BookingDetail = ({ b, busy, onAction }) => {
                     icon={FileCheck} label="Emitir factura"
                     onClick={() => onAction('issue-invoice', { bookingCode: b.booking_code }, `invoice-${b.id}`)}
                     busy={busy === `invoice-${b.id}`} disabled={!b.booking_code || b.status !== 'confirmed'} />
-
-                {/* Fianza por daños — preauth / capture / release */}
-                {(!b.damage_deposit_status || b.damage_deposit_status === 'none') && (
-                    <ActionButton
-                        icon={Lock} label="Pedir fianza"
-                        onClick={() => onAction('damage-deposit-action', { bookingCode: b.booking_code, action: 'preauth' }, `dep-${b.id}`)}
-                        busy={busy === `dep-${b.id}`} disabled={!b.booking_code || b.status !== 'confirmed'} />
-                )}
-                {b.damage_deposit_status === 'preauthorized' && (
-                    <>
-                        <ActionButton
-                            icon={ShieldCheck} label="Liberar fianza"
-                            onClick={() => { if (confirm('¿Liberar la fianza? El bloqueo desaparece de su tarjeta.')) onAction('damage-deposit-action', { bookingCode: b.booking_code, action: 'release' }, `dep-${b.id}`); }}
-                            busy={busy === `dep-${b.id}`} />
-                        <ActionButton
-                            icon={ShieldOff} label="Cobrar fianza"
-                            onClick={() => {
-                                const eur = prompt('¿Cuánto cobrar de la fianza? (en €, deja vacío para cobrar todo)');
-                                if (eur === null) return;
-                                const amount_cents = eur.trim() ? Math.round(parseFloat(eur) * 100) : undefined;
-                                const notes = prompt('Motivo del cobro (queda apuntado):') || '';
-                                onAction('damage-deposit-action', { bookingCode: b.booking_code, action: 'capture', amount_cents, notes }, `dep-${b.id}`);
-                            }}
-                            busy={busy === `dep-${b.id}`} />
-                    </>
-                )}
-                {b.damage_deposit_status === 'captured' && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-red-50 text-red-700 border border-red-100">
-                        <ShieldOff size={12} /> Fianza cobrada
-                    </span>
-                )}
-                {b.damage_deposit_status === 'released' && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-green-50 text-green-700 border border-green-100">
-                        <ShieldCheck size={12} /> Fianza liberada
-                    </span>
-                )}
             </div>
         </div>
     );
