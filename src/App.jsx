@@ -47,6 +47,33 @@ const PageLoader = () => (
     </div>
 );
 
+// Pantalla explicativa cuando el usuario está logueado pero su perfil no
+// es admin (o no se ha podido cargar). Antes esto era un Navigate to / que
+// confundía al operador: clicaba "Acceso administración" y aparecía en la home.
+const AdminNoPermission = ({ email, profileLoaded }) => (
+    <div className="min-h-screen flex items-center justify-center bg-rural-50 p-6">
+        <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 text-center">
+            <h1 className="font-serif text-2xl font-bold text-text-primary mb-3">
+                {profileLoaded ? 'Esta cuenta no tiene acceso al panel' : 'No hemos podido cargar tu perfil'}
+            </h1>
+            <p className="text-gray-600 mb-2 text-sm">
+                {profileLoaded
+                    ? `Estás dentro como ${email || 'usuario'}, pero esta cuenta no está marcada como administradora.`
+                    : `Estás dentro como ${email || 'usuario'}, pero no hemos podido leer tu perfil. Puede ser un problema temporal de conexión.`}
+            </p>
+            <p className="text-gray-500 text-xs mt-4">
+                Si esto no debería pasar, escríbenos al WhatsApp del administrador y lo revisamos.
+            </p>
+            <div className="flex gap-3 justify-center mt-6">
+                <button onClick={() => supabase.auth.signOut().then(() => window.location.assign('/admin'))}
+                    className="text-sm font-bold text-rural-700 hover:text-primary px-4 py-2 rounded-xl border border-gray-200">
+                    Cerrar sesión y volver al login
+                </button>
+            </div>
+        </div>
+    </div>
+);
+
 export default function App() {
     const [session, setSession] = useState(null);
     const [userProfile, setUserProfile] = useState(null);
@@ -108,7 +135,13 @@ export default function App() {
                         <Route path="/guia-cazorla" element={<GuiaCazorla />} />
                         <Route
                             path="/admin"
-                            element={!session ? <AdminLogin /> : (userProfile?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/" replace />)}
+                            element={
+                                !session
+                                    ? <AdminLogin />
+                                    : userProfile?.role === 'admin'
+                                        ? <AdminDashboard />
+                                        : <AdminNoPermission email={session?.user?.email} profileLoaded={!loadingProfile && userProfile !== null} />
+                            }
                         />
                         <Route path="/admin/respuesta" element={<AdminResponse />} />
                         <Route path="/clientes" element={<Navigate to="/" replace />} />
