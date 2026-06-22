@@ -296,7 +296,55 @@ de tener la integración real. Cuando llegue el cert.cliente, simplemente
 configuras `SES_API_ENDPOINT` y `SES_*_CERT` y los siguientes envíos van
 de verdad al MIR.
 
-## 8. Roadmap pendiente
+## 8. Sprint 8 — Channel Manager iCal bidireccional
+
+### 8.1. Importación (canales → nosotros)
+
+Configura en `apartments` las URLs iCal de tus listings. Las puedes obtener:
+
+- **Booking**: Extranet → Habitación → Conectividad iCal → URL "exportar".
+- **Airbnb**: Calendar → Availability settings → Export iCal.
+- **Vrbo / casasrurales / Ruralka**: cada uno en su panel.
+
+Mete cada URL en la columna correspondiente de `apartments`:
+
+```sql
+UPDATE apartments SET
+    airbnb_ical_url = 'https://www.airbnb.es/calendar/ical/XXXXX.ics?s=...',
+    booking_ical_url = 'https://ical.booking.com/v1/export?...'
+WHERE slug = 'albahaca';
+```
+
+La task `sync-ical-channels` (Trigger.dev, cada 30min) reconcilia los
+bloqueos automáticamente en `blocked_dates`. `check_availability` ya los
+excluye.
+
+### 8.2. Exportación (nosotros → canales)
+
+URL pública por apartamento:
+
+```
+https://nmtukksbzbnuzqsksdmw.supabase.co/functions/v1/ical-export?slug=albahaca
+```
+
+Mete esta URL como "import iCal" en Booking, Airbnb y los demás. A partir
+de ahí, todas las reservas que entren por tu motor propio aparecerán
+ocupadas en los canales también.
+
+### 8.3. Desplegar
+
+```bash
+supabase functions deploy sync-ical-imports --project-ref nmtukksbzbnuzqsksdmw --no-verify-jwt
+supabase functions deploy ical-export       --project-ref nmtukksbzbnuzqsksdmw --no-verify-jwt
+```
+
+Reseteo manual si hace falta (borra blocked_dates de un source y rehace sync):
+
+```sql
+DELETE FROM blocked_dates WHERE source IN ('airbnb', 'booking');
+```
+
+## 9. Roadmap pendiente
 
 El alojamiento sigue pagando MisterPlan hasta que el sistema propio lo cubra.
 Sprints adicionales planificados en `brief.md` (sección "Sprints PENDIENTES"):
