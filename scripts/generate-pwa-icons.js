@@ -8,12 +8,13 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const ASSETS = join(__dirname, '..', 'public', 'assets');
+const PUBLIC = join(__dirname, '..', 'public');
+const ASSETS = join(PUBLIC, 'assets');
 
 const BRAND_BG = { r: 252, g: 251, b: 249, alpha: 1 }; // surface warm cream
 const SOURCE_LOGO = join(ASSETS, 'logo.jpg');
 
-async function makeIcon(size, outName) {
+async function makeIcon(size, outPath) {
     // El logo horizontal se inscribe en el 70% del ancho; el resto es padding.
     const inner = Math.round(size * 0.7);
     const resized = await sharp(SOURCE_LOGO)
@@ -30,14 +31,18 @@ async function makeIcon(size, outName) {
     })
         .composite([{ input: resized, gravity: 'center' }])
         .png({ compressionLevel: 9 })
-        .toFile(join(ASSETS, outName));
+        .toFile(outPath);
 
-    console.log(`[pwa-icons] ${outName} (${size}x${size})`);
+    console.log(`[pwa-icons] ${outPath} (${size}x${size})`);
 }
 
 async function main() {
-    await makeIcon(192, 'pwa-192.png');
-    await makeIcon(512, 'pwa-512.png');
+    await makeIcon(192, join(ASSETS, 'pwa-192.png'));
+    await makeIcon(512, join(ASSETS, 'pwa-512.png'));
+    // favicon clásico (32px) y .ico fallback para crawlers/extensiones legacy
+    // que piden /favicon.ico aunque haya <link rel="icon"> en el HTML.
+    await makeIcon(32, join(ASSETS, 'favicon-32.png'));
+    await makeIcon(32, join(PUBLIC, 'favicon.ico'));
 }
 
 main().catch(err => {

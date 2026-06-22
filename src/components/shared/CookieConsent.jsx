@@ -50,6 +50,20 @@ const CookieConsent = () => {
         setPrefs(existing);
     }, []);
 
+    // AEPD: retirar el consentimiento debe ser tan fácil como darlo. Cualquier
+    // sitio (footer, política de privacidad…) puede reabrir el panel disparando
+    // el evento `tjm:cookie-consent-reopen`.
+    useEffect(() => {
+        const reopen = () => {
+            const existing = getConsent();
+            if (existing) setPrefs(existing);
+            setShowSettings(true);
+            setVisible(true);
+        };
+        window.addEventListener('tjm:cookie-consent-reopen', reopen);
+        return () => window.removeEventListener('tjm:cookie-consent-reopen', reopen);
+    }, []);
+
     const acceptAll = () => {
         saveConsent({ necessary: true, analytics: true, marketing: true });
         setVisible(false);

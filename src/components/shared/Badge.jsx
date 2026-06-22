@@ -6,7 +6,7 @@ const presets = {
     success: 'bg-green-50 text-green-700',
     warning: 'bg-amber-50 text-amber-700',
     danger: 'bg-red-50 text-red-700',
-    neutral: 'bg-gray-100 text-gray-500',
+    neutral: 'bg-gray-100 text-gray-700',
 };
 
 const Badge = ({ children, preset = 'primary', className = '', ...props }) => (

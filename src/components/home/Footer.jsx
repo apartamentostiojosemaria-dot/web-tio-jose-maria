@@ -6,7 +6,7 @@ const Footer = () => (
         <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-10 md:gap-16 mb-14">
             <div>
                 <h3 className="font-serif text-2xl font-bold mb-6">Tío José María</h3>
-                <p className="text-white/50 text-sm leading-relaxed max-w-xs mb-6">
+                <p className="text-white/80 text-sm leading-relaxed max-w-xs mb-6">
                     Vivienda turística de Alojamiento Rural registrada en la Junta de Andalucía (VTAR/JA/00044). Tu casa en Hinojares.
                 </p>
                 <div className="flex gap-3">
@@ -26,7 +26,7 @@ const Footer = () => (
             </div>
             <div>
                 <h4 className="text-sm font-bold uppercase tracking-widest mb-8 text-accent">Contacto</h4>
-                <ul className="space-y-4 text-sm text-white/60">
+                <ul className="space-y-4 text-sm text-white/80">
                     <li className="flex items-start gap-3">
                         <MapPin size={16} aria-hidden="true" className="flex-shrink-0 mt-0.5 text-primary" />
                         <a
@@ -72,11 +72,19 @@ const Footer = () => (
                 </div>
             </div>
         </div>
-        <div className="border-t border-white/10 pt-8 text-center text-white/40 text-sm flex flex-col gap-4">
+        <div className="border-t border-white/10 pt-8 text-center text-white/75 text-sm flex flex-col gap-4">
             <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-2">
                 <Link to="/aviso-legal" className="hover:text-white transition-colors">Aviso legal</Link>
                 <span className="opacity-20" aria-hidden="true">|</span>
                 <Link to="/privacidad" className="hover:text-white transition-colors">Privacidad</Link>
+                <span className="opacity-20" aria-hidden="true">|</span>
+                <button
+                    type="button"
+                    onClick={() => window.dispatchEvent(new CustomEvent('tjm:cookie-consent-reopen'))}
+                    className="hover:text-white transition-colors cursor-pointer"
+                >
+                    Gestionar cookies
+                </button>
                 <span className="opacity-20" aria-hidden="true">|</span>
                 <a
                     href="https://www.juntadeandalucia.es/organismos/turismoculturayeducacion/areas/turismo/calidad/hojas-reclamaciones.html"

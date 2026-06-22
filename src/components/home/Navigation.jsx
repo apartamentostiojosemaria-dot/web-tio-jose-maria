@@ -12,6 +12,16 @@ const Navigation = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    // WCAG 2.1 (2.1.2): el menú debe cerrarse con teclado y devolver el foco.
+    useEffect(() => {
+        if (!mobileOpen) return;
+        const handleKey = (e) => {
+            if (e.key === 'Escape') setMobileOpen(false);
+        };
+        window.addEventListener('keydown', handleKey);
+        return () => window.removeEventListener('keydown', handleKey);
+    }, [mobileOpen]);
+
     const links = [
         { label: 'Apartamentos', href: '/#apartamentos' },
         { label: 'El Entorno', href: '/#entorno' },
