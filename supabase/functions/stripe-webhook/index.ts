@@ -92,9 +92,7 @@ Deno.serve(async (req) => {
                     .eq("booking_code", code)
                     .in("status", ["hold", "pending"]);    // evita pisar cancelaciones
 
-                // Disparar email de confirmacion inmediatamente (no esperar al cron).
-                // Si Resend no está configurado, send-booking-email devuelve 503 y
-                // el cron diario lo intentará al día siguiente.
+                // Disparar email de confirmacion inmediatamente
                 fetch(`${SUPABASE_URL}/functions/v1/send-booking-email`, {
                     method: "POST",
                     headers: {
@@ -103,6 +101,16 @@ Deno.serve(async (req) => {
                     },
                     body: JSON.stringify({ bookingCode: code, template: "confirmation" }),
                 }).catch(e => console.warn("[stripe-webhook] confirmation email fire-and-forget failed:", e));
+
+                // Emitir factura (RPC idempotente) + disparar Verifactu
+                fetch(`${SUPABASE_URL}/functions/v1/issue-invoice`, {
+                    method: "POST",
+                    headers: {
+                        "content-type": "application/json",
+                        authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+                    },
+                    body: JSON.stringify({ bookingCode: code }),
+                }).catch(e => console.warn("[stripe-webhook] invoice fire-and-forget failed:", e));
                 break;
             }
             case "checkout.session.expired": {

@@ -344,7 +344,60 @@ Reseteo manual si hace falta (borra blocked_dates de un source y rehace sync):
 DELETE FROM blocked_dates WHERE source IN ('airbnb', 'booking');
 ```
 
-## 9. Roadmap pendiente
+## 9. Sprint 9 — Facturación + Verifactu
+
+### 9.1. Trámites del operador (para envío real a AEAT)
+
+1. **Certificado fiscal AEAT** (puede ser el mismo certificado digital FNMT
+   del titular si ya lo tiene del Sprint 7).
+2. **Alta en Verifactu** en sede.agenciatributaria.gob.es → Verifactu.
+   AEAT te da credenciales para conectar a su API de Registro de
+   Facturación.
+3. Anotar la URL del **endpoint de pruebas** y la de **producción**.
+
+### 9.2. Stub mode (mientras tanto)
+
+Sin `AEAT_VERIFACTU_ENDPOINT` configurado, las facturas se crean con la
+numeración correlativa correcta y el hash chain Verifactu calculado, pero
+NO se envían al AEAT. `verifactu_status='stub'` queda registrado y el XML
+de envío está disponible en `verifactu_response.xml` para auditoría.
+
+Esto te permite operar legalmente con facturas emitidas correctamente
+(numeración + datos + IVA 10% turismo) mientras formalizas el alta AEAT.
+
+### 9.3. Secrets cuando los trámites estén
+
+| Secret | Valor |
+|---|---|
+| `AEAT_VERIFACTU_ENDPOINT` | URL del web service AEAT (pruebas o prod) |
+| `AEAT_FISCAL_CERT_PEM` | certificado X.509 PEM del titular |
+| `AEAT_FISCAL_KEY_PEM` | clave privada PEM |
+
+### 9.4. Desplegar
+
+```bash
+supabase functions deploy issue-invoice    --project-ref nmtukksbzbnuzqsksdmw --no-verify-jwt
+supabase functions deploy submit-verifactu --project-ref nmtukksbzbnuzqsksdmw --no-verify-jwt
+```
+
+`stripe-webhook` ya está conectado: tras `checkout.session.completed`
+dispara automáticamente `issue-invoice` (fire-and-forget), que a su vez
+llama a `submit-verifactu`.
+
+### 9.5. Consulta de facturas
+
+```sql
+SELECT serie, numero, fecha_emision, total, verifactu_status
+FROM invoices
+ORDER BY fecha_emision DESC, numero DESC
+LIMIT 20;
+```
+
+PDF: pendiente de iteración futura (Sprint 11). De momento la factura
+existe como registro fiscal completo en BD; envío al huésped por email
+manual desde el panel admin si lo pide.
+
+## 10. Roadmap pendiente
 
 El alojamiento sigue pagando MisterPlan hasta que el sistema propio lo cubra.
 Sprints adicionales planificados en `brief.md` (sección "Sprints PENDIENTES"):
