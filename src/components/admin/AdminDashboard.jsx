@@ -1,175 +1,196 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { supabase } from '../../lib/supabase';
-import ApartmentsManager from './ApartmentsManager';
-import WebConfigManager from './WebConfigManager';
-import DocumentsManager from './DocumentsManager';
-import AvailabilityManager from './AvailabilityManager';
-import SeasonsManager from './SeasonsManager';
-import GuestGuidesManager from './GuestGuidesManager';
-import GuestUserManager from './GuestUserManager';
-import { ClientAreaContent } from '../client/ClientArea';
-import AnalyticsDashboard from './AnalyticsDashboard';
-import QRCodeManager from './QRCodeManager';
-import BookingsManager from './BookingsManager';
-import RoutesManager from './RoutesManager';
-import ReviewsManager from './ReviewsManager';
-import EventsManager from './EventsManager';
-import PlacesManager from './PlacesManager';
-import BlogManager from './BlogManager';
-import InstructionsManager from './InstructionsManager';
 import { usePendingBookingsCount } from '../../hooks/useDatabase';
-import { LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar, Star, Eye, Users, BarChart3, QrCode, CalendarCheck, Route, MessageSquare, PartyPopper, MapPin, Menu, X, BookOpen, ClipboardList } from 'lucide-react';
+import {
+    LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar, Star, Eye, Users,
+    BarChart3, QrCode, CalendarCheck, Route, MessageSquare, PartyPopper, MapPin, Menu, X,
+    BookOpen, ClipboardList,
+    Shield, Brush, KeyRound, Euro, Link2, Bot, Tag,
+} from 'lucide-react';
+
+// Operaciones core (carga inmediata, son los más usados)
+import AdminHome from './AdminHome';
+import BookingsManagerV2 from './BookingsManagerV2';
+
+// Resto lazy para no añadir bytes al primer paint
+const ApartmentsManager     = lazy(() => import('./ApartmentsManager'));
+const WebConfigManager      = lazy(() => import('./WebConfigManager'));
+const DocumentsManager      = lazy(() => import('./DocumentsManager'));
+const AvailabilityManager   = lazy(() => import('./AvailabilityManager'));
+const SeasonsManager        = lazy(() => import('./SeasonsManager'));
+const GuestGuidesManager    = lazy(() => import('./GuestGuidesManager'));
+const GuestUserManager      = lazy(() => import('./GuestUserManager'));
+const AnalyticsDashboard    = lazy(() => import('./AnalyticsDashboard'));
+const QRCodeManager         = lazy(() => import('./QRCodeManager'));
+const RoutesManager         = lazy(() => import('./RoutesManager'));
+const ReviewsManager        = lazy(() => import('./ReviewsManager'));
+const EventsManager         = lazy(() => import('./EventsManager'));
+const PlacesManager         = lazy(() => import('./PlacesManager'));
+const BlogManager           = lazy(() => import('./BlogManager'));
+const InstructionsManager   = lazy(() => import('./InstructionsManager'));
+const InvoicesManager       = lazy(() => import('./InvoicesManager'));
+const TravelersManager      = lazy(() => import('./TravelersManager'));
+const CleaningManager       = lazy(() => import('./CleaningManager'));
+const AccessCodesManager    = lazy(() => import('./AccessCodesManager'));
+const PricingRulesManager   = lazy(() => import('./PricingRulesManager'));
+const ChannelSyncManager    = lazy(() => import('./ChannelSyncManager'));
+const BotLogsManager        = lazy(() => import('./BotLogsManager'));
+
+// Sidebar agrupado por dominios operativos
+const NAV_GROUPS = [
+    {
+        title: 'Operaciones',
+        items: [
+            { id: 'dashboard',     label: 'Cockpit',          icon: LayoutDashboard },
+            { id: 'reservas',      label: 'Reservas',         icon: CalendarCheck, badgeKey: 'pendingBookings' },
+            { id: 'cleaning',      label: 'Limpieza',         icon: Brush },
+            { id: 'access_codes',  label: 'Códigos cerradura',icon: KeyRound },
+            { id: 'travelers',     label: 'Viajeros (SES)',   icon: Shield },
+            { id: 'disponibilidad',label: 'Disponibilidad',   icon: Calendar },
+        ],
+    },
+    {
+        title: 'Financiero',
+        items: [
+            { id: 'invoices',  label: 'Facturas',     icon: FileText },
+            { id: 'pricing',   label: 'Pricing rules', icon: Tag },
+            { id: 'temporadas',label: 'Temporadas',    icon: Star },
+        ],
+    },
+    {
+        title: 'Canales y huéspedes',
+        items: [
+            { id: 'channel_sync', label: 'Channel Manager', icon: Link2 },
+            { id: 'huespedes',    label: 'Huéspedes',       icon: Users },
+            { id: 'resenas',      label: 'Reseñas',         icon: MessageSquare },
+        ],
+    },
+    {
+        title: 'Marketing y contenido',
+        items: [
+            { id: 'apartamentos',  label: 'Apartamentos',     icon: Home },
+            { id: 'rutas',         label: 'Rutas',            icon: Route },
+            { id: 'eventos',       label: 'Eventos',          icon: PartyPopper },
+            { id: 'directorio',    label: 'Directorio local', icon: MapPin },
+            { id: 'blog',          label: 'Blog',             icon: BookOpen },
+            { id: 'guias',         label: 'Guía huésped',     icon: Star },
+            { id: 'instrucciones', label: 'Guía apartamento', icon: ClipboardList },
+        ],
+    },
+    {
+        title: 'Sistema',
+        items: [
+            { id: 'bot_logs',     label: 'Bot IA',         icon: Bot },
+            { id: 'analitica',    label: 'Analítica',      icon: BarChart3 },
+            { id: 'documentos',   label: 'Documentos',     icon: FileText },
+            { id: 'qrcodes',      label: 'Códigos QR',     icon: QrCode },
+            { id: 'configuracion',label: 'Configuración',  icon: Settings },
+        ],
+    },
+];
+
+const FALLBACK = (
+    <div className="flex items-center justify-center py-20">
+        <p className="text-gray-400 font-serif italic">Cargando…</p>
+    </div>
+);
 
 const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [stats, setStats] = useState({ apartments: 0, routes: 0, documents: 0 });
     const pendingBookings = usePendingBookingsCount();
+    const badges = { pendingBookings };
 
-    useEffect(() => {
-        const fetchStats = async () => {
-            const [apts, routes, docs] = await Promise.all([
-                supabase.from('apartments').select('id', { count: 'exact', head: true }),
-                supabase.from('routes').select('id', { count: 'exact', head: true }),
-                supabase.from('documents').select('id', { count: 'exact', head: true })
-            ]);
-            setStats({ apartments: apts.count || 0, routes: routes.count || 0, documents: docs.count || 0 });
-        };
-        fetchStats();
-    }, []);
-
-    const handleTabChange = (tab) => {
-        setActiveTab(tab);
-        setSidebarOpen(false);
-    };
+    const go = (tab) => { setActiveTab(tab); setSidebarOpen(false); };
 
     return (
         <div className="min-h-screen bg-gray-50 flex">
             {/* Mobile header */}
             <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
-                <h2 className="font-serif text-lg font-bold text-text-primary">Tio Jose Maria</h2>
-                <button
-                    onClick={() => setSidebarOpen(!sidebarOpen)}
-                    className="p-2 rounded-xl hover:bg-gray-100"
-                    aria-expanded={sidebarOpen}
-                    aria-label={sidebarOpen ? 'Cerrar menu' : 'Abrir menu'}
-                >
+                <h2 className="font-serif text-lg font-bold text-text-primary">Tío José María</h2>
+                <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 rounded-xl hover:bg-gray-100"
+                    aria-expanded={sidebarOpen} aria-label={sidebarOpen ? 'Cerrar menú' : 'Abrir menú'}>
                     {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
                 </button>
             </div>
 
-            {/* Overlay for mobile */}
             {sidebarOpen && (
                 <div className="fixed inset-0 bg-black/30 z-40 md:hidden" onClick={() => setSidebarOpen(false)} />
             )}
 
-            {/* Sidebar */}
-            <aside className={`fixed md:static z-50 md:z-auto top-0 left-0 h-full w-64 bg-white border-r border-gray-100 flex flex-col transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
-                <div className="p-8 border-b border-gray-50 hidden md:block">
-                    <h2 className="font-serif text-xl font-bold text-text-primary">Tio Jose Maria</h2>
-                    <p className="text-[10px] uppercase font-bold tracking-widest opacity-40">Administracion</p>
+            <aside className={`fixed md:static z-50 md:z-auto top-0 left-0 h-full w-72 bg-white border-r border-gray-100 flex flex-col transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+                <div className="p-6 border-b border-gray-50 hidden md:block">
+                    <h2 className="font-serif text-xl font-bold text-text-primary">Tío José María</h2>
+                    <p className="text-[10px] uppercase font-bold tracking-widest text-gray-400 mt-1">Cockpit operativo</p>
                 </div>
-
-                {/* Spacer for mobile header */}
                 <div className="h-14 md:hidden" />
 
-                <nav className="flex-grow p-4 space-y-2 overflow-y-auto" aria-label="Menu de administracion">
-                    <SidebarLink icon={<LayoutDashboard size={18} />} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => handleTabChange('dashboard')} />
-                    <SidebarLink icon={<Home size={18} />} label="Apartamentos" active={activeTab === 'apartamentos'} onClick={() => handleTabChange('apartamentos')} />
-                    <SidebarLink icon={<Star size={18} />} label="Guia del Huesped" active={activeTab === 'guias'} onClick={() => handleTabChange('guias')} />
-                    <SidebarLink icon={<Route size={18} />} label="Rutas" active={activeTab === 'rutas'} onClick={() => handleTabChange('rutas')} />
-                    <SidebarLink icon={<Calendar size={18} />} label="Disponibilidad" active={activeTab === 'disponibilidad'} onClick={() => handleTabChange('disponibilidad')} />
-                    <SidebarLink icon={<Star size={18} />} label="Temporadas" active={activeTab === 'temporadas'} onClick={() => handleTabChange('temporadas')} />
-                    <SidebarLink icon={<CalendarCheck size={18} />} label="Reservas" active={activeTab === 'reservas'} onClick={() => handleTabChange('reservas')} badge={pendingBookings} />
-                    <SidebarLink icon={<FileText size={18} />} label="Documentos" active={activeTab === 'documentos'} onClick={() => handleTabChange('documentos')} />
-                    <SidebarLink icon={<Users size={18} />} label="Huespedes" active={activeTab === 'huespedes'} onClick={() => handleTabChange('huespedes')} />
-                    <SidebarLink icon={<PartyPopper size={18} />} label="Eventos" active={activeTab === 'eventos'} onClick={() => handleTabChange('eventos')} />
-                    <SidebarLink icon={<MapPin size={18} />} label="Directorio Local" active={activeTab === 'directorio'} onClick={() => handleTabChange('directorio')} />
-                    <SidebarLink icon={<BookOpen size={18} />} label="Blog" active={activeTab === 'blog'} onClick={() => handleTabChange('blog')} />
-                    <SidebarLink icon={<ClipboardList size={18} />} label="Guia Apartamento" active={activeTab === 'instrucciones'} onClick={() => handleTabChange('instrucciones')} />
-                    <SidebarLink icon={<BarChart3 size={18} />} label="Analitica" active={activeTab === 'analitica'} onClick={() => handleTabChange('analitica')} />
-                    <SidebarLink icon={<MessageSquare size={18} />} label="Resenas" active={activeTab === 'resenas'} onClick={() => handleTabChange('resenas')} />
-                    <SidebarLink icon={<QrCode size={18} />} label="Codigos QR" active={activeTab === 'qrcodes'} onClick={() => handleTabChange('qrcodes')} />
-                    <div className="pt-4 mt-4 border-t border-gray-50">
-                        <SidebarLink icon={<Eye size={18} />} label="Vista Huesped" active={activeTab === 'vista_huesped'} onClick={() => handleTabChange('vista_huesped')} />
-                    </div>
-                    <SidebarLink icon={<Settings size={18} />} label="Configuracion" active={activeTab === 'configuracion'} onClick={() => handleTabChange('configuracion')} />
+                <nav className="flex-grow p-3 space-y-5 overflow-y-auto" aria-label="Menú de administración">
+                    {NAV_GROUPS.map(group => (
+                        <div key={group.title}>
+                            <p className="text-[10px] uppercase font-bold tracking-widest text-gray-400 px-3 mb-1.5">{group.title}</p>
+                            <div className="space-y-1">
+                                {group.items.map(item => (
+                                    <SidebarLink key={item.id} icon={<item.icon size={16} />} label={item.label}
+                                        active={activeTab === item.id} onClick={() => go(item.id)}
+                                        badge={item.badgeKey ? badges[item.badgeKey] : 0} />
+                                ))}
+                            </div>
+                        </div>
+                    ))}
                 </nav>
 
-                <div className="p-4 border-t border-gray-50">
-                    <button onClick={() => supabase.auth.signOut()} className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl transition-colors text-sm font-bold">
-                        <LogOut size={18} /> Cerrar Sesion
+                <div className="p-3 border-t border-gray-50">
+                    <button onClick={() => supabase.auth.signOut()}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-red-500 hover:bg-red-50 rounded-xl transition-colors text-sm font-bold">
+                        <LogOut size={16} /> Cerrar sesión
                     </button>
                 </div>
             </aside>
 
-            {/* Main Content */}
-            <main className="flex-grow p-4 md:p-10 pt-18 md:pt-10 h-screen overflow-y-auto">
-                {activeTab === 'dashboard' && (
-                    <>
-                        <header className="mb-10">
-                            <h1 className="text-3xl font-serif font-bold text-text-primary">Bienvenido al Panel de Control</h1>
-                            <p className="text-gray-500">Que quieres gestionar hoy?</p>
-                        </header>
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <StatCard label="Apartamentos Activos" value={stats.apartments} />
-                            <StatCard label="Rutas Publicadas" value={stats.routes} />
-                            <StatCard label="Documentos" value={stats.documents} />
-                        </div>
-                    </>
-                )}
-                {activeTab === 'apartamentos' && <ApartmentsManager />}
-                {activeTab === 'rutas' && <RoutesManager />}
-                {activeTab === 'disponibilidad' && <AvailabilityManager />}
-                {activeTab === 'temporadas' && <SeasonsManager />}
-                {activeTab === 'reservas' && <BookingsManager />}
-                {activeTab === 'guias' && <GuestGuidesManager />}
-                {activeTab === 'documentos' && <DocumentsManager />}
-                {activeTab === 'huespedes' && <GuestUserManager />}
-                {activeTab === 'configuracion' && <WebConfigManager />}
-                {activeTab === 'analitica' && <AnalyticsDashboard />}
-                {activeTab === 'resenas' && <ReviewsManager />}
-                {activeTab === 'eventos' && <EventsManager />}
-                {activeTab === 'directorio' && <PlacesManager />}
-                {activeTab === 'blog' && <BlogManager />}
-                {activeTab === 'instrucciones' && <InstructionsManager />}
-                {activeTab === 'qrcodes' && <QRCodeManager />}
-                {activeTab === 'vista_huesped' && (
-                    <div className="max-w-4xl mx-auto">
-                        <div className="mb-6 flex items-center justify-between p-4 bg-amber-50 rounded-2xl border border-amber-100">
-                            <div className="flex items-center gap-3 text-amber-900">
-                                <Eye size={20} />
-                                <span className="font-bold text-sm">Modo Vista Previa: Estas viendo lo mismo que veria un cliente.</span>
-                            </div>
-                        </div>
-                        <ClientAreaContent docs={[]} />
-                    </div>
-                )}
+            <main className="flex-grow p-4 md:p-8 pt-18 md:pt-8 h-screen overflow-y-auto">
+                <Suspense fallback={FALLBACK}>
+                    {activeTab === 'dashboard'      && <AdminHome onNavigate={go} />}
+                    {activeTab === 'reservas'       && <BookingsManagerV2 />}
+                    {activeTab === 'cleaning'       && <CleaningManager />}
+                    {activeTab === 'access_codes'   && <AccessCodesManager />}
+                    {activeTab === 'travelers'      && <TravelersManager />}
+                    {activeTab === 'disponibilidad' && <AvailabilityManager />}
+                    {activeTab === 'invoices'       && <InvoicesManager />}
+                    {activeTab === 'pricing'        && <PricingRulesManager />}
+                    {activeTab === 'temporadas'     && <SeasonsManager />}
+                    {activeTab === 'channel_sync'   && <ChannelSyncManager />}
+                    {activeTab === 'huespedes'      && <GuestUserManager />}
+                    {activeTab === 'resenas'        && <ReviewsManager />}
+                    {activeTab === 'apartamentos'   && <ApartmentsManager />}
+                    {activeTab === 'rutas'          && <RoutesManager />}
+                    {activeTab === 'eventos'        && <EventsManager />}
+                    {activeTab === 'directorio'     && <PlacesManager />}
+                    {activeTab === 'blog'           && <BlogManager />}
+                    {activeTab === 'guias'          && <GuestGuidesManager />}
+                    {activeTab === 'instrucciones'  && <InstructionsManager />}
+                    {activeTab === 'bot_logs'       && <BotLogsManager />}
+                    {activeTab === 'analitica'      && <AnalyticsDashboard />}
+                    {activeTab === 'documentos'     && <DocumentsManager />}
+                    {activeTab === 'qrcodes'        && <QRCodeManager />}
+                    {activeTab === 'configuracion'  && <WebConfigManager />}
+                </Suspense>
             </main>
         </div>
     );
 };
 
-const SidebarLink = ({ icon, label, active = false, onClick, badge = 0 }) => (
-    <button
-        onClick={onClick}
-        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-bold ${
-            active ? 'bg-surface-warm text-primary' : 'hover:bg-gray-50 opacity-60 hover:opacity-100'
-        }`}
-    >
-        {icon}
+const SidebarLink = ({ icon, label, active, onClick, badge }) => (
+    <button onClick={onClick}
+        className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm font-medium ${
+            active ? 'bg-rural-50 text-rural-700 font-bold' : 'text-gray-600 hover:bg-gray-50 hover:text-text-primary'
+        }`}>
+        <span className={active ? 'text-primary' : 'text-gray-400'}>{icon}</span>
         <span className="flex-grow text-left">{label}</span>
         {badge > 0 && (
             <span className="bg-amber-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">{badge}</span>
         )}
     </button>
-);
-
-const StatCard = ({ label, value }) => (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-        <p className="text-xs uppercase tracking-widest font-bold opacity-40 mb-2">{label}</p>
-        <p className="text-4xl font-serif font-bold text-primary">{value}</p>
-    </div>
 );
 
 export default AdminDashboard;
