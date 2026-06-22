@@ -1,8 +1,24 @@
 @import "tailwindcss";
 
+/* Fuentes editoriales para área cliente — Hoxton/Ace aesthetic */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..800;1,9..144,300..800&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Manrope:wght@300;400;500;600;700;800&display=swap');
+
 @theme {
   --font-serif: "Playfair Display", serif;
   --font-sans: Lato, sans-serif;
+
+  /* Área cliente — fuentes editoriales distintivas */
+  --font-display: "Fraunces", Georgia, serif;        /* Titulares con personalidad italic */
+  --font-editorial: "Newsreader", Georgia, serif;    /* Cuerpo editorial largo */
+  --font-ui: "Manrope", system-ui, sans-serif;       /* UI cálida geométrica */
+
+  /* Paleta extendida — acentos editoriales */
+  --color-terracota: #B0593F;        /* CTA editorial cálido */
+  --color-terracota-soft: #E8C8B8;
+  --color-dorado: #A88A4A;           /* Acento sutil */
+  --color-papel: #F8F4EA;            /* Crema más cálida que rural-50 */
+  --color-tinta: #2C3319;
+  --color-tinta-soft: #5C5444;
 
   /* Color palette — unified rural tokens */
   --color-rural-50: #FCFBF9;
