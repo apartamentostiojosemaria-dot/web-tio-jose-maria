@@ -24,6 +24,7 @@ const ROUTES = [
     '/rutas',
     '/eventos',
     '/blog',
+    '/reservar',
     '/aviso-legal',
     '/privacidad',
     '/apartamento/albahaca',
