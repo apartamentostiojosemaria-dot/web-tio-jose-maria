@@ -10,6 +10,7 @@ interface BookingPayload {
     guest_email: string;
     apartment_name: string;
     apartment_slug: string;
+    apartment_image?: string | null;
     check_in: string;
     check_out: string;
     total_price: number;
@@ -54,6 +55,20 @@ const shell = (heading: string, body: string, ctaLabel?: string, ctaUrl?: string
   </td></tr></table>
 </body></html>`;
 
+// Foto del apartamento como imagen ancho completo (max 560px) con esquinas redondeadas.
+// Si no hay URL, no se renderiza nada (ningún hueco).
+const apartmentPhoto = (b: BookingPayload) => {
+    if (!b.apartment_image) return "";
+    return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 20px;">
+      <tr><td>
+        <img src="${b.apartment_image}" alt="Apartamento ${b.apartment_name}"
+             width="496" style="display:block;width:100%;max-width:496px;height:auto;border-radius:12px;border:1px solid #F0EDE6;">
+      </td></tr>
+    </table>`;
+};
+
+const SIGNATURE = `<p style="margin:24px 0 0;color:#2C3319;">Un saludo,<br><strong style="font-family:'Playfair Display',Georgia,serif;font-size:17px;color:#556B2F;">Jesús y el equipo de Tío José María</strong></p>`;
+
 const bookingSummary = (b: BookingPayload) => `
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FCFBF9;border:1px solid #F0EDE6;border-radius:12px;margin:16px 0;">
   <tr><td style="padding:16px 20px;">
@@ -78,9 +93,11 @@ const renderConfirmation = (b: BookingPayload): RenderedEmail => ({
     html: shell(
         `Hola ${firstName(b.guest_name)}, todo listo`,
         `<p>Tu reserva en <strong>${b.apartment_name}</strong> está confirmada. Te esperamos en Hinojares.</p>
+        ${apartmentPhoto(b)}
         ${bookingSummary(b)}
         <p>Unos días antes de tu llegada te mandaremos las instrucciones para entrar al apartamento, el horario de check-in y el formulario corto que la Guardia Civil nos pide para huéspedes. Mientras tanto, si necesitas cualquier cosa, escríbenos sin más.</p>
-        <p>Gracias por reservar directamente. Eso nos permite cuidarte mejor y mantener el precio justo.</p>`,
+        <p>Gracias por reservar directamente. Eso nos permite cuidarte mejor y mantener el precio justo.</p>
+        ${SIGNATURE}`,
         "Ver tu reserva",
         `${SITE_URL}/reservar/confirmada?code=${b.booking_code}`
     ),
@@ -92,13 +109,15 @@ const renderReminder7d = (b: BookingPayload): RenderedEmail => ({
     html: shell(
         `${firstName(b.guest_name)}, en una semana en Hinojares`,
         `<p>Queremos que el viaje empiece bien desde antes. Aquí tienes lo esencial:</p>
+        ${apartmentPhoto(b)}
         <ul style="padding-left:20px;color:#2C3319;">
           <li><strong>Cómo llegar:</strong> Hinojares está a la salida 314 de la A-44 (Madrid–Granada) → Quesada → Pozo Alcón. Aparcamiento gratis junto a la casa.</li>
           <li><strong>Tiempo:</strong> echa un ojo a la previsión un día antes. La sierra cambia rápido.</li>
           <li><strong>Qué traer:</strong> nosotros ponemos sábanas, toallas, menaje y leña para la chimenea. Tú trae ganas.</li>
         </ul>
         ${bookingSummary(b)}
-        <p>Si necesitas adelantar la entrada, retrasar la salida o tienes una alergia o preferencia que debamos saber, mándanos un mensaje hoy mismo.</p>`,
+        <p>Si necesitas adelantar la entrada, retrasar la salida o tienes una alergia o preferencia que debamos saber, mándanos un mensaje hoy mismo.</p>
+        ${SIGNATURE}`,
         "Ver guía de la zona",
         `${SITE_URL}/hinojares`
     ),
@@ -113,7 +132,8 @@ const renderReminder24h = (b: BookingPayload): RenderedEmail => ({
         <p><strong>Check-in:</strong> entre las 16:00 y las 20:00. Te recibimos en persona y te enseñamos la casa. Si vas a llegar fuera de ese horario, dinos por WhatsApp para coordinarnos.</p>
         <p><strong>Dirección:</strong> Calle Baja 1, 23486 Hinojares. Cuando llegues al pueblo, búscanos con Google Maps; cualquier vecino te indica también.</p>
         ${bookingSummary(b)}
-        <p>Te enviamos también el <strong>enlace al formulario de precheckin</strong> que tenemos que rellenar todos los huéspedes (obligación legal del Ministerio del Interior). Si lo completas antes, en la llegada solo nos chocamos los cinco y a disfrutar.</p>`,
+        <p>Te enviamos también el <strong>enlace al formulario de precheckin</strong> que tenemos que rellenar todos los huéspedes (obligación legal del Ministerio del Interior). Si lo completas antes, en la llegada solo nos chocamos los cinco y a disfrutar.</p>
+        ${SIGNATURE}`,
         "Rellenar precheckin",
         `${SITE_URL}/precheckin?code=${b.booking_code}`
     ),
@@ -131,7 +151,8 @@ const renderArrival = (b: BookingPayload): RenderedEmail => ({
           <li><strong>Chimenea:</strong> leña seca en la caja, papel y mecheros en el cajón. Si dudas, escríbenos antes de prenderla.</li>
         </ul>
         <p>Si echas algo en falta o algo no funciona como debe, dinos enseguida. Estamos cerca.</p>
-        <p>Disfruta de Hinojares.</p>`,
+        <p>Disfruta de Hinojares.</p>
+        ${SIGNATURE}`,
         "Qué hacer estos días",
         `${SITE_URL}/rutas`
     ),
@@ -146,7 +167,8 @@ const renderDeparture = (b: BookingPayload): RenderedEmail => ({
         <p><strong>Antes de salir:</strong> deja la llave en la cerradura por dentro y cierra la puerta. Si has dejado algo en la chimenea, retíralo si ya está frío.</p>
         <p>Mañana o pasado te escribiremos para que nos cuentes qué tal todo. Tus comentarios reales son lo que ayuda a otros viajeros a decidirse.</p>
         ${bookingSummary(b)}
-        <p>Hasta la próxima.</p>`
+        <p>Hasta la próxima.</p>
+        ${SIGNATURE}`
     ),
 });
 
@@ -157,7 +179,8 @@ const renderReviewRequest = (b: BookingPayload): RenderedEmail => ({
         `${firstName(b.guest_name)}, dos minutos de tu tiempo`,
         `<p>Volvemos a aparecer en tu bandeja porque tu opinión nos ayuda muchísimo. La sierra es pequeña y boca a boca todavía manda — una reseña en Google nos cambia el mes.</p>
         <p>Si tienes un par de minutos, cuéntanos qué tal la estancia: lo que estuvo bien y, sobre todo, lo que mejoraríamos. Sin filtros.</p>
-        <p>Y si vinisteis por Booking o Airbnb, allí también podéis dejarla y se agradece igual.</p>`,
+        <p>Y si vinisteis por Booking o Airbnb, allí también podéis dejarla y se agradece igual.</p>
+        ${SIGNATURE}`,
         "Dejar una reseña en Google",
         GOOGLE_REVIEW_URL
     ),
@@ -171,7 +194,8 @@ const renderReactivation = (b: BookingPayload): RenderedEmail => ({
         `<p>Hola ${firstName(b.guest_name)}, hace un mes te despedías de Hinojares.</p>
         <p>No te escribimos por escribir: como ya nos conoces y la reserva fue directa, te dejamos un código para que tu siguiente estancia (cuando te apetezca, sin prisa) salga un 10% más barata.</p>
         <p>Código: <strong style="font-family:'SF Mono',Menlo,monospace;background:#FCFBF9;padding:4px 10px;border-radius:6px;border:1px solid #F0EDE6;">VUELVE10</strong></p>
-        <p>Es para ti y caduca dentro de seis meses. Si no usas, no pasa nada — sigue siendo un placer haberte tenido aquí.</p>`,
+        <p>Es para ti y caduca dentro de seis meses. Si no usas, no pasa nada — sigue siendo un placer haberte tenido aquí.</p>
+        ${SIGNATURE}`,
         "Mirar fechas",
         `${SITE_URL}/reservar`
     ),

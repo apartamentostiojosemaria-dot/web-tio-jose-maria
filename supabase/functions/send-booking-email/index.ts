@@ -72,13 +72,13 @@ Deno.serve(async (req) => {
 
     const flag = TEMPLATE_TO_FLAG[template];
 
-    // Cargar booking + apartment
+    // Cargar booking + apartment (incluye images para mostrar foto en el email)
     const { data: booking, error: bErr } = await supabase
         .from("guest_bookings")
         .select(`id, booking_code, guest_name, guest_email, check_in, check_out,
                  total_price, apartment_id, status,
                  ${flag},
-                 apartments(name, slug)`)
+                 apartments(name, slug, images)`)
         .eq("booking_code", code)
         .single();
 
@@ -90,7 +90,8 @@ Deno.serve(async (req) => {
         return json(200, { ok: true, skipped: "already_sent", sentAt: booking[flag as keyof typeof booking] });
     }
 
-    const apt = (booking.apartments as unknown as { name: string; slug: string }) || { name: "Apartamento", slug: "" };
+    const apt = (booking.apartments as unknown as { name: string; slug: string; images?: string[] }) || { name: "Apartamento", slug: "" };
+    const firstImage = Array.isArray(apt.images) && apt.images.length > 0 ? apt.images[0] : null;
 
     const payload = {
         booking_code: booking.booking_code,
@@ -98,6 +99,7 @@ Deno.serve(async (req) => {
         guest_email: booking.guest_email,
         apartment_name: apt.name,
         apartment_slug: apt.slug,
+        apartment_image: firstImage,
         check_in: booking.check_in,
         check_out: booking.check_out,
         total_price: Number(booking.total_price),
