@@ -93,6 +93,22 @@ Deno.serve(async (req) => {
     const apt = (booking.apartments as unknown as { name: string; slug: string; images?: string[] }) || { name: "Apartamento", slug: "" };
     const firstImage = Array.isArray(apt.images) && apt.images.length > 0 ? apt.images[0] : null;
 
+    // Si es notificacion al operador: cargar warnings + tags + preferences del CRM
+    // para que Mari Carmen y Jesus vean el contexto del cliente inmediatamente.
+    let customer_warnings: string[] = [];
+    let customer_tags: string[] = [];
+    let customer_preferences: string | null = null;
+    if (template === "operator_new_booking") {
+        const emailKey = booking.guest_email.toLowerCase().trim();
+        const [{ data: notes }, { data: customer }] = await Promise.all([
+            supabase.from("customer_notes").select("body").eq("customer_email", emailKey).eq("is_warning", true).order("created_at", { ascending: false }),
+            supabase.from("customers").select("tags, preferences").eq("email", emailKey).maybeSingle(),
+        ]);
+        customer_warnings = (notes || []).map(n => n.body);
+        customer_tags = customer?.tags || [];
+        customer_preferences = customer?.preferences || null;
+    }
+
     const payload = {
         booking_code: booking.booking_code,
         guest_name: booking.guest_name,
@@ -103,6 +119,9 @@ Deno.serve(async (req) => {
         check_in: booking.check_in,
         check_out: booking.check_out,
         total_price: Number(booking.total_price),
+        customer_warnings,
+        customer_tags,
+        customer_preferences,
     };
 
     const { subject, html, from } = render(template, payload);

@@ -11,6 +11,9 @@ interface BookingPayload {
     apartment_name: string;
     apartment_slug: string;
     apartment_image?: string | null;
+    customer_warnings?: string[];
+    customer_tags?: string[];
+    customer_preferences?: string | null;
     check_in: string;
     check_out: string;
     total_price: number;
@@ -201,12 +204,31 @@ const renderReactivation = (b: BookingPayload): RenderedEmail => ({
     ),
 });
 
+// Bloque destacado en rojo cuando el cliente tiene historial relevante en su ficha CRM.
+const customerAlertsBlock = (b: BookingPayload): string => {
+    const warnings = b.customer_warnings || [];
+    const tags = b.customer_tags || [];
+    const prefs = b.customer_preferences;
+    if (warnings.length === 0 && tags.length === 0 && !prefs) return "";
+    const warningsHtml = warnings.length > 0
+        ? `<p style="margin:0 0 8px;font-weight:700;color:#991B1B;">⚠️ Avisos en su ficha:</p><ul style="margin:0 0 12px;padding-left:20px;color:#7F1D1D;">${warnings.map(w => `<li>${escapeHtml(w)}</li>`).join("")}</ul>`
+        : "";
+    const tagsHtml = tags.length > 0
+        ? `<p style="margin:0 0 4px;font-size:12px;color:#7F1D1D;"><strong>Etiquetas:</strong> ${tags.map(t => escapeHtml(t)).join(" · ")}</p>`
+        : "";
+    const prefsHtml = prefs
+        ? `<p style="margin:8px 0 0;font-size:13px;color:#7F1D1D;"><strong>Preferencias permanentes:</strong> ${escapeHtml(prefs)}</p>`
+        : "";
+    return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;margin:16px 0;"><tr><td style="padding:14px 18px;">${warningsHtml}${tagsHtml}${prefsHtml}</td></tr></table>`;
+};
+
 const renderOperatorNewBooking = (b: BookingPayload): RenderedEmail => ({
     from: EMAIL_FROM,
-    subject: `🎉 Nueva reserva ${b.booking_code} — ${b.apartment_name}`,
+    subject: `${(b.customer_warnings || []).length > 0 ? "⚠️ " : "🎉 "}Nueva reserva ${b.booking_code} — ${b.apartment_name}`,
     html: shell(
         `Nueva reserva confirmada`,
         `<p>Entra reserva nueva en el sistema. Datos al día:</p>
+        ${customerAlertsBlock(b)}
         ${bookingSummary(b)}
         <p><strong>Huésped:</strong> ${escapeHtml(b.guest_name)} · <a href="mailto:${b.guest_email}">${b.guest_email}</a></p>
         <p>Para gestionarla (factura, recordatorios, precheckin, notas internas) entra al panel.</p>`,
