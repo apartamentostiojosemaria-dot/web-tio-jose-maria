@@ -19,6 +19,7 @@ const SITE_URL = "https://tiojosemaria.com";
 const WHATSAPP_E164 = "+34676344675";
 const WHATSAPP_URL = "https://wa.me/34676344675";
 const EMAIL_FROM = "Tío José María <hola@tiojosemaria.com>";
+const GOOGLE_REVIEW_URL = "https://g.page/r/CTDH4snlte-aEBM/review";
 
 const formatDate = (s: string) => {
     const [y, m, d] = s.split("-");
@@ -154,11 +155,11 @@ const renderReviewRequest = (b: BookingPayload): RenderedEmail => ({
     subject: `¿Qué tal Tío José María?`,
     html: shell(
         `${firstName(b.guest_name)}, dos minutos de tu tiempo`,
-        `<p>Volvemos a aparecer en tu bandeja porque tu opinión nos ayuda muchísimo.</p>
-        <p>Si tienes un par de minutos, cuéntanos qué tal la estancia. Lo que ha estado bien y, sobre todo, lo que mejoraríamos. Sin filtros.</p>
-        <p>Si ya escribiste reseña en Booking o Airbnb, también lo agradecemos.</p>`,
-        "Escribir reseña",
-        `${SITE_URL}/opiniones?code=${b.booking_code}`
+        `<p>Volvemos a aparecer en tu bandeja porque tu opinión nos ayuda muchísimo. La sierra es pequeña y boca a boca todavía manda — una reseña en Google nos cambia el mes.</p>
+        <p>Si tienes un par de minutos, cuéntanos qué tal la estancia: lo que estuvo bien y, sobre todo, lo que mejoraríamos. Sin filtros.</p>
+        <p>Y si vinisteis por Booking o Airbnb, allí también podéis dejarla y se agradece igual.</p>`,
+        "Dejar una reseña en Google",
+        GOOGLE_REVIEW_URL
     ),
 });
 
