@@ -8,7 +8,8 @@ import {
     Users, Sparkles, Mountain, ChefHat, Tent, ShieldAlert, Info,
     ExternalLink, FileText, Flame, Home, Download,
     UtensilsCrossed, ThermometerSun, Shirt, DoorOpen, Clock, Key,
-    ArrowRight, Loader2, Utensils, Play, AlertCircle,
+    ArrowRight, Loader2, Utensils, Play, AlertCircle, Receipt, History,
+    CheckCircle, XCircle, CalendarCheck,
 } from 'lucide-react';
 import {
     useGuestGuides, useApartmentInstructions, useMyDiscountCodes, useLocalPlaces,
@@ -37,7 +38,9 @@ const GUIDE_CATEGORIES = [
 const ClientArea = () => {
     const [user, setUser] = useState(null);
     const [profile, setProfile] = useState(null);
-    const [booking, setBooking] = useState(null);
+    const [allBookings, setAllBookings] = useState([]);
+    const [activeBooking, setActiveBooking] = useState(null);
+    const [invoices, setInvoices] = useState([]);
     const [guidebook, setGuidebook] = useState(null);
     const [addons, setAddons] = useState([]);
     const [docs, setDocs] = useState([]);
@@ -68,25 +71,42 @@ const ClientArea = () => {
             if (p?.is_active === false) { setAccessDenied(true); setLoading(false); return; }
             setProfile(p);
 
-            const { data: b } = await supabase
+            // TODAS las reservas del huésped (cualquier estado, ordenadas check_in desc)
+            const { data: bookings } = await supabase
                 .from('guest_bookings')
                 .select('*, apartments(id, name, slug, images, description)')
                 .ilike('guest_email', authUser.email)
-                .in('status', ['confirmed', 'completed'])
-                .order('check_in', { ascending: false })
-                .limit(1)
-                .maybeSingle();
-            setBooking(b);
+                .order('check_in', { ascending: false });
+            const list = bookings || [];
+            setAllBookings(list);
 
-            if (b?.apartment_id) {
-                const { data: g } = await supabase.from('guidebooks').select('*').eq('apartment_id', b.apartment_id).maybeSingle();
+            // Determinar reserva activa: la próxima/actual (in stay o futura). Fallback: la más reciente.
+            const today = new Date().toISOString().slice(0, 10);
+            const upcoming = list.find(b =>
+                ['confirmed', 'completed'].includes(b.status) &&
+                b.check_out >= today
+            ) || list.find(b => ['confirmed', 'completed'].includes(b.status));
+            setActiveBooking(upcoming || null);
+
+            // Facturas de TODAS las reservas
+            const bookingIds = list.map(b => b.id);
+            if (bookingIds.length > 0) {
+                const { data: inv } = await supabase.from('invoices')
+                    .select('*')
+                    .in('booking_id', bookingIds)
+                    .order('fecha_emision', { ascending: false });
+                setInvoices(inv || []);
+            }
+
+            if (upcoming?.apartment_id) {
+                const { data: g } = await supabase.from('guidebooks').select('*').eq('apartment_id', upcoming.apartment_id).maybeSingle();
                 setGuidebook(g);
                 const { data: ad } = await supabase.from('addons').select('*').eq('active', true)
-                    .or(`apartment_id.is.null,apartment_id.eq.${b.apartment_id}`).order('sort_order');
+                    .or(`apartment_id.is.null,apartment_id.eq.${upcoming.apartment_id}`).order('sort_order');
                 setAddons(ad || []);
             }
 
-            // Documentos accesibles al huésped
+            // Documentos generales
             const { data: dx } = await supabase.from('documents')
                 .select('*')
                 .or(`visibility.eq.publico,visibility.eq.solo_clientes,profile_id.eq.${authUser.id}`)
@@ -103,7 +123,8 @@ const ClientArea = () => {
     if (accessDenied) return <AccessDenied onLogout={handleLogout} />;
     if (!user) return <div className="min-h-screen flex items-center justify-center"><Link to="/clientes" className="text-rural-700 font-bold">Iniciar sesión</Link></div>;
 
-    return <Layout profile={profile} booking={booking} guidebook={guidebook} addons={addons} docs={docs}
+    return <Layout profile={profile} booking={activeBooking} allBookings={allBookings} invoices={invoices}
+        guidebook={guidebook} addons={addons} docs={docs}
         onLogout={handleLogout} userEmail={user.email} />;
 };
 
@@ -111,7 +132,7 @@ const ClientArea = () => {
 // Layout con menú de secciones (tabs)
 // ────────────────────────────────────────────────────────────────────────────
 
-const Layout = ({ profile, booking, guidebook, addons, docs, onLogout, userEmail }) => {
+const Layout = ({ profile, booking, allBookings, invoices, guidebook, addons, docs, onLogout, userEmail }) => {
     const [activeSection, setActiveSection] = useState('estancia');
     const [activeSheet, setActiveSheet] = useState(null);
 
@@ -125,12 +146,13 @@ const Layout = ({ profile, booking, guidebook, addons, docs, onLogout, userEmail
         : 'after';
 
     const SECTIONS = [
-        { key: 'estancia',  label: 'Mi estancia', icon: Home },
-        { key: 'apartamento', label: 'Apartamento', icon: Key },
-        { key: 'guia',      label: 'Guía',        icon: BookOpen },
-        { key: 'zona',      label: 'La zona',     icon: MapPin },
-        { key: 'extras',    label: 'Extras',      icon: ShoppingBag, hide: phase !== 'before' || addons.length === 0 },
-        { key: 'docs',      label: 'Documentos',  icon: FileText },
+        { key: 'estancia',    label: 'Mi estancia', icon: Home, hide: !booking },
+        { key: 'apartamento', label: 'Apartamento', icon: Key, hide: !booking },
+        { key: 'guia',        label: 'Guía',        icon: BookOpen },
+        { key: 'zona',        label: 'La zona',     icon: MapPin },
+        { key: 'extras',      label: 'Extras',      icon: ShoppingBag, hide: phase !== 'before' || addons.length === 0 },
+        { key: 'reservas',    label: 'Mis reservas', icon: History },
+        { key: 'docs',        label: 'Documentos',  icon: FileText },
     ].filter(s => !s.hide);
 
     return (
@@ -173,6 +195,7 @@ const Layout = ({ profile, booking, guidebook, addons, docs, onLogout, userEmail
                                 {activeSection === 'guia'        && <GuidePanel />}
                                 {activeSection === 'zona'        && <ZonePanel />}
                                 {activeSection === 'extras'      && <ExtrasPanel addons={addons} booking={booking} onOpen={setActiveSheet} />}
+                                {activeSection === 'reservas'    && <BookingsPanel allBookings={allBookings} invoices={invoices} activeBookingId={booking?.id} />}
                                 {activeSection === 'docs'        && <DocsPanel docs={docs} phase={phase} />}
                             </motion.div>
                         </AnimatePresence>
@@ -561,6 +584,238 @@ const ExtrasPanel = ({ addons, booking, onOpen }) => (
         ))}
     </div>
 );
+
+// ────────────────────────────────────────────────────────────────────────────
+// PANEL: Mis reservas (histórico completo + facturas)
+// ────────────────────────────────────────────────────────────────────────────
+
+const BOOKING_STATUS = {
+    hold:      { label: 'Pendiente de pago', cls: 'bg-blue-50 text-blue-700 border-blue-200',     icon: Clock },
+    pending:   { label: 'Sin confirmar',     cls: 'bg-amber-50 text-amber-700 border-amber-200',   icon: Clock },
+    confirmed: { label: 'Confirmada',        cls: 'bg-green-50 text-green-700 border-green-200',   icon: CheckCircle },
+    completed: { label: 'Finalizada',        cls: 'bg-gray-100 text-gray-700 border-gray-200',     icon: CalendarCheck },
+    cancelled: { label: 'Cancelada',         cls: 'bg-red-50 text-red-700 border-red-200',         icon: XCircle },
+    expired:   { label: 'Caducada',          cls: 'bg-gray-100 text-gray-500 border-gray-200',     icon: XCircle },
+};
+
+const BookingsPanel = ({ allBookings, invoices, activeBookingId }) => {
+    if (allBookings.length === 0) {
+        return <EmptyState message="No tienes reservas todavía." />;
+    }
+
+    // Separar activas/futuras vs pasadas/canceladas
+    const today = new Date().toISOString().slice(0, 10);
+    const upcoming = allBookings.filter(b =>
+        ['confirmed', 'completed'].includes(b.status) && b.check_out >= today
+    );
+    const past = allBookings.filter(b =>
+        b.check_out < today || ['cancelled', 'expired'].includes(b.status)
+    );
+
+    const invoicesByBooking = invoices.reduce((acc, inv) => {
+        if (!acc[inv.booking_id]) acc[inv.booking_id] = [];
+        acc[inv.booking_id].push(inv);
+        return acc;
+    }, {});
+
+    return (
+        <div className="space-y-5">
+            {upcoming.length > 0 && (
+                <Section title={upcoming.length === 1 ? 'Tu próxima estancia' : 'Estancias próximas'}>
+                    <div className="space-y-2">
+                        {upcoming.map(b => (
+                            <BookingCard key={b.id} booking={b}
+                                invoices={invoicesByBooking[b.id] || []}
+                                isActive={b.id === activeBookingId} />
+                        ))}
+                    </div>
+                </Section>
+            )}
+
+            {past.length > 0 && (
+                <Section title="Historial" icon={History}>
+                    <div className="space-y-2">
+                        {past.map(b => (
+                            <BookingCard key={b.id} booking={b}
+                                invoices={invoicesByBooking[b.id] || []} />
+                        ))}
+                    </div>
+                </Section>
+            )}
+
+            {/* Resumen del huésped */}
+            <Section title="Tu balance con nosotros">
+                <BalanceCard allBookings={allBookings} invoices={invoices} />
+            </Section>
+        </div>
+    );
+};
+
+const BookingCard = ({ booking, invoices, isActive }) => {
+    const [expanded, setExpanded] = useState(isActive);
+    const status = BOOKING_STATUS[booking.status] || BOOKING_STATUS.pending;
+    const StatusIcon = status.icon;
+    const nights = daysBetween(booking.check_in, booking.check_out);
+    const apt = booking.apartments;
+
+    return (
+        <div className={`bg-white rounded-xl border overflow-hidden ${isActive ? 'border-rural-300 ring-2 ring-rural-100' : 'border-gray-200'}`}>
+            <button onClick={() => setExpanded(e => !e)}
+                className="w-full p-3 flex items-center gap-3 hover:bg-gray-50 active:bg-gray-100 text-left">
+                {apt?.images?.[0] ? (
+                    <img src={apt.images[0]} alt={apt.name} className="w-14 h-14 rounded-lg object-cover shrink-0" />
+                ) : (
+                    <div className="w-14 h-14 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                        <Home size={18} className="text-gray-400" />
+                    </div>
+                )}
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                        <span className={`inline-flex items-center gap-1 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border ${status.cls}`}>
+                            <StatusIcon size={9} /> {status.label}
+                        </span>
+                        {isActive && <span className="text-[10px] font-bold text-rural-700">Activa</span>}
+                    </div>
+                    <p className="font-bold text-sm text-gray-900 truncate">{apt?.name || 'Apartamento'}</p>
+                    <p className="text-xs text-gray-500 tabular-nums">
+                        {new Date(booking.check_in).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                        {' → '}
+                        {new Date(booking.check_out).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </p>
+                </div>
+                <div className="text-right shrink-0">
+                    {booking.total_price && (
+                        <p className="font-bold text-sm text-gray-900 tabular-nums">{Math.round(booking.total_price)} €</p>
+                    )}
+                    <ChevronDown size={14} className={`text-gray-400 transition-transform ml-auto mt-1 ${expanded ? 'rotate-180' : ''}`} />
+                </div>
+            </button>
+
+            <AnimatePresence>
+                {expanded && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }} className="overflow-hidden">
+                        <div className="px-4 pb-4 pt-1 space-y-3 text-sm border-t border-gray-100">
+                            {/* Detalles */}
+                            <div className="grid grid-cols-2 gap-3 pt-3">
+                                <DetailMini label="Código" value={<span className="font-mono">{booking.booking_code || `#${booking.id}`}</span>} />
+                                <DetailMini label="Personas" value={booking.pax_count} />
+                                <DetailMini label="Noches" value={nights} />
+                                <DetailMini label="Origen" value={booking.source || 'Web'} className="capitalize" />
+                            </div>
+
+                            {/* Pago */}
+                            <div className="pt-3 border-t border-gray-100">
+                                <p className="text-[10px] uppercase font-bold text-gray-500 mb-1">Pago</p>
+                                <p className="text-sm text-gray-900">
+                                    {booking.payment_status === 'paid' && '✓ Pagado online'}
+                                    {booking.payment_status === 'paid_offline' && '✓ Pagado en efectivo / transferencia'}
+                                    {booking.payment_status === 'partial' && 'Pagada la señal'}
+                                    {booking.payment_status === 'refunded' && 'Reembolsado'}
+                                    {booking.payment_status === 'failed' && 'Pago fallido'}
+                                    {(!booking.payment_status || booking.payment_status === 'pending') && 'Pendiente'}
+                                </p>
+                            </div>
+
+                            {/* Facturas */}
+                            {invoices.length > 0 && (
+                                <div className="pt-3 border-t border-gray-100">
+                                    <p className="text-[10px] uppercase font-bold text-gray-500 mb-2 flex items-center gap-1">
+                                        <Receipt size={11} /> Facturas
+                                    </p>
+                                    <div className="space-y-1.5">
+                                        {invoices.map(inv => (
+                                            <div key={inv.id} className="flex items-center justify-between gap-2 p-2.5 bg-gray-50 rounded-lg">
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="text-xs font-bold text-gray-900 truncate">
+                                                        {inv.serie}-{inv.numero}
+                                                        {inv.tipo === 'rectificativa' && <span className="ml-2 text-[9px] uppercase font-bold text-red-600">Rectificativa</span>}
+                                                    </p>
+                                                    <p className="text-[10px] text-gray-500">
+                                                        {inv.fecha_emision && new Date(inv.fecha_emision).toLocaleDateString('es-ES')}
+                                                        {inv.total && ` · ${Number(inv.total).toFixed(2)} €`}
+                                                    </p>
+                                                </div>
+                                                {inv.pdf_url ? (
+                                                    <a href={inv.pdf_url} target="_blank" rel="noopener noreferrer"
+                                                        className="w-8 h-8 rounded-lg bg-white border border-gray-200 hover:bg-rural-700 hover:text-white text-gray-600 flex items-center justify-center transition-all shrink-0">
+                                                        <Download size={13} />
+                                                    </a>
+                                                ) : (
+                                                    <span className="text-[10px] text-gray-400 italic">PDF pendiente</span>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Si no hay factura pero la reserva está confirmada/completada, indicarlo */}
+                            {invoices.length === 0 && ['confirmed', 'completed'].includes(booking.status) && booking.total_price && (
+                                <div className="pt-3 border-t border-gray-100">
+                                    <p className="text-[10px] uppercase font-bold text-gray-500 mb-1 flex items-center gap-1">
+                                        <Receipt size={11} /> Factura
+                                    </p>
+                                    <p className="text-xs text-gray-500 italic">Aún no se ha emitido. Si la necesitas, pídela por WhatsApp.</p>
+                                </div>
+                            )}
+
+                            {booking.notes && (
+                                <div className="pt-3 border-t border-gray-100">
+                                    <p className="text-[10px] uppercase font-bold text-gray-500 mb-1">Notas</p>
+                                    <p className="text-xs text-gray-700">{booking.notes}</p>
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+};
+
+const DetailMini = ({ label, value, className = '' }) => (
+    <div>
+        <p className="text-[10px] uppercase font-bold text-gray-500">{label}</p>
+        <p className={`text-sm text-gray-900 mt-0.5 ${className}`}>{value}</p>
+    </div>
+);
+
+const BalanceCard = ({ allBookings, invoices }) => {
+    const confirmed = allBookings.filter(b => ['confirmed', 'completed'].includes(b.status));
+    const totalSpent = confirmed.reduce((s, b) => s + Number(b.total_price || 0), 0);
+    const totalNights = confirmed.reduce((s, b) => s + daysBetween(b.check_in, b.check_out), 0);
+    const firstStay = confirmed.length ? [...confirmed].sort((a, b) => a.check_in.localeCompare(b.check_in))[0] : null;
+
+    return (
+        <div className="bg-gradient-to-br from-rural-700 to-rural-800 rounded-xl p-5 text-white">
+            <div className="grid grid-cols-3 gap-3 text-center">
+                <div>
+                    <p className="text-[10px] uppercase tracking-widest font-bold opacity-70">Estancias</p>
+                    <p className="text-2xl font-serif font-bold mt-1">{confirmed.length}</p>
+                </div>
+                <div>
+                    <p className="text-[10px] uppercase tracking-widest font-bold opacity-70">Noches</p>
+                    <p className="text-2xl font-serif font-bold mt-1">{totalNights}</p>
+                </div>
+                <div>
+                    <p className="text-[10px] uppercase tracking-widest font-bold opacity-70">Total</p>
+                    <p className="text-2xl font-serif font-bold mt-1 tabular-nums">{Math.round(totalSpent)} €</p>
+                </div>
+            </div>
+            {firstStay && (
+                <p className="text-xs opacity-70 text-center mt-4 pt-3 border-t border-white/20">
+                    Primera vez con nosotros: {new Date(firstStay.check_in).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
+                </p>
+            )}
+            {invoices.length > 0 && (
+                <p className="text-xs opacity-70 text-center mt-2">
+                    {invoices.length} {invoices.length === 1 ? 'factura emitida' : 'facturas emitidas'}
+                </p>
+            )}
+        </div>
+    );
+};
 
 // ────────────────────────────────────────────────────────────────────────────
 // PANEL: Documentos + descuento
