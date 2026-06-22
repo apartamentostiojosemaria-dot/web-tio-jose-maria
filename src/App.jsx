@@ -37,6 +37,8 @@ const ReservaConfirmada = lazy(() => import('./pages/ReservaConfirmada'));
 const PrecheckinPage = lazy(() => import('./pages/PrecheckinPage'));
 const AdminLogin = lazy(() => import('./components/admin/AdminLogin'));
 const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard'));
+const ClientLogin = lazy(() => import('./components/client/ClientLogin'));
+const ClientArea = lazy(() => import('./components/client/ClientArea'));
 const AdminResponse = lazy(() => import('./pages/AdminResponse'));
 const BlogPage = lazy(() => import('./pages/BlogPage'));
 const BlogPostDetail = lazy(() => import('./pages/BlogPostDetail'));
@@ -148,7 +150,14 @@ export default function App() {
                             }
                         />
                         <Route path="/admin/respuesta" element={<AdminResponse />} />
-                        <Route path="/clientes" element={<Navigate to="/" replace />} />
+                        <Route
+                            path="/clientes"
+                            element={
+                                !session
+                                    ? <ClientLogin />
+                                    : <ClientArea />
+                            }
+                        />
                         <Route path="*" element={<NotFound />} />
                     </Routes>
                 </div>
