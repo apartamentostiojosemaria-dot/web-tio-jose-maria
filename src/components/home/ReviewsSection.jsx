@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { imgAttrs } from '../../utils/supabaseImage';
 
 // Paleta tierra/olivo coherente con la marca para los avatares de iniciales.
 const AVATAR_COLORS = [
@@ -160,7 +161,7 @@ const ReviewsSection = ({ reviews }) => {
                                         <div className="flex items-center gap-2.5">
                                             {rev.avatarUrl ? (
                                                 <img
-                                                    src={rev.avatarUrl}
+                                                    {...imgAttrs(rev.avatarUrl, { width: 64, height: 64, quality: 78 })}
                                                     alt={rev.name}
                                                     loading="lazy"
                                                     className="w-8 h-8 rounded-full object-cover"

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { MapPin, Map, ArrowRight } from 'lucide-react';
 import FadeInUp from '../shared/FadeInUp';
 import { WP } from '../../constants/urls';
+import { imgAttrs } from '../../utils/supabaseImage';
 
 // Leaflet pesa ~146 KB. Lo aislamos en su propio chunk y solo lo cargamos
 // cuando la seccion del mapa entra en viewport — la mayoria de visitantes
@@ -95,7 +96,7 @@ const EntornoSection = ({ places, routes }) => {
                     {gridImages.map((img, i) => (
                         <FadeInUp key={i} delay={0.2 + i * 0.1}>
                             <img
-                                src={img.src}
+                                {...imgAttrs(img.src, { width: 500, height: 320, quality: 78 })}
                                 alt={img.alt}
                                 loading="lazy"
                                 decoding="async"

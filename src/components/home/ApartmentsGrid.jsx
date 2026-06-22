@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Flame, Wifi, Tv, UtensilsCrossed, Baby, Eye } from 'lucide-react';
 import FadeInUp from '../shared/FadeInUp';
 import { WP, whatsappLink } from '../../constants/urls';
+import { imgAttrs } from '../../utils/supabaseImage';
 
 const ApartmentsGrid = ({ apartments }) => {
     const defaultApartments = [
@@ -42,7 +43,13 @@ const ApartmentsGrid = ({ apartments }) => {
                             <Link to={apt.href} className="block group h-full">
                                 <article className="bg-white rounded-2xl overflow-hidden shadow-lg border border-transparent hover:border-accent transition-all duration-500 group-hover:shadow-2xl group-hover:-translate-y-2 h-full flex flex-col">
                                     <div className="h-72 overflow-hidden relative flex-shrink-0">
-                                        <img src={apt.img} alt={`Apartamento ${apt.name} - Casa Rural Tío José María`} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                        <img
+                                            {...imgAttrs(apt.img, { width: 720, height: 480, quality: 78 })}
+                                            alt={`Apartamento ${apt.name} - Casa Rural Tío José María`}
+                                            loading="lazy"
+                                            decoding="async"
+                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                        />
                                         <div className="absolute top-5 right-5 bg-white px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm text-rural-900">
                                             {apt.tag}
                                         </div>

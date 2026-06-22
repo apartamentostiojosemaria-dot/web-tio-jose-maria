@@ -7,6 +7,7 @@ import { BreadcrumbJsonLd, TouristDestinationJsonLd, FAQPageJsonLd, HowToJsonLd 
 import { WP } from '../constants/urls';
 import { useLocalPlaces } from '../hooks/useDatabase';
 import FadeInUp from '../components/shared/FadeInUp';
+import { imgAttrs } from '../utils/supabaseImage';
 
 const TYPE_CONFIG = {
     restaurante: { icon: Utensils, label: 'Restaurantes', color: 'var(--color-place-restaurant)' },
@@ -141,7 +142,13 @@ export default function HinojaresPage() {
             {/* Hero */}
             <section className="relative h-[70vh] min-h-[500px] flex items-end overflow-hidden">
                 <div className="absolute inset-0">
-                    <img src={`${WP}/hinojaresPueblo.jpg`} alt="Hinojares pueblo blanco" fetchpriority="high" decoding="async" className="w-full h-full object-cover" />
+                    <img
+                        {...imgAttrs(`${WP}/hinojaresPueblo.jpg`, { width: 1600, quality: 78 })}
+                        alt="Hinojares pueblo blanco"
+                        fetchpriority="high"
+                        decoding="async"
+                        className="w-full h-full object-cover"
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                 </div>
                 <div className="relative z-10 max-w-7xl mx-auto w-full px-6 pb-16">

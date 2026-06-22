@@ -1,5 +1,6 @@
 import FadeInUp from '../shared/FadeInUp';
 import { WP } from '../../constants/urls';
+import { imgAttrs } from '../../utils/supabaseImage';
 
 const DEFAULT_INTRO_TEXT = `Bienvenidos a Tío José María. Ubicados en el sur del Parque Natural de Cazorla, nuestros 4 apartamentos combinan la arquitectura tradicional andaluza con el confort moderno.\n\nMuros de piedra, techos de vigas de madera y el calor de la chimenea te esperan. Ideal para parejas que buscan intimidad o familias que desean reconectar con la naturaleza.`;
 const DEFAULT_HEADING = 'Más que una casa rural, es historia viva.';
@@ -43,7 +44,7 @@ const IntroSection = ({ config = {}, text }) => {
                 <FadeInUp>
                     <div className="relative">
                         <img
-                            src={imageUrl}
+                            {...imgAttrs(imageUrl, { width: 1000, height: 700, quality: 80 })}
                             alt="Interior rústico de los apartamentos Tío José María"
                             loading="lazy"
                             decoding="async"

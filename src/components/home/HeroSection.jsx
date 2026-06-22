@@ -1,5 +1,6 @@
 import WeatherWidget from '../WeatherWidget';
 import { WP, WHATSAPP_URL } from '../../constants/urls';
+import { imgAttrs } from '../../utils/supabaseImage';
 
 const DEFAULT_HERO_IMAGE = `${WP}/slide1.jpg`;
 const DEFAULT_LOCATION = 'Hinojares, Jaén';
@@ -18,9 +19,11 @@ const HeroSection = ({ title, subtitle, config = {} }) => {
     return (
         <header className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden">
             <div className="absolute inset-0 z-0">
-                {/* Imagen como fallback (LCP), siempre presente */}
+                {/* Imagen como fallback (LCP), siempre presente.
+                    Si hero_image_url está en Supabase Storage se sirve webp + srcset
+                    (mucho mejor LCP). Para URLs WordPress se devuelve sin tocar. */}
                 <img
-                    src={heroImage}
+                    {...imgAttrs(heroImage, { width: 1600, quality: 78 })}
                     alt="Vista panorámica de Casa Rural Tío José María en Hinojares"
                     fetchpriority="high"
                     decoding="async"

@@ -72,6 +72,17 @@ export default defineConfig({
                         },
                     },
                     {
+                        // Cache Supabase Storage images (object + render image transform)
+                        // Las imágenes webp/srcset generadas por el optimizador caen aquí.
+                        urlPattern: /^https:\/\/.*\.supabase\.co\/storage\/v1\/(?:object|render\/image)\/public\/.*/i,
+                        handler: 'CacheFirst',
+                        options: {
+                            cacheName: 'supabase-storage-images',
+                            expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 },
+                            cacheableResponse: { statuses: [0, 200] },
+                        },
+                    },
+                    {
                         // Cache images from Unsplash and other CDNs
                         urlPattern: /^https:\/\/images\.unsplash\.com\/.*/i,
                         handler: 'CacheFirst',
