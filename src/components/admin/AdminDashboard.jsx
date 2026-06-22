@@ -11,6 +11,7 @@ import {
 // Operaciones core (carga inmediata, son los más usados)
 import AdminHome from './AdminHome';
 import BookingsManagerV2 from './BookingsManagerV2';
+import HelpButton from './HelpButton';
 
 // Resto lazy para no añadir bytes al primer paint
 const ApartmentsManager     = lazy(() => import('./ApartmentsManager'));
@@ -37,6 +38,8 @@ const ChannelSyncManager    = lazy(() => import('./ChannelSyncManager'));
 const BotLogsManager        = lazy(() => import('./BotLogsManager'));
 const PlanningCalendar      = lazy(() => import('./PlanningCalendar'));
 const Customer360           = lazy(() => import('./Customer360'));
+const ProtocolsManager      = lazy(() => import('./ProtocolsManager'));
+const InternalDocsManager   = lazy(() => import('./InternalDocsManager'));
 
 // Sidebar pensado para personas sin formación técnica.
 // Cero anglicismos, cero jerga, cero acrónimos.
@@ -82,11 +85,18 @@ const NAV_GROUPS = [
         ],
     },
     {
+        title: 'Ayuda',
+        items: [
+            { id: 'protocols',       label: 'Manual y protocolos',  icon: BookOpen },
+            { id: 'internal_docs',   label: 'Documentos internos',  icon: FileText },
+        ],
+    },
+    {
         title: 'Más',
         items: [
             { id: 'bot_logs',     label: 'Conversaciones del asistente', icon: Bot },
             { id: 'analitica',    label: 'Estadísticas',                 icon: BarChart3 },
-            { id: 'documentos',   label: 'Documentos',                   icon: FileText },
+            { id: 'documentos',   label: 'Documentos para huéspedes',    icon: FileText },
             { id: 'qrcodes',      label: 'Códigos QR',                   icon: QrCode },
             { id: 'configuracion',label: 'Ajustes generales',            icon: Settings },
         ],
@@ -175,6 +185,8 @@ const AdminDashboard = () => {
                     {activeTab === 'blog'           && <BlogManager />}
                     {activeTab === 'guias'          && <GuestGuidesManager />}
                     {activeTab === 'instrucciones'  && <InstructionsManager />}
+                    {activeTab === 'protocols'      && <ProtocolsManager />}
+                    {activeTab === 'internal_docs'  && <InternalDocsManager />}
                     {activeTab === 'bot_logs'       && <BotLogsManager />}
                     {activeTab === 'analitica'      && <AnalyticsDashboard />}
                     {activeTab === 'documentos'     && <DocumentsManager />}
@@ -182,6 +194,9 @@ const AdminDashboard = () => {
                     {activeTab === 'configuracion'  && <WebConfigManager />}
                 </Suspense>
             </main>
+
+            {/* Botón "?" flotante. No aparece en la vista de protocolos (sería redundante). */}
+            {activeTab !== 'protocols' && <HelpButton tabId={activeTab} onNavigate={go} />}
         </div>
     );
 };
