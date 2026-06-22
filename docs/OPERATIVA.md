@@ -242,7 +242,61 @@ supabase functions deploy send-booking-email --project-ref nmtukksbzbnuzqsksdmw 
 3. Para probar los recordatorios sin esperar al cron real, en
    cloud.trigger.dev → tasks → `daily-booking-emails` → "Test task".
 
-## 7. Roadmap pendiente — construir lo que MisterPlan hace hoy
+## 7. Sprint 7 — SES.HOSPEDAJES (RD 933/2021)
+
+### 7.1. Trámites del operador (bloquean activación real)
+
+Sin estos dos pasos el sistema corre en STUB MODE: genera el XML del parte,
+lo guarda en `traveler_records.mir_response_payload` y marca `submitted_at`
+con status=`stub_no_credentials`. Esto sirve para validar el flujo y los
+datos, pero NO transmite al MIR.
+
+1. **Certificado digital FNMT** de Jesús Martínez Sánchez (persona física).
+   - cl.sede.fnmt.gob.es → "Obtenga su certificado de Persona Física".
+   - Validación presencial: AEAT o Ayuntamiento de Hinojares (cita previa).
+   - Plazo realista: 1-2 semanas.
+2. **Alta como sujeto obligado** en sede.mir.gob.es:
+   - Web → Servicios → Hospedajes → arrendador de vivienda turística (VTAR).
+   - Acceso con el certificado del paso 1.
+   - Obtienes: usuario, clave de panel, **código de establecimiento**, y
+     credenciales API (cert.cliente para conexión M2M).
+3. Solicitar el **certificado de cliente API** (separado del FNMT personal).
+   Lo emite el MIR para conexiones máquina-a-máquina contra su API.
+
+### 7.2. Despliegue del módulo (cuando los trámites estén)
+
+Secrets en Supabase Edge Functions:
+
+| Secret | Valor |
+|---|---|
+| `SES_API_ENDPOINT` | `https://sede.mir.gob.es/ses-hospedajes/api/v1/comunicaciones` (producción) |
+| `SES_ESTABLISHMENT_CODE` | el código que da el MIR al alta |
+| `SES_CLIENT_CERT_PEM` | certificado X.509 PEM del cert.cliente |
+| `SES_CLIENT_KEY_PEM` | clave privada PEM |
+
+```bash
+supabase functions deploy submit-ses-hospedajes --project-ref nmtukksbzbnuzqsksdmw --no-verify-jwt
+```
+
+En `tjm-jobs/` (Trigger.dev): la task `daily-ses-submit` ya está definida
+(cron diario 10:00 Madrid). Se despliega junto con `npm run deploy`.
+
+### 7.3. Hasta entonces — STUB MODE
+
+Sin `SES_API_ENDPOINT` configurado, la edge function:
+
+1. Recoge los `traveler_records` con `submitted_at IS NULL` cuyo booking ya
+   tenga `check_in <= hoy`.
+2. Genera el XML completo del Anexo III RD 933/2021.
+3. Lo guarda en `mir_response_payload` y marca `submitted_at` con
+   `mir_response_status = stub_no_credentials`.
+
+Esto te permite validar que los datos del formulario son correctos antes
+de tener la integración real. Cuando llegue el cert.cliente, simplemente
+configuras `SES_API_ENDPOINT` y `SES_*_CERT` y los siguientes envíos van
+de verdad al MIR.
+
+## 8. Roadmap pendiente
 
 El alojamiento sigue pagando MisterPlan hasta que el sistema propio lo cubra.
 Sprints adicionales planificados en `brief.md` (sección "Sprints PENDIENTES"):
