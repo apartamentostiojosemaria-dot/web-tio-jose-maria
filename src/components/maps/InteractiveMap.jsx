@@ -18,8 +18,8 @@ const DIFFICULTY_ICONS = {
     'Alta': '🔴',
 };
 
-// Hinojares center
-const CENTER = [37.78, -2.99];
+// Hinojares (casco urbano, Calle Baja) — coords verificadas
+const CENTER = [37.71547, -2.99907];
 const DEFAULT_ZOOM = 10;
 
 const InteractiveMap = ({ routes, selectedRoute, onSelectRoute, compact = false }) => {
@@ -53,7 +53,7 @@ const InteractiveMap = ({ routes, selectedRoute, onSelectRoute, compact = false 
             iconAnchor: [18, 18],
         });
 
-        L.marker([37.7825, -2.9920], { icon: homeIcon })
+        L.marker([37.71547, -2.99907], { icon: homeIcon })
             .addTo(map)
             .bindPopup(`
                 <div style="text-align:center;font-family:serif;">

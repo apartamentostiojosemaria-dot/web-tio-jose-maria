@@ -28,9 +28,9 @@ const WeatherWidget = ({ isMinimal = false, stayDates = null }) => {
     const [weather, setWeather] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Coordenadas de Hinojares, Jaén
-    const LAT = 37.7167;
-    const LON = -2.9;
+    // Coordenadas de Hinojares, Jaén (casco urbano, verificadas)
+    const LAT = 37.71547;
+    const LON = -2.99907;
 
     useEffect(() => {
         const fetchWeather = async () => {

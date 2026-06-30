@@ -149,8 +149,8 @@ export const TouristDestinationJsonLd = () => {
         image: 'https://tiojosemaria.com/og-default.jpg',
         geo: {
             '@type': 'GeoCoordinates',
-            latitude: 37.7167,
-            longitude: -2.9
+            latitude: 37.71547,
+            longitude: -2.99907
         },
         address: {
             '@type': 'PostalAddress',
