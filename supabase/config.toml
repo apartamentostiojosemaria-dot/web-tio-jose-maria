@@ -1,0 +1,75 @@
+# Config de Supabase CLI. Declara verify_jwt POR FUNCIÓN, reflejando el estado
+# realmente desplegado (ver MANIFEST.md). Si en el futuro se despliega vía
+# `supabase functions deploy`, estos valores evitan reintroducir desfase.
+# El proyecto se ha venido desplegando vía MCP; este archivo documenta la verdad.
+
+project_id = "nmtukksbzbnuzqsksdmw"
+
+# --- Públicas / webhooks / cron (verify_jwt = false; con su propia defensa) ---
+[functions.notify-booking]
+verify_jwt = false
+
+[functions.booking-status-update]
+verify_jwt = false
+
+[functions.upload-from-url]
+verify_jwt = false
+
+[functions.request-review]
+verify_jwt = false
+
+[functions.send-guide]
+verify_jwt = false
+
+[functions.send-booking-email]
+verify_jwt = false
+
+[functions.send-booking-reminders]
+verify_jwt = false
+
+[functions.sync-ical-imports]
+verify_jwt = false
+
+[functions.ical-export]
+verify_jwt = false
+
+[functions.create-payment-session]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.monthly-owner-report]
+verify_jwt = false
+
+[functions.request-otp]
+verify_jwt = false
+
+[functions.verify-otp]
+verify_jwt = false
+
+# --- Con JWT (panel admin autenticado) ---
+[functions.triage-message]
+verify_jwt = true
+
+[functions.damage-deposit-action]
+verify_jwt = true
+
+# --- En repo, NO desplegadas todavía (valores previstos al desplegar) ---
+[functions.bot-chat]
+verify_jwt = false
+
+[functions.issue-invoice]
+verify_jwt = false
+
+[functions.submit-ses-hospedajes]
+verify_jwt = false
+
+[functions.submit-verifactu]
+verify_jwt = false
+
+[functions.provision-access-code]
+verify_jwt = false
+
+[functions.trigger-reel-render]
+verify_jwt = false
