@@ -66,8 +66,7 @@ const QRCard = ({ title, description, location, url, icon: Icon, color }) => {
             <head>
                 <title>${title} - Tío José María</title>
                 <style>
-                    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap');
-
+                    /* Sin Google Fonts: usa fuentes del sistema en la impresión de QR del admin. */
                     * { margin: 0; padding: 0; box-sizing: border-box; }
 
                     body {
@@ -453,7 +452,7 @@ const QRCodeManager = () => {
                                 <title>Todos los QR - Tio Jose Maria</title>
                                 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"><\/script>
                                 <style>
-                                    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600&display=swap');
+                                    /* Sin Google Fonts: fuentes del sistema en la impresión. */
                                     * { margin: 0; padding: 0; box-sizing: border-box; }
                                     body { font-family: 'Inter', sans-serif; padding: 20px; }
                                     .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
