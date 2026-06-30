@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
-/* Fuentes editoriales para área cliente — Hoxton/Ace aesthetic */
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..800;1,9..144,300..800&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Manrope:wght@300;400;500;600;700;800&display=swap');
+/* Fuentes (Lato, Playfair Display + editoriales Fraunces/Newsreader/Manrope del área
+   cliente) self-hosted vía @fontsource, importadas en src/main.jsx. NO usar @import de
+   Google Fonts aquí: transmitiría la IP del visitante a Google sin consentimiento. */
 
 @theme {
   --font-serif: "Playfair Display", serif;

@@ -33,6 +33,11 @@
     "vite": "^7.3.1"
   },
   "dependencies": {
+    "@fontsource/fraunces": "^5.2.9",
+    "@fontsource/lato": "^5.2.7",
+    "@fontsource/manrope": "^5.2.8",
+    "@fontsource/newsreader": "^5.2.10",
+    "@fontsource/playfair-display": "^5.2.8",
     "@google/stitch-sdk": "^0.0.3",
     "@supabase/supabase-js": "^2.97.0",
     "dompurify": "^3.4.5",
