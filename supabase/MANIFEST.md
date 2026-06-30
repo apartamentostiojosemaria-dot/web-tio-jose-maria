@@ -17,16 +17,16 @@ Leyenda repo: ✅ código en `supabase/functions/<slug>/` · ⬇️ desplegada p
 
 | Función | Live | verify_jwt | Repo | Qué hace |
 |---|---|---|---|---|
-| `notify-booking` | v14 | false | ⬇️ | Aviso de nueva solicitud + email con botones confirmar/rechazar 1-click (firma HMAC), rate-limit por IP, Turnstile opcional |
-| `booking-status-update` | v12 | false | ⬇️ | Confirmar/rechazar reserva desde el enlace firmado del email; sugiere apartamentos alternativos |
-| `upload-from-url` | v6 | false | ⬇️ | Sube una imagen desde una URL al storage |
-| `request-review` | v6 | false | ⬇️ | (cron `daily-request-review`) pide reseña tras la estancia |
-| `send-guide` | v5 | false | ⬇️ | Envía la guía al suscriptor del newsletter (`GuiaSection`) |
-| `triage-message` | v3 | **true** | ⬇️ | Clasifica mensajes del inbox |
-| `damage-deposit-action` | v3 | **true** | ⬇️ | Acción sobre fianza (la fianza está revertida en el front — ver memoria) |
-| `monthly-owner-report` | v3 | false | ⬇️ | Informe mensual al propietario |
-| `request-otp` | v3 | false | ⬇️ | OTP login del área cliente (solicita) |
-| `verify-otp` | v3 | false | ⬇️ | OTP login del área cliente (verifica) |
+| `notify-booking` | v14 | false | ✅ | Aviso de nueva solicitud + email con botones confirmar/rechazar 1-click (firma HMAC), rate-limit por IP, Turnstile opcional |
+| `booking-status-update` | v12 | false | ✅ | Confirmar/rechazar reserva desde el enlace firmado del email; sugiere apartamentos alternativos |
+| `upload-from-url` | v6 | false | ✅ | Sube una imagen desde una URL al storage |
+| `request-review` | v6 | false | ✅ | (cron `daily-request-review`) pide reseña tras la estancia |
+| `send-guide` | v5 | false | ✅ | Envía la guía al suscriptor del newsletter (`GuiaSection`) |
+| `triage-message` | v3 | **true** | ✅ | Clasifica mensajes del inbox |
+| `damage-deposit-action` | v3 | **true** | ✅ | Acción sobre fianza (la fianza está revertida en el front — ver memoria) |
+| `monthly-owner-report` | v3 | false | ✅ | Informe mensual al propietario |
+| `request-otp` | v3 | false | ✅ | OTP login del área cliente (solicita) |
+| `verify-otp` | v3 | false | ✅ | OTP login del área cliente (verifica) |
 | `send-booking-email` | v8 | false | ✅ | Emails transaccionales (7 plantillas, Resend, idempotente, RGPD) |
 | `sync-ical-imports` | v3 | false | ✅ | Importa calendarios iCal de canales (Booking/Airbnb) |
 | `ical-export` | v3 | false | ✅ | Exporta iCal por apartamento (`/ical/{slug}.ics`) |
@@ -61,6 +61,9 @@ Leyenda repo: ✅ código en `supabase/functions/<slug>/` · ⬇️ desplegada p
 - **Triggers de aplicación**: `guest_bookings_ensure_customer`, `guest_bookings_schedule_cleaning`, y varios `*_set_updated_at` (cleaning_tasks, invoices, kb_chunks, pricing_rules, protocols, traveler_records).
 - **Extensiones**: `pgvector` (bot RAG), `pg_cron`, `pg_net`, `btree_gist`.
 
-## Pendiente de versionar (deuda de cimientos)
-- ⬇️ Traer al repo el código de las 10 funciones marcadas (vía `get_edge_function`).
-- Sin carpeta `migrations/`: el esquema no está versionado como migraciones. Idealmente, snapshot SQL del esquema + RLS + RPCs + triggers en `supabase/migrations/` o `supabase/snapshot/`.
+## Estado de reconciliación
+- ✅ **2026-06-30**: las 16 edge functions vivas tienen su código en el repo (las 10 que faltaban se trajeron de producción vía `get_edge_function`). El repo ya es espejo de producción a nivel de funciones.
+
+## Pendiente de versionar (deuda de cimientos restante)
+- Sin carpeta `migrations/`: el **esquema** sigue sin versionar como migraciones. Siguiente paso: snapshot SQL del esquema + RLS + RPCs + triggers en `supabase/migrations/` o `supabase/snapshot/` (este MANIFEST ya documenta el inventario).
+- Las 6 funciones ⏸️ del repo (bot-chat, issue-invoice, submit-ses-hospedajes, submit-verifactu, provision-access-code, trigger-reel-render) siguen SIN desplegar (trabajo pendiente, no desfase).
