@@ -114,9 +114,9 @@ const PrivacyPolicy = () => {
                         <li><strong>Supabase</strong> (base de datos, autenticación y almacenamiento) — servidores en la Unión Europea.</li>
                         <li><strong>Resend</strong> (envío de emails transaccionales y newsletter) — servidores en la UE.</li>
                         <li><strong>Trigger.dev</strong> (orquestación de automatizaciones y avisos) — servidores en la UE.</li>
-                        <li><strong>Anthropic</strong> (modelo de lenguaje del asistente de IA) — transferencia internacional, ver apartado 7.</li>
+                        <li><strong>Amazon Web Services (AWS)</strong> — infraestructura del asistente de IA (Amazon Bedrock), ejecutado en la región de la Unión Europea (Fráncfort).</li>
                         <li><strong>Meta Platforms Ireland</strong> (mensajería WhatsApp para huéspedes que la habiliten) — servidores en la UE.</li>
-                        <li><strong>Stripe</strong> (cuando se active la pasarela de pago) — servidores en la UE con transferencias garantizadas.</li>
+                        <li><strong>Stripe</strong> (pasarela de pago de las reservas) — servidores en la UE con transferencias garantizadas.</li>
                         <li><strong>Pasarelas de reserva de terceros</strong> (Booking, Airbnb u otras cuando uses sus canales) — su tratamiento se rige por sus propias políticas.</li>
                     </ul>
                     <p className="text-gray-700 leading-relaxed mb-4">
@@ -134,12 +134,12 @@ const PrivacyPolicy = () => {
 
                     <h2 className="font-serif text-xl font-bold mt-8 mb-3 text-text-primary">7. Transferencias internacionales</h2>
                     <p className="text-gray-700 leading-relaxed mb-4">
-                        Algunos proveedores (en particular Anthropic, fabricante del modelo de IA que usa nuestro asistente)
-                        pueden tratar datos fuera del Espacio Económico Europeo. Estas transferencias se amparan en las
-                        Cláusulas Contractuales Tipo aprobadas por la Comisión Europea (Decisión 2021/914) y en garantías
-                        adicionales (cifrado en tránsito, minimización de datos personales en el contexto enviado al modelo
-                        y no entrenamiento del modelo con tu información). En cuanto exista un endpoint europeo del
-                        proveedor, migraremos a esa opción.
+                        Procuramos que tus datos se traten dentro del Espacio Económico Europeo. En particular, el
+                        asistente de IA se ejecuta sobre Amazon Bedrock en la región de la Unión Europea (Fráncfort),
+                        por lo que el contenido de la conversación no sale del EEE por este flujo. Si alguno de nuestros
+                        encargados tratara datos fuera del EEE, dicha transferencia se ampara en las Cláusulas Contractuales
+                        Tipo aprobadas por la Comisión Europea (Decisión 2021/914) y en garantías adicionales (cifrado en
+                        tránsito, minimización de datos personales y no entrenamiento de modelos con tu información).
                     </p>
 
                     <h2 className="font-serif text-xl font-bold mt-8 mb-3 text-text-primary">8. Sistemas de inteligencia artificial</h2>
@@ -149,7 +149,7 @@ const PrivacyPolicy = () => {
                     </p>
                     <ul className="text-gray-700 leading-relaxed mb-4 list-disc pl-6 space-y-1">
                         <li><strong>Asistente virtual</strong> para responder dudas sobre el alojamiento, la zona y la reserva. Antes de iniciar la conversación verás un aviso indicando que estás hablando con un sistema automatizado.</li>
-                        <li><strong>Modelos usados:</strong> familia Claude de Anthropic. El modelo concreto y su versión se registran en los logs internos.</li>
+                        <li><strong>Modelos usados:</strong> familia Claude (Anthropic), ejecutada a través de Amazon Bedrock en la región de la UE (Fráncfort). El modelo concreto y su versión se registran en los logs internos.</li>
                         <li><strong>Datos enviados al modelo:</strong> sólo el mensaje del usuario y, cuando aplica, el contexto público del sitio (guías, FAQs, descripciones de apartamentos). Nunca enviamos datos personales de otros huéspedes ni información identificable que no sea estrictamente necesaria.</li>
                         <li><strong>Logging:</strong> guardamos prompt, respuesta, modelo y marca de tiempo durante 12 meses para seguridad y mejora; después se anonimizan o eliminan.</li>
                         <li><strong>Limitaciones:</strong> el asistente puede equivocarse o estar desactualizado. Para cualquier información vinculante (precios, disponibilidad, condiciones legales) prevalece lo que diga el responsable por escrito.</li>

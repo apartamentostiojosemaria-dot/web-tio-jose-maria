@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { logError } from '../../utils/logger';
@@ -7,10 +8,13 @@ import { WP } from '../../constants/urls';
 
 const GuiaSection = () => {
     const [email, setEmail] = useState('');
+    const [accept, setAccept] = useState(false);
     const [status, setStatus] = useState('idle');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        // RGPD/LSSI: sin consentimiento informado no damos de alta en la lista.
+        if (!accept) return;
         setStatus('sending');
 
         const { error } = await supabase
@@ -22,6 +26,19 @@ const GuiaSection = () => {
         const inserted = !error;
 
         if (inserted || alreadyExists) {
+            // RGPD: registrar el consentimiento de marketing (el newsletter es lista de marketing).
+            // Mismo RPC de auditoría que usa el formulario de reserva. Fallo silencioso.
+            try {
+                await supabase.rpc('record_marketing_consent', {
+                    p_email: email.trim(),
+                    p_granted: true,
+                    p_source: 'guia_section',
+                    p_user_agent: navigator.userAgent,
+                    p_legal_version: '1.0',
+                    p_booking_code: null,
+                });
+            } catch { /* no bloquea el envío de la guía si la auditoría falla */ }
+
             try {
                 await supabase.functions.invoke('send-guide', { body: { email } });
             } catch (e) {
@@ -35,6 +52,7 @@ const GuiaSection = () => {
         }
 
         setEmail('');
+        setAccept(false);
     };
 
     return (
@@ -70,27 +88,43 @@ const GuiaSection = () => {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
-                                className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto"
+                                className="max-w-md mx-auto"
                                 onSubmit={handleSubmit}
                             >
-                                <label htmlFor="guia-email" className="sr-only">Tu correo electrónico</label>
-                                <input
-                                    id="guia-email"
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="Tu correo electrónico"
-                                    required
-                                    disabled={status === 'sending'}
-                                    className="px-6 py-4 rounded-full bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-accent flex-grow disabled:opacity-50"
-                                />
-                                <button
-                                    type="submit"
-                                    disabled={status === 'sending'}
-                                    className="px-8 py-4 font-bold rounded-full bg-accent text-text-primary transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:hover:scale-100"
-                                >
-                                    {status === 'sending' ? 'Enviando...' : 'Enviar Guía'}
-                                </button>
+                                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                                    <label htmlFor="guia-email" className="sr-only">Tu correo electrónico</label>
+                                    <input
+                                        id="guia-email"
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        placeholder="Tu correo electrónico"
+                                        required
+                                        disabled={status === 'sending'}
+                                        className="px-6 py-4 rounded-full bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-accent flex-grow disabled:opacity-50"
+                                    />
+                                    <button
+                                        type="submit"
+                                        disabled={status === 'sending' || !accept}
+                                        className="px-8 py-4 font-bold rounded-full bg-accent text-text-primary transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:hover:scale-100"
+                                    >
+                                        {status === 'sending' ? 'Enviando...' : 'Enviar Guía'}
+                                    </button>
+                                </div>
+                                <label className="flex items-start gap-2 mt-4 text-left">
+                                    <input
+                                        type="checkbox"
+                                        required
+                                        checked={accept}
+                                        onChange={(e) => setAccept(e.target.checked)}
+                                        disabled={status === 'sending'}
+                                        className="mt-0.5 h-4 w-4 accent-accent cursor-pointer shrink-0"
+                                    />
+                                    <span className="text-xs opacity-80 leading-relaxed">
+                                        Acepto recibir la guía y novedades ocasionales por email y he leído la{' '}
+                                        <Link to="/privacidad" target="_blank" className="underline">política de privacidad</Link>.
+                                    </span>
+                                </label>
                             </motion.form>
                         )}
                     </AnimatePresence>

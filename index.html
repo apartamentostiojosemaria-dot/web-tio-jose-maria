@@ -5,29 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Apartamentos Rurales Tío José María | Hinojares</title>
-    <meta name="description"
-        content="Alojamiento rural con alma en Hinojares, Sierra de Cazorla. Casa del siglo XVII con 4 apartamentos, chimenea y vistas. Reserva directa sin comisiones.">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-    <link rel="canonical" href="https://tiojosemaria.com/">
 
-    <!-- Open Graph / Facebook (defaults — react-helmet-async overrides per page) -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://tiojosemaria.com/">
-    <meta property="og:title" content="Apartamentos Rurales Tío José María | Hinojares">
-    <meta property="og:description"
-        content="Alojamiento rural con alma en el sur de Cazorla. 4 apartamentos en una casa del siglo XVII restaurada.">
-    <meta property="og:image" content="https://tiojosemaria.com/og-default.jpg">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Vista de la casa del siglo XVII de Apartamentos Tío José María en Hinojares">
-    <meta property="og:locale" content="es_ES">
-    <meta property="og:site_name" content="Tío José María">
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Apartamentos Rurales Tío José María | Hinojares">
-    <meta name="twitter:description" content="Alojamiento rural con alma en el sur de Cazorla. 4 apartamentos en una casa del siglo XVII restaurada.">
-    <meta name="twitter:image" content="https://tiojosemaria.com/og-default.jpg">
+    <!-- canonical, meta description y Open Graph/Twitter los inyecta react-helmet-async
+         (src/components/seo/PageHead.jsx) POR PÁGINA. NO ponerlos estáticos aquí: el prerender
+         añade los de helmet sin borrar los del template y se DUPLICAN. Con dos <link canonical>,
+         Google se queda con el primero (apuntaba a "/") y canonicaliza todas las subpáginas a la
+         home → caen del índice. -->
 
     <!-- Geo -->
     <meta name="geo.region" content="ES-J">

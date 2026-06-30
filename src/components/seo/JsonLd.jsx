@@ -25,10 +25,6 @@ const JsonLd = ({ data }) => {
 // visible a todos los rastreadores sin JS. Aqui solo añadimos los datos
 // dinamicos (reviews + rango de precios real) como un nodo complementario.
 export const HomeJsonLd = ({ reviews, apartments }) => {
-    const avgRating = reviews.length > 0
-        ? reviews.reduce((sum, r) => sum + (parseFloat(r.rating) || 5), 0) / reviews.length
-        : 4.75;
-
     const priceRange = apartments.length > 0
         ? `${Math.min(...apartments.map(a => Number(a.price_low) || 60))}€ - ${Math.max(...apartments.map(a => Number(a.price_high) || 110))}€`
         : '60€ - 110€';
@@ -41,14 +37,20 @@ export const HomeJsonLd = ({ reviews, apartments }) => {
         url: 'https://tiojosemaria.com',
         priceRange,
         numberOfRooms: apartments.length || 4,
-        aggregateRating: {
+    };
+
+    // Solo emitimos AggregateRating si hay reseñas REALES en BD. Inventar un rating
+    // (p.ej. 4.75/1) es structured data engañoso y arriesga una acción manual de Google.
+    if (reviews.length > 0) {
+        const avgRating = reviews.reduce((sum, r) => sum + (parseFloat(r.rating) || 5), 0) / reviews.length;
+        data.aggregateRating = {
             '@type': 'AggregateRating',
             ratingValue: avgRating.toFixed(1),
             bestRating: '5',
             worstRating: '1',
-            reviewCount: String(Math.max(reviews.length, 1))
-        }
-    };
+            reviewCount: String(reviews.length)
+        };
+    }
 
     return <JsonLd data={data} />;
 };
