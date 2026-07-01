@@ -7,7 +7,7 @@
 // MODE (genera el XML, marca stubbed) — útil para validar mientras el
 // operador completa el alta en sede.mir.gob.es.
 
-import { schedules, logger } from "@trigger.dev/sdk/v3";
+import { schedules, logger } from "@trigger.dev/sdk";
 
 const SUPABASE_URL = process.env.SUPABASE_URL!;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;

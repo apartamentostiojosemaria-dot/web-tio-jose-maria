@@ -11,8 +11,17 @@
 // chequear el flag antes de enviar, así que si esta task se ejecuta dos
 // veces el mismo día, no duplica.
 
-import { schedules, logger } from "@trigger.dev/sdk/v3";
+import { schedules, logger } from "@trigger.dev/sdk";
 import { createClient } from "@supabase/supabase-js";
+import WebSocketImpl from "ws";
+
+// Runtime Trigger.dev = Node.js 21, sin WebSocket nativo (llega en Node 22).
+// createClient inicializa el Realtime client de Supabase, que exige un
+// WebSocket global. Polyfill con `ws` ANTES de createClient o revienta en
+// ejecución (no en compilación). Ver gotcha-supabase-js-node21-websocket.
+if (!(globalThis as unknown as { WebSocket?: unknown }).WebSocket) {
+    (globalThis as unknown as { WebSocket: unknown }).WebSocket = WebSocketImpl;
+}
 
 const SUPABASE_URL = process.env.SUPABASE_URL!;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;

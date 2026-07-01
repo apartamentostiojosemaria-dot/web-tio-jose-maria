@@ -217,22 +217,45 @@ supabase functions deploy send-booking-email --project-ref nmtukksbzbnuzqsksdmw 
 
 ### 6.4. Trigger.dev — proyecto `tjm-jobs`
 
+> **Proyecto DEDICADO**, no reutilizar cuidarte-jobs ni ofm/padron-ia-jobs:
+> cada negocio con su instancia Supabase y su service-role key aislada
+> (misma regla que "nunca mezclar" del ecosistema). Ver decisión 2026-07-01.
+>
+> Código ya migrado a **Trigger.dev v4** (SDK 4.4.6). Deps `@supabase/supabase-js`
+> y `ws` (polyfill WebSocket Node 21) incluidas. `tsc --noEmit` limpio.
+
 1. cloud.trigger.dev → org `padron-ia` → New Project → nombre `tjm-jobs`.
    Anotar el `project ref` (forma `proj_xxx_xxx`).
-2. En el dashboard del proyecto → Environment Variables → añadir:
+2. En el dashboard del proyecto → Environment Variables (entorno **Production**)
+   → añadir:
    - `SUPABASE_URL` = `https://nmtukksbzbnuzqsksdmw.supabase.co`
    - `SUPABASE_SERVICE_ROLE_KEY` = (service role TJM)
-3. En local (`tjm-jobs/`):
+3. Fijar el `project ref` en `trigger.config.ts` (línea `project:`), sustituyendo
+   `proj_REPLACE_ME` por el ref real. (Alternativa sin tocar el archivo: exportar
+   `TRIGGER_PROJECT_REF=proj_xxx_xxx` en la shell antes de `deploy` — la config lo
+   lee.) El ref NO es secreto.
+4. En local (`tjm-jobs/`):
    ```bash
    cd tjm-jobs
-   npm install
-   npx trigger.dev@latest login
-   # Editar trigger.config.ts → project: "proj_xxx_xxx"
-   npm run dev       # probar local
-   npm run deploy    # subir a cloud
+   npm install                    # ya hecho; repetir si cambia package.json
+   npx trigger.dev@latest login   # OAuth por navegador
+   npm run dev                    # probar local (opcional)
+   npm run deploy                 # subir a cloud (usa trigger.config.ts)
    ```
-4. Verificar en dashboard que `daily-booking-emails` aparece como task
-   programada con cron `0 9 * * *` (Europe/Madrid).
+5. Verificar en dashboard que aparecen las 3 tasks programadas:
+   - `daily-booking-emails` — cron `0 9 * * *` (Europe/Madrid)
+   - `daily-ses-submit` — cron `0 10 * * *` (Europe/Madrid)
+   - `sync-ical-channels` — cron `*/30 * * * *`
+
+> ⚠️ Node 21 no tiene WebSocket nativo → `daily-booking-emails` lleva polyfill `ws`
+> antes de `createClient`. Los gotchas de supabase-js/Trigger.dev solo se ven en
+> **test run real** desde el dashboard, no en el typecheck. Probar así antes de
+> darlo por bueno.
+>
+> **Orden de activación real:** `daily-ses-submit` ya trabaja (stub mode) en cuanto
+> despliegues. `daily-booking-emails` no tiene cola hasta que Stripe esté en live
+> (sin reservas, cola=0, no rompe). `sync-ical-channels` está en vacío hasta cargar
+> las URLs iCal en `apartments` (bloqueado por 2FA de Booking).
 
 ### 6.5. Probar end-to-end
 

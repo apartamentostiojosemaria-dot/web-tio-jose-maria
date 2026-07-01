@@ -2,7 +2,7 @@
 // reservas que entran desde Booking, Airbnb y Vrbo con nuestros blocked_dates,
 // evitando overbooking.
 
-import { schedules, logger } from "@trigger.dev/sdk/v3";
+import { schedules, logger } from "@trigger.dev/sdk";
 
 const SUPABASE_URL = process.env.SUPABASE_URL!;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
