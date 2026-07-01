@@ -1,9 +1,9 @@
 import { defineConfig } from "@trigger.dev/sdk";
 
 export default defineConfig({
-    // Reemplaza TRIGGER_PROJECT_REF al crear el proyecto en cloud.trigger.dev
-    // (org: padron-ia). El ref tiene forma proj_xxx_xxx.
-    project: process.env.TRIGGER_PROJECT_REF || "proj_REPLACE_ME",
+    // Proyecto dedicado tjm-jobs en cloud.trigger.dev (org: padron-ia).
+    // Override puntual vía env var TRIGGER_PROJECT_REF si hiciera falta.
+    project: process.env.TRIGGER_PROJECT_REF || "proj_azldqeufdufzorjzhnkk",
     runtime: "node",
     logLevel: "log",
     retries: {
