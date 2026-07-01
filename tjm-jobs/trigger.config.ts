@@ -6,6 +6,8 @@ export default defineConfig({
     project: process.env.TRIGGER_PROJECT_REF || "proj_azldqeufdufzorjzhnkk",
     runtime: "node",
     logLevel: "log",
+    // v4 exige un default de proyecto (>=5s). Cada task afina el suyo.
+    maxDuration: 300,
     retries: {
         enabledInDev: true,
         default: {
