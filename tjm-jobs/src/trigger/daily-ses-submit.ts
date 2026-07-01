@@ -14,10 +14,13 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 export const dailySesSubmit = schedules.task({
     id: "daily-ses-submit",
-    cron: {
-        pattern: "0 10 * * *",
-        timezone: "Europe/Madrid",
-    },
+    // NEUTRALIZADO 2026-07-01: sin `cron` la task se despliega pero NO se
+    // dispara sola. Evita 404 en bucle mientras submit-ses-hospedajes (edge fn)
+    // no esté desplegada en el Supabase de TJM. Reactivar: descomentar.
+    // cron: {
+    //     pattern: "0 10 * * *",
+    //     timezone: "Europe/Madrid",
+    // },
     maxDuration: 300,
     run: async (payload) => {
         logger.info("[daily-ses-submit] start", { scheduledAt: payload.timestamp });

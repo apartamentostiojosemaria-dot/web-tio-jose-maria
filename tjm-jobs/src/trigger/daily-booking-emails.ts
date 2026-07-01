@@ -35,10 +35,14 @@ interface QueueRow {
 
 export const dailyBookingEmails = schedules.task({
     id: "daily-booking-emails",
-    cron: {
-        pattern: "0 9 * * *",
-        timezone: "Europe/Madrid",
-    },
+    // NEUTRALIZADO 2026-07-01: sin `cron` la task se despliega pero NO se
+    // dispara sola. Evita fallos en bucle mientras la vista bookings_email_queue
+    // y send-booking-email no estén en el Supabase de TJM (y sin reservas reales
+    // hasta Stripe live). Reactivar: descomentar.
+    // cron: {
+    //     pattern: "0 9 * * *",
+    //     timezone: "Europe/Madrid",
+    // },
     maxDuration: 300, // 5 min hard cap
     run: async (payload, { ctx }) => {
         logger.info("[daily-booking-emails] start", { scheduledAt: payload.timestamp });

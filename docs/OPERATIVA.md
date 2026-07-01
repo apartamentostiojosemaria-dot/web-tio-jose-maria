@@ -224,6 +224,18 @@ supabase functions deploy send-booking-email --project-ref nmtukksbzbnuzqsksdmw 
 > Código ya migrado a **Trigger.dev v4** (SDK 4.4.6). Deps `@supabase/supabase-js`
 > y `ws` (polyfill WebSocket Node 21) incluidas. `tsc --noEmit` limpio.
 
+> **ESTADO 2026-07-01 — DESPLEGADO, crons neutralizadas.**
+> - Proyecto creado: `tjm-jobs` (ref `proj_azldqeufdufzorjzhnkk`, org padron-ia).
+> - Env vars Production puestas: `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (secret).
+> - Desplegado (`trigger deploy`, versión 20260701.2, 3 tasks).
+> - **Los `cron` de las 3 tasks están COMENTADOS** → no se disparan solas. Motivo:
+>   las edge functions que llaman (`submit-ses-hospedajes`, `sync-ical-imports`,
+>   `send-booking-email` + vistas) **NO están desplegadas en el Supabase de TJM**
+>   → un test-run de `daily-ses-submit` dio **HTTP 404 NOT_FOUND**. Se neutralizaron
+>   para no quemar la cuota Free con 404 en bucle (sync-ical era cada 30 min).
+> - **REACTIVAR** (cuando el backend TJM esté desplegado): descomentar el bloque
+>   `cron` en `src/trigger/*.ts` + `npm run deploy`. Reaparecen en Schedules.
+
 1. cloud.trigger.dev → org `padron-ia` → New Project → nombre `tjm-jobs`.
    Anotar el `project ref` (forma `proj_xxx_xxx`).
 2. En el dashboard del proyecto → Environment Variables (entorno **Production**)

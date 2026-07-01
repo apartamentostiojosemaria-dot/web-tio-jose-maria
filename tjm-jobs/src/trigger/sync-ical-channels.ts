@@ -9,7 +9,10 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 export const syncIcalChannels = schedules.task({
     id: "sync-ical-channels",
-    cron: "*/30 * * * *",
+    // NEUTRALIZADO 2026-07-01: sin `cron` la task se despliega pero NO se
+    // dispara sola. Evita 404 en bucle mientras sync-ical-imports (edge fn)
+    // y las URLs iCal no estén en el Supabase de TJM. Reactivar: descomentar.
+    // cron: "*/30 * * * *",
     maxDuration: 120,
     run: async (payload) => {
         logger.info("[sync-ical-channels] start", { scheduledAt: payload.timestamp });
