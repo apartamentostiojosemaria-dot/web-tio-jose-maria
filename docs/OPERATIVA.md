@@ -224,17 +224,25 @@ supabase functions deploy send-booking-email --project-ref nmtukksbzbnuzqsksdmw 
 > Código ya migrado a **Trigger.dev v4** (SDK 4.4.6). Deps `@supabase/supabase-js`
 > y `ws` (polyfill WebSocket Node 21) incluidas. `tsc --noEmit` limpio.
 
-> **ESTADO 2026-07-01 — DESPLEGADO, crons neutralizadas.**
-> - Proyecto creado: `tjm-jobs` (ref `proj_azldqeufdufzorjzhnkk`, org padron-ia).
-> - Env vars Production puestas: `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (secret).
-> - Desplegado (`trigger deploy`, versión 20260701.2, 3 tasks).
-> - **Los `cron` de las 3 tasks están COMENTADOS** → no se disparan solas. Motivo:
->   las edge functions que llaman (`submit-ses-hospedajes`, `sync-ical-imports`,
->   `send-booking-email` + vistas) **NO están desplegadas en el Supabase de TJM**
->   → un test-run de `daily-ses-submit` dio **HTTP 404 NOT_FOUND**. Se neutralizaron
->   para no quemar la cuota Free con 404 en bucle (sync-ical era cada 30 min).
-> - **REACTIVAR** (cuando el backend TJM esté desplegado): descomentar el bloque
->   `cron` en `src/trigger/*.ts` + `npm run deploy`. Reaparecen en Schedules.
+> **ESTADO 2026-07-01 — DESPLEGADO Y VIVO (3 crons verificadas en verde).**
+> - Proyecto: `tjm-jobs` (ref `proj_azldqeufdufzorjzhnkk`, org padron-ia).
+> - Env vars Production: `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (secret).
+> - Desplegado (`trigger deploy`, versión 20260701.3, 3 tasks). Schedules ACTIVAS.
+> - Descubierto: el backend Supabase de TJM ya estaba casi todo desplegado
+>   (57 migraciones, 17 edge functions). Faltaba **`submit-ses-hospedajes`** →
+>   desplegada hoy (stub mode, verify_jwt=false como sus hermanas). Test-runs OK:
+>   - `daily-ses-submit` → Completed (stub, 0 pendientes).
+>   - `daily-booking-emails` → Completed (0; valida polyfill `ws` en runtime).
+>   - `sync-ical-channels` → Completed, **trabajo real**: sincroniza los iCal de
+>     Airbnb de los 4 apartamentos (lavanda/albahaca/tomillo/romero).
+> - **Aún sin datos externos** (no bloquea las crons, solo su trabajo real):
+>   iCal de **Booking** (los 4 solo tienen Airbnb; falta el 2FA de Booking),
+>   reservas propias (Stripe live), envío real SES (cert FNMT), Verifactu (AEAT).
+> - Edge functions stub aún sin desplegar (no las llaman las crons, se despliegan
+>   con su sprint): `issue-invoice`, `submit-verifactu`, `provision-access-code`,
+>   `bot-chat` (esta necesita AWS Bedrock).
+> - Frecuencia `sync-ical-channels` = cada 30 min (plan Free: ~1.440 runs/mes).
+>   Si aprieta la cuota, subir a `0 * * * *` (horario) sobra para iCal.
 
 1. cloud.trigger.dev → org `padron-ia` → New Project → nombre `tjm-jobs`.
    Anotar el `project ref` (forma `proj_xxx_xxx`).
