@@ -326,6 +326,7 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
                         <p className="text-xs text-gray-600 flex flex-wrap items-center gap-x-1.5 gap-y-1">
                             <span>Solicitud sin cargo</span><span aria-hidden="true">·</span>
                             <span>Te confirmamos en menos de 24 h</span><span aria-hidden="true">·</span>
+                            <span>Cancelación gratis hasta 7 días antes</span><span aria-hidden="true">·</span>
                             <span>Check-in presencial 16:00–20:00</span><span aria-hidden="true">·</span>
                             <span>Sin fianza</span>
                             {' '}—{' '}

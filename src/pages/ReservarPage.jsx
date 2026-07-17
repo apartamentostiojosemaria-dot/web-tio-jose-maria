@@ -391,7 +391,8 @@ const GuestForm = ({ selected, checkIn, checkOut, guests, form, setForm, holding
         </button>
 
         <p className="mt-4 text-xs text-gray-500 text-center max-w-md mx-auto">
-            Tu apartamento queda reservado durante 15 minutos mientras completas el pago. Pago 100% seguro con tarjeta, procesado por Stripe.
+            Tu apartamento queda reservado durante 15 minutos mientras completas el pago. Pago 100% seguro con tarjeta,
+            procesado por Stripe. Cancelación gratuita hasta 7 días antes de la llegada.
         </p>
     </form>
 );

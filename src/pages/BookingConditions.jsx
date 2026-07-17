@@ -94,23 +94,31 @@ const BookingConditions = () => (
                 </p>
 
                 <h2 className="font-serif text-xl font-bold mt-8 mb-3 text-text-primary">8. Política de cancelación</h2>
-                {/*
-                    TODO Jesús: el negocio todavía no tiene definida una política de cancelación formal
-                    (plazos de cancelación gratuita, penalizaciones, no-shows). En cuanto la decidas,
-                    sustituye el párrafo de abajo por algo con esta estructura habitual en el sector:
-
-                    - Cancelación gratuita hasta N días antes de la entrada (devolución completa).
-                    - Cancelación entre N y M días antes: devolución parcial o cargo de X noche(s).
-                    - Cancelación con menos de M días o no-show: sin devolución.
-                    - Caso especial de la solicitud desde ficha (sin pago previo): al no haber cobro,
-                      quizás no aplique penalización económica, solo el aviso de "avísanos cuanto antes".
-
-                    Mientras tanto, NO publiques condiciones inventadas — deja el texto genérico siguiente.
-                */}
+                {/* Policy decided by the owner on 2026-07-17: free until 7 days before
+                    check-in; later cancellations get one free date change instead of a refund. */}
+                <ul className="list-disc pl-6 text-gray-700 leading-relaxed mb-4 space-y-2">
+                    <li>
+                        <strong>Cancelación gratuita hasta 7 días antes de la llegada.</strong> Si ya habías pagado,
+                        te devolvemos el 100% del importe por el mismo medio de pago.
+                    </li>
+                    <li>
+                        <strong>Con menos de 7 días de antelación</strong> la reserva no es reembolsable, pero te
+                        ofrecemos <strong>un cambio de fechas gratuito</strong> (una vez, según disponibilidad y
+                        dentro de los 12 meses siguientes). Si las nuevas fechas tienen una tarifa distinta, se
+                        ajusta la diferencia.
+                    </li>
+                    <li>
+                        <strong>No presentarse (no-show)</strong> sin aviso previo supone la pérdida del importe de
+                        la reserva.
+                    </li>
+                    <li>
+                        Si tu solicitud desde la ficha aún no estaba confirmada ni pagada, puedes cancelarla en
+                        cualquier momento sin coste — basta con avisarnos.
+                    </li>
+                </ul>
                 <p className="text-gray-700 leading-relaxed mb-4">
-                    Consulta las condiciones de cancelación al confirmar tu reserva. Si necesitas cancelar o modificar
-                    fechas ya solicitadas o pagadas, escríbenos cuanto antes por WhatsApp o email: cuanto antes nos avises,
-                    más fácil es encontrar una solución.
+                    Para cancelar o cambiar fechas, escríbenos por WhatsApp o email con tu localizador. Cuanto antes
+                    nos avises, más fácil es encontrar una solución.
                 </p>
 
                 <h2 className="font-serif text-xl font-bold mt-8 mb-3 text-text-primary">9. Fuerza mayor</h2>
