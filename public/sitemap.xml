@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset
   xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-  xmlns:image="http://www.google.com/schemas/sitemaps-image/1.1">
+  xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://tiojosemaria.com/</loc>
     <lastmod>2026-07-17</lastmod>
@@ -200,6 +200,11 @@
     <lastmod>2026-07-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/albahaca/ffa21a8d-9e1e-4f8f-aedb-b6362c64c523-1024x768.jpg</image:loc>
+      <image:caption>Hinojares es mucho más que un pueblo pequeño. Descubre las mejores actividades, desde rutas a caballo hasta bañarse en pozas turquesa, pasando por noches de cielo estrellado.</image:caption>
+      <image:title>10 cosas que hacer en Hinojares y alrededores</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://tiojosemaria.com/blog/gastronomia-sierra-de-cazorla</loc>
@@ -212,5 +217,10 @@
     <lastmod>2026-07-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/albahaca/1febf30f-e1c2-403d-a5f5-8628b0fec18a-1024x683.jpg</image:loc>
+      <image:caption>Todo lo que necesitas saber para llegar a Hinojares desde Madrid, Sevilla, Granada o la costa. Rutas en coche, tiempos, gasolineras y consejos prácticos.</image:caption>
+      <image:title>Cómo llegar a Hinojares: guía práctica para viajeros</image:title>
+    </image:image>
   </url>
 </urlset>

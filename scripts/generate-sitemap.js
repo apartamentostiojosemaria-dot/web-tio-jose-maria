@@ -119,7 +119,7 @@ async function main() {
     // /rutas no tiene URL por ruta individual aun; cuando se anada se completa aqui.
     void routes;
 
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset\n  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n  xmlns:image="http://www.google.com/schemas/sitemaps-image/1.1">\n${urls.join('\n')}\n</urlset>\n`;
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset\n  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n  xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${urls.join('\n')}\n</urlset>\n`;
 
     writeFileSync(OUTPUT, xml, 'utf8');
     const totalImages = urls.reduce((acc, u) => acc + (u.match(/<image:image>/g) || []).length, 0);
