@@ -184,8 +184,11 @@ const prerenderer = new Prerenderer({
     staticDir: DIST,
     indexPath: join(DIST, 'index.html'),
     renderer: new PuppeteerRenderer({
-        // Espera tras navegar para que React monte y termine los fetch a Supabase
-        renderAfterTime: 5000,
+        // Espera tras navegar para que React monte y termine los fetch a Supabase.
+        // 12s (antes 5s): en el build Docker del VPS, Chromium frío + fetch a
+        // Supabase superaban los 5s y la home se capturaba SIN las tarjetas de
+        // apartamentos (detectado en produccion 17-jul). Ver sanity check abajo.
+        renderAfterTime: 12000,
         headless: true,
         // Args necesarios para correr puppeteer en contenedor Alpine/Docker
         args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
@@ -208,6 +211,15 @@ async function main() {
         rendered = await prerenderer.renderRoutes(ROUTES);
     } finally {
         await prerenderer.destroy();
+    }
+
+    // Sanity check: si la home se capturo ANTES de que llegaran los datos de
+    // Supabase (tarjetas de apartamentos ausentes), el snapshot es inservible
+    // para crawlers. Fallar EN ALTO: el build Docker aborta y el deploy
+    // conserva la version anterior, en vez de publicar una home vacia.
+    const home = rendered.find((r) => r.route === '/');
+    if (home && !home.html.includes('/apartamento/')) {
+        throw new Error('La home prerenderizada no contiene las tarjetas de apartamentos (fetch a Supabase no completado). Sube renderAfterTime o revisa la red del build.');
     }
 
     let totalBytes = 0;
