@@ -41,8 +41,8 @@ const ReviewsSection = ({ reviews }) => {
                     <a href="https://www.booking.com/hotel/es/casa-rural-tio-jose-maria.es.html#tab-reviews" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-4 bg-white px-8 py-5 rounded-2xl shadow-md hover:shadow-xl transition-shadow">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/b/be/Booking.com_logo.svg" alt="Booking.com" loading="lazy" decoding="async" className="h-6" />
                         <div className="text-left">
-                            <p className="text-2xl font-bold leading-none text-text-primary">9.5/10</p>
-                            <p className="text-xs opacity-70 mt-1">Puntuación Excepcional · Ver reseñas</p>
+                            <p className="text-2xl font-bold leading-none text-text-primary">9,5/10</p>
+                            <p className="text-xs opacity-70 mt-1">Puntuación Excepcional · +45 opiniones en Booking</p>
                         </div>
                     </a>
                 </div>
@@ -96,12 +96,13 @@ const ReviewsSection = ({ reviews }) => {
                     <div>
                         <span className="uppercase tracking-[0.2em] text-xs font-bold text-primary">Opiniones Reales</span>
                         <h2 className="font-serif text-3xl md:text-5xl font-bold mt-3 text-text-primary">Lo que dicen nuestros huéspedes</h2>
+                        <p className="text-sm text-gray-600 mt-2">Una selección de opiniones de nuestros huéspedes.</p>
                     </div>
                     <a href="https://www.booking.com/hotel/es/casa-rural-tio-jose-maria.es.html#tab-reviews" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 bg-white px-4 md:px-6 py-3 rounded-xl shadow-sm hover:shadow-md transition-shadow">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/b/be/Booking.com_logo.svg" alt="Booking.com" loading="lazy" decoding="async" className="h-4 md:h-5" />
                         <div className="text-right">
-                            <p className="text-xs md:text-sm font-bold leading-none">9.5/10</p>
-                            <p className="text-[9px] md:text-[10px] opacity-60">Puntuación Excepcional</p>
+                            <p className="text-xs md:text-sm font-bold leading-none">9,5/10</p>
+                            <p className="text-[9px] md:text-[10px] opacity-60">Más de 45 opiniones en Booking</p>
                         </div>
                     </a>
                 </div>
@@ -204,7 +205,7 @@ const ReviewsSection = ({ reviews }) => {
                 )}
 
                 <p className="text-center mt-4 text-xs text-gray-600">
-                    {displayReviews.length} opiniones verificadas
+                    Selección de opiniones de nuestros huéspedes, todas verificadas
                 </p>
             </div>
         </section>

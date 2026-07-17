@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin, Instagram, FileText } from 'lucide-react';
+import ConsentMap from '../shared/ConsentMap';
 
 const Footer = () => (
     <footer id="contacto" className="py-16 md:py-20 px-6 text-white bg-footer">
@@ -51,14 +52,9 @@ const Footer = () => (
             <div>
                 <h4 className="text-sm font-bold uppercase tracking-widest mb-8 text-accent">¿Dónde estamos?</h4>
                 <div className="rounded-xl overflow-hidden h-48 relative group">
-                    <iframe
+                    <ConsentMap
                         title="Ubicación Apartamentos Tío José María"
                         src="https://maps.google.com/maps?q=Apartamentos+Rurales+Tio+Jose+Maria+Hinojares&z=14&output=embed"
-                        width="100%"
-                        height="100%"
-                        style={{ border: 0 }}
-                        loading="lazy"
-                        referrerPolicy="no-referrer-when-downgrade"
                         className="opacity-80 group-hover:opacity-100 transition-opacity duration-300"
                     />
                     <a

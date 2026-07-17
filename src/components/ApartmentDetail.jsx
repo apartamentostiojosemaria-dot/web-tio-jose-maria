@@ -14,14 +14,7 @@ import {
     ChevronRight, AlertCircle
 } from 'lucide-react';
 
-function truncateForMeta(text, max = 155) {
-    if (!text) return '';
-    const clean = text.replace(/\s+/g, ' ').trim();
-    if (clean.length <= max) return clean;
-    const cut = clean.slice(0, max);
-    const lastSpace = cut.lastIndexOf(' ');
-    return (lastSpace > 100 ? cut.slice(0, lastSpace) : cut).replace(/[,;:.\-]+$/, '') + '…';
-}
+import { truncateForMeta } from '../utils/seoMeta';
 
 const AMENITIES_ICONS = {
     tv: { label: 'TV Pantalla Plana', icon: Tv },
@@ -219,7 +212,7 @@ const ApartmentDetail = () => {
             ]} />
             <PageHead
                 title={`${apartment.name} — Apartamento Rural en Hinojares`}
-                description={apartment.seo_description || truncateForMeta(apartment.description) || `Apartamento ${apartment.name} en Casa Rural Tío José María, Hinojares. Reserva directa sin comisiones.`}
+                description={truncateForMeta(apartment.seo_description || apartment.description) || `Apartamento ${apartment.name} en Casa Rural Tío José María, Hinojares. Reserva directa sin comisiones.`}
                 path={`/apartamento/${apartment.slug}`}
                 image={apartment.images?.[0]}
             />
@@ -280,14 +273,14 @@ const ApartmentDetail = () => {
                                 <span className="opacity-20">|</span>
                                 <span className="flex items-center gap-1"><Users size={14} /> {apartment.capacity_people} plazas</span>
                                 <span className="opacity-20">|</span>
-                                <span className="flex items-center gap-1"><ShieldCheck size={14} /> {apartment.registration_number || 'A/JA/00060'}</span>
+                                <span className="flex items-center gap-1"><ShieldCheck size={14} /> {apartment.registration_number || 'VTAR/JA/00044'}</span>
                             </div>
                             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-rural-900 mb-6 leading-tight">
                                 {apartment.name}
                             </h1>
                             <div className="flex items-center gap-2 text-gray-500 mb-8">
                                 <MapPin size={18} className="text-rural-500" />
-                                <span className="text-lg">Hinojares, Jaén · {apartment.bathrooms || 1} Baño privado</span>
+                                <span className="text-lg">Hinojares, Jaén · {apartment.bathrooms || 1} baño{(apartment.bathrooms || 1) !== 1 ? 's' : ''} privado{(apartment.bathrooms || 1) !== 1 ? 's' : ''}</span>
                             </div>
 
                             <div className="grid sm:grid-cols-2 gap-4 mb-8">

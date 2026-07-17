@@ -7,11 +7,12 @@ const DEFAULT_LOCATION = 'Hinojares, Jaén';
 const DEFAULT_CTA_PRIMARY = 'Ver Apartamentos';
 const DEFAULT_CTA_SECONDARY = 'Consultar Dudas';
 
-const DEFAULT_HERO_VIDEO = `${WP}/hero.mp4`;
-
 const HeroSection = ({ title, subtitle, config = {} }) => {
     const heroImage = config.hero_image_url || DEFAULT_HERO_IMAGE;
-    const heroVideo = config.hero_video_url ?? DEFAULT_HERO_VIDEO;
+    // Sin vídeo por defecto: si no hay hero_video_url en config no se pide
+    // nada a Storage (antes apuntaba a un objeto inexistente — 400 en cada
+    // carga). La imagen ya hace de fallback visual.
+    const heroVideo = config.hero_video_url || null;
     const location = config.hero_location_text || DEFAULT_LOCATION;
     const ctaPrimary = config.hero_cta_primary || DEFAULT_CTA_PRIMARY;
     const ctaSecondary = config.hero_cta_secondary || DEFAULT_CTA_SECONDARY;

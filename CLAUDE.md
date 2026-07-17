@@ -9,7 +9,7 @@ Web de apartamentos rurales en Hinojares (Sierra de Cazorla). SPA con zona publi
 - **Maps**: Leaflet + react-leaflet + CartoDB tiles
 - **UI**: framer-motion, lucide-react, recharts, clsx + tailwind-merge
 - **PWA**: vite-plugin-pwa con service worker (offline maps + API cache)
-- **Deploy**: GitHub Pages via GitHub Actions; Dockerfile (nginx) disponible
+- **Deploy**: EasyPanel — Docker multi-stage (build Vite + prerender puppeteer → nginx). Los GitHub Actions del repo son SOLO renders Remotion (hero/reels), no deploy. `public/404.html` es legacy de GitHub Pages (ya no aplica).
 
 ## Structure
 ```

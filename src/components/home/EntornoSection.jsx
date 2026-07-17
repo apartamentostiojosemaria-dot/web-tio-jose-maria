@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Map, ArrowRight } from 'lucide-react';
 import FadeInUp from '../shared/FadeInUp';
+import ConsentMap from '../shared/ConsentMap';
 import { WP } from '../../constants/urls';
 import { imgAttrs } from '../../utils/supabaseImage';
 
@@ -141,7 +142,7 @@ const EntornoSection = ({ places, routes }) => {
                     </div>
                     <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
                         <div className="text-center lg:text-left">
-                            <h3 className="font-serif text-3xl md:text-5xl font-bold mb-6">Preparado para tu desconexion?</h3>
+                            <h3 className="font-serif text-3xl md:text-5xl font-bold mb-6">Preparado para tu desconexión?</h3>
                             <p className="text-lg opacity-90 max-w-2xl mx-auto lg:mx-0 mb-10 leading-relaxed">
                                 Estamos en Calle Baja 1, Hinojares. Te facilitamos el camino para que solo tengas que preocuparte de disfrutar.
                             </p>
@@ -156,15 +157,9 @@ const EntornoSection = ({ places, routes }) => {
                             </a>
                         </div>
                         <div className="rounded-2xl overflow-hidden shadow-lg w-full h-64 md:h-80">
-                            <iframe
+                            <ConsentMap
                                 title="Ubicación Apartamentos Tío José María"
                                 src="https://maps.google.com/maps?q=Apartamentos+Rurales+Tio+Jose+Maria+Hinojares+Jaen&z=15&ie=UTF8&iwloc=&output=embed"
-                                width="100%"
-                                height="100%"
-                                style={{ border: 0 }}
-                                allowFullScreen=""
-                                loading="lazy"
-                                referrerPolicy="no-referrer-when-downgrade"
                             />
                         </div>
                     </div>

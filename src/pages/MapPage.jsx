@@ -11,7 +11,7 @@ const CATEGORIES = [
     { key: 'walk', label: 'Andando desde casa', icon: '\uD83D\uDEB6', description: 'Sales por la puerta y empiezas a caminar', ids: [9, 10, 11] },
     { key: 'near', label: 'Muy cerca (15-20 min)', icon: '\uD83D\uDE97', description: 'Un paseo corto en coche y llegas', ids: [12, 13] },
     { key: 'medium', label: 'Media hora en coche', icon: '\u26F0\uFE0F', description: 'Excursiones que merecen mucho la pena', ids: [14, 15, 16] },
-    { key: 'day', label: 'Excursion de dia', icon: '\uD83C\uDF04', description: 'Las joyas de la Sierra de Cazorla', ids: [17, 18, 19, 20] },
+    { key: 'day', label: 'Excursión de día', icon: '🌄', description: 'Las joyas de la Sierra de Cazorla', ids: [17, 18, 19, 20] },
 ];
 
 const LEVEL_LABEL = {

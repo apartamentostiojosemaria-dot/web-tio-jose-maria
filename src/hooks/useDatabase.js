@@ -299,10 +299,15 @@ export function useLocalEvents() {
 
     useEffect(() => {
         const fetchEvents = async () => {
+            const today = new Date().toISOString().slice(0, 10);
+            // No mostrar eventos ya pasados: nos quedamos con los que aún no han
+            // terminado (end_date, o event_date si no hay end_date), los que se
+            // repiten cada año (is_recurring) y los que no tienen fecha fija.
             const { data, error } = await supabase
                 .from('local_events')
                 .select('*')
                 .eq('active', true)
+                .or(`end_date.gte.${today},and(end_date.is.null,event_date.gte.${today}),is_recurring.eq.true,event_date.is.null`)
                 .order('event_date', { ascending: true, nullsFirst: false });
             if (error) {
                 logError('useLocalEvents', error);

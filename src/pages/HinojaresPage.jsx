@@ -121,7 +121,7 @@ export default function HinojaresPage() {
         <div className="min-h-screen bg-white">
             <PageHead
                 title="Descubre Hinojares — Historia, Tradiciones y Gastronomía"
-                description="Hinojares, el pueblo más pequeño de Jaén con 2.500 años de historia. Descubre sus tradiciones, gastronomía típica y directorio de servicios en la Sierra de Cazorla."
+                description="Hinojares, el pueblo más pequeño de Jaén con 2.500 años de historia: tradiciones, gastronomía y servicios en la Sierra de Cazorla."
                 path="/hinojares"
                 image={`${WP}/hinojaresPueblo.jpg`}
             />

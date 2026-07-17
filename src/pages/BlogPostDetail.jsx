@@ -5,6 +5,7 @@ import { useBlogPost, useBlogPosts } from '../hooks/useDatabase';
 import { BreadcrumbJsonLd } from '../components/seo/JsonLd';
 import PageHead from '../components/seo/PageHead';
 import FadeInUp from '../components/shared/FadeInUp';
+import { truncateForMeta } from '../utils/seoMeta';
 
 // Escapar </script> en JSON-LD para evitar XSS si algún campo del post lo contiene
 const safeJson = (data) => JSON.stringify(data).replace(/</g, '\\u003c');
@@ -80,7 +81,7 @@ const BlogPostDetail = () => {
         <div className="min-h-screen bg-white">
             <PageHead
                 title={post.seo_title || post.title}
-                description={post.seo_description || post.excerpt || post.title}
+                description={truncateForMeta(post.seo_description || post.excerpt || post.title)}
                 path={`/blog/${post.slug}`}
                 image={post.featured_image_url}
                 type="article"
@@ -196,7 +197,7 @@ const BlogPostDetail = () => {
                 {/* Related posts */}
                 {relatedPosts.length > 0 && (
                     <div className="mt-12 mb-16">
-                        <h2 className="font-serif text-2xl font-bold text-text-primary mb-6">Tambien te puede interesar</h2>
+                        <h2 className="font-serif text-2xl font-bold text-text-primary mb-6">También te puede interesar</h2>
                         <div className="grid md:grid-cols-3 gap-6">
                             {relatedPosts.map(p => (
                                 <Link key={p.id} to={`/blog/${p.slug}`} className="group">

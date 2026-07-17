@@ -45,7 +45,7 @@ const GuiaCazorla = () => (
     <div className="min-h-screen bg-surface">
         <PageHead
             title="Guía del Cazorla que no sale en las guías — Hinojares, Castril, Tíscar"
-            description="Rutas, sitios para comer, fiestas, almazaras y secretos locales de la Sierra de Cazorla desde Hinojares. Guía honesta hecha por la familia de Apartamentos Tío José María."
+            description="Rutas, sitios para comer, fiestas y secretos locales de la Sierra de Cazorla desde Hinojares. Guía hecha por la familia de Tío José María."
             path="/guia-cazorla"
         />
 
