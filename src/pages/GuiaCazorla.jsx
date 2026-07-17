@@ -72,7 +72,7 @@ const GuiaCazorla = () => (
 
         <main className="max-w-3xl mx-auto px-6 pb-20">
             <Section icon={Home} title="La casa y quien la lleva">
-                <p>La casa lleva el nombre del bisabuelo, <strong>Tío José María</strong>, que vivió aquí y dejó esta casona del siglo XVII en pie. Cuatro generaciones después, la siguen llevando los suyos: <strong>Mari Carmen y Jesús</strong>, en persona. Si necesitas algo durante la estancia, son ellos quienes te lo arreglan.</p>
+                <p>La casa lleva el nombre del bisabuelo, <strong>Tío José María</strong>, que vivió aquí y dejó esta casona del siglo XVIII en pie. Cuatro generaciones después, la siguen llevando los suyos: <strong>Mari Carmen y Jesús</strong>, en persona. Si necesitas algo durante la estancia, son ellos quienes te lo arreglan.</p>
                 <p>Cuando tocó restaurarla, respetamos lo que merecía respeto: los muros originales de piedra y barro a la vista, los techos de madera y caña, la chimenea de leña en cada salón. Lo demás —cocina equipada, calefacción, aire, WiFi— lo añadimos para que vivirla sea cómodo, no incómodamente auténtico.</p>
                 <p><strong>Albahaca</strong> y <strong>Tomillo</strong> son para dos personas que vienen a desconectar. <strong>Lavanda</strong> y <strong>Romero</strong>, para familias o grupos pequeños. Los cuatro tienen chimenea, los cuatro tienen vistas al Valle del Guadiana Menor, y los cuatro son independientes: nadie cruza tu salón.</p>
             </Section>
@@ -232,7 +232,7 @@ const GuiaCazorla = () => (
             {/* Cierre */}
             <section className="bg-primary text-white rounded-3xl p-8 md:p-12 text-center mt-16 md:mt-20">
                 <h2 className="font-serif text-2xl md:text-4xl font-bold mb-4">¿Quieres vivirlo?</h2>
-                <p className="text-white/90 mb-8 max-w-xl mx-auto">Mari Carmen y Jesús te esperan en Hinojares. Cuatro apartamentos con alma en una casona del siglo XVII.</p>
+                <p className="text-white/90 mb-8 max-w-xl mx-auto">Mari Carmen y Jesús te esperan en Hinojares. Cuatro apartamentos con alma en una casona del siglo XVIII.</p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                     <Link to="/#apartamentos" className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-white text-primary rounded-full font-bold shadow-lg hover:-translate-y-0.5 transition-transform">
                         Ver disponibilidad
