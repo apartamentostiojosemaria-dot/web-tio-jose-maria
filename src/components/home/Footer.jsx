@@ -70,6 +70,8 @@ const Footer = () => (
         </div>
         <div className="border-t border-white/10 pt-8 text-center text-white/75 text-sm flex flex-col gap-4">
             <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-2">
+                <Link to="/blog" className="hover:text-white transition-colors">Blog</Link>
+                <span className="opacity-20" aria-hidden="true">|</span>
                 <Link to="/aviso-legal" className="hover:text-white transition-colors">Aviso legal</Link>
                 <span className="opacity-20" aria-hidden="true">|</span>
                 <Link to="/privacidad" className="hover:text-white transition-colors">Privacidad</Link>
