@@ -11,7 +11,7 @@ const PrivacyPolicy = () => {
         <div className="min-h-screen bg-white">
             <PageHead
                 title="Política de Privacidad"
-                description="Política de privacidad de Apartamentos Rurales Tío José María. Tratamiento de datos personales, cookies, sistemas de IA y derechos del usuario conforme al RGPD, LOPDGDD y AI Act."
+                description="Política de privacidad de Apartamentos Rurales Tío José María: tratamiento de datos, cookies y derechos del usuario conforme al RGPD."
                 path="/privacidad"
             />
             <nav className="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4">
@@ -25,7 +25,7 @@ const PrivacyPolicy = () => {
             <main className="pt-24 pb-20 px-6">
                 <div className="max-w-4xl mx-auto prose prose-gray">
                     <h1 className="font-serif text-3xl md:text-4xl font-bold mb-2 text-text-primary">Política de Privacidad</h1>
-                    <p className="text-sm text-gray-400 mb-10">Última actualización: 22 de junio de 2026</p>
+                    <p className="text-sm text-gray-400 mb-10">Última actualización: 17 de julio de 2026</p>
 
                     <p className="text-gray-700 leading-relaxed mb-6">
                         En Apartamentos Rurales Tío José María tratamos tus datos personales con el cuidado que exige el
@@ -78,14 +78,10 @@ const PrivacyPolicy = () => {
                             atender consultas (visitantes), informados en todo momento. Detalle en el apartado 8.
                         </li>
                         <li>
-                            <strong>Analítica web (opcional).</strong> Páginas vistas, eventos de navegación, dispositivo,
-                            país y duración aproximada de la visita, de forma agregada y sin perfilado individual. Base:
-                            consentimiento (art. 6.1.a). Sólo se activa si lo aceptas en el aviso de cookies.
-                        </li>
-                        <li>
-                            <strong>Marketing y remarketing (opcional).</strong> Identificadores publicitarios que permiten
-                            mostrar contenido y mediciones fuera del sitio. Base: consentimiento (art. 6.1.a). Sólo se activa
-                            si lo aceptas en el aviso de cookies.
+                            <strong>Mapas incrustados (opcional).</strong> Si decides cargar el mapa de Google Maps embebido
+                            en alguna página, tu navegador se conecta directamente a Google y le transmite datos de
+                            navegación (ver apartado 10). No usamos ese mapa para construir perfiles ni con fines de
+                            marketing propio.
                         </li>
                         <li>
                             <strong>Cumplimiento legal.</strong> Datos de la reserva exigidos por la normativa turística
@@ -95,15 +91,57 @@ const PrivacyPolicy = () => {
                     </ul>
 
                     <h2 className="font-serif text-xl font-bold mt-8 mb-3 text-text-primary">4. Plazos de conservación</h2>
-                    <ul className="text-gray-700 leading-relaxed mb-4 list-disc pl-6 space-y-1">
-                        <li><strong>Datos de reserva y facturación:</strong> 5 años desde la finalización del contrato (Ley General Tributaria) y los plazos prescriptivos civiles aplicables.</li>
-                        <li><strong>Registro de viajeros (SES.HOSPEDAJES):</strong> 3 años conforme al Real Decreto 933/2021.</li>
-                        <li><strong>Área de cliente:</strong> mientras la cuenta esté activa, más 1 año tras la última actividad o hasta que solicites su baja.</li>
-                        <li><strong>Suscripción a la guía/newsletter:</strong> hasta que retires el consentimiento.</li>
-                        <li><strong>Logs del asistente de IA:</strong> 12 meses con fines de seguridad, calidad y depuración, después se anonimizan o eliminan.</li>
-                        <li><strong>Datos de analítica:</strong> 14 meses como máximo, agregados.</li>
-                        <li><strong>Datos de marketing:</strong> hasta que retires el consentimiento o expire la cookie correspondiente.</li>
-                    </ul>
+                    <p className="text-gray-700 leading-relaxed mb-3">
+                        Conservamos cada dato solo mientras es necesario para la finalidad que lo justifica y, después, el
+                        tiempo exigido por la normativa aplicable:
+                    </p>
+                    <div className="overflow-x-auto mb-4 rounded-xl border border-gray-200">
+                        <table className="w-full text-sm text-left text-gray-700">
+                            <thead className="bg-rural-50 text-xs uppercase tracking-wide text-gray-600">
+                                <tr>
+                                    <th scope="col" className="px-4 py-2.5 font-bold">Dato</th>
+                                    <th scope="col" className="px-4 py-2.5 font-bold">Plazo de conservación</th>
+                                    <th scope="col" className="px-4 py-2.5 font-bold">Base legal</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                <tr>
+                                    <td className="px-4 py-2.5 align-top font-medium text-text-primary">Obligaciones tributarias de la reserva</td>
+                                    <td className="px-4 py-2.5 align-top">4 años desde la finalización de la obligación</td>
+                                    <td className="px-4 py-2.5 align-top">Art. 66 Ley General Tributaria</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2.5 align-top font-medium text-text-primary">Facturas y documentación mercantil</td>
+                                    <td className="px-4 py-2.5 align-top">6 años desde el último asiento de los libros</td>
+                                    <td className="px-4 py-2.5 align-top">Art. 30 Código de Comercio</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2.5 align-top font-medium text-text-primary">Registro de viajeros (SES.HOSPEDAJES)</td>
+                                    <td className="px-4 py-2.5 align-top">3 años</td>
+                                    <td className="px-4 py-2.5 align-top">Real Decreto 933/2021</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2.5 align-top font-medium text-text-primary">Área de cliente</td>
+                                    <td className="px-4 py-2.5 align-top">Mientras la cuenta esté activa, más 1 año tras la última actividad o hasta que solicites su baja</td>
+                                    <td className="px-4 py-2.5 align-top">Ejecución del contrato</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2.5 align-top font-medium text-text-primary">Suscripción a la guía/newsletter</td>
+                                    <td className="px-4 py-2.5 align-top">Hasta que retires el consentimiento</td>
+                                    <td className="px-4 py-2.5 align-top">Consentimiento (art. 6.1.a RGPD)</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2.5 align-top font-medium text-text-primary">Logs del asistente de IA</td>
+                                    <td className="px-4 py-2.5 align-top">12 meses; después se anonimizan o eliminan</td>
+                                    <td className="px-4 py-2.5 align-top">Interés legítimo (seguridad y calidad)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p className="text-gray-700 leading-relaxed mb-4">
+                        Al margen de estos plazos, cualquier dato puede conservarse de forma bloqueada mientras existan
+                        acciones legales pendientes derivadas de la relación contractual.
+                    </p>
 
                     <h2 className="font-serif text-xl font-bold mt-8 mb-3 text-text-primary">5. Destinatarios y encargados del tratamiento</h2>
                     <p className="text-gray-700 leading-relaxed mb-2">
@@ -128,8 +166,8 @@ const PrivacyPolicy = () => {
                     <p className="text-gray-700 leading-relaxed mb-4">
                         No tomamos decisiones automatizadas con efectos jurídicos o significativos sobre el usuario. El
                         asistente virtual ofrece información y sugerencias, pero las decisiones sobre la reserva, el precio o
-                        la atención personal las toma siempre el responsable. La analítica web se trata de forma agregada y
-                        no construye perfiles individuales.
+                        la atención personal las toma siempre el responsable. No usamos analítica web ni construimos
+                        perfiles individuales de los visitantes.
                     </p>
 
                     <h2 className="font-serif text-xl font-bold mt-8 mb-3 text-text-primary">7. Transferencias internacionales</h2>
@@ -160,7 +198,7 @@ const PrivacyPolicy = () => {
                     <p className="text-gray-700 leading-relaxed mb-2">Puedes ejercer en cualquier momento los siguientes derechos:</p>
                     <ul className="text-gray-700 leading-relaxed mb-4 list-disc pl-6 space-y-1">
                         <li>Acceso, rectificación, supresión, oposición, limitación y portabilidad de tus datos.</li>
-                        <li>Retirar el consentimiento prestado para finalidades opcionales (analítica, marketing, newsletter).</li>
+                        <li>Retirar el consentimiento prestado para finalidades opcionales (newsletter, mapas incrustados).</li>
                         <li>No ser objeto de decisiones automatizadas significativas (ya garantizado, ver apartado 6).</li>
                         <li>Reclamar ante la <a href="https://www.aepd.es" target="_blank" rel="noopener noreferrer" className="underline text-rural-700">Agencia Española de Protección de Datos</a> si consideras que tu derecho no ha sido atendido.</li>
                     </ul>
@@ -175,24 +213,31 @@ const PrivacyPolicy = () => {
 
                     <h2 className="font-serif text-xl font-bold mt-8 mb-3 text-text-primary">10. Cookies y almacenamiento local</h2>
                     <p className="text-gray-700 leading-relaxed mb-4">
-                        Usamos tres tipos de cookies y tecnologías similares. Las técnicas son imprescindibles y están exentas
-                        de consentimiento previo (art. 22.2 LSSI). Las opcionales sólo se activan si las aceptas en el aviso
-                        de cookies, y puedes cambiar tu elección en cualquier momento.
+                        Esta web no usa cookies de analítica ni de marketing. Solo utilizamos cookies técnicas, exentas de
+                        consentimiento previo por ser imprescindibles para el funcionamiento del sitio (art. 22.2 LSSI):
                     </p>
                     <ul className="text-gray-700 leading-relaxed mb-4 list-disc pl-6 space-y-2">
                         <li>
-                            <strong>Técnicas (necesarias).</strong> <code>tjm_cookie_consent_v2</code> guarda tu elección
-                            sobre cookies. <code>sb-*</code> son tokens de sesión de Supabase, sólo presentes cuando inicias
-                            sesión en el área de cliente o admin. El Service Worker y la caché PWA almacenan recursos del
-                            sitio para que funcione offline; no contienen datos personales.
+                            <strong><code>tjm_cookie_consent_v2</code></strong> — guarda que ya has visto el aviso de
+                            cookies. Duración: 1 año.
                         </li>
                         <li>
-                            <strong>Analítica (opcional).</strong> Métricas agregadas de uso del sitio (páginas vistas,
-                            duración, dispositivo, país). Sin perfilado individual.
+                            <strong><code>sb-*</code></strong> — tokens de sesión de Supabase, sólo presentes cuando inicias
+                            sesión en el área de cliente o de administración. Duración: sesión / hasta cierre de sesión.
                         </li>
                         <li>
-                            <strong>Marketing (opcional).</strong> Cookies y píxeles de terceros para mostrar contenido
-                            relevante fuera del sitio y medir campañas.
+                            <strong><code>__cf_bm</code></strong> — cookie técnica anti-bot de Cloudflare, la establece el
+                            CDN que sirve las imágenes alojadas en nuestro proveedor de almacenamiento (Supabase Storage).
+                            No identifica personalmente al usuario ni se usa con fines publicitarios. Duración: ~30 minutos.
+                        </li>
+                        <li>
+                            <strong>Service Worker y caché PWA</strong> — almacenan recursos del sitio (imágenes, páginas)
+                            para que funcione offline; no contienen datos personales.
+                        </li>
+                        <li>
+                            <strong><code>tjm_maps_ok</code> (localStorage, opcional).</strong> Solo se crea si decides
+                            cargar un mapa de Google Maps embebido, para no volver a preguntarte. Al cargarlo, Google puede
+                            establecer sus propias cookies según su política de privacidad, ajena a nosotros.
                         </li>
                     </ul>
                     <p className="text-gray-700 leading-relaxed mb-4">
@@ -203,7 +248,7 @@ const PrivacyPolicy = () => {
                         >
                             Gestionar mis preferencias de cookies
                         </button>
-                        {' '}— vuelve a abrir el panel para cambiar tu decisión cuando quieras.
+                        {' '}— vuelve a abrir el aviso cuando quieras.
                     </p>
 
                     <h2 className="font-serif text-xl font-bold mt-8 mb-3 text-text-primary">11. Cambios en esta política</h2>

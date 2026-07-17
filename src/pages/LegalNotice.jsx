@@ -6,7 +6,7 @@ const LegalNotice = () => (
     <div className="min-h-screen bg-white">
         <PageHead
             title="Aviso Legal"
-            description="Aviso legal de Apartamentos Rurales Tío José María. Información del prestador, condiciones de uso, propiedad intelectual y normativa aplicable conforme a la LSSI-CE."
+            description="Aviso legal de Apartamentos Rurales Tío José María: datos del prestador, condiciones de uso y normativa aplicable (LSSI-CE)."
             path="/aviso-legal"
             noindex={false}
         />
@@ -21,7 +21,7 @@ const LegalNotice = () => (
         <main className="pt-24 pb-20 px-6">
             <div className="max-w-4xl mx-auto prose prose-gray">
                 <h1 className="font-serif text-3xl md:text-4xl font-bold mb-2 text-text-primary">Aviso Legal</h1>
-                <p className="text-sm text-gray-400 mb-10">Última actualización: 21 de junio de 2026</p>
+                <p className="text-sm text-gray-400 mb-10">Última actualización: 17 de julio de 2026</p>
 
                 <h2 className="font-serif text-xl font-bold mt-8 mb-3 text-text-primary">1. Identificación del prestador del servicio</h2>
                 <p className="text-gray-700 leading-relaxed mb-4">
@@ -103,18 +103,15 @@ const LegalNotice = () => (
                     </a>.
                 </p>
 
-                <h2 className="font-serif text-xl font-bold mt-8 mb-3 text-text-primary">9. Resolución de litigios en línea</h2>
+                <h2 className="font-serif text-xl font-bold mt-8 mb-3 text-text-primary">9. Resolución de conflictos y reclamaciones</h2>
                 <p className="text-gray-700 leading-relaxed mb-4">
-                    De conformidad con el Reglamento (UE) 524/2013, se informa al usuario de la existencia de una plataforma
-                    de resolución de litigios en línea de la Comisión Europea:{' '}
-                    <a
-                        href="https://ec.europa.eu/consumers/odr/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline text-rural-700"
-                    >
-                        ec.europa.eu/consumers/odr
-                    </a>.
+                    La plataforma europea de resolución de litigios en línea (ODR) de la Comisión Europea dejó de estar
+                    operativa el 20 de julio de 2025, en aplicación del Reglamento (UE) 2024/3228, por lo que no la
+                    referenciamos como vía de reclamación. Como establecimiento turístico andaluz, disponemos de hojas de
+                    reclamaciones a disposición de los usuarios (ver apartado 8 anterior). Además, cualquier controversia de
+                    consumo derivada de una reserva puede someterse, de forma gratuita y voluntaria, a las Juntas Arbitrales
+                    de Consumo, el sistema de resolución extrajudicial de conflictos gestionado por las administraciones de
+                    consumo españolas.
                 </p>
 
                 <h2 className="font-serif text-xl font-bold mt-8 mb-3 text-text-primary">10. Legislación aplicable y jurisdicción</h2>

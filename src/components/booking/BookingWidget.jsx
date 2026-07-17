@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Users, ChevronLeft, ChevronRight, Check, AlertCircle, ArrowRight, Phone, Mail, User, MapPin } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
@@ -196,7 +197,7 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
                     <h3 className="font-serif font-bold text-lg text-text-primary">Reserva Directa</h3>
                     <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-green-50 text-green-700">Sin comisiones</span>
                 </div>
-                <p className="text-xs text-gray-600">Mejor precio garantizado. Sin intermediarios.</p>
+                <p className="text-xs text-gray-600">Mismo alojamiento y fechas: si lo encuentras más barato, igualamos el precio.</p>
             </div>
 
             <AnimatePresence mode="wait">
@@ -269,14 +270,14 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label htmlFor="bk-phone" className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-1.5 block">Telefono</label>
+                                    <label htmlFor="bk-phone" className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-1.5 block">Teléfono</label>
                                     <div className="relative">
                                         <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
                                         <input id="bk-phone" type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-rural-200 focus:border-rural-400" placeholder="+34..." />
                                     </div>
                                 </div>
                                 <div>
-                                    <label htmlFor="bk-pax" className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-1.5 block">Huespedes</label>
+                                    <label htmlFor="bk-pax" className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-1.5 block">Huéspedes</label>
                                     <div className="relative">
                                         <Users size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
                                         <select id="bk-pax" value={form.pax} onChange={e => setForm(f => ({ ...f, pax: Number(e.target.value) }))} className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-rural-200 focus:border-rural-400 appearance-none bg-white">
@@ -307,11 +308,11 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
                                 <div className="flex justify-between"><span className="text-gray-500">Entrada</span><span className="font-bold">{checkIn?.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</span></div>
                                 <div className="flex justify-between"><span className="text-gray-500">Salida</span><span className="font-bold">{checkOut?.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</span></div>
                                 <div className="flex justify-between"><span className="text-gray-500">Noches</span><span className="font-bold">{priceBreakdown?.nights}</span></div>
-                                <div className="flex justify-between"><span className="text-gray-500">Huespedes</span><span className="font-bold">{form.pax}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">Huéspedes</span><span className="font-bold">{form.pax}</span></div>
                                 <hr className="border-rural-200" />
                                 <div className="flex justify-between"><span className="text-gray-500">Nombre</span><span className="font-bold">{form.name}</span></div>
                                 <div className="flex justify-between"><span className="text-gray-500">Email</span><span className="font-bold text-xs">{form.email}</span></div>
-                                {form.phone && <div className="flex justify-between"><span className="text-gray-500">Telefono</span><span className="font-bold">{form.phone}</span></div>}
+                                {form.phone && <div className="flex justify-between"><span className="text-gray-500">Teléfono</span><span className="font-bold">{form.phone}</span></div>}
                                 <hr className="border-rural-200" />
                                 <div className="flex justify-between text-lg"><span className="font-bold text-text-primary">Total</span><span className="font-bold text-primary">{priceBreakdown?.hasPrices ? `${priceBreakdown.total}€` : 'A confirmar'}</span></div>
                             </div>
@@ -320,9 +321,40 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
                             <AlertCircle size={14} className="shrink-0 mt-0.5" />
                             <span>Al enviar la solicitud bloqueamos provisionalmente estas fechas y te confirmamos la disponibilidad antes de 24 h. El pago se realiza directamente con el propietario.</span>
                         </div>
+
+                        {/* Resumen visible de condiciones clave, antes del envío. */}
+                        <p className="text-xs text-gray-600 flex flex-wrap items-center gap-x-1.5 gap-y-1">
+                            <span>Solicitud sin cargo</span><span aria-hidden="true">·</span>
+                            <span>Te confirmamos en menos de 24 h</span><span aria-hidden="true">·</span>
+                            <span>Check-in presencial 16:00–20:00</span><span aria-hidden="true">·</span>
+                            <span>Sin fianza</span>
+                            {' '}—{' '}
+                            <Link to="/condiciones" target="_blank" className="underline text-rural-700 font-medium">
+                                Ver condiciones de reserva
+                            </Link>
+                        </p>
+
+                        {/* Primera capa informativa RGPD (patrón AEPD), discreta pero visible sin desplegar. */}
+                        <p className="text-[11px] leading-relaxed text-gray-500 border-t border-gray-100 pt-3">
+                            <strong>Protección de datos — información básica.</strong> Responsable: el titular del alojamiento
+                            (ver <Link to="/aviso-legal" target="_blank" className="underline">aviso legal</Link>).
+                            Finalidad: gestionar tu solicitud de reserva. Legitimación: medidas precontractuales a petición
+                            tuya (art. 6.1.b RGPD). Destinatarios: Supabase, alojado en la UE, como encargado del
+                            tratamiento. Conservación: mientras se gestiona tu solicitud y los plazos legales aplicables.
+                            Derechos: acceso, rectificación, supresión y demás derechos escribiendo a{' '}
+                            <a href="mailto:apartamentostiojosemaria@gmail.com" className="underline">apartamentostiojosemaria@gmail.com</a>.
+                            Más información en la{' '}
+                            <Link to="/privacidad" target="_blank" className="underline">política de privacidad</Link>.
+                        </p>
+
                         {error && <p className="text-xs text-red-500 flex items-center gap-1" role="alert"><AlertCircle size={12} /> {error}</p>}
                         <button disabled={submitting} onClick={handleSubmit} className="w-full py-3.5 rounded-2xl font-bold text-white text-sm flex items-center justify-center gap-2 bg-primary transition-all hover:shadow-lg disabled:opacity-60">
-                            {submitting ? 'Enviando...' : 'Enviar solicitud'} {!submitting && <Check size={16} />}
+                            {submitting
+                                ? 'Enviando...'
+                                : priceBreakdown?.hasPrices
+                                    ? `Solicitar reserva por ${priceBreakdown.total} € · Sin cargo ahora`
+                                    : 'Solicitar reserva · Sin cargo ahora'}
+                            {!submitting && <Check size={16} />}
                         </button>
                     </motion.div>
                 )}

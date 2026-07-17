@@ -7,16 +7,12 @@ const STORAGE_KEY = 'tjm_cookie_consent_v2';
 const CONSENT_EVENT = 'tjm:cookie-consent';
 // Si cambia la política de privacidad, sube esta versión y se vuelve a mostrar
 // el aviso a quien aceptó la versión anterior.
-const CONSENT_VERSION = '2026-06-21';
+const CONSENT_VERSION = '2026-07-17';
 
-const DEFAULT_CONSENT = {
-    necessary: true,   // siempre activas (técnicas, no requieren consentimiento)
-    analytics: false,
-    marketing: false,
-    timestamp: null,
-    version: CONSENT_VERSION,
-};
-
+// La web solo usa cookies técnicas (sesión, preferencias, __cf_bm del CDN de
+// imágenes). No hay scripts de analítica ni de marketing, así que no existen
+// categorías opcionales que activar/desactivar aquí. Los mapas de Google Maps
+// se gestionan aparte, por componente, con su propio opt-in (ConsentMap).
 export const getConsent = () => {
     try {
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -39,7 +35,6 @@ const saveConsent = (consent) => {
 const CookieConsent = () => {
     const [visible, setVisible] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
-    const [prefs, setPrefs] = useState(DEFAULT_CONSENT);
 
     useEffect(() => {
         const existing = getConsent();
@@ -47,16 +42,13 @@ const CookieConsent = () => {
             const timer = setTimeout(() => setVisible(true), 1500);
             return () => clearTimeout(timer);
         }
-        setPrefs(existing);
     }, []);
 
     // AEPD: retirar el consentimiento debe ser tan fácil como darlo. Cualquier
-    // sitio (footer, política de privacidad…) puede reabrir el panel disparando
+    // sitio (footer, política de privacidad…) puede reabrir el aviso disparando
     // el evento `tjm:cookie-consent-reopen`.
     useEffect(() => {
         const reopen = () => {
-            const existing = getConsent();
-            if (existing) setPrefs(existing);
             setShowSettings(true);
             setVisible(true);
         };
@@ -64,23 +56,15 @@ const CookieConsent = () => {
         return () => window.removeEventListener('tjm:cookie-consent-reopen', reopen);
     }, []);
 
-    const acceptAll = () => {
-        saveConsent({ necessary: true, analytics: true, marketing: true });
-        setVisible(false);
-    };
-
-    const rejectAll = () => {
-        saveConsent({ necessary: true, analytics: false, marketing: false });
-        setVisible(false);
-    };
-
-    const savePartial = () => {
-        saveConsent(prefs);
+    const acknowledge = () => {
+        saveConsent({ necessary: true });
         setShowSettings(false);
         setVisible(false);
     };
 
-    const togglePref = (key) => setPrefs((p) => ({ ...p, [key]: !p[key] }));
+    const resetMapsConsent = () => {
+        localStorage.removeItem('tjm_maps_ok');
+    };
 
     return (
         <AnimatePresence>
@@ -103,9 +87,9 @@ const CookieConsent = () => {
                                     Tu privacidad importa
                                 </h2>
                                 <p id="cookie-desc" className="text-sm text-gray-700 leading-relaxed mb-4">
-                                    Usamos cookies técnicas necesarias para que la web funcione, y opcionalmente cookies de
-                                    analítica y marketing para mejorar el servicio. Puedes aceptarlas todas, rechazarlas o
-                                    configurar tu elección. Tu decisión queda guardada y la puedes cambiar cuando quieras.{' '}
+                                    Esta web solo usa cookies técnicas necesarias para funcionar (sesión, preferencias,
+                                    seguridad). No usamos cookies de analítica ni de marketing. Los mapas de Google Maps
+                                    incrustados en algunas páginas son opcionales: solo se cargan si tú lo decides.{' '}
                                     <Link to="/privacidad" className="underline text-rural-700 font-medium">
                                         Política de privacidad
                                     </Link>{' '}
@@ -117,26 +101,17 @@ const CookieConsent = () => {
                                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch">
                                     <button
                                         type="button"
-                                        onClick={rejectAll}
-                                        className="px-5 py-2.5 bg-white border-2 border-rural-700 text-rural-700 rounded-full text-sm font-bold hover:bg-rural-50 transition-colors flex-1"
-                                        aria-label="Rechazar todas las cookies opcionales"
-                                    >
-                                        Rechazar todas
-                                    </button>
-                                    <button
-                                        type="button"
                                         onClick={() => setShowSettings(true)}
                                         className="px-5 py-2.5 bg-white border-2 border-rural-700 text-rural-700 rounded-full text-sm font-bold hover:bg-rural-50 transition-colors flex items-center justify-center gap-2 flex-1"
                                     >
-                                        <Settings2 size={16} aria-hidden="true" /> Configurar
+                                        <Settings2 size={16} aria-hidden="true" /> Más detalles
                                     </button>
                                     <button
                                         type="button"
-                                        onClick={acceptAll}
+                                        onClick={acknowledge}
                                         className="px-5 py-2.5 bg-rural-700 border-2 border-rural-700 text-white rounded-full text-sm font-bold hover:bg-rural-800 transition-colors flex-1"
-                                        aria-label="Aceptar todas las cookies"
                                     >
-                                        Aceptar todas
+                                        Entendido
                                     </button>
                                 </div>
                             </>
@@ -144,7 +119,7 @@ const CookieConsent = () => {
                             <>
                                 <div className="flex items-start justify-between mb-4">
                                     <h2 className="font-serif text-lg md:text-xl font-bold text-text-primary">
-                                        Configura tus cookies
+                                        Cookies de este sitio
                                     </h2>
                                     <button
                                         type="button"
@@ -158,40 +133,37 @@ const CookieConsent = () => {
                                 <div className="space-y-3 mb-5">
                                     <CookieRow
                                         label="Necesarias"
-                                        desc="Imprescindibles para el funcionamiento del sitio (sesión, preferencias técnicas, seguridad). No se pueden desactivar."
+                                        desc="Imprescindibles para el funcionamiento del sitio (sesión, preferencias técnicas, seguridad, la cookie __cf_bm anti-bot del CDN de imágenes). No se pueden desactivar."
                                         checked={true}
                                         disabled={true}
                                         onChange={() => {}}
                                     />
-                                    <CookieRow
-                                        label="Analítica"
-                                        desc="Métricas anónimas de uso (páginas vistas, tiempo en sitio) para mejorar el contenido. Sin perfil personal."
-                                        checked={prefs.analytics}
-                                        onChange={() => togglePref('analytics')}
-                                    />
-                                    <CookieRow
-                                        label="Marketing"
-                                        desc="Cookies de terceros para mostrarte contenido relevante fuera de este sitio y medir campañas."
-                                        checked={prefs.marketing}
-                                        onChange={() => togglePref('marketing')}
-                                    />
+                                    <div className="p-3 rounded-xl border bg-white border-gray-200">
+                                        <p className="text-sm font-bold text-text-primary mb-1">Mapas de Google (opcional, por mapa)</p>
+                                        <p className="text-xs text-gray-600 leading-relaxed mb-2">
+                                            No forman parte de este aviso general: cada mapa incrustado te pregunta antes
+                                            de cargarse, porque en ese momento Google recibe datos de tu navegación.
+                                        </p>
+                                        <button
+                                            type="button"
+                                            onClick={resetMapsConsent}
+                                            className="text-xs font-bold text-rural-700 underline hover:text-rural-800"
+                                        >
+                                            Olvidar mi decisión sobre los mapas
+                                        </button>
+                                    </div>
+                                    <p className="text-xs text-gray-500">
+                                        No usamos cookies de analítica ni de marketing. Más detalle en la{' '}
+                                        <Link to="/privacidad" className="underline text-rural-700">política de privacidad</Link>.
+                                    </p>
                                 </div>
-                                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={rejectAll}
-                                        className="px-5 py-2.5 bg-white border-2 border-rural-700 text-rural-700 rounded-full text-sm font-bold hover:bg-rural-50 transition-colors flex-1"
-                                    >
-                                        Rechazar todas
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={savePartial}
-                                        className="px-5 py-2.5 bg-rural-700 text-white rounded-full text-sm font-bold hover:bg-rural-800 transition-colors flex-1"
-                                    >
-                                        Guardar selección
-                                    </button>
-                                </div>
+                                <button
+                                    type="button"
+                                    onClick={acknowledge}
+                                    className="w-full px-5 py-2.5 bg-rural-700 text-white rounded-full text-sm font-bold hover:bg-rural-800 transition-colors"
+                                >
+                                    Entendido
+                                </button>
                             </>
                         )}
                     </div>

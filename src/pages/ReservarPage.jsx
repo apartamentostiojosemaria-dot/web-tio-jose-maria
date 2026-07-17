@@ -130,7 +130,7 @@ const ReservarPage = () => {
     return (
         <div className="min-h-screen bg-white">
             <PageHead
-                title="Reservar — Apartamentos Tío José María"
+                title="Reserva directa con disponibilidad real"
                 description="Reserva directa sin intermediarios. Elige fechas, comprueba disponibilidad en tiempo real y reserva en menos de 2 minutos."
                 path="/reservar"
             />
@@ -350,14 +350,27 @@ const GuestForm = ({ selected, checkIn, checkOut, guests, form, setForm, holding
             <label className="flex items-start gap-3 p-3 bg-white rounded-xl border border-gray-100">
                 <input type="checkbox" required checked={form.accept}
                     onChange={(e) => setForm({ ...form, accept: e.target.checked })}
+                    aria-required="true"
                     className="mt-1 h-5 w-5 accent-rural-700 cursor-pointer" />
                 <span className="text-sm text-gray-700 leading-relaxed">
-                    He leído y acepto la{' '}
-                    <Link to="/privacidad" target="_blank" className="underline text-rural-700">política de privacidad</Link>{' '}
-                    y el{' '}
-                    <Link to="/aviso-legal" target="_blank" className="underline text-rural-700">aviso legal</Link>.
+                    He leído y acepto las{' '}
+                    <Link to="/condiciones" target="_blank" className="underline text-rural-700">condiciones de reserva</Link>.
                 </span>
             </label>
+
+            {/* La privacidad se informa, no se consiente: la base del tratamiento es la
+                ejecución de la reserva (art. 6.1.b RGPD), no el consentimiento del art. 6.1.a. */}
+            <p className="text-[11px] leading-relaxed text-gray-500 px-1">
+                <strong>Protección de datos — información básica.</strong> Responsable: el titular del alojamiento (ver{' '}
+                <Link to="/aviso-legal" target="_blank" className="underline">aviso legal</Link>). Finalidad: gestionar tu
+                reserva y, en su caso, el pago. Legitimación: ejecución de un contrato (art. 6.1.b RGPD). Destinatarios:
+                Supabase (UE) y Stripe, como encargados del tratamiento. Conservación: mientras dure la relación
+                contractual y los plazos legales aplicables. Puedes ejercer tus derechos de acceso, rectificación,
+                supresión y demás escribiendo a{' '}
+                <a href="mailto:apartamentostiojosemaria@gmail.com" className="underline">apartamentostiojosemaria@gmail.com</a>.
+                Más información en la{' '}
+                <Link to="/privacidad" target="_blank" className="underline">política de privacidad</Link>.
+            </p>
 
             <label className="flex items-start gap-3 p-3 bg-rural-50/40 rounded-xl border border-gray-100">
                 <input type="checkbox" checked={form.marketing}
@@ -374,7 +387,7 @@ const GuestForm = ({ selected, checkIn, checkOut, guests, form, setForm, holding
 
         <button type="submit" disabled={holding || !form.accept}
             className="mt-6 w-full inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full font-bold text-white bg-primary shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0">
-            {holding ? 'Reservando…' : <>Reservar y pagar <ArrowRight size={18} aria-hidden="true" /></>}
+            {holding ? 'Reservando…' : <>Reservar y pagar {formatPrice(selected.total_price)} <ArrowRight size={18} aria-hidden="true" /></>}
         </button>
 
         <p className="mt-4 text-xs text-gray-500 text-center max-w-md mx-auto">

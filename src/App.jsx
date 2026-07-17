@@ -33,6 +33,7 @@ const MapPage = lazy(() => import('./pages/MapPage'));
 const EventsPage = lazy(() => import('./pages/EventsPage'));
 const HinojaresPage = lazy(() => import('./pages/HinojaresPage'));
 const ReservarPage = lazy(() => import('./pages/ReservarPage'));
+const BookingConditions = lazy(() => import('./pages/BookingConditions'));
 const ReservaConfirmada = lazy(() => import('./pages/ReservaConfirmada'));
 const PrecheckinPage = lazy(() => import('./pages/PrecheckinPage'));
 const AdminLogin = lazy(() => import('./components/admin/AdminLogin'));
@@ -134,6 +135,7 @@ export default function App() {
                         <Route path="/eventos" element={<EventsPage />} />
                         <Route path="/hinojares" element={<HinojaresPage />} />
                         <Route path="/reservar" element={<ReservarPage />} />
+                        <Route path="/condiciones" element={<BookingConditions />} />
                         <Route path="/reservar/confirmada" element={<ReservaConfirmada />} />
                         <Route path="/precheckin" element={<PrecheckinPage />} />
                         <Route path="/blog" element={<BlogPage />} />
