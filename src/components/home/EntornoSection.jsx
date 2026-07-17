@@ -142,7 +142,7 @@ const EntornoSection = ({ places, routes }) => {
                     </div>
                     <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
                         <div className="text-center lg:text-left">
-                            <h3 className="font-serif text-3xl md:text-5xl font-bold mb-6">Preparado para tu desconexión?</h3>
+                            <h3 className="font-serif text-3xl md:text-5xl font-bold mb-6">¿Preparado para tu desconexión?</h3>
                             <p className="text-lg opacity-90 max-w-2xl mx-auto lg:mx-0 mb-10 leading-relaxed">
                                 Estamos en Calle Baja 1, Hinojares. Te facilitamos el camino para que solo tengas que preocuparte de disfrutar.
                             </p>
