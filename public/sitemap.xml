@@ -4,45 +4,57 @@
   xmlns:image="http://www.google.com/schemas/sitemaps-image/1.1">
   <url>
     <loc>https://tiojosemaria.com/</loc>
-    <lastmod>2026-06-22</lastmod>
+    <lastmod>2026-07-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://tiojosemaria.com/hinojares</loc>
-    <lastmod>2026-06-22</lastmod>
+    <lastmod>2026-07-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://tiojosemaria.com/rutas</loc>
-    <lastmod>2026-06-22</lastmod>
+    <lastmod>2026-07-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://tiojosemaria.com/eventos</loc>
-    <lastmod>2026-06-22</lastmod>
+    <lastmod>2026-07-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://tiojosemaria.com/blog</loc>
-    <lastmod>2026-06-22</lastmod>
+    <lastmod>2026-07-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>https://tiojosemaria.com/reservar</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>https://tiojosemaria.com/aviso-legal</loc>
-    <lastmod>2026-06-22</lastmod>
+    <lastmod>2026-07-17</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.2</priority>
   </url>
   <url>
     <loc>https://tiojosemaria.com/privacidad</loc>
-    <lastmod>2026-06-22</lastmod>
+    <lastmod>2026-07-17</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://tiojosemaria.com/condiciones</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
   </url>
   <url>
     <loc>https://tiojosemaria.com/apartamento/lavanda</loc>

@@ -35,12 +35,23 @@ function urlEntry({ loc, lastmod = today, priority = '0.7', changefreq = 'monthl
         })
         .join('\n');
     const imageSection = imageBlock ? `\n${imageBlock}` : '';
-    return `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>${imageSection}\n  </url>`;
+    // loc va siempre escapado: un slug/valor con "&" u otro caracter especial
+    // no debe poder romper el XML (sitemap invalido = GSC lo descarta entero).
+    return `  <url>\n    <loc>${escapeXml(loc)}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>${imageSection}\n  </url>`;
 }
 
 function isoDate(value) {
     if (!value) return today;
     return new Date(value).toISOString().slice(0, 10);
+}
+
+// Normaliza un slug de Supabase a como debe aparecer en la URL canonica:
+// sin espacios sobrantes ni barras — así la URL nunca lleva trailing slash
+// (coherente con los canonical que genera PageHead.jsx) ni queda vacía/rota
+// por un valor sucio en la BD.
+function normalizeSlug(slug) {
+    if (!slug) return '';
+    return String(slug).trim().replace(/^\/+|\/+$/g, '');
 }
 
 async function fetchTable(table, columns = 'slug, updated_at') {
@@ -63,20 +74,22 @@ async function main() {
         urlEntry({ loc: `${SITE_URL}/reservar`, priority: '0.9', changefreq: 'monthly' }),
         urlEntry({ loc: `${SITE_URL}/aviso-legal`, priority: '0.2', changefreq: 'yearly' }),
         urlEntry({ loc: `${SITE_URL}/privacidad`, priority: '0.3', changefreq: 'yearly' }),
+        urlEntry({ loc: `${SITE_URL}/condiciones`, priority: '0.4', changefreq: 'yearly' }),
     ];
 
     const apartments = await fetchTable('apartments', 'slug, name, updated_at, images, short_description');
     for (const a of apartments) {
-        if (!a.slug) continue;
+        const slug = normalizeSlug(a.slug);
+        if (!slug) continue;
         const images = (a.images || []).slice(0, 6).map((url, i) => ({
             url,
-            title: `Apartamento ${a.name || a.slug}`,
+            title: `Apartamento ${a.name || slug}`,
             caption: i === 0 && a.short_description
                 ? a.short_description
-                : `Apartamento ${a.name || a.slug} en Casa Rural Tío José María, Hinojares (foto ${i + 1})`,
+                : `Apartamento ${a.name || slug} en Casa Rural Tío José María, Hinojares (foto ${i + 1})`,
         }));
         urls.push(urlEntry({
-            loc: `${SITE_URL}/apartamento/${a.slug}`,
+            loc: `${SITE_URL}/apartamento/${slug}`,
             lastmod: isoDate(a.updated_at),
             priority: '0.8',
             images,
@@ -85,16 +98,17 @@ async function main() {
 
     const posts = await fetchTable('blog_posts', 'slug, title, updated_at, published, featured_image_url, excerpt');
     for (const p of posts) {
-        if (!p.slug || p.published === false) continue;
+        const slug = normalizeSlug(p.slug);
+        if (!slug || p.published === false) continue;
         const images = p.featured_image_url
             ? [{
                 url: p.featured_image_url,
-                title: p.title || p.slug,
+                title: p.title || slug,
                 caption: p.excerpt || p.title || '',
             }]
             : [];
         urls.push(urlEntry({
-            loc: `${SITE_URL}/blog/${p.slug}`,
+            loc: `${SITE_URL}/blog/${slug}`,
             lastmod: isoDate(p.updated_at),
             priority: '0.7',
             images,

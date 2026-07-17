@@ -11,7 +11,15 @@
          (src/components/seo/PageHead.jsx) POR PÁGINA. NO ponerlos estáticos aquí: el prerender
          añade los de helmet sin borrar los del template y se DUPLICAN. Con dos <link canonical>,
          Google se queda con el primero (apuntaba a "/") y canonicaliza todas las subpáginas a la
-         home → caen del índice. -->
+         home → caen del índice.
+
+         El <title> de aquí abajo SÍ se queda estático a propósito: es el fallback para rutas que
+         NO se prerenderizan (p.ej. /admin, /clientes). Para las rutas que SÍ se prerenderizan,
+         react-helmet-async (React19Dispatcher, sin marca data-rh) añade su propio <title> al
+         final de <head> sin tocar este; scripts/prerender.js deduplica <title>/canonical/
+         description/og:*/twitter:* en post-proceso ANTES de escribir cada dist/<ruta>/index.html,
+         quedándose siempre con la ÚLTIMA aparición (la de Helmet). Si tocas esta plantilla o el
+         pipeline de Helmet, revisa esa dedupeHead() en prerender.js. -->
 
     <!-- Geo -->
     <meta name="geo.region" content="ES-J">
