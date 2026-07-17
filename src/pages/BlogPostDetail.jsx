@@ -170,7 +170,12 @@ const BlogPostDetail = () => {
                             [&_ol]:text-secondary [&_ol]:space-y-2 [&_ol]:ml-4 [&_ol]:list-decimal
                             [&_li]:leading-relaxed
                             [&_a]:text-primary [&_a]:font-bold [&_a]:underline
-                            [&_img]:rounded-xl [&_img]:shadow-lg [&_img]:my-6
+                            [&_img]:rounded-xl [&_img]:shadow-lg [&_img]:my-6 [&_img]:w-full
+                            [&_figure]:my-8 [&_figure]:mx-0
+                            [&_figcaption]:text-xs [&_figcaption]:text-gray-400 [&_figcaption]:-mt-4 [&_figcaption]:mb-4 [&_figcaption]:text-center [&_figcaption]:italic
+                            [&_table]:w-full [&_table]:my-6 [&_table]:text-sm
+                            [&_th]:text-left [&_th]:font-bold [&_th]:text-primary [&_th]:uppercase [&_th]:text-xs [&_th]:tracking-widest [&_th]:border-b-2 [&_th]:border-primary [&_th]:px-3 [&_th]:py-2
+                            [&_td]:border-b [&_td]:border-gray-100 [&_td]:px-3 [&_td]:py-2 [&_td]:text-secondary
                             [&_blockquote]:border-l-4 [&_blockquote]:border-primary/30 [&_blockquote]:pl-6 [&_blockquote]:italic [&_blockquote]:text-secondary
                             [&_strong]:text-text-primary"
                         dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content || '', { ADD_ATTR: ['target', 'rel'] }) }}
