@@ -207,6 +207,17 @@
     </image:image>
   </url>
   <url>
+    <loc>https://tiojosemaria.com/blog/donde-alojarse-sierra-de-cazorla-hinojares</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/albahaca/1febf30f-e1c2-403d-a5f5-8628b0fec18a-1024x683.jpg</image:loc>
+      <image:caption>El sur del parque natural es la cara tranquila de Cazorla: mismas montañas, muchos menos coches. Te contamos por qué Hinojares funciona tan bien como base y cómo organizar la visita.</image:caption>
+      <image:title>Dónde alojarse para visitar la Sierra de Cazorla: Hinojares como base</image:title>
+    </image:image>
+  </url>
+  <url>
     <loc>https://tiojosemaria.com/blog/gastronomia-sierra-de-cazorla</loc>
     <lastmod>2026-07-17</lastmod>
     <changefreq>monthly</changefreq>
@@ -221,6 +232,17 @@
       <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/albahaca/1febf30f-e1c2-403d-a5f5-8628b0fec18a-1024x683.jpg</image:loc>
       <image:caption>Todo lo que necesitas saber para llegar a Hinojares desde Madrid, Sevilla, Granada o la costa. Rutas en coche, tiempos, gasolineras y consejos prácticos.</image:caption>
       <image:title>Cómo llegar a Hinojares: guía práctica para viajeros</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://tiojosemaria.com/blog/escapada-en-pareja-chimenea-sierra-cazorla</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/albahaca/00f8fcdf-a6ef-45bb-aafb-408b8679a750-1024x768.webp</image:loc>
+      <image:caption>Cuarenta y ocho horas, una casona del siglo XVIII, la chimenea encendida y el cielo más estrellado de Jaén. Así se hace una escapada de pareja en el sur de Cazorla, sin coche a todas horas ni planes apretados.</image:caption>
+      <image:title>Escapada rural en pareja con chimenea en la Sierra de Cazorla</image:title>
     </image:image>
   </url>
 </urlset>
