@@ -40,10 +40,14 @@ const Navigation = () => {
                 }`}
             >
                 <a href="#" className="flex items-center gap-3">
+                    {/* SVG traced from the original raster (docs: gotcha — the source
+                        wordmark is calligraphic; vector keeps identity crisp on retina) */}
                     <img
-                        src="/assets/logo.jpg"
+                        src="/assets/logo.svg"
                         alt="Logo Tío José María Apartamentos Rurales"
-                        className="h-8 md:h-10 object-contain"
+                        width="125"
+                        height="40"
+                        className="h-8 md:h-10 w-auto object-contain"
                     />
                 </a>
 

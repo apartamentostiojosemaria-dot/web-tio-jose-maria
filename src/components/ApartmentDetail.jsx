@@ -5,6 +5,7 @@ import { useApartment, useBlockedDates, useHighSeasons } from '../hooks/useDatab
 import { ApartmentJsonLd, BreadcrumbJsonLd } from './seo/JsonLd';
 import PageHead from './seo/PageHead';
 import BookingWidget from './booking/BookingWidget';
+import SocialProofCard from './shared/SocialProofCard';
 import { whatsappLink } from '../constants/urls';
 import {
     ChevronLeft, Users, Flame, Wifi, Tv,
@@ -311,6 +312,11 @@ const ApartmentDetail = () => {
                             <div id="booking-widget" ref={bookingRef} className="scroll-mt-24">
                                 <BookingWidgetSection apartment={apartment} />
                             </div>
+
+                            <SocialProofCard
+                                quote="Mari Carmen es encantadora… la casa súper bonita. Nos encantó."
+                                author="Begoña"
+                            />
 
                             <a
                                 href={whatsappLink(`Hola, ¿tenéis disponible el apartamento ${apartment.name} en Hinojares? Quería preguntar por las fechas y resolver alguna duda antes de reservar.`)}
