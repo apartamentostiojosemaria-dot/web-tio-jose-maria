@@ -135,6 +135,14 @@ const BlogPostDetail = () => {
                             <Calendar size={12} />
                             {post.published_at && new Date(post.published_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
                         </span>
+                        {/* "Actualizado el" visible: señal de frescura que la competencia de la
+                            zona no muestra (estándar editorial 17-jul). Solo si difiere >30 días. */}
+                        {post.updated_at && post.published_at &&
+                            (new Date(post.updated_at) - new Date(post.published_at)) > 30 * 86400000 && (
+                            <span className="text-xs text-rural-700 font-medium">
+                                Actualizado el {new Date(post.updated_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                            </span>
+                        )}
                         <span className="flex items-center gap-1 text-xs text-gray-400">
                             <Clock size={12} /> {post.reading_time_min} min de lectura
                         </span>
