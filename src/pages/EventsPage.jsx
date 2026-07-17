@@ -238,10 +238,12 @@ const EventCard = ({ event, onOpen }) => {
             <button onClick={onOpen}
                 className="group block w-full text-left bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden border border-gray-100">
                 <div className="relative h-48 overflow-hidden bg-gray-100">
-                    {event.image_url ? (
-                        <img src={event.image_url} alt={event.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                    ) : (
-                        <EventPlaceholder event={event} size="large" />
+                    {/* Placeholder always underneath; image hides itself on error. */}
+                    <EventPlaceholder event={event} size="large" />
+                    {event.image_url && (
+                        <img src={event.image_url} alt={event.title} loading="lazy" decoding="async"
+                            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
                     <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-bold"
