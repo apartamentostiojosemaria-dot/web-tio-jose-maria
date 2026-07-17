@@ -74,6 +74,8 @@ const Footer = () => (
                 <span className="opacity-20" aria-hidden="true">|</span>
                 <Link to="/privacidad" className="hover:text-white transition-colors">Privacidad</Link>
                 <span className="opacity-20" aria-hidden="true">|</span>
+                <Link to="/condiciones" className="hover:text-white transition-colors">Condiciones de reserva</Link>
+                <span className="opacity-20" aria-hidden="true">|</span>
                 <button
                     type="button"
                     onClick={() => window.dispatchEvent(new CustomEvent('tjm:cookie-consent-reopen'))}
