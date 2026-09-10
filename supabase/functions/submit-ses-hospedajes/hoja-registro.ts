@@ -50,6 +50,38 @@ function fechaCorta(iso: string | null | undefined): string {
     return a ? `${d}/${m}/${a}` : String(iso);
 }
 
+/**
+ * Fecha con hora, o fecha «sin hora anotada» cuando no se conoce. El
+ * `T00:00:00` que viaja al Ministerio significa exactamente eso —«se
+ * desconoce»— y en el papel se dice con palabras, para que nadie lo lea como
+ * una entrada a medianoche.
+ */
+function fechaHora(iso: string | null | undefined, horaConocida: boolean): string {
+    const dia = fechaLarga(iso);
+    if (!horaConocida) return `${dia} · hora no anotada`;
+    const hora = String(iso).slice(11, 16);
+    return hora ? `${dia}, ${hora}` : dia;
+}
+
+/**
+ * El parentesco, escrito para que lo lea una persona: «Padre o madre de Lucía
+ * García». Sale en la ficha del ADULTO, que es quien lo declara (Instrucciones
+ * del MIR, campo `parentesco`). En la del menor sale a quién acompaña.
+ */
+function parentescoLegible(v: ViajeroParte, todos: ViajeroParte[]): string {
+    if (v.parentesco && v.parentescoMenorId) {
+        const menor = todos.find((m) => m.id === v.parentescoMenorId);
+        const nombre = menor ? [menor.nombre, menor.apellido1].filter(Boolean).join(" ") : "el menor";
+        return `${etiquetaParentesco(v.parentesco)} de ${nombre}`;
+    }
+    const adulto = todos.find((a) => a.parentescoMenorId === v.id && a.parentesco);
+    if (adulto) {
+        const nombre = [adulto.nombre, adulto.apellido1].filter(Boolean).join(" ");
+        return `Acompañado por ${nombre} (${etiquetaParentesco(adulto.parentesco).toLowerCase()})`;
+    }
+    return "—";
+}
+
 /** Hueco reservado en la maqueta donde luego se dibuja la firma. */
 interface FirmaPendiente {
     viajero: ViajeroParte;
@@ -101,7 +133,7 @@ export async function renderHojaRegistro(input: HojaInput): Promise<Uint8Array> 
         page.drawRectangle({ x: 0, y: A4.h - 92, width: A4.w, height: 92, color: verde });
         texto("APARTAMENTOS RURALES", M, A4.h - 36, { size: 7.5, font: bold, color: blanco });
         texto("Tío José María", M, A4.h - 58, { size: 18, font: bold, color: blanco });
-        texto(`${ESTABLECIMIENTO.municipio} · Registro turístico ${ESTABLECIMIENTO.registroTuristico}`,
+        texto(`${ESTABLECIMIENTO.municipio} (${ESTABLECIMIENTO.provincia}) · Registro turístico ${ESTABLECIMIENTO.registroTuristico}`,
             M, A4.h - 74, { size: 7.5, color: blanco });
         texto("HOJA DE REGISTRO DE VIAJEROS", A4.w - M, A4.h - 40, {
             size: 10, font: bold, color: blanco, align: "right",
@@ -155,12 +187,27 @@ export async function renderHojaRegistro(input: HojaInput): Promise<Uint8Array> 
         ["Dirección del establecimiento", ESTABLECIMIENTO.direccion],
         ["Nº de registro turístico", ESTABLECIMIENTO.registroTuristico],
         ["Alojamiento reservado", contrato.alojamiento || "—"],
-        ["Referencia de la reserva", contrato.referencia],
+        ["Referencia del contrato", contrato.referencia],
         ["Fecha del contrato", fechaLarga(contrato.fechaContrato)],
         ["Nº de personas", String(contrato.numPersonas)],
-        ["Entrada", fechaLarga(contrato.fechaEntrada)],
-        ["Salida", fechaLarga(contrato.fechaSalida)],
-        ["Forma de pago", etiquetaPago(contrato.medioPago)],
+        ["Nº de habitaciones", String(contrato.numHabitaciones)],
+        ["Conexión a internet", contrato.conexionInternet ? "Sí" : "No"],
+        // Fecha Y hora, y se dice cuando la hora no se sabe en vez de
+        // enseñar una hora inventada (anexo I A.4.b).
+        ["Entrada", fechaHora(contrato.fechaEntrada, contrato.horaEntradaConocida)],
+        ["Salida", fechaHora(contrato.fechaSalida, contrato.horaSalidaConocida)],
+    ]);
+    y -= 4;
+
+    // ---- Datos del pago (anexo I A.4.d) --------------------------------
+    // Los cinco campos, cada uno con su «—» cuando no se sabe. Un guion es
+    // información: dice que el dato no consta. Un nombre puesto a ojo, no.
+    titulo("DATOS DEL PAGO");
+    pares([
+        ["Tipo de pago", etiquetaPago(contrato.medioPago)],
+        ["Identificación del medio", contrato.identificacionMedioPago || "—"],
+        ["Titular del medio de pago", contrato.titularPago || "— (no consta)"],
+        ["Caducidad de la tarjeta", contrato.caducidadTarjeta || "—"],
         ["Fecha del pago", contrato.fechaPago ? fechaLarga(contrato.fechaPago) : "—"],
     ]);
     y -= 6;
@@ -188,7 +235,11 @@ export async function renderHojaRegistro(input: HojaInput): Promise<Uint8Array> 
             ["Domicilio habitual", dir],
             ["Teléfono", [v.telefonoMovil, v.telefonoFijo].filter(Boolean).join(" · ") || "—"],
             ["Correo electrónico", v.correo || "—"],
-            ["Parentesco con el titular", v.esTitular ? "—" : etiquetaParentesco(v.parentesco)],
+            // El parentesco lo declara el ADULTO sobre el menor al que
+            // acompaña, que es como lo pide el Ministerio. En el papel se
+            // escribe entero, con el nombre del niño, para que se entienda
+            // sin tener que saber el código.
+            ["Parentesco declarado", parentescoLegible(v, viajeros)],
         ]);
 
         // Firma

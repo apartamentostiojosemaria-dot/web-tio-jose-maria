@@ -4,7 +4,9 @@
 // secret STRIPE_WEBHOOK_SECRET) y reconcilia el estado del booking:
 //
 //   checkout.session.completed       → booking status=confirmed, payment_status=paid
+//                                      + datos del pago del parte de viajeros
 //   checkout.session.expired         → booking status=expired si seguía en hold
+//   charge.succeeded                 → datos del pago del parte (camino alterno)
 //   charge.refunded                  → booking payment_status=refunded
 //
 // Esta función se despliega con --no-verify-jwt porque Stripe firma con su
@@ -138,6 +140,97 @@ function hoyEnMadrid(): string {
     return new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Madrid" });
 }
 
+/** Una fecha de Stripe (segundos desde 1970) en hora de España. */
+function fechaEnMadrid(segundos: number | undefined | null): string {
+    if (!segundos) return hoyEnMadrid();
+    return new Date(segundos * 1000).toLocaleDateString("en-CA", { timeZone: "Europe/Madrid" });
+}
+
+// ---------------------------------------------------------------------------
+// Datos del pago del anexo I A.4.d del RD 933/2021
+// ---------------------------------------------------------------------------
+// El parte de viajeros tiene que declarar el TIPO de pago, la IDENTIFICACIÓN
+// del medio, el TITULAR, la CADUCIDAD y la FECHA. Los cinco vienen en el
+// propio cobro de Stripe, así que no hay que teclear ninguno: se apuntan aquí
+// y el parte los recoge de `guest_bookings`.
+//
+// Lo que se guarda es **marca y últimos cuatro** («VISA ****4242»), nunca el
+// número completo. Stripe no lo devuelve y aunque lo devolviera no se
+// guardaría: no lo pide la ley con esa literalidad (art. 5.2, «los datos que
+// recaben») y no lo permiten las reglas de las marcas a un comercio sin
+// certificación PCI-DSS. La base tiene además un CHECK que rechaza cualquier
+// cosa que parezca un número de tarjeta entero (migración 0010).
+//
+// Y el titular NO se supone: si Stripe no devuelve nombre, el campo se queda
+// como estaba. Poner el nombre del huésped «porque suele ser el mismo» es
+// justo el error que este bloque viene a corregir.
+
+interface Tarjeta {
+    brand?: string;
+    last4?: string;
+    exp_month?: number;
+    exp_year?: number;
+}
+
+/**
+ * Pregunta a Stripe por el cobro y apunta los cinco datos del pago.
+ * Nunca lanza: si falla, la reserva sigue bien y sólo faltará un dato del
+ * registro documental, que se puede rellenar a mano desde el panel.
+ */
+async function apuntarDatosDeTarjeta(code: string, paymentIntentId: string | undefined) {
+    if (!paymentIntentId || !paymentIntentId.startsWith("pi_")) return;
+    const clave = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!clave) {
+        console.warn("[stripe-webhook] sin STRIPE_SECRET_KEY: no se pueden apuntar los datos del pago del parte");
+        return;
+    }
+
+    try {
+        const res = await fetch(
+            `https://api.stripe.com/v1/payment_intents/${paymentIntentId}?expand[]=latest_charge`,
+            { headers: { authorization: `Bearer ${clave}` } },
+        );
+        if (!res.ok) {
+            console.error(`[stripe-webhook] Stripe devolvió ${res.status} al pedir ${paymentIntentId}`);
+            return;
+        }
+        const pi = await res.json() as {
+            latest_charge?: {
+                created?: number;
+                billing_details?: { name?: string | null };
+                payment_method_details?: { type?: string; card?: Tarjeta };
+            };
+        };
+        const cargo = pi.latest_charge;
+        if (!cargo) return;
+
+        const tarjeta = cargo.payment_method_details?.card;
+        const titular = (cargo.billing_details?.name || "").trim();
+
+        const campos: Record<string, unknown> = {
+            // `TARJT` = tarjeta de crédito, tabla 8.7 del Ministerio.
+            payment_type: tarjeta ? "TARJT" : "OTRO",
+            payment_date: fechaEnMadrid(cargo.created),
+            updated_at: new Date().toISOString(),
+        };
+        if (tarjeta?.brand && tarjeta?.last4) {
+            campos.payment_instrument = `${tarjeta.brand.toUpperCase()} ****${tarjeta.last4}`;
+        }
+        if (tarjeta?.exp_month && tarjeta?.exp_year) {
+            // MM/AAAA, que es el formato del campo `caducidadTarjeta` del MIR.
+            campos.payment_expiry = `${String(tarjeta.exp_month).padStart(2, "0")}/${tarjeta.exp_year}`;
+        }
+        // El titular sólo si Stripe lo dice. Si no, ni se toca el campo.
+        if (titular) campos.payment_holder = titular;
+
+        const { error } = await supabase
+            .from("guest_bookings").update(campos).eq("booking_code", code);
+        if (error) console.error(`[stripe-webhook] no se pudieron apuntar los datos del pago de ${code}: ${error.message}`);
+    } catch (e) {
+        console.error("[stripe-webhook] fallo al apuntar los datos del pago:", e);
+    }
+}
+
 /** Lanza trabajo en segundo plano sin bloquear la respuesta a Stripe. */
 function enSegundoPlano(p: Promise<unknown>) {
     const rt = (globalThis as { EdgeRuntime?: { waitUntil(p: Promise<unknown>): void } }).EdgeRuntime;
@@ -170,6 +263,14 @@ Deno.serve(async (req) => {
                 };
                 const code = session.metadata?.booking_code || session.client_reference_id;
                 if (!code) break;
+
+                // Los datos del pago del parte de viajeros (anexo I A.4.d) se
+                // apuntan pase lo que pase con el resto: valen igual para el
+                // cobro por enlace y para la reserva pagada en la web.
+                enSegundoPlano(apuntarDatosDeTarjeta(
+                    code,
+                    typeof session.payment_intent === "string" ? session.payment_intent : undefined,
+                ));
 
                 // COBRO de una reserva ya guardada (enlace mandado desde el
                 // panel). No se toca el estado de la reserva: se APUNTA el
@@ -272,6 +373,20 @@ Deno.serve(async (req) => {
                     .update({ status: "expired", updated_at: new Date().toISOString() })
                     .eq("booking_code", code)
                     .eq("status", "hold");
+                break;
+            }
+            case "charge.succeeded": {
+                // Camino alternativo por si el webhook está suscrito a este
+                // evento y no al de la sesión: los datos del pago del parte se
+                // apuntan igual. Es idempotente — escribe los mismos valores.
+                const charge = event.data.object as { payment_intent?: string };
+                if (!charge.payment_intent) break;
+                const { data: reserva } = await supabase
+                    .from("guest_bookings").select("booking_code")
+                    .eq("payment_intent_id", charge.payment_intent).maybeSingle();
+                if (reserva?.booking_code) {
+                    enSegundoPlano(apuntarDatosDeTarjeta(reserva.booking_code, charge.payment_intent));
+                }
                 break;
             }
             case "charge.refunded": {

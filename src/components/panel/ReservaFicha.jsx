@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
     Phone, MessageCircle, Euro, Shield, FileText, CalendarDays, XCircle,
-    Users, Home, Check, NotebookPen,
-} from 'lucide-react';
+    Users, Home, Check, NotebookPen, QrCode } from 'lucide-react';
 import {
     Boton, Tarjeta, Aviso, Cargando, Vacio, Chip, claseInput,
     formatoEuro, cobradoDe, pendienteDe, canalSiImporta, nombreCanal,
@@ -214,8 +213,12 @@ const ReservaFicha = ({ ir, params = {} }) => {
                 </div>
             </Tarjeta>
 
-            {/* ---------- Los tres botones grandes ---------- */}
+            {/* ---------- Los botones grandes ---------- */}
             <section className="space-y-3">
+                <Boton ancho tamano="grande" icono={QrCode} onClick={() => ir('checkin', { reservaId: reserva.id })} disabled={cancelada}>
+                    Hacer el check-in
+                </Boton>
+
                 <Boton ancho tamano="grande" icono={Euro} onClick={() => setHoja('cobro')} disabled={cancelada}>
                     Cobrar
                 </Boton>

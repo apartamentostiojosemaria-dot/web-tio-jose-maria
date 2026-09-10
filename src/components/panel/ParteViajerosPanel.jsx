@@ -2,22 +2,31 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '../../lib/supabase';
 import {
     Shield, MessageCircle, Mail, Send, FileDown, Check, RefreshCw, CircleAlert,
+    QrCode,
 } from 'lucide-react';
 import {
-    Boton, Aviso, Cargando, Vacio,
+    Boton, Aviso, Cargando, Vacio, Chip,
     hoyISO, aFecha, aISO, fechaEnPalabras, fechaCorta,
 } from './ui';
+import { telefonoParaWhatsapp, textoRecordatorio } from './checkin/datos';
 
 // ============================================================
 // ParteViajerosPanel — «Datos de la policía»
 // ============================================================
-// La pantalla de la madre. Una fila por reserva con un semáforo:
-//   verde  → todos han rellenado sus datos
-//   ámbar  → faltan N de M
-//   gris   → todavía no toca (se les pide 7 días antes de que lleguen)
+// La pantalla de la madre. Una fila por reserva con un semáforo que se
+// entiende de un vistazo, con su palabra al lado del color:
+//   🟢 Listo         → están todos, o el parte ya está mandado
+//   🟡 Faltan N de M → todavía no han rellenado todos
+//   🔴 Avisa a Jesús → algo falló al mandarlo. Ella no arregla nada.
+//   ⚪ Todavía no toca → se les pide 7 días antes de llegar
 //
-// Dos botones por reserva: «Recordárselo» (WhatsApp o correo, con el texto
-// ya escrito) y «Mandar el parte».
+// Y, sobre todo, la PUERTA AL CHECK-IN: cada fila tiene «Hacer el check-in»,
+// que lleva a la pantalla que se usa con el huésped delante (código para su
+// móvil, lista para comparar con el documento, hora real de entrada). Antes
+// esta pantalla sólo miraba; ahora desde aquí también se hace.
+//
+// Los otros dos botones por reserva: «Recordárselo» (WhatsApp o correo, con
+// el texto ya escrito) y «Mandar el parte».
 //
 // Reglas de esta pantalla, innegociables:
 //   - Ni una palabra técnica. Nada de SES, MIR, XML, envío telemático,
@@ -67,7 +76,7 @@ function semaforoDe(fila, hoy) {
 
     if (yaMandado) {
         return {
-            tono: 'verde', color: 'bg-rural-600',
+            tono: 'verde', color: 'bg-rural-600', etiqueta: 'Listo',
             texto: fila.ultimo_envio
                 ? `Parte mandado el ${fechaCorta(String(fila.ultimo_envio).slice(0, 10))}`
                 : 'Parte mandado',
@@ -76,34 +85,34 @@ function semaforoDe(fila, hoy) {
     }
     if (conProblema) {
         return {
-            tono: 'rojo', color: 'bg-red-500',
+            tono: 'rojo', color: 'bg-red-500', etiqueta: 'Avisa a Jesús',
             texto: 'El parte no se pudo mandar. Avisa a Jesús.',
             mandado: false, listo: rellenos >= total, noTocaAun: false, faltan, rellenos, total,
         };
     }
     if (noTocaAun) {
         return {
-            tono: 'neutro', color: 'bg-gray-300',
+            tono: 'neutro', color: 'bg-gray-300', etiqueta: 'Todavía no toca',
             texto: 'Todavía no toca',
             mandado: false, listo: false, noTocaAun: true, faltan, rellenos, total,
         };
     }
     if (faltan <= 0 && rellenos > 0) {
         return {
-            tono: 'verde', color: 'bg-rural-600',
+            tono: 'verde', color: 'bg-rural-600', etiqueta: 'Listo',
             texto: 'Todos han rellenado sus datos',
             mandado: false, listo: true, noTocaAun: false, faltan: 0, rellenos, total,
         };
     }
     if (rellenos === 0) {
         return {
-            tono: 'ambar', color: 'bg-amber-500',
+            tono: 'ambar', color: 'bg-amber-500', etiqueta: `Faltan ${total} de ${total}`,
             texto: total === 1 ? 'No ha rellenado sus datos' : 'Nadie ha rellenado sus datos',
             mandado: false, listo: false, noTocaAun: false, faltan, rellenos, total,
         };
     }
     return {
-        tono: 'ambar', color: 'bg-amber-500',
+        tono: 'ambar', color: 'bg-amber-500', etiqueta: `Faltan ${faltan} de ${total}`,
         texto: `Faltan ${faltan} de ${total}`,
         mandado: false, listo: false, noTocaAun: false, faltan, rellenos, total,
     };
@@ -111,43 +120,14 @@ function semaforoDe(fila, hoy) {
 
 // ---------------------------------------------------------------- recados
 
-const primerNombre = (nombre) => String(nombre || '').trim().split(/\s+/)[0] || '';
-
-/** Deja el teléfono como lo quiere WhatsApp: sólo dígitos y con prefijo. */
-function telefonoParaWhatsapp(tel) {
-    if (!tel) return '';
-    let limpio = String(tel).replace(/[^\d+]/g, '');
-    if (limpio.startsWith('+')) limpio = limpio.slice(1);
-    if (limpio.startsWith('00')) limpio = limpio.slice(2);
-    // Un móvil español escrito sin prefijo: 9 dígitos que empiezan por 6, 7 u 8.
-    if (/^[6789]\d{8}$/.test(limpio)) limpio = `34${limpio}`;
-    return /^\d{8,15}$/.test(limpio) ? limpio : '';
-}
-
-function enlacePrecheckin(codigo) {
-    const base = typeof window !== 'undefined' ? window.location.origin : 'https://tiojosemaria.com';
-    return `${base}/precheckin?code=${encodeURIComponent(codigo)}`;
-}
-
-function textoRecordatorio(fila) {
-    const nombre = primerNombre(fila.guest_name);
-    const saludo = nombre ? `Hola ${nombre}` : 'Hola';
-    // El enlace NO va al final de la línea: algunas apps se comen el salto
-    // y lo dejan pegado a la palabra siguiente.
-    return [
-        `${saludo}, somos los Apartamentos Tío José María.`,
-        '',
-        'Antes de que lleguéis necesitamos los datos de cada persona que se aloja (nombre, documento y poco más). Nos los pide la ley y se rellena en un par de minutos desde el móvil:',
-        '',
-        enlacePrecheckin(fila.booking_code),
-        '',
-        '¡Gracias y hasta pronto!',
-    ].join('\n');
-}
+// El arreglo del teléfono, el enlace del formulario y el texto del recado
+// viven en `checkin/datos.js`: los usan esta pantalla y la del check-in.
+// Tenerlos escritos dos veces era la forma segura de que un día dijeran
+// cosas distintas.
 
 // ---------------------------------------------------------------- pantalla
 
-const ParteViajerosPanel = ({ params = {} }) => {
+const ParteViajerosPanel = ({ ir, params = {} }) => {
     const [filas, setFilas] = useState(null);
     const [contactos, setContactos] = useState({});
     const [error, setError] = useState(null);
@@ -328,8 +308,9 @@ const ParteViajerosPanel = ({ params = {} }) => {
                     Datos de la policía
                 </h1>
                 <p className="text-base text-gray-600 mt-1 leading-relaxed">
-                    Cada persona que se aloja tiene que dejarnos sus datos antes de llegar.
-                    Aquí ves quién los ha rellenado y quién no.
+                    Cada persona que se aloja tiene que dejarnos sus datos. Aquí ves quién los
+                    ha rellenado y quién no, y desde cada reserva puedes <strong>hacer el
+                    check-in</strong> con el huésped delante.
                 </p>
             </header>
 
@@ -356,11 +337,11 @@ const ParteViajerosPanel = ({ params = {} }) => {
             ) : (
                 <>
                     <Grupo titulo="Están aquí ahora" filas={grupos.dentro} vacio="Ahora mismo no hay nadie alojado."
-                        {...{ hoy, contactos, ocupado, preparados, destacada, refDestacada, mandarParte, confirmarMandado, verDocumento }} />
+                        {...{ ir, hoy, contactos, ocupado, preparados, destacada, refDestacada, mandarParte, confirmarMandado, verDocumento }} />
                     <Grupo titulo="Llegan en los próximos días" filas={grupos.pronto} vacio="Nadie llega esta quincena."
-                        {...{ hoy, contactos, ocupado, preparados, destacada, refDestacada, mandarParte, confirmarMandado, verDocumento }} />
+                        {...{ ir, hoy, contactos, ocupado, preparados, destacada, refDestacada, mandarParte, confirmarMandado, verDocumento }} />
                     <Grupo titulo="Más adelante" filas={grupos.luego} vacio={null}
-                        {...{ hoy, contactos, ocupado, preparados, destacada, refDestacada, mandarParte, confirmarMandado, verDocumento }} />
+                        {...{ ir, hoy, contactos, ocupado, preparados, destacada, refDestacada, mandarParte, confirmarMandado, verDocumento }} />
                 </>
             )}
         </div>
@@ -384,7 +365,7 @@ const Grupo = ({ titulo, filas, vacio, ...resto }) => {
 };
 
 const FilaReserva = ({
-    fila, hoy, contactos, ocupado, preparados, destacada, refDestacada,
+    fila, ir, hoy, contactos, ocupado, preparados, destacada, refDestacada,
     mandarParte, confirmarMandado, verDocumento,
 }) => {
     const s = semaforoDe(fila, hoy);
@@ -427,8 +408,11 @@ const FilaReserva = ({
                 </div>
             </div>
 
-            {/* Semáforo en palabras */}
-            <p className={`mt-3 text-base font-bold ${
+            {/* Semáforo: el color y, al lado, la palabra. Un vistazo basta. */}
+            <div className="mt-3">
+                <Chip tono={s.tono}>{s.etiqueta}</Chip>
+            </div>
+            <p className={`mt-2 text-base font-bold ${
                 s.tono === 'verde' ? 'text-rural-700'
                 : s.tono === 'ambar' ? 'text-amber-800'
                 : s.tono === 'rojo' ? 'text-red-700' : 'text-gray-500'
@@ -444,6 +428,23 @@ const FilaReserva = ({
                 <p className="text-sm text-gray-500 mt-0.5">
                     Se les pide una semana antes de llegar. Se lo mandamos nosotros por correo.
                 </p>
+            )}
+
+            {/* Lo primero: hacer el check-in con el huésped delante */}
+            {!s.mandado && (
+                <div className="mt-4">
+                    <Boton
+                        icono={QrCode}
+                        tamano="grande"
+                        ancho
+                        onClick={() => ir?.('checkin', { reservaId: fila.booking_id })}
+                    >
+                        Hacer el check-in
+                    </Boton>
+                    <p className="mt-1.5 text-sm text-gray-600 leading-snug">
+                        Enséñale el código para que rellene en su móvil y comprueba su documento.
+                    </p>
+                </div>
             )}
 
             {/* Botones */}

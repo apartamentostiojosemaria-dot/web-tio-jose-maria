@@ -1,57 +1,80 @@
 // Cliente del servicio web de Hospedajes (Ministerio del Interior)
 // ================================================================
-// Especificación seguida: «MIR-HOSPE-DSI-WS - Servicio de Hospedajes ·
-// Comunicaciones», v3.1.2 / v3.1.3, y los esquemas `tiposGenerales.xsd`,
-// `altaParteHospedaje.xsd` y `comunicacion.xsd` que vienen en el paquete que
-// el Ministerio entrega junto con las credenciales.
+// Fuentes: «MIR-HOSPE-DSI-WS — Servicio de Hospedajes · Comunicaciones»
+// v3.1.2 e «Instrucciones para el alta masiva» v1.1.0, releídas enteras el
+// 10-sep-2026. De ahí salen todos los nombres de elemento y los códigos.
+// El detalle está en `docs/PARTE-VIAJEROS.md`; lo imprescindible, aquí:
 //
-// Lo que hay que tener claro antes de tocar nada aquí:
-//
-//   1. La autenticación es **HTTP Basic** (`Authorization: Basic base64(u:p)`),
-//      NO WS-Security. La cabecera SOAP va vacía y `SOAPAction` va vacía.
-//      El código anterior daba por supuesto un certificado X.509 de cliente:
-//      era falso. El certificado digital sólo hace falta para el alta por
-//      navegador, no para hablar máquina a máquina.
-//   2. El XML del parte NO viaja en claro: se comprime en un ZIP de verdad y
-//      se codifica en Base64 dentro de `<solicitud>`. (Error 10111 si no.)
-//   3. `<cabecera>` lleva el **código de arrendador**; el **código de
-//      establecimiento** va dentro del XML comprimido. Son cosas distintas y
-//      viajan en sitios distintos.
+//   1. Autenticación HTTP Basic, NO WS-Security. Cabecera SOAP vacía y
+//      `SOAPAction` vacía. El certificado sólo hace falta por navegador.
+//   2. El XML no viaja en claro: ZIP de verdad + Base64 (error 10111 si no).
+//   3. `codigoArrendador` va en la cabecera SOAP; `codigoEstablecimiento`,
+//      dentro del XML comprimido. Son cosas distintas.
 //   4. El orden de los elementos importa: los esquemas son `xsd:sequence`.
-//   5. Un `codigo/codigoRetorno = 0` significa «recibido y encolado», NO
-//      «aceptado». La validación real es posterior y se consulta con el
-//      número de lote. Por eso aquí nada se marca como aceptado con la
-//      primera respuesta.
+//   5. `codigo/codigoRetorno = 0` es «recibido y encolado», NO «aceptado».
+//   6. Son TRES operaciones y esta función hace las tres:
+//        A + PV → parte de viajeros    (al entrar,   art. 6.3.b)
+//        A + RH → reserva de hospedaje (al reservar, art. 6.3.a)
+//        B      → anulación            (al cancelar, art. 6.3.a). Sin
+//        `tipoComunicacion`: viaja una lista de `codigoComunicacion`, los que
+//        devolvió la consulta del lote de la reserva. Sin ellos no se anula.
 //
-// Endpoints (§2.1 de la especificación):
-//   pruebas     https://hospedajes.pre-ses.mir.es/hospedajes-web/ws/v1/comunicacion
-//   producción  https://hospedajes.ses.mir.es/hospedajes-web/ws/v1/comunicacion
+// Nombre del elemento del documento: en el SERVICIO WEB es `numeroDocumento`
+// (anexo II de la especificación, ejemplo completo); en la plantilla de alta
+// masiva la misma cosa se llama `documento` (Instrucciones §3). Son dos
+// canales distintos y aquí se habla por el servicio web. Esto cierra el hueco
+// 12 de `docs/CHECKIN-LEGAL.md`, que estaba abierto por no tener las dos
+// fuentes delante a la vez.
+//
+// Endpoints (§2.1): pruebas `hospedajes.pre-ses.mir.es`, producción
+// `hospedajes.ses.mir.es`, ruta `/hospedajes-web/ws/v1/comunicacion`.
+//
+// ✅ VERIFICADO CONTRA LOS XSD REALES (10-sep-2026), no sólo contra el PDF:
+// `comunicacion.wsdl` v3.1.1 y los esquemas `tiposGenerales.xsd`,
+// `altaParteHospedaje.xsd`, `comunicacion.xsd` y `tipoComunicacion.xsd`. De ahí
+// salen, ya sin suposiciones:
+//   · el orden EXACTO de `contratoHospedajeType`, `personaHospedajeType`,
+//     `pagoType` y `direccionType` — el de este fichero coincide campo a campo;
+//   · que el elemento del documento es `numeroDocumento` (cierra el hueco 12);
+//   · que `internet` es de tipo `siNoType`, y que `siNoType` tiene
+//     `base="xsd:boolean"` — o sea `true`/`false`, NO «SI»/«NO». El nombre del
+//     tipo engaña; el `base` no;
+//   · que `rolPersonaType` admite VI, CP, CS y TI;
+//   · que la cabecera es `cabeceraLoteType` = codigoArrendador, aplicacion,
+//     tipoOperacion (A/B/C) y tipoComunicacion OPCIONAL — por eso se omite en
+//     la anulación;
+//   · el shape real de `consultaLote`, que NO era el que se suponía.
+//
+// Lo único que sigue SIN confirmar es el namespace del XSD de la RESERVA
+// (`altaReservaHospedaje`): entre los ficheros que trae el paquete están los
+// del parte, los generales y los de comunicación, pero no el de la reserva.
+// Ver `NS_ALTA_RESERVA` en `config.ts`.
+//
+// Nota: el WSDL tiene además una operación `anulacionLote(lote)` que anula un
+// LOTE entero de una vez. Aquí se usa la otra vía —`comunicacion` con
+// `tipoOperacion` = `B` y la lista de `codigoComunicacion`, la del anexo III—
+// porque anula comunicaciones concretas y es la que la especificación
+// documenta como anulación. Si algún día conviene, `anulacionLote` está ahí y
+// como mandamos una comunicación por lote sería equivalente.
 
-import { APLICACION, ESPERAS_MS, INTENTOS, SECRETOS, TIMEOUT_MS } from "./config.ts";
+import {
+    ALTA_MINISTERIO, APLICACION, ESPERAS_MS, ESTABLECIMIENTO, INTENTOS,
+    NS_ALTA_PARTE, NS_ALTA_RESERVA, NS_ANULACION, PARENTESCO_TAMBIEN_EN_EL_MENOR,
+    SECRETOS, TIMEOUT_MS,
+} from "./config.ts";
 import { aBase64, zipDeUnFichero } from "./zip.ts";
 import {
-    codigoParentesco, type ContratoParte, type ViajeroParte,
+    codigoParentesco, codigoParentescoReciproco, esMenorDeEdad,
+    type ContratoParte, type ViajeroParte,
 } from "./parte-modelo.ts";
 
 const NS_SOAP = "http://schemas.xmlsoap.org/soap/envelope/";
 const NS_COMUNICACION = "http://www.soap.servicios.hospedajes.mir.es/comunicacion";
-const NS_ALTA_PARTE = "http://www.neg.hospedajes.mir.es/altaParteHospedaje";
-
-/** Hora de entrada y de salida del alojamiento (el esquema pide dateTime). */
-const HORA_ENTRADA = "16:00:00";
-const HORA_SALIDA = "12:00:00";
-
-// ---------------------------------------------------------------------------
-// XML
-// ---------------------------------------------------------------------------
 
 const esc = (s: string | null | undefined): string =>
     String(s ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&apos;");
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 
 /** Etiqueta que sólo sale si hay valor (los `minOccurs="0"` del esquema). */
 const opt = (etiqueta: string, valor: string | null | undefined): string =>
@@ -59,37 +82,62 @@ const opt = (etiqueta: string, valor: string | null | undefined): string =>
 
 const soloFecha = (iso: string): string => String(iso).slice(0, 10);
 
-const conHora = (iso: string, hora: string): string => `${soloFecha(iso)}T${hora}`;
-
 /** Recorta a la longitud máxima que admite el esquema. */
 const corta = (s: string | null | undefined, n: number): string =>
     String(s ?? "").trim().slice(0, n);
 
 /**
- * `<persona>` del parte de viajeros. El orden es el del `xsd:sequence` de
- * `personaHospedajeType` y no se puede alterar.
+ * `<pago>`, común al parte y a la reserva (Instrucciones §7.2). Sólo
+ * `tipoPago` es obligatorio. **El titular no se rellena con nada supuesto**:
+ * si viene vacío, el elemento no se emite. Un registro incompleto es un
+ * problema; uno que afirma algo falso es peor.
  */
-function personaXml(v: ViajeroParte, hayMenores: boolean): string {
-    const esMenor = v.edad < 18;
-    // El parentesco lo declara el menor respecto de quien lo acompaña y, si
-    // hay menores, también al menos un adulto respecto del menor.
-    const parentesco = esMenor
-        ? codigoParentesco(v.parentesco)
-        : (hayMenores && v.esTitular ? codigoParentesco(v.parentesco || "PA") : "");
+function pagoXml(c: ContratoParte): string {
+    return [
+        "<pago>",
+        `<tipoPago>${esc(c.medioPago)}</tipoPago>`,
+        opt("fechaPago", c.fechaPago ? soloFecha(c.fechaPago) : ""),
+        opt("medioPago", corta(c.identificacionMedioPago, 50)),
+        opt("titular", corta(c.titularPago, 100)),
+        opt("caducidadTarjeta", corta(c.caducidadTarjeta, 7)),
+        "</pago>",
+    ].join("");
+}
 
-    const direccion = [
+/** `<direccion>` del domicilio de un viajero (Instrucciones §7.1). */
+function direccionXml(v: ViajeroParte): string {
+    const esEspana = (v.pais || "ESP").toUpperCase() === "ESP";
+    return [
+        "<direccion>",
         `<direccion>${esc(corta(v.direccion, 100))}</direccion>`,
-        // direccionComplementaria: no se pide en el formulario, no se manda.
-        // codigoMunicipio: es el código INE y sólo vale para municipios
-        // españoles; no lo pedimos, así que va el nombre.
+        // `codigoMunicipio` es el código INE y sólo vale para municipios
+        // españoles. No se le pide al huésped —sería una casilla más en un
+        // formulario que tiene que hacerse en tres minutos—, así que va el
+        // nombre, que el esquema admite.
         opt("nombreMunicipio", corta(v.municipio, 100)),
         `<codigoPostal>${esc(corta(v.codigoPostal, 20))}</codigoPostal>`,
-        `<pais>${esc(v.pais || "ESP")}</pais>`,
+        `<pais>${esc(v.pais || (esEspana ? "ESP" : ""))}</pais>`,
+        "</direccion>",
     ].join("");
+}
 
-    // Un menor sin documento propio no lleva bloque de documento: mandar el
-    // tipo sin el numero hace saltar la validacion del Ministerio (para NIF y
-    // NIE exige tambien el numero de soporte).
+/**
+ * `<persona>` del PARTE. Orden del `xsd:sequence` de `personaHospedajeType`.
+ * El parentesco va en la ficha del ADULTO; ver
+ * `PARENTESCO_TAMBIEN_EN_EL_MENOR` en `config.ts` para el recíproco del menor.
+ */
+function personaXml(v: ViajeroParte, viajeros: ViajeroParte[]): string {
+    let parentesco = "";
+    if (!esMenorDeEdad(v.edad) && v.parentesco && v.parentescoMenorId) {
+        parentesco = codigoParentesco(v.parentesco);
+    } else if (esMenorDeEdad(v.edad) && PARENTESCO_TAMBIEN_EN_EL_MENOR) {
+        const adulto = viajeros.find((a) => a.parentescoMenorId === v.id && a.parentesco);
+        if (adulto) parentesco = codigoParentescoReciproco(adulto.parentesco);
+    }
+
+    // Un menor sin documento propio no lleva bloque de documento: el MIR lo
+    // pide sólo «si la persona es mayor de edad», y mandar el tipo sin el
+    // número hace saltar su validación.
     const conDocumento = Boolean(v.numeroDocumento);
 
     return [
@@ -104,7 +152,7 @@ function personaXml(v: ViajeroParte, hayMenores: boolean): string {
         `<fechaNacimiento>${esc(soloFecha(v.fechaNacimiento))}</fechaNacimiento>`,
         opt("nacionalidad", v.nacionalidad),
         opt("sexo", v.sexo),
-        `<direccion>${direccion}</direccion>`,
+        direccionXml(v),
         opt("telefono", corta(v.telefonoMovil, 20)),
         opt("telefono2", corta(v.telefonoFijo, 20)),
         opt("correo", corta(v.correo, 250)),
@@ -113,38 +161,35 @@ function personaXml(v: ViajeroParte, hayMenores: boolean): string {
     ].join("");
 }
 
-/** `<contrato>` del parte, en el orden de `contratoHospedajeType`. */
+/** `<contrato>`, en el orden de `contratoHospedajeType`. */
 function contratoXml(c: ContratoParte): string {
-    const pago = [
-        "<pago>",
-        `<tipoPago>${esc(c.medioPago)}</tipoPago>`,
-        opt("fechaPago", c.fechaPago ? soloFecha(c.fechaPago) : ""),
-        opt("titular", corta(c.titularPago, 100)),
-        "</pago>",
-    ].join("");
-
     return [
         "<contrato>",
         `<referencia>${esc(corta(c.referencia, 50))}</referencia>`,
         `<fechaContrato>${esc(soloFecha(c.fechaContrato))}</fechaContrato>`,
-        `<fechaEntrada>${esc(conHora(c.fechaEntrada, HORA_ENTRADA))}</fechaEntrada>`,
-        `<fechaSalida>${esc(conHora(c.fechaSalida, HORA_SALIDA))}</fechaSalida>`,
+        // Fecha Y hora. Si no se conoce, `c.fechaEntrada` ya trae T00:00:00,
+        // que es lo que el MIR pide para ese caso. Antes había un 16:00 fijo
+        // que nadie había medido.
+        `<fechaEntrada>${esc(c.fechaEntrada)}</fechaEntrada>`,
+        `<fechaSalida>${esc(c.fechaSalida)}</fechaSalida>`,
         `<numPersonas>${c.numPersonas}</numPersonas>`,
-        "<numHabitaciones>1</numHabitaciones>",
-        `<internet>${c.conexionInternet ? "SI" : "NO"}</internet>`,
-        pago,
+        // Dormitorios del apartamento concreto, no un 1 para los cuatro.
+        `<numHabitaciones>${c.numHabitaciones}</numHabitaciones>`,
+        // `internet` es Booleano en el esquema y el ejemplo del anexo II manda
+        // `false`. Se mandaba «SI»/«NO», que no es un booleano.
+        `<internet>${c.conexionInternet ? "true" : "false"}</internet>`,
+        pagoXml(c),
         "</contrato>",
     ].join("");
 }
 
-/** XML interior del alta de parte de viajeros. Es el que se comprime. */
+/** XML interior del alta de PARTE DE VIAJEROS. Es el que se comprime. */
 export function xmlParteViajeros(opts: {
     codigoEstablecimiento: string;
     contrato: ContratoParte;
     viajeros: ViajeroParte[];
 }): string {
-    const hayMenores = opts.viajeros.some((v) => v.edad < 18);
-    const personas = opts.viajeros.map((v) => personaXml(v, hayMenores)).join("");
+    const personas = opts.viajeros.map((v) => personaXml(v, opts.viajeros)).join("");
     return [
         '<?xml version="1.0" encoding="UTF-8"?>',
         `<alt:peticion xmlns:alt="${NS_ALTA_PARTE}">`,
@@ -159,8 +204,93 @@ export function xmlParteViajeros(opts: {
     ].join("");
 }
 
-/** Sobre SOAP de la operación `comunicacion`. */
-function sobreComunicacion(solicitudBase64: string): string {
+/**
+ * XML interior del alta de RESERVA (§3.1.1.2 de la especificación y §4 de las
+ * Instrucciones). NO es la misma estructura que la del parte:
+ *   · cuelga un `<establecimiento>` de cada `<comunicacion>`, no un
+ *     `codigoEstablecimiento` suelto;
+ *   · el bloque `persona` obligatorio es el del TITULAR DEL CONTRATO (rol
+ *     `TI`), donde sólo `nombre` y `apellido1` son obligatorios más una forma
+ *     de contacto;
+ *   · el documento es opcional: al reservar no se le ha pedido el DNI a nadie
+ *     y no hay que inventarlo.
+ */
+export function xmlReservaHospedaje(opts: {
+    codigoEstablecimiento: string;
+    contrato: ContratoParte;
+}): string {
+    const c = opts.contrato;
+    const t = c.titularContrato;
+
+    // El establecimiento se identifica por su código cuando se tiene, que es
+    // lo que la especificación exige a las empresas de hospedaje. En modo
+    // preparado no hay código: se manda el bloque descriptivo, que es la
+    // alternativa del esquema, para que el documento guardado sea completo.
+    const establecimiento = opts.codigoEstablecimiento
+        && !opts.codigoEstablecimiento.startsWith("PENDIENTE")
+        ? `<establecimiento><codigo>${esc(corta(opts.codigoEstablecimiento, 10))}</codigo></establecimiento>`
+        : [
+            "<establecimiento>",
+            "<datosEstablecimiento>",
+            `<tipo>${esc(ALTA_MINISTERIO.tipoEstablecimiento)}</tipo>`,
+            `<nombre>${esc(corta(ALTA_MINISTERIO.denominacion, 50))}</nombre>`,
+            "<direccion>",
+            `<direccion>${esc(corta(ESTABLECIMIENTO.direccion, 100))}</direccion>`,
+            `<codigoMunicipio>${esc(ESTABLECIMIENTO.codigoMunicipio)}</codigoMunicipio>`,
+            `<codigoPostal>${esc(ESTABLECIMIENTO.codigoPostal)}</codigoPostal>`,
+            "<pais>ESP</pais>",
+            "</direccion>",
+            "</datosEstablecimiento>",
+            "</establecimiento>",
+        ].join("");
+
+    const titular = [
+        "<persona>",
+        "<rol>TI</rol>",
+        `<nombre>${esc(corta(t.nombre, 50))}</nombre>`,
+        `<apellido1>${esc(corta(t.apellido1, 50))}</apellido1>`,
+        opt("apellido2", corta(t.apellido2, 50)),
+        opt("telefono", corta(t.telefono, 20)),
+        opt("correo", corta(t.correo, 50)),
+        "</persona>",
+    ].join("");
+
+    return [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        `<alt:peticion xmlns:alt="${NS_ALTA_RESERVA}">`,
+        "<solicitud>",
+        "<comunicacion>",
+        establecimiento,
+        contratoXml(c),
+        titular,
+        "</comunicacion>",
+        "</solicitud>",
+        "</alt:peticion>",
+    ].join("");
+}
+
+/**
+ * XML interior de la ANULACIÓN (anexo III). Es la lista de códigos de
+ * comunicación que devolvió la consulta del lote de la reserva.
+ */
+export function xmlAnulacion(codigos: string[]): string {
+    return [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        `<anul:comunicaciones xmlns:anul="${NS_ANULACION}">`,
+        ...codigos.map((c) => `<anul:codigoComunicacion>${esc(c)}</anul:codigoComunicacion>`),
+        "</anul:comunicaciones>",
+    ].join("");
+}
+
+/**
+ * Sobre SOAP de `comunicacion`. `tipoComunicacion` sólo se manda en las altas:
+ * lo dice la especificación y el ejemplo de anulación del anexo III no lo lleva.
+ */
+function sobreComunicacion(
+    solicitudBase64: string,
+    tipoOperacion: "A" | "B",
+    tipoComunicacion: "PV" | "RH" | null,
+): string {
     return [
         '<?xml version="1.0" encoding="UTF-8"?>',
         `<soapenv:Envelope xmlns:soapenv="${NS_SOAP}" xmlns:com="${NS_COMUNICACION}">`,
@@ -171,8 +301,8 @@ function sobreComunicacion(solicitudBase64: string): string {
         "<cabecera>",
         `<codigoArrendador>${esc(SECRETOS.arrendador)}</codigoArrendador>`,
         `<aplicacion>${esc(APLICACION)}</aplicacion>`,
-        "<tipoOperacion>A</tipoOperacion>",
-        "<tipoComunicacion>PV</tipoComunicacion>",
+        `<tipoOperacion>${tipoOperacion}</tipoOperacion>`,
+        tipoComunicacion ? `<tipoComunicacion>${tipoComunicacion}</tipoComunicacion>` : "",
         "</cabecera>",
         `<solicitud>${solicitudBase64}</solicitud>`,
         "</peticion>",
@@ -185,12 +315,18 @@ function sobreComunicacion(solicitudBase64: string): string {
 /**
  * Sobre SOAP de `consultaLote`.
  *
- * ⚠️ El shape exacto de esta operación NO está confirmado contra el WSDL
- * real: el WSDL sólo se descarga desde dentro de la plataforma, ya
- * autenticado. Está construido por simetría con `comunicacion`. Por eso la
- * consulta es SIEMPRE opcional: si falla, no cambia ningún estado y se anota
- * la incidencia. En cuanto lleguen las credenciales hay que abrir
- * `comunicacion.wsdl` y confirmarlo (ver docs/PARTE-VIAJEROS.md).
+ * ✅ **Confirmado contra el XSD real** (`comunicacion.xsd` v3.1.1,
+ * 10-sep-2026). Y no era lo que parecía: `consultaLoteRequest` **no lleva
+ * `<peticion>` ni `<cabecera>`**, al contrario que `comunicacion`. Es
+ * directamente una lista de lotes:
+ *
+ *     <consultaLoteRequest>
+ *       <codigosLote><lote>UUID</lote>…</codigosLote>
+ *     </consultaLoteRequest>
+ *
+ * La versión anterior lo construía «por simetría» con `comunicacion` y habría
+ * fallado en la primera consulta. Es exactamente el motivo por el que estaba
+ * marcada con un ⚠️ y por el que la consulta nunca cambia un estado si falla.
  */
 function sobreConsultaLote(lote: string): string {
     return [
@@ -199,23 +335,14 @@ function sobreConsultaLote(lote: string): string {
         "<soapenv:Header/>",
         "<soapenv:Body>",
         "<com:consultaLoteRequest>",
-        "<peticion>",
-        "<cabecera>",
-        `<codigoArrendador>${esc(SECRETOS.arrendador)}</codigoArrendador>`,
-        `<aplicacion>${esc(APLICACION)}</aplicacion>`,
-        "<tipoOperacion>C</tipoOperacion>",
-        "</cabecera>",
+        "<codigosLote>",
         `<lote>${esc(lote)}</lote>`,
-        "</peticion>",
+        "</codigosLote>",
         "</com:consultaLoteRequest>",
         "</soapenv:Body>",
         "</soapenv:Envelope>",
     ].join("");
 }
-
-// ---------------------------------------------------------------------------
-// Lectura de la respuesta
-// ---------------------------------------------------------------------------
 
 /** Saca el contenido de una etiqueta, con o sin prefijo de espacio de nombres. */
 function etiqueta(xml: string, nombre: string): string | null {
@@ -240,9 +367,8 @@ export interface RespuestaMir {
 }
 
 function leerRespuesta(texto: string, httpStatus: number): RespuestaMir {
-    // La propia documentación del Ministerio se contradice: el anexo usa
-    // <codigoRetorno> y la tabla del apartado 3.1.2 usa <codigo>. Se leen
-    // los dos.
+    // La documentación del Ministerio se contradice: el anexo usa
+    // <codigoRetorno> y la tabla del §3.1.2 usa <codigo>. Se leen los dos.
     const crudoCodigo = etiqueta(texto, "codigoRetorno") ?? etiqueta(texto, "codigo");
     const codigo = crudoCodigo != null && crudoCodigo !== "" ? Number(crudoCodigo) : null;
     return {
@@ -254,7 +380,7 @@ function leerRespuesta(texto: string, httpStatus: number): RespuestaMir {
     };
 }
 
-/** Mensajes de los códigos de error del apartado 5 de la especificación. */
+/** Códigos de error del apartado 5 de la especificación. */
 export const ERRORES_MIR: Record<number, string> = {
     0: "Recibido correctamente",
     10103: "El código de arrendador no existe",
@@ -264,6 +390,7 @@ export const ERRORES_MIR: Record<number, string> = {
     10119: "El arrendador no puede hacer este tipo de comunicaciones",
     10120: "El arrendador no tiene habilitado el envío por servicio web",
     10121: "Error de validación de los datos",
+    10122: "Tipo de comunicación no válido (sólo PV, RH, AV y RV)",
     10130: "Valor incorrecto en un campo",
     10131: "Falta un campo obligatorio",
     10999: "Error no controlado en el servicio",
@@ -273,10 +400,6 @@ export const explicaCodigo = (codigo: number | null, descripcion: string | null)
     if (codigo == null) return descripcion || "Respuesta sin código";
     return ERRORES_MIR[codigo] ? `${ERRORES_MIR[codigo]} (${codigo})` : `${descripcion || "Error"} (${codigo})`;
 };
-
-// ---------------------------------------------------------------------------
-// Transporte
-// ---------------------------------------------------------------------------
 
 const espera = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -290,15 +413,13 @@ async function llamar(sobre: string): Promise<RespuestaMir> {
             headers: {
                 "content-type": "text/xml; charset=UTF-8",
                 "authorization": `Basic ${auth}`,
-                // El WSDL declara soapAction vacía: se manda vacía a propósito.
-                "SOAPAction": "",
+                "SOAPAction": "",   // el WSDL la declara vacía
                 "accept": "text/xml",
             },
             body: sobre,
             signal: control.signal,
         });
-        const texto = await res.text();
-        return leerRespuesta(texto, res.status);
+        return leerRespuesta(await res.text(), res.status);
     } finally {
         clearTimeout(reloj);
     }
@@ -306,7 +427,7 @@ async function llamar(sobre: string): Promise<RespuestaMir> {
 
 export interface ResultadoEnvio {
     ok: boolean;
-    /** Cierto cuando el fallo es de los que no se arreglan reintentando. */
+    /** Cierto cuando el fallo no se arregla reintentando. */
     definitivo: boolean;
     respuesta: RespuestaMir | null;
     /** El XML que se ha mandado, tal cual, para poder auditarlo. */
@@ -316,20 +437,20 @@ export interface ResultadoEnvio {
 }
 
 /** Códigos que no tiene sentido reintentar: hay que arreglar algo antes. */
-const NO_REINTENTAR = new Set([10103, 10107, 10111, 10118, 10119, 10120, 10121, 10130, 10131]);
+const NO_REINTENTAR = new Set([10103, 10107, 10111, 10118, 10119, 10120, 10121, 10122, 10130, 10131]);
 
 /**
- * Manda un parte de viajeros. Reintenta las caídas de red y los 5xx; no
- * reintenta lo que el Ministerio rechaza por contenido o por credenciales.
+ * Manda una comunicación cualquiera de las tres. Reintenta las caídas de red y
+ * los 5xx; no reintenta lo que el MIR rechaza por contenido o credenciales.
  */
-export async function mandarParte(opts: {
-    codigoEstablecimiento: string;
-    contrato: ContratoParte;
-    viajeros: ViajeroParte[];
-}): Promise<ResultadoEnvio> {
-    const xml = xmlParteViajeros(opts);
-    const zip = await zipDeUnFichero("parte-viajeros.xml", new TextEncoder().encode(xml));
-    const sobre = sobreComunicacion(aBase64(zip));
+async function mandar(
+    xml: string,
+    tipoOperacion: "A" | "B",
+    tipoComunicacion: "PV" | "RH" | null,
+    nombreFichero: string,
+): Promise<ResultadoEnvio> {
+    const zip = await zipDeUnFichero(nombreFichero, new TextEncoder().encode(xml));
+    const sobre = sobreComunicacion(aBase64(zip), tipoOperacion, tipoComunicacion);
 
     let ultimo: RespuestaMir | null = null;
     let ultimoError = "";
@@ -364,9 +485,30 @@ export async function mandarParte(opts: {
 
     return {
         ok: false, definitivo: false, respuesta: ultimo, xmlEnviado: xml,
-        intentos: INTENTOS,
-        mensaje: ultimoError || "No hubo respuesta del servicio",
+        intentos: INTENTOS, mensaje: ultimoError || "No hubo respuesta del servicio",
     };
+}
+
+/** Parte de viajeros: alta (A) de tipo PV. Art. 6.3.b, al entrar. */
+export function mandarParte(opts: {
+    codigoEstablecimiento: string;
+    contrato: ContratoParte;
+    viajeros: ViajeroParte[];
+}): Promise<ResultadoEnvio> {
+    return mandar(xmlParteViajeros(opts), "A", "PV", "parte-viajeros.xml");
+}
+
+/** Reserva de hospedaje: alta (A) de tipo RH. Art. 6.3.a, al reservar. */
+export function mandarReserva(opts: {
+    codigoEstablecimiento: string;
+    contrato: ContratoParte;
+}): Promise<ResultadoEnvio> {
+    return mandar(xmlReservaHospedaje(opts), "A", "RH", "reserva-hospedaje.xml");
+}
+
+/** Anulación: operación B, sin tipo de comunicación. Art. 6.3.a, al anular. */
+export function mandarAnulacion(codigos: string[]): Promise<ResultadoEnvio> {
+    return mandar(xmlAnulacion(codigos), "B", null, "anulacion.xml");
 }
 
 export interface ResultadoLote {
@@ -378,8 +520,11 @@ export interface ResultadoLote {
 }
 
 /**
- * Pregunta cómo quedó un lote. Nunca lanza: si no se puede consultar,
- * devuelve `consultado: false` y quien llama deja el estado como estaba.
+ * Pregunta cómo quedó un lote. Nunca lanza: si no se puede consultar devuelve
+ * `consultado: false` y quien llama deja el estado como estaba.
+ *
+ * Los `codigoComunicacion` que devuelve NO son decoración: son lo que hace
+ * falta para poder ANULAR esa comunicación después. Por eso se guardan.
  */
 export async function consultarLote(lote: string): Promise<ResultadoLote> {
     try {
@@ -387,11 +532,16 @@ export async function consultarLote(lote: string): Promise<ResultadoLote> {
         if (r.httpStatus < 200 || r.httpStatus >= 300) {
             return { consultado: false, aceptado: null, codigosComunicacion: [], errores: [], crudo: r.crudo };
         }
+        // `resultadoType` del XSD: cada comunicación del lote vuelve con
+        // `codigoComunicacion`, `tipoError` y `error`. El `descripcion` de
+        // fuera es el del lote entero.
         const codigos = todasLasEtiquetas(r.crudo, "codigoComunicacion").filter(Boolean);
-        const errores = todasLasEtiquetas(r.crudo, "descripcion")
-            .filter((d) => d && !/^ok$/i.test(d));
-        // Sin ningún código de comunicación no se puede afirmar que esté
-        // aceptado: se deja en null (no se sabe) antes que mentir.
+        const errores = [
+            ...todasLasEtiquetas(r.crudo, "error"),
+            ...todasLasEtiquetas(r.crudo, "descripcion"),
+        ].filter((d) => d && !/^ok$/i.test(d));
+        // Sin ningún código no se puede afirmar que esté aceptado: se deja en
+        // null (no se sabe) antes que mentir.
         const aceptado = codigos.length > 0 ? true : (errores.length > 0 ? false : null);
         return { consultado: true, aceptado, codigosComunicacion: codigos, errores, crudo: r.crudo };
     } catch (e) {

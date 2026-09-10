@@ -39,6 +39,7 @@ const DineroPanel = lazy(() => import('./DineroPanel'));
 const PreciosPanel = lazy(() => import('./PreciosPanel'));
 const LimpiezasPanel = lazy(() => import('./LimpiezasPanel'));
 const ParteViajerosPanel = lazy(() => import('./ParteViajerosPanel'));
+const CheckinPanel       = lazy(() => import('./CheckinPanel'));
 
 /** Secciones que se ven en el menú, en el orden en que ella las usa. */
 export const SECCIONES = [
@@ -56,6 +57,7 @@ export const SECCIONES = [
 /** Pantallas que no salen en el menú porque se abren desde otra. */
 const OCULTAS = [
     { id: 'reserva', etiqueta: 'Reserva' },
+    { id: 'checkin', etiqueta: 'Hacer el check-in' },
 ];
 
 /** Las cuatro de todos los días, las que van en la barra de abajo del móvil. */
@@ -188,6 +190,7 @@ const PanelApp = ({ perfil }) => {
                         {vista.seccion === 'precios' && <PreciosPanel {...props} />}
                         {vista.seccion === 'limpiezas' && <LimpiezasPanel {...props} />}
                         {vista.seccion === 'parte' && <ParteViajerosPanel {...props} />}
+                        {vista.seccion === 'checkin' && <CheckinPanel {...props} />}
                     </Suspense>
                 </main>
             </div>

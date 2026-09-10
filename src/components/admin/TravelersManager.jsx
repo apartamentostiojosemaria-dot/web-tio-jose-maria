@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import {
     Search, RefreshCw, Download, Send, ShieldCheck, ShieldAlert, Clock,
-    CircleHelp, FileText, History, KeyRound,
+    CircleHelp, FileText, History, KeyRound, BookOpen, ExternalLink,
 } from 'lucide-react';
 
 // ============================================================
@@ -62,6 +62,11 @@ const TravelersManager = () => {
     const [aviso, setAviso] = useState(null);
     const [abierta, setAbierta] = useState(null);   // booking_id desplegado
     const [credenciales, setCredenciales] = useState(null);
+    // Libro-registro por rango de fechas (Orden INT/1922/2003, apartado segundo)
+    const hoyISO = new Date().toISOString().slice(0, 10);
+    const [libroDesde, setLibroDesde] = useState(`${hoyISO.slice(0, 4)}-01-01`);
+    const [libroHasta, setLibroHasta] = useState(hoyISO);
+    const [libro, setLibro] = useState(null);
 
     const cargar = useCallback(async () => {
         setCargando(true);
@@ -174,6 +179,25 @@ const TravelersManager = () => {
         descargar(res.documento.nombre, new Blob([deBase64(res.documento.base64)], { type: res.documento.tipo }));
     });
 
+    /**
+     * El libro-registro por rango de fechas. Es lo que se pide en una
+     * inspección: «enséñeme el libro de agosto». La función devuelve la ruta
+     * de cada PDF archivado en el cubo privado y una URL firmada de una hora
+     * — el cubo NO es público y no puede serlo: dentro hay documentos de
+     * identidad y firmas.
+     */
+    const verLibro = () => conBloqueo('libro', async () => {
+        const r = await llamar({ accion: 'libro', desde: libroDesde, hasta: libroHasta });
+        setLibro(r);
+        if (r.sin_archivar > 0) {
+            setAviso({
+                tono: 'mal',
+                texto: `${r.sin_archivar} de ${r.estancias} estancia(s) no tienen el parte archivado. `
+                    + 'Eso es un hueco en el libro: ábrelas y dale a «Mandar» para que se archive.',
+            });
+        }
+    });
+
     const xml = (r) => {
         const contenido = r.payload?.xml;
         if (!contenido) {
@@ -225,6 +249,75 @@ const TravelersManager = () => {
                     {aviso.texto}
                 </div>
             )}
+
+            {/* ---- Libro-registro (Orden INT/1922/2003, apartado segundo) ---- */}
+            <div className="mb-5 rounded-2xl border border-gray-100 bg-white shadow-sm p-4">
+                <div className="flex flex-wrap items-end gap-3">
+                    <div>
+                        <p className="font-serif text-lg font-bold text-text-primary flex items-center gap-2">
+                            <BookOpen size={17} className="text-primary" /> Libro-registro
+                        </p>
+                        <p className="text-xs text-gray-600 mt-0.5 max-w-xl">
+                            Las hojas firmadas, archivadas una a una. Es lo que hay que <strong>exhibir</strong> si
+                            lo piden (Orden INT/1922/2003). Se conserva tres años.
+                        </p>
+                    </div>
+                    <div className="flex items-end gap-2 ml-auto">
+                        <label className="text-xs text-gray-600">
+                            Desde
+                            <input type="date" value={libroDesde} onChange={(e) => setLibroDesde(e.target.value)}
+                                className="block mt-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-primary" />
+                        </label>
+                        <label className="text-xs text-gray-600">
+                            Hasta
+                            <input type="date" value={libroHasta} onChange={(e) => setLibroHasta(e.target.value)}
+                                className="block mt-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-primary" />
+                        </label>
+                        <Boton onClick={verLibro} cargando={ocupado === 'libro'} icono={BookOpen}>
+                            Ver el libro
+                        </Boton>
+                    </div>
+                </div>
+
+                {libro && (
+                    <div className="mt-4 border-t border-gray-100 pt-3">
+                        <p className="text-xs text-gray-600 mb-2">
+                            {libro.estancias} estancia(s) entre {libro.desde} y {libro.hasta}
+                            {libro.sin_archivar > 0 && (
+                                <span className="text-red-700 font-bold"> · {libro.sin_archivar} sin archivar</span>
+                            )}
+                        </p>
+                        {libro.estancias === 0 ? (
+                            <p className="text-sm text-gray-500 font-serif italic">Ninguna estancia en esas fechas.</p>
+                        ) : (
+                            <table className="w-full text-sm">
+                                <tbody>
+                                    {libro.libro.map((f) => (
+                                        <tr key={f.booking_id} className="border-b border-gray-100 last:border-0">
+                                            <td className="py-1.5 pr-3 font-mono text-xs text-primary">{f.booking_code}</td>
+                                            <td className="py-1.5 pr-3 text-xs text-gray-700">{f.apartamento}</td>
+                                            <td className="py-1.5 pr-3 text-xs text-gray-500 tabular-nums">
+                                                {f.check_in} → {f.check_out}
+                                            </td>
+                                            <td className="py-1.5 pr-3 text-xs text-gray-500">{f.viajeros} viajero(s)</td>
+                                            <td className="py-1.5 text-xs">
+                                                {f.url ? (
+                                                    <a href={f.url} target="_blank" rel="noopener noreferrer"
+                                                        className="inline-flex items-center gap-1 text-primary font-semibold hover:underline">
+                                                        <ExternalLink size={12} /> Abrir la hoja
+                                                    </a>
+                                                ) : (
+                                                    <span className="text-red-700 font-semibold">Sin archivar</span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                )}
+            </div>
 
             <div className="relative mb-5 max-w-md">
                 <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true" />

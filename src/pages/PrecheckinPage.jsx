@@ -68,17 +68,28 @@ const DOC_TYPES = [
     { code: 'X', name: 'Otro documento oficial' },
 ];
 
-// Cuatro opciones, no las quince del Ministerio.
-// PENDIENTE: desde la migración `0008` la base YA admite el catálogo entero
-// del MIR (hijo/a, nieto/a, hermano/a, sobrino/a…). Lo único que falta es
-// ampliar esta lista; el CHECK ya no estorba. Ojo al ampliarla: usar los
-// códigos del MIR (HJ, SG, HR, SB, NI…) y dejar 'PA' donde está, que es el
-// heredado y la edge function lo traduce a 'PM' al enviar.
+// El catálogo entero, redactado desde el punto de vista del ADULTO, que es
+// quien contesta. La base ya lo admite (el CHECK trae los quince códigos más
+// el heredado 'PA', que se sigue usando para padre/madre porque la edge
+// function ya lo traduce a 'PM' al mandar el parte).
+//
+// Falta uno que era el más frecuente y no estaba: hermano/a.
 const PARENTESCOS = [
-    { code: 'PA', name: 'Soy su padre o su madre' },
-    { code: 'AB', name: 'Soy su abuelo o su abuela' },
-    { code: 'TU', name: 'Soy su tutor o su tutora' },
-    { code: 'OT', name: 'Otro' },
+    { code: 'PA', name: 'Su padre o su madre' },
+    { code: 'AB', name: 'Su abuelo o su abuela' },
+    { code: 'HR', name: 'Su hermano o su hermana' },
+    { code: 'TI', name: 'Su tío o su tía' },
+    { code: 'TU', name: 'Su tutor o su tutora' },
+    { code: 'SB', name: 'Su sobrino o su sobrina' },
+    { code: 'NI', name: 'Su nieto o su nieta' },
+    { code: 'HJ', name: 'Su hijo o su hija' },
+    { code: 'BA', name: 'Su bisabuelo o su bisabuela' },
+    { code: 'BN', name: 'Su bisnieto o su bisnieta' },
+    { code: 'CY', name: 'Su cónyuge' },
+    { code: 'CD', name: 'Su cuñado o su cuñada' },
+    { code: 'SG', name: 'Su suegro o su suegra' },
+    { code: 'YN', name: 'Su yerno o su nuera' },
+    { code: 'OT', name: 'Otra cosa' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -116,7 +127,12 @@ const emptyTraveler = (isTitular = false) => ({
     telefono_fijo: '',
     telefono_movil: '',
     email: '',
+    // `parentesco` sólo se rellena en los ADULTOS, y dice qué son ellos del
+    // menor al que acompañan. En la ficha del menor va siempre vacío.
     parentesco: '',
+    // A qué menor acompaña este adulto. Es apaño de esta pantalla para saber
+    // de quién habla el parentesco; no se manda a ninguna parte.
+    acompana_a: null,
     firma_base64: '',
 });
 
@@ -151,21 +167,85 @@ function pegasDe(t, fechaEntrada) {
     if (documentoEspanol && !t.apellido_segundo.trim()) {
         p.apellido_segundo = 'Con DNI o NIE hace falta el segundo apellido';
     }
-    if (edad !== null && edad >= 14 && !t.firma_base64) p.firma_base64 = 'Falta la firma';
-    if (edad !== null && edad < 18 && !t.is_titular && !t.parentesco) {
-        p.parentesco = 'Elige la relación';
-    }
+    // Firma: a partir de los CATORCE. No 16 ni 18. Lo dice el art. 4.2 del
+    // RD 933/2021; el 16 que circula viene de una norma de 1959 ya superada.
+    if (edad !== null && edad >= EDAD_FIRMA && !t.firma_base64) p.firma_base64 = 'Falta la firma';
     if (t.is_titular && !t.telefono_movil.trim()) p.telefono_movil = 'Pon un teléfono de contacto';
     return p;
+    // El PARENTESCO ya no se pide aquí. Va en el repaso y se guarda en la
+    // ficha del ADULTO, no en la del menor (ver `pegasDeLosMenores`).
+}
+
+/** Firman los mayores de catorce. */
+const EDAD_FIRMA = 14;
+/** Documento propio y parentesco: los umbrales de la mayoría de edad. */
+const EDAD_MAYORIA = 18;
+
+const esMenor = (t, fechaEntrada) => {
+    const e = edadEn(t.fecha_nacimiento, fechaEntrada);
+    return e !== null && e < EDAD_MAYORIA;
+};
+
+const esAdulto = (t, fechaEntrada) => {
+    const e = edadEn(t.fecha_nacimiento, fechaEntrada);
+    return e !== null && e >= EDAD_MAYORIA;
+};
+
+/**
+ * Lo que falta por decir de los menores, MIRADO DESDE EL ADULTO.
+ *
+ * El Ministerio no pide el parentesco en la ficha del niño: pide que «al
+ * menos una de las personas mayores de edad tenga informada su relación de
+ * parentesco» con él. Hasta hoy se guardaba al revés y por eso está aquí.
+ *
+ * Devuelve, por cada menor, con quién va y qué le falta.
+ */
+function pegasDeLosMenores(travelers, fechaEntrada) {
+    const menores = travelers
+        .map((t, i) => ({ t, i }))
+        .filter(({ t }) => esMenor(t, fechaEntrada));
+    if (menores.length === 0) return [];
+
+    const hayAdulto = travelers.some((t) => esAdulto(t, fechaEntrada));
+
+    return menores.map(({ t, i }) => {
+        const conQuien = travelers.findIndex(
+            (a, j) => j !== i && esAdulto(a, fechaEntrada) && Number(a.acompana_a) === i,
+        );
+        return {
+            idx: i,
+            nombre: t.nombre || `Persona ${i + 1}`,
+            adultoIdx: conQuien,
+            hayAdulto,
+            falta: !hayAdulto
+                ? 'sin_adulto'
+                : conQuien < 0
+                    ? 'sin_asignar'
+                    : !travelers[conQuien].parentesco
+                        ? 'sin_relacion'
+                        : null,
+        };
+    });
 }
 
 // ---------------------------------------------------------------------------
 // Pantalla
 // ---------------------------------------------------------------------------
 
-const PrecheckinPage = () => {
+/**
+ * @param codigo         Cuando se abre DENTRO del panel («Rellenarlo yo») el
+ *                       codigo viene por aqui, no por la direccion.
+ * @param dentroDelPanel Se pinta encajado en una hoja del panel en vez de a
+ *                       pantalla completa: sin cabecera propia, sin barra
+ *                       pegada al fondo de la ventana y sin ocupar la altura
+ *                       entera. Se usa el MISMO componente a proposito: dos
+ *                       formularios distintos acabarian diciendo cosas
+ *                       distintas, y este va a un parte policial.
+ * @param alTerminar     Aviso para que el panel se refresque al guardar.
+ */
+const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = null }) => {
     const [params] = useSearchParams();
-    const code = (params.get('code') || '').toUpperCase();
+    const code = String(codigo || params.get('code') || '').toUpperCase();
 
     const [booking, setBooking] = useState(null);
     const [cargando, setCargando] = useState(true);
@@ -180,6 +260,7 @@ const PrecheckinPage = () => {
     const [hecho, setHecho] = useState(false);
     const [huboBorrador, setHuboBorrador] = useState(false);
     const [guardadoAviso, setGuardadoAviso] = useState(false);
+    const [pagador, setPagador] = useState({ quien: '', nombre: '' });
 
     const paises = useMemo(construirPaises, []);
     const arriba = useRef(null);
@@ -192,13 +273,9 @@ const PrecheckinPage = () => {
             return;
         }
         (async () => {
-            const { data, error } = await supabase
-                .from('guest_bookings')
-                .select('booking_code, guest_name, guest_email, guest_phone, pax_count, check_in, check_out, status, apartments(name)')
-                .eq('booking_code', code)
-                .maybeSingle();
+            const data = await leerReserva(code);
 
-            if (error || !data) {
+            if (!data) {
                 setErrorCarga('No encontramos esa reserva. Revisa el enlace o escríbenos.');
             } else if (!['confirmed', 'completed'].includes(data.status)) {
                 setErrorCarga('Esta reserva todavía no está confirmada. Termina el pago primero.');
@@ -275,27 +352,77 @@ const PrecheckinPage = () => {
         setTimeout(() => setGuardadoAviso(false), 5000);
     };
 
+    // ------------------------------------------------------- quién ha pagado
+    // Sólo se pregunta cuando de verdad no lo sabemos. Si la reserva vino de
+    // Booking o Airbnb paga la plataforma, y si ya se pagó con tarjeta por la
+    // web el nombre lo devuelve la pasarela: en los dos casos, ni una
+    // pregunta de más.
+    const canalDeFuera = ['booking', 'airbnb', 'escapada', 'casasrurales']
+        .includes(String(booking?.channel || '').toLowerCase());
+    const pagadoPorLaWeb = booking?.payment_status === 'paid'
+        && ['web', ''].includes(String(booking?.channel || '').toLowerCase());
+    const preguntarPagador = !!booking && !canalDeFuera && !pagadoPorLaWeb;
+
+    const guardarPagador = async () => {
+        if (!preguntarPagador || !pagador.quien) return;
+        const titular = pagador.quien === 'yo'
+            ? [travelers[0]?.nombre, travelers[0]?.apellido_primero, travelers[0]?.apellido_segundo]
+                .filter(Boolean).join(' ').trim()
+            : pagador.nombre.trim();
+        if (!titular) return;
+        const { error } = await supabase.rpc('tjm_guardar_pagador', {
+            p_booking_code: code,
+            p_titular_pago: titular,
+        });
+        // Si la función todavía no existe, no se le monta un drama al huésped:
+        // sus datos están guardados, que es lo que le importa. Queda apuntado
+        // en la consola y en el informe para que se remate.
+        if (error) {
+            // eslint-disable-next-line no-console
+            console.warn('No se ha podido guardar quién pagó:', error.message);
+        }
+    };
+
+    // ------------------------------------------------------- ¿puede mandarse?
+    const menoresPendientes = pegasDeLosMenores(travelers, fechaEntrada)
+        .filter((m) => m.falta).length;
+    const pagadorPendiente = preguntarPagador
+        && (!pagador.quien || (pagador.quien === 'otra' && !pagador.nombre.trim()));
+    const sePuedeEnviar = menoresPendientes === 0 && !pagadorPendiente;
+
     const enviar = async () => {
-        if (!accept) return;
+        if (!accept || !sePuedeEnviar) return;
         setEnviando(true);
         setErrorEnvio(null);
         try {
             const { error } = await supabase.rpc('submit_traveler_records', {
                 p_booking_code: code,
-                p_travelers: travelers.map((t) => ({
+                p_travelers: travelers.map(({ acompana_a, ...t }) => ({
                     ...t,
                     apellido_segundo: t.apellido_segundo || null,
                     soporte_documento: t.soporte_documento || null,
                     telefono_fijo: t.telefono_fijo || null,
                     telefono_movil: t.telefono_movil || null,
                     email: t.email || null,
-                    parentesco: t.parentesco || null,
+                    // El parentesco va SOLO en la ficha del adulto que
+                    // acompaña a un menor. En la del menor, siempre vacío.
+                    parentesco: (acompana_a === null || acompana_a === undefined)
+                        ? null
+                        : (t.parentesco || null),
+                    // Y de qué menor habla ese parentesco. Es el contrato de
+                    // la migración 0011: el índice (empezando en 0) de la
+                    // persona del array a la que se refiere.
+                    parentesco_menor_indice: (acompana_a === null || acompana_a === undefined)
+                        ? null
+                        : Number(acompana_a),
                     firma_base64: t.firma_base64 || null,
                 })),
             });
             if (error) throw error;
+            await guardarPagador();
             try { localStorage.removeItem(claveBorrador(code)); } catch { /* da igual */ }
             setHecho(true);
+            alTerminar?.();
         } catch (err) {
             const msg = err.message || '';
             if (msg.includes('precheckin_too_early')) setErrorEnvio('Todavía es pronto. Se abre una semana antes de tu llegada.');
@@ -309,19 +436,23 @@ const PrecheckinPage = () => {
 
     // ----------------------------------------------------------- pintado
     return (
-        <div className="min-h-screen bg-[#FCFBF9]">
-            <PageHead
-                title="Tus datos antes de llegar — Apartamentos Tío José María"
-                description="Registro de viajeros obligatorio (Real Decreto 933/2021)."
-                path="/precheckin"
-                noindex
-            />
+        <div className={dentroDelPanel ? 'bg-[#FCFBF9] rounded-2xl' : 'min-h-screen bg-[#FCFBF9]'}>
+            {!dentroDelPanel && (
+                <PageHead
+                    title="Tus datos antes de llegar — Apartamentos Tío José María"
+                    description="Registro de viajeros obligatorio (Real Decreto 933/2021)."
+                    path="/precheckin"
+                    noindex
+                />
+            )}
 
             <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-gray-100 px-4 py-3">
                 <div className="max-w-xl mx-auto flex items-center justify-between gap-3">
+                    {dentroDelPanel ? <span /> : (
                     <Link to="/" className="inline-flex items-center gap-1.5 text-rural-700 font-bold text-sm min-h-[44px]">
                         <ChevronLeft size={18} aria-hidden="true" /> Inicio
                     </Link>
+                    )}
                     {booking && !hecho && paso > 0 && (
                         <span className="text-sm font-semibold text-gray-600">
                             {paso <= total ? `Persona ${paso} de ${total}` : 'Último paso'}
@@ -338,7 +469,7 @@ const PrecheckinPage = () => {
                 )}
             </nav>
 
-            <main className="px-4 pb-28 pt-6">
+            <main className={dentroDelPanel ? 'px-1 pb-4 pt-4' : 'px-4 pb-28 pt-6'}>
                 <div className="max-w-xl mx-auto" ref={arriba}>
                     {cargando ? (
                         <p className="text-center text-gray-500 py-20">Cargando tu reserva…</p>
@@ -378,6 +509,10 @@ const PrecheckinPage = () => {
                             accept={accept}
                             setAccept={setAccept}
                             error={errorEnvio}
+                            cambiar={cambiar}
+                            preguntarPagador={preguntarPagador}
+                            pagador={pagador}
+                            setPagador={setPagador}
                         />
                     )}
                 </div>
@@ -385,7 +520,7 @@ const PrecheckinPage = () => {
 
             {/* Barra de abajo: siempre a mano, nunca escondida */}
             {booking && !hecho && !errorCarga && paso > 0 && (
-                <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-gray-100 px-4 py-3">
+                <div className={`${dentroDelPanel ? 'sticky bottom-0' : 'fixed bottom-0 inset-x-0'} z-40 bg-white/95 backdrop-blur border-t border-gray-100 px-4 py-3`}>
                     <div className="max-w-xl mx-auto flex items-center gap-2.5">
                         <button
                             type="button"
@@ -419,7 +554,7 @@ const PrecheckinPage = () => {
                             <button
                                 type="button"
                                 onClick={enviar}
-                                disabled={!accept || enviando}
+                                disabled={!accept || enviando || !sePuedeEnviar}
                                 className="flex-1 min-h-[52px] px-5 rounded-2xl font-bold text-white bg-rural-600 hover:bg-rural-700 disabled:opacity-45 inline-flex items-center justify-center gap-2"
                             >
                                 <Check size={20} aria-hidden="true" />
@@ -452,15 +587,15 @@ const Portada = ({ booking, huboBorrador, onEmpezar }) => (
             Tus datos antes de llegar
         </h1>
         <p className="text-base text-gray-700 mt-3 leading-relaxed">
-            La ley española nos obliga a registrar los datos de todas las personas que se alojan
-            (Real Decreto 933/2021). Se rellena una vez, en un par de minutos, y así en la entrada
-            sólo nos damos la bienvenida.
+            El alojamiento está obligado por ley a registrar los datos de todas las personas
+            que duermen aquí, y a nosotros nos toca pedírtelos. Se rellena una vez, en un par
+            de minutos, y así en la entrada sólo nos damos la bienvenida.
         </p>
 
         <Caja className="mt-5">
             <p className="text-sm uppercase tracking-widest font-bold text-gray-500">Tu reserva</p>
             <p className="font-serif text-xl font-bold text-text-primary mt-1">
-                {booking?.apartments?.name}
+                {booking?.apartments?.name || booking?.apartment_name}
             </p>
             <p className="text-base text-gray-700">
                 Del {booking?.check_in} al {booking?.check_out} · {booking?.pax_count || 1}{' '}
@@ -631,21 +766,11 @@ const PasoViajero = ({ idx, traveler: t, total, fechaEntrada, paises, mostrarPeg
                 </Caja>
             )}
 
-            {esMenorDeEdad && idx > 0 && (
-                <Caja className="mt-4">
-                    <Campo
-                        etiqueta="¿Qué eres tú de esta persona?"
-                        ayuda="Al ser menor de edad, la ley nos pide la relación con quien lo acompaña."
-                        id={`pa${idx}`}
-                        error={pegas.parentesco}
-                    >
-                        <select id={`pa${idx}`} className={cInput} value={t.parentesco}
-                            onChange={(e) => cambiar(idx, 'parentesco', e.target.value)}>
-                            <option value="">Elige una opción…</option>
-                            {PARENTESCOS.map((p) => <option key={p.code} value={p.code}>{p.name}</option>)}
-                        </select>
-                    </Campo>
-                </Caja>
+            {esMenorDeEdad && (
+                <p className="mt-4 text-base text-gray-600 bg-white border border-gray-200 rounded-2xl px-4 py-3">
+                    Al ser menor de edad no hace falta su documento. Al final te preguntamos
+                    con quién viene.
+                </p>
             )}
 
             {esMenorDe14 ? (
@@ -667,10 +792,14 @@ const PasoViajero = ({ idx, traveler: t, total, fechaEntrada, paises, mostrarPeg
     );
 };
 
-const Repaso = ({ travelers, fechaEntrada, maximo, onEditar, onAnadir, onQuitar, accept, setAccept, error }) => {
+const Repaso = ({
+    travelers, fechaEntrada, maximo, onEditar, onAnadir, onQuitar,
+    accept, setAccept, error, cambiar, preguntarPagador, pagador, setPagador,
+}) => {
     const incompletos = travelers
         .map((t, i) => ({ i, pegas: pegasDe(t, fechaEntrada) }))
         .filter((x) => Object.keys(x.pegas).length > 0);
+    const menores = pegasDeLosMenores(travelers, fechaEntrada);
 
     return (
         <div>
@@ -738,6 +867,19 @@ const Repaso = ({ travelers, fechaEntrada, maximo, onEditar, onAnadir, onQuitar,
                 </p>
             )}
 
+            {menores.length > 0 && (
+                <BloqueMenores
+                    menores={menores}
+                    travelers={travelers}
+                    fechaEntrada={fechaEntrada}
+                    cambiar={cambiar}
+                />
+            )}
+
+            {preguntarPagador && (
+                <BloquePagador pagador={pagador} setPagador={setPagador} travelers={travelers} />
+            )}
+
             <label className="mt-5 flex items-start gap-3 bg-white rounded-2xl border border-gray-200 p-4">
                 <input type="checkbox" checked={accept} onChange={(e) => setAccept(e.target.checked)}
                     className="mt-1 h-6 w-6 accent-rural-600 shrink-0" />
@@ -755,6 +897,183 @@ const Repaso = ({ travelers, fechaEntrada, maximo, onEditar, onAnadir, onQuitar,
                     {error}
                 </p>
             )}
+        </div>
+    );
+};
+
+/**
+ * Los menores: con quién vienen y qué es esa persona de ellos.
+ *
+ * La pregunta se le hace al ADULTO y la respuesta se guarda en la ficha del
+ * ADULTO. Es lo que exige el Ministerio y lo contrario de lo que se hacía
+ * antes, que la guardaba en la ficha del niño.
+ */
+const BloqueMenores = ({ menores, travelers, fechaEntrada, cambiar }) => {
+    const adultos = travelers
+        .map((t, i) => ({ t, i }))
+        .filter(({ t }) => esAdulto(t, fechaEntrada));
+
+    const asignar = (menorIdx, adultoIdx) => {
+        // Un adulto acompaña a un menor: si ya acompañaba a otro, se queda
+        // con el último. Y al menor anterior se le suelta.
+        travelers.forEach((t, j) => {
+            if (Number(t.acompana_a) === menorIdx && j !== adultoIdx) {
+                cambiar(j, 'acompana_a', null);
+                cambiar(j, 'parentesco', '');
+            }
+        });
+        cambiar(adultoIdx, 'acompana_a', menorIdx);
+    };
+
+    return (
+        <div className="mt-5">
+            <Caja>
+                <p className="font-bold text-lg text-text-primary">Quién viene con los peques</p>
+                <p className="text-sm text-gray-600 mt-1 leading-snug">
+                    Cuando viaja un menor, la ley nos pide saber qué es de él la persona
+                    adulta que lo acompaña.
+                </p>
+
+                {menores.map((m) => (
+                    <div key={m.idx} className="mt-5 pt-4 border-t border-gray-100 first:border-0 first:pt-0 first:mt-4">
+                        <p className="font-bold text-base text-text-primary mb-2">
+                            {m.nombre}
+                        </p>
+
+                        {!m.hayAdulto ? (
+                            <p className="text-base text-amber-900 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3">
+                                Tiene que ir con una persona mayor de edad. Añádela arriba.
+                            </p>
+                        ) : (
+                            <>
+                                <p className="text-sm text-gray-600 mb-2">¿Con quién viene?</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {adultos.map(({ t, i }) => {
+                                        const elegido = Number(t.acompana_a) === m.idx;
+                                        return (
+                                            <button
+                                                key={i}
+                                                type="button"
+                                                onClick={() => asignar(m.idx, i)}
+                                                aria-pressed={elegido}
+                                                className={`min-h-[48px] px-4 rounded-2xl border-2 font-bold text-base ${
+                                                    elegido
+                                                        ? 'bg-rural-600 border-rural-600 text-white'
+                                                        : 'bg-white border-gray-200 text-gray-700'
+                                                }`}
+                                            >
+                                                {elegido ? '✓ ' : ''}{t.nombre || `Persona ${i + 1}`}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                {m.adultoIdx >= 0 && (
+                                    <div className="mt-4">
+                                        <label
+                                            htmlFor={`rel${m.idx}`}
+                                            className="block text-base font-bold text-text-primary mb-1"
+                                        >
+                                            {travelers[m.adultoIdx].nombre || 'Esa persona'} es
+                                            de {m.nombre}…
+                                        </label>
+                                        <select
+                                            id={`rel${m.idx}`}
+                                            className={cInput}
+                                            value={travelers[m.adultoIdx].parentesco || ''}
+                                            onChange={(e) => cambiar(m.adultoIdx, 'parentesco', e.target.value)}
+                                        >
+                                            <option value="">Elige una opción…</option>
+                                            {PARENTESCOS.map((p) => (
+                                                <option key={p.code} value={p.code}>{p.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+
+                                {m.falta && (
+                                    <p className="mt-3 text-sm font-semibold text-amber-800 flex items-center gap-1.5">
+                                        <AlertCircle size={15} aria-hidden="true" />
+                                        {m.falta === 'sin_asignar'
+                                            ? 'Dinos con quién viene.'
+                                            : 'Dinos qué es esa persona de él.'}
+                                    </p>
+                                )}
+                            </>
+                        )}
+                    </div>
+                ))}
+            </Caja>
+        </div>
+    );
+};
+
+/**
+ * Quién ha pagado.
+ *
+ * El anexo I pide el TITULAR DEL MEDIO DE PAGO, y hasta ahora se daba por
+ * hecho que era quien reserva. Con una transferencia de otra persona, eso es
+ * afirmar algo falso en un registro policial.
+ *
+ * Sólo sale cuando de verdad no lo sabemos: si la reserva vino de Booking o
+ * de Airbnb, o si ya se pagó con tarjeta por la web, no se pregunta nada.
+ */
+const BloquePagador = ({ pagador, setPagador, travelers }) => {
+    const quienReserva = [travelers[0]?.nombre, travelers[0]?.apellido_primero]
+        .filter(Boolean).join(' ').trim();
+
+    return (
+        <div className="mt-5">
+            <Caja>
+                <p className="font-bold text-lg text-text-primary">¿Quién ha pagado?</p>
+                <p className="text-sm text-gray-600 mt-1 leading-snug">
+                    Nos lo piden junto con el resto de datos. Basta con el nombre de quien
+                    hizo el pago.
+                </p>
+
+                <div className="mt-4 space-y-2">
+                    <button
+                        type="button"
+                        onClick={() => setPagador({ quien: 'yo', nombre: quienReserva })}
+                        aria-pressed={pagador.quien === 'yo'}
+                        className={`w-full text-left min-h-[52px] px-4 py-3 rounded-2xl border-2 font-bold text-base ${
+                            pagador.quien === 'yo'
+                                ? 'bg-rural-600 border-rural-600 text-white'
+                                : 'bg-white border-gray-200 text-gray-700'
+                        }`}
+                    >
+                        {pagador.quien === 'yo' ? '✓ ' : ''}Lo he pagado yo
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setPagador({ quien: 'otra', nombre: pagador.quien === 'otra' ? pagador.nombre : '' })}
+                        aria-pressed={pagador.quien === 'otra'}
+                        className={`w-full text-left min-h-[52px] px-4 py-3 rounded-2xl border-2 font-bold text-base ${
+                            pagador.quien === 'otra'
+                                ? 'bg-rural-600 border-rural-600 text-white'
+                                : 'bg-white border-gray-200 text-gray-700'
+                        }`}
+                    >
+                        {pagador.quien === 'otra' ? '✓ ' : ''}Lo ha pagado otra persona
+                    </button>
+                </div>
+
+                {pagador.quien === 'otra' && (
+                    <div className="mt-4">
+                        <label htmlFor="pagador-nombre" className="block text-base font-bold text-text-primary mb-1">
+                            ¿Cómo se llama?
+                        </label>
+                        <input
+                            id="pagador-nombre"
+                            className={cInput}
+                            type="text"
+                            autoCapitalize="words"
+                            value={pagador.nombre}
+                            onChange={(e) => setPagador({ quien: 'otra', nombre: e.target.value })}
+                        />
+                    </div>
+                )}
+            </Caja>
         </div>
     );
 };
@@ -930,6 +1249,34 @@ const Firma = ({ valor, onChange }) => {
 };
 
 // ---------------------------------------------------------------------------
+
+/**
+ * Trae la reserva a partir del código del enlace.
+ *
+ * Primero por la función `tjm_precheckin_reserva`, que es la vía buena: sólo
+ * devuelve lo que el formulario necesita y funciona SIN sesión, que es como
+ * llega el huésped. Mientras esa función no exista, se prueba a leer la tabla
+ * — y eso sólo sale bien si quien mira ya ha entrado en el panel (el caso de
+ * «Rellenarlo yo»). Un huésped desde su móvil, sin sesión, no puede leer
+ * `guest_bookings`: lo tapa la seguridad por filas.
+ */
+async function leerReserva(code) {
+    const CAMPOS = 'booking_code, guest_name, guest_email, guest_phone, pax_count, '
+        + 'check_in, check_out, status, channel, payment_status';
+
+    const porFuncion = await supabase.rpc('tjm_precheckin_reserva', { p_booking_code: code });
+    if (!porFuncion.error && porFuncion.data) {
+        const fila = Array.isArray(porFuncion.data) ? porFuncion.data[0] : porFuncion.data;
+        if (fila) return fila;
+    }
+
+    const { data } = await supabase
+        .from('guest_bookings')
+        .select(`${CAMPOS}, apartments(name)`)
+        .eq('booking_code', code)
+        .maybeSingle();
+    return data || null;
+}
 
 function leerBorrador(code) {
     try {
