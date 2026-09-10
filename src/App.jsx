@@ -4,12 +4,20 @@ import { supabase } from './lib/supabase';
 import ScrollToTop from './components/shared/ScrollToTop';
 import CookieConsent from './components/shared/CookieConsent';
 
-// BotChat sólo se monta en rutas públicas (no admin, no panel de cliente).
+// BotChat sólo se monta en rutas públicas (no admin, no panel de cliente, no /panel).
 const BotChat = lazy(() => import('./components/shared/BotChat'));
+
+// El aviso de cookies es para las paginas publicas. En /panel tapaba la barra
+// de navegacion de abajo en el movil.
+const PublicCookieConsent = () => {
+    const { pathname } = useLocation();
+    if (pathname.startsWith('/admin') || pathname.startsWith('/clientes') || pathname.startsWith('/panel')) return null;
+    return <CookieConsent />;
+};
 
 const PublicBotChat = () => {
     const { pathname } = useLocation();
-    if (pathname.startsWith('/admin') || pathname.startsWith('/clientes')) return null;
+    if (pathname.startsWith('/admin') || pathname.startsWith('/clientes') || pathname.startsWith('/panel')) return null;
     // Bot deshabilitado por defecto. Activar con VITE_BOT_ENABLED=true cuando
     // AWS Bedrock + indexer KB estén configurados y verificados.
     if (import.meta.env.VITE_BOT_ENABLED !== 'true') return null;
@@ -41,6 +49,9 @@ const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard'));
 const ClientLogin = lazy(() => import('./components/client/ClientLogin'));
 const ClientArea = lazy(() => import('./components/client/ClientArea'));
 const AdminResponse = lazy(() => import('./pages/AdminResponse'));
+// Panel sencillo (/panel): la puerta que usa la madre de Jesus a diario.
+// Comprueba la sesion por su cuenta, asi que no depende del estado de App.
+const PanelPage = lazy(() => import('./pages/PanelPage'));
 const BlogPage = lazy(() => import('./pages/BlogPage'));
 const BlogPostDetail = lazy(() => import('./pages/BlogPostDetail'));
 const GuiaCazorla = lazy(() => import('./pages/GuiaCazorla'));
@@ -152,6 +163,7 @@ export default function App() {
                             }
                         />
                         <Route path="/admin/respuesta" element={<AdminResponse />} />
+                        <Route path="/panel" element={<PanelPage />} />
                         <Route
                             path="/clientes"
                             element={
@@ -165,7 +177,7 @@ export default function App() {
                 </div>
             </Suspense>
             <PublicBotChat />
-            <CookieConsent />
+            <PublicCookieConsent />
         </>
     );
 }

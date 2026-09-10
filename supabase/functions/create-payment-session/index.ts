@@ -1,6 +1,11 @@
 // Edge function: create-payment-session
 // =======================================
-// Recibe un booking_code en estado 'hold', crea una Stripe Checkout Session
+// Dos usos:
+//  1. RESERVA (como siempre): booking_code en estado 'hold' desde la web publica.
+//  2. COBRO: reserva ya guardada (confirmed/pending) a la que se le manda un
+//     enlace de pago, por el importe pendiente o por una parte. Es lo que usa
+//     el panel cuando ella apunta una reserva por telefono.
+// Recibe un booking_code (o bookingId), crea una Stripe Checkout Session
 // con el importe total y devuelve la URL de la pasarela.
 //
 // El cliente (ReservarPage) redirige al huésped a esa URL. El webhook
@@ -41,6 +46,31 @@ const json = (status: number, body: unknown) =>
 interface StripeSessionResponse {
     id: string;
     url: string;
+    status?: string;
+    amount_total?: number;
+}
+
+/** Correo de relleno que pone `create_manual_booking` cuando no hay ninguno. */
+const esCorreoDeRelleno = (email: string) =>
+    /@tiojosemaria\.local$/i.test(email.trim()) || /^sin-email\+/i.test(email.trim());
+
+/**
+ * Recupera una sesion de Stripe ya creada. Devuelve null si no existe, si ya
+ * no esta abierta o si Stripe no contesta: en todos esos casos hay que crear
+ * una nueva, porque la vieja ya no sirve para pagar.
+ */
+async function recuperarSesionAbierta(sessionId: string): Promise<StripeSessionResponse | null> {
+    if (!/^cs_/.test(sessionId)) return null;   // pi_... (pago ya hecho) no es una sesion
+    try {
+        const res = await fetch(`https://api.stripe.com/v1/checkout/sessions/${sessionId}`, {
+            headers: { Authorization: `Bearer ${STRIPE_SECRET_KEY}` },
+        });
+        if (!res.ok) return null;
+        const s = await res.json() as StripeSessionResponse;
+        return s.status === "open" && s.url ? s : null;
+    } catch {
+        return null;
+    }
 }
 
 // Cliente Stripe mínimo via REST (sin SDK; mantiene la edge function ligera).
@@ -49,6 +79,7 @@ async function createStripeCheckoutSession(opts: {
     bookingId: number;
     apartmentName: string;
     totalEurCents: number;
+    tipo?: "reserva" | "cobro";
     nights: number;
     checkIn: string;
     checkOut: string;
@@ -61,7 +92,14 @@ async function createStripeCheckoutSession(opts: {
     body.set("mode", "payment");
     body.set("success_url", opts.successUrl);
     body.set("cancel_url", opts.cancelUrl);
-    body.set("customer_email", opts.guestEmail);
+    // Una reserva apuntada por telefono no tiene correo: `create_manual_booking`
+    // le pone uno de relleno (sin-email+...@tiojosemaria.local). Si se lo damos
+    // a Stripe, el campo queda BLOQUEADO en la pasarela con una direccion que no
+    // existe: el huesped no puede escribir la suya y no recibe el recibo. En ese
+    // caso no mandamos correo y que lo escriba el.
+    if (opts.guestEmail && !esCorreoDeRelleno(opts.guestEmail)) {
+        body.set("customer_email", opts.guestEmail);
+    }
     body.set("client_reference_id", opts.bookingCode);
     body.set("payment_method_types[0]", "card");
     body.set("locale", "es");
@@ -74,12 +112,17 @@ async function createStripeCheckoutSession(opts: {
         `Reserva ${opts.bookingCode}: ${opts.checkIn} → ${opts.checkOut}, ${opts.guestName}`);
 
     body.set("metadata[booking_code]", opts.bookingCode);
+    body.set("metadata[tipo]", opts.tipo || "reserva");
+    body.set("metadata[importe_eur]", (opts.totalEurCents / 100).toFixed(2));
     body.set("metadata[booking_id]", String(opts.bookingId));
     body.set("metadata[check_in]", opts.checkIn);
     body.set("metadata[check_out]", opts.checkOut);
 
-    // El hold expira en 15min — la sesión Stripe debe expirar antes
-    body.set("expires_at", String(Math.floor(Date.now() / 1000) + 30 * 60));
+    // El hold de la web expira en 15 min y su sesion debe caducar antes. Un
+    // enlace de cobro se manda por WhatsApp y tiene que aguantar el dia: 24 h
+    // es el maximo que admite Stripe.
+    const minutos = opts.tipo === "cobro" ? 24 * 60 : 30;
+    body.set("expires_at", String(Math.floor(Date.now() / 1000) + minutos * 60));
 
     const res = await fetch("https://api.stripe.com/v1/checkout/sessions", {
         method: "POST",
@@ -101,31 +144,73 @@ Deno.serve(async (req) => {
     if (req.method !== "POST") return json(405, { error: "method_not_allowed" });
     if (!STRIPE_SECRET_KEY) return json(503, { error: "stripe_not_configured" });
 
-    let body: { bookingCode?: string };
+    let body: { bookingCode?: string; bookingId?: number; amountEur?: number; amount?: number };
     try { body = await req.json(); } catch { return json(400, { error: "invalid_json" }); }
 
+    // El codigo de reserva (TJM-XXXXXX) es aleatorio y hace de secreto. El id es
+    // secuencial: si se aceptara suelto, cualquiera podria pedir /1, /2, /3... y
+    // la pasarela le ensenaria nombre del huesped, fechas, apartamento e importe.
+    // Por eso el codigo es OBLIGATORIO y el id, si viene, solo sirve de filtro.
     const code = (body.bookingCode || "").trim().toUpperCase();
     if (!code || !/^TJM-[A-Z0-9]{6}$/.test(code)) return json(400, { error: "invalid_booking_code" });
+    const bookingId = Number(body.bookingId);
+    const filtrarPorId = Number.isFinite(bookingId) && bookingId > 0;
 
-    // Cargar booking + apartment, verificar status='hold' y no expirado
-    const { data: booking, error: bErr } = await supabase
+    let consulta = supabase
         .from("guest_bookings")
-        .select("id, apartment_id, status, expires_at, total_price, check_in, check_out, guest_name, guest_email, payment_intent_id, apartments(name)")
-        .eq("booking_code", code)
-        .single();
+        .select("id, booking_code, apartment_id, status, expires_at, total_price, paid_amount, pending_amount, check_in, check_out, guest_name, guest_email, payment_intent_id, apartments(name)")
+        .eq("booking_code", code);
+    if (filtrarPorId) consulta = consulta.eq("id", bookingId);
+
+    const { data: booking, error: bErr } = await consulta.single();
 
     if (bErr || !booking) return json(404, { error: "booking_not_found" });
-    if (booking.status !== "hold") return json(409, { error: "booking_not_in_hold_state", status: booking.status });
-    if (booking.expires_at && new Date(booking.expires_at) < new Date()) return json(410, { error: "hold_expired" });
 
-    // Idempotencia: si ya hay payment_intent_id, devolvemos esa URL en lugar
-    // de crear una nueva sesión.
-    if (booking.payment_intent_id) {
-        return json(200, { url: `https://checkout.stripe.com/c/pay/${booking.payment_intent_id}`, idempotent: true });
+    const codigo = booking.booking_code as string;
+    const esHold = booking.status === "hold";
+    // Una reserva ya guardada tambien se puede cobrar por enlace: es el caso
+    // normal cuando la reserva se apunto por telefono.
+    const esCobro = booking.status === "confirmed" || booking.status === "pending";
+    if (!esHold && !esCobro) return json(409, { error: "booking_not_payable", status: booking.status });
+
+    if (esHold && booking.expires_at && new Date(booking.expires_at) < new Date()) {
+        return json(410, { error: "hold_expired" });
     }
 
-    const totalEur = Number(booking.total_price);
-    if (!Number.isFinite(totalEur) || totalEur <= 0) return json(400, { error: "invalid_total" });
+    // Idempotencia SOLO para el hold de la web: alli el enlace es uno y unico.
+    // En un cobro puede hacer falta mandar varios enlaces (una senal y luego el
+    // resto), asi que no reutilizamos sesion.
+    // OJO: la URL de Stripe NO se puede inventar a partir del id. La buena
+    // lleva un fragmento (#fid...) sin el cual la pasarela no abre. Hay que
+    // pedirle a Stripe la sesion y devolver SU url. Si ya no esta abierta
+    // (caducada o pagada), seguimos y creamos una nueva.
+    if (esHold && booking.payment_intent_id) {
+        const previa = await recuperarSesionAbierta(booking.payment_intent_id as string);
+        if (previa) {
+            return json(200, {
+                url: previa.url,
+                sessionId: previa.id,
+                importe: (previa.amount_total ?? 0) / 100,
+                idempotent: true,
+                tipo: "reserva",
+            });
+        }
+    }
+
+    // Cuanto se cobra: lo que pidan, o lo que quede pendiente (o el total si es
+    // un hold de la web, que todavia no tiene nada apuntado).
+    const pendiente = Number(booking.pending_amount ?? booking.total_price);
+    // El panel manda el importe como `amount` y la web como `amountEur`. Si solo
+    // se mira uno, el otro se ignora en silencio y se cobra TODO lo pendiente
+    // cuando ella queria cobrar una senal. Se aceptan los dos nombres.
+    const pedido = Number(body.amountEur ?? body.amount);
+    const totalEur = Number.isFinite(pedido) && pedido > 0
+        ? Math.min(pedido, esHold ? Number(booking.total_price) : pendiente)
+        : (esHold ? Number(booking.total_price) : pendiente);
+
+    if (!Number.isFinite(totalEur) || totalEur <= 0) {
+        return json(400, { error: esCobro ? "nothing_pending" : "invalid_total" });
+    }
 
     // Nights (re-derivado del rango por si la columna generada falla)
     const checkInDate = new Date(booking.check_in);
@@ -137,7 +222,7 @@ Deno.serve(async (req) => {
     let session: StripeSessionResponse;
     try {
         session = await createStripeCheckoutSession({
-            bookingCode: code,
+            bookingCode: codigo,
             bookingId: booking.id,
             apartmentName,
             totalEurCents: Math.round(totalEur * 100),
@@ -146,18 +231,27 @@ Deno.serve(async (req) => {
             checkOut: booking.check_out,
             guestName: booking.guest_name,
             guestEmail: booking.guest_email,
-            successUrl: `${SITE_URL}/reservar/confirmada?code=${code}`,
-            cancelUrl: `${SITE_URL}/reservar?cancelled=${code}`,
+            successUrl: `${SITE_URL}/reservar/confirmada?code=${codigo}`,
+            cancelUrl: `${SITE_URL}/reservar?cancelled=${codigo}`,
+            tipo: esHold ? "reserva" : "cobro",
         });
     } catch (e) {
         return json(502, { error: "stripe_error", detail: e instanceof Error ? e.message : String(e) });
     }
 
-    // Anotar payment_intent_id (= session.id) en el booking para idempotencia
-    await supabase
-        .from("guest_bookings")
-        .update({ payment_intent_id: session.id })
-        .eq("id", booking.id);
+    // Anotar payment_intent_id (= session.id) solo en el hold: en un cobro
+    // pisarlo romperia la idempotencia del pago original.
+    if (esHold) {
+        await supabase
+            .from("guest_bookings")
+            .update({ payment_intent_id: session.id })
+            .eq("id", booking.id);
+    }
 
-    return json(200, { url: session.url, sessionId: session.id });
+    return json(200, {
+        url: session.url,
+        sessionId: session.id,
+        importe: totalEur,
+        tipo: esHold ? "reserva" : "cobro",
+    });
 });

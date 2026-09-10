@@ -1,6 +1,6 @@
 // Verifica OTP y devuelve un magic link de Supabase Auth para que el cliente complete login.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { encode as b64encode } from "https://deno.land/std@0.224.0/encoding/base64.ts";
+import { encodeBase64 as b64encode } from "https://deno.land/std@0.224.0/encoding/base64.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SR_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;

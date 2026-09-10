@@ -534,3 +534,34 @@ Para construir el envío automático al MIR hace falta:
 
 Hasta que esto esté, el flujo SES.HOSPEDAJES se construye contra entorno de
 pruebas del MIR.
+
+---
+
+## 12. Dar de alta a Mari Carmen en el panel (`/panel`) — 10-sep-2026
+
+El panel de gestión sencillo vive en `tiojosemaria.com/panel`. Entra quien tenga
+un perfil con `role='admin'` o `role='staff'`. Hoy solo existe el admin
+(`apartamentostiojosemaria@gmail.com`).
+
+Para darle acceso a ella hacen falta **dos pasos** (los dos desde el panel de
+Supabase, un minuto):
+
+1. **Authentication → Users → Add user**: su correo real, marcar
+   *Auto Confirm User*. No hace falta contraseña: se entra con código por correo.
+2. **SQL Editor**, sustituyendo el correo:
+
+```sql
+insert into public.profiles (id, email, full_name, role, is_active)
+select id, email, 'Mari Carmen', 'staff', true
+  from auth.users where email = 'CORREO_DE_ELLA'
+on conflict (id) do update
+   set role = 'staff', is_active = true, full_name = excluded.full_name;
+```
+
+`full_name` sale en el saludo del panel ("Buenas tardes, Mari Carmen"), así que
+poner el nombre de pila, no el nombre completo.
+
+A partir de ahí: entra en `tiojosemaria.com/panel`, escribe su correo, recibe un
+código de 6 cifras y entra. La sesión se queda guardada en su móvil.
+
+**Para quitarle el acceso**: `update profiles set is_active = false where email = '…'`.

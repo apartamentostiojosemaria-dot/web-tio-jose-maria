@@ -55,6 +55,96 @@ async function verifyStripeSignature(header: string, payload: string, secret: st
     return mismatch === 0;
 }
 
+// ---------------------------------------------------------------------------
+// Disparo de funciones internas SIN romper el flujo de la reserva
+// ---------------------------------------------------------------------------
+// Antes esto era `fetch(...).catch(...)`: un 404 (función sin desplegar) o un
+// 500 NO son rechazos de la promesa, así que el `.catch` no saltaba nunca y el
+// fallo se perdía en silencio. Eso es justo lo que pasó con `issue-invoice`:
+// el webhook la llamaba, la función no existía, y nadie se enteraba.
+//
+// Ahora se comprueba el status, se registra el fallo y —para lo que importa
+// (la factura)— se deja una tarea interna visible en el panel. La reserva
+// NUNCA se rompe por esto: el webhook siempre devuelve 200 a Stripe.
+async function llamarFuncion(
+    nombre: string,
+    payload: Record<string, unknown>,
+): Promise<{ ok: boolean; status: number; detalle?: string }> {
+    try {
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/${nombre}`, {
+            method: "POST",
+            headers: {
+                "content-type": "application/json",
+                authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+            },
+            body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+            const detalle = (await res.text()).slice(0, 500);
+            console.error(`[stripe-webhook] ${nombre} devolvió ${res.status}: ${detalle}`);
+            return { ok: false, status: res.status, detalle };
+        }
+        return { ok: true, status: res.status };
+    } catch (e) {
+        const detalle = String((e as Error)?.message || e);
+        console.error(`[stripe-webhook] ${nombre} no respondió:`, detalle);
+        return { ok: false, status: 0, detalle };
+    }
+}
+
+/** Deja una tarea visible en el panel. Nunca lanza: es el último recurso. */
+async function avisar(title: string, lineas: string[]) {
+    try {
+        await supabase.from("internal_tasks").insert({
+            title,
+            description: lineas.join("\n"),
+            category: "fiscal",
+            priority: "high",
+            status: "pending",
+            scheduled_date: hoyEnMadrid(),
+            auto_reschedule: false,
+        });
+    } catch (e) {
+        console.error("[stripe-webhook] no se pudo registrar la tarea:", title, e);
+    }
+}
+
+/** Deja constancia visible de que una factura no salió, para emitirla a mano. */
+const avisarFacturaFallida = (code: string, detalle: string) =>
+    avisar(`Factura pendiente de emitir — reserva ${code}`, [
+        `El cobro de la reserva ${code} se registró bien, pero la factura no llegó a emitirse.`,
+        `Motivo técnico: ${detalle}`,
+        "",
+        'Se arregla desde Facturas → "Hacer factura" en la ficha de la reserva.',
+    ]);
+
+/**
+ * El huésped PAGÓ pero el cobro no se pudo apuntar. Es lo más grave que puede
+ * pasar aquí: el dinero está en Stripe y la reserva sigue diciendo que debe.
+ * Tiene que verse en el panel sí o sí.
+ */
+const avisarCobroNoApuntado = (code: string, importe: number, sessionId: string, detalle: string) =>
+    avisar(`COBRO SIN APUNTAR — reserva ${code} (${importe.toFixed(2)} €)`, [
+        `Se ha cobrado ${importe.toFixed(2)} € con tarjeta por enlace de la reserva ${code},`,
+        "pero el cobro NO se ha podido apuntar y la reserva sigue figurando como pendiente.",
+        `Motivo técnico: ${detalle}`,
+        `Sesión de Stripe: ${sessionId}`,
+        "",
+        "Comprueba el cobro en Stripe y apúntalo a mano desde Dinero → Apuntar cobro.",
+    ]);
+
+/** Fecha de hoy en hora de España (el servidor va en UTC y de madrugada miente). */
+function hoyEnMadrid(): string {
+    return new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Madrid" });
+}
+
+/** Lanza trabajo en segundo plano sin bloquear la respuesta a Stripe. */
+function enSegundoPlano(p: Promise<unknown>) {
+    const rt = (globalThis as { EdgeRuntime?: { waitUntil(p: Promise<unknown>): void } }).EdgeRuntime;
+    if (rt?.waitUntil) rt.waitUntil(p.catch((e) => console.error("[stripe-webhook] tarea de fondo:", e)));
+    else p.catch((e) => console.error("[stripe-webhook] tarea de fondo:", e));
+}
+
 Deno.serve(async (req) => {
     if (req.method !== "POST") return new Response("method_not_allowed", { status: 405 });
     if (!STRIPE_WEBHOOK_SECRET) return new Response("webhook_not_configured", { status: 503 });
@@ -74,12 +164,74 @@ Deno.serve(async (req) => {
             case "checkout.session.completed": {
                 const session = event.data.object as {
                     id: string; client_reference_id?: string;
-                    metadata?: { booking_code?: string };
+                    metadata?: { booking_code?: string; tipo?: string };
                     amount_total?: number;
                     payment_intent?: string;
                 };
                 const code = session.metadata?.booking_code || session.client_reference_id;
                 if (!code) break;
+
+                // COBRO de una reserva ya guardada (enlace mandado desde el
+                // panel). No se toca el estado de la reserva: se APUNTA el
+                // cobro, que es lo que cuadra "cobrado" y "pendiente". La
+                // factura solo se emite cuando ya no queda nada pendiente.
+                if (session.metadata?.tipo === "cobro") {
+                    const importe = (session.amount_total || 0) / 100;
+                    const marca = `(${session.id})`;
+
+                    const { data: reserva } = await supabase
+                        .from("guest_bookings").select("id").eq("booking_code", code).maybeSingle();
+
+                    if (!reserva || !(importe > 0)) {
+                        await avisarCobroNoApuntado(code, importe, session.id,
+                            !reserva ? "no se ha encontrado la reserva con ese código" : "el importe cobrado venía a 0");
+                        break;
+                    }
+
+                    // Stripe reintenta y puede repetir el mismo evento. Sin esto,
+                    // un reintento apunta el cobro DOS veces y la reserva sale
+                    // pagada de más. Cada sesión deja su id en la nota del cobro.
+                    const { data: yaApuntado } = await supabase
+                        .from("booking_payments").select("id")
+                        .eq("booking_id", reserva.id).like("note", `%${session.id}%`).limit(1);
+                    if (yaApuntado && yaApuntado.length > 0) {
+                        console.log(`[stripe-webhook] cobro ${session.id} ya estaba apuntado, no se repite`);
+                        break;
+                    }
+
+                    // `register_payment` RECHAZA devolviendo {ok:false,...} con
+                    // HTTP 200: si no se mira el sobre, un rechazo pasa por bueno
+                    // y el dinero cobrado se queda sin apuntar, en silencio.
+                    const { data: res, error: rpcErr } = await supabase.rpc("register_payment", {
+                        p_booking_id: reserva.id,
+                        p_amount: importe,
+                        p_method: "stripe",
+                        p_paid_on: hoyEnMadrid(),
+                        p_note: `Pago con tarjeta por enlace ${marca}`,
+                    });
+                    const sobre = res as { ok?: boolean; error?: string; pending_amount?: number } | null;
+
+                    if (rpcErr || !sobre?.ok) {
+                        const detalle = rpcErr?.message || sobre?.error || "respuesta vacía de register_payment";
+                        console.error(`[stripe-webhook] register_payment rechazó el cobro de ${code}: ${detalle}`);
+                        await avisarCobroNoApuntado(code, importe, session.id, detalle);
+                        break;
+                    }
+
+                    // Factura solo cuando ya no queda nada pendiente (<=0 cubre
+                    // el caso de haber cobrado de más).
+                    const pendiente = Number(sobre.pending_amount ?? Number.NaN);
+                    if (Number.isFinite(pendiente) && pendiente <= 0) {
+                        enSegundoPlano((async () => {
+                            const r = await llamarFuncion("issue-invoice", {
+                                action: "issue_and_send", bookingCode: code,
+                            });
+                            if (!r.ok) await avisarFacturaFallida(code, `HTTP ${r.status} — ${r.detalle || "sin detalle"}`);
+                        })());
+                    }
+                    break;
+                }
+
                 await supabase
                     .from("guest_bookings")
                     .update({
@@ -92,34 +244,23 @@ Deno.serve(async (req) => {
                     .eq("booking_code", code)
                     .in("status", ["hold", "pending"]);    // evita pisar cancelaciones
 
-                // Disparar email de confirmacion al huésped + notificacion al operador
-                fetch(`${SUPABASE_URL}/functions/v1/send-booking-email`, {
-                    method: "POST",
-                    headers: {
-                        "content-type": "application/json",
-                        authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-                    },
-                    body: JSON.stringify({ bookingCode: code, template: "confirmation" }),
-                }).catch(e => console.warn("[stripe-webhook] confirmation email fire-and-forget failed:", e));
+                // Email de confirmacion al huésped + notificacion al operador.
+                // En segundo plano, pero con el resultado comprobado (ver
+                // `llamarFuncion`): un 404 o un 500 ya no pasan desapercibidos.
+                enSegundoPlano(llamarFuncion("send-booking-email", { bookingCode: code, template: "confirmation" }));
+                enSegundoPlano(llamarFuncion("send-booking-email", { bookingCode: code, template: "operator_new_booking" }));
 
-                fetch(`${SUPABASE_URL}/functions/v1/send-booking-email`, {
-                    method: "POST",
-                    headers: {
-                        "content-type": "application/json",
-                        authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-                    },
-                    body: JSON.stringify({ bookingCode: code, template: "operator_new_booking" }),
-                }).catch(e => console.warn("[stripe-webhook] operator notification fire-and-forget failed:", e));
+                // Factura: se emite y se manda al huésped con el PDF adjunto.
+                // Si algo falla, la reserva SIGUE BIEN — sólo queda una tarea
+                // interna para emitirla a mano desde el panel.
+                enSegundoPlano((async () => {
+                    const r = await llamarFuncion("issue-invoice", {
+                        action: "issue_and_send",
+                        bookingCode: code,
+                    });
+                    if (!r.ok) await avisarFacturaFallida(code, `HTTP ${r.status} — ${r.detalle || "sin detalle"}`);
+                })());
 
-                // Emitir factura (RPC idempotente) + disparar Verifactu
-                fetch(`${SUPABASE_URL}/functions/v1/issue-invoice`, {
-                    method: "POST",
-                    headers: {
-                        "content-type": "application/json",
-                        authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-                    },
-                    body: JSON.stringify({ bookingCode: code }),
-                }).catch(e => console.warn("[stripe-webhook] invoice fire-and-forget failed:", e));
                 break;
             }
             case "checkout.session.expired": {

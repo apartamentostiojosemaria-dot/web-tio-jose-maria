@@ -1,253 +1,455 @@
 // Edge function: submit-ses-hospedajes
-// =====================================
-// Itera traveler_records con submitted_at IS NULL (de bookings cuyo check_in
-// ya ha ocurrido), genera el XML del Anexo III del RD 933/2021 y lo envía al
-// API SES.HOSPEDAJES del Ministerio del Interior.
+// ====================================
+// El parte de viajeros del RD 933/2021, en una sola puerta:
 //
-// Endpoint REAL del MIR (cuando el operador tenga alta + cert.cliente):
-//   https://sede.mir.gob.es/ses-hospedajes/api/v1/comunicaciones
+//   POST { }                                  → tanda automática (cron diario)
+//   POST { accion: "mandar",  booking_id }    → manda el parte de una reserva
+//   POST { accion: "documento", booking_id }  → hoja de registro en PDF
+//   POST { accion: "ya-lo-he-mandado", booking_id } → lo mandó la persona
+//   POST { accion: "comprobar", booking_id? } → pregunta cómo quedó el lote
+//   POST { accion: "estado",  booking_id }    → detalle técnico (panel de Jesús)
 //
-// Mientras el operador no tenga cert.cliente, esta función opera en STUB
-// MODE: genera el XML, lo guarda en mir_response_payload con
-// status='stub_no_credentials', y marca submitted_at. Cuando llegue el cert,
-// se cambia SES_API_ENDPOINT a producción y SES_CLIENT_CERT_PEM/KEY al cert
-// real, y los envíos van de verdad.
+// Cómo se comporta según haya o no credenciales del Ministerio:
 //
-// Env vars:
-//   SES_API_ENDPOINT      (opcional, default = stub)
-//   SES_CLIENT_CERT_PEM   certificado X.509 PEM del titular
-//   SES_CLIENT_KEY_PEM    clave privada PEM
-//   SES_ESTABLISHMENT_CODE  código asignado por MIR al alojamiento
+//   CON credenciales  → arma el XML, lo comprime, lo manda por el servicio
+//                       web con usuario y contraseña, guarda el acuse (el
+//                       número de lote) y deja el parte «mandado».
+//   SIN credenciales  → MODO PREPARADO: genera el mismo XML y además la hoja
+//                       de registro en PDF, lo guarda todo, y deja el parte
+//                       como «pendiente de alta». No marca nada como mandado:
+//                       eso lo hace la persona con «ya-lo-he-mandado» cuando
+//                       de verdad lo ha mandado por su vía de siempre.
 //
-// Trigger: invocada diariamente por tjm-jobs daily-ses-submit (Sprint 7d).
+// Nunca revienta por falta de secretos y nunca dice que ha mandado algo que
+// no ha mandado.
+//
+// Secretos (Supabase → Edge Functions → Secrets), ver config.ts:
+//   SES_WS_USER · SES_WS_PASSWORD · SES_ARRENDADOR · SES_ESTABLECIMIENTO · SES_ENDPOINT
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { ESTADO, SECRETOS, hayCredenciales, secretosQueFaltan } from "./config.ts";
+import { consultarLote, mandarParte, xmlParteViajeros } from "./mir.ts";
+import { renderHojaRegistro } from "./hoja-registro.ts";
+import {
+    aContrato, aViajero, pegasDelParte,
+    type ContratoParte, type FilaReserva, type FilaViajero, type ViajeroParte,
+} from "./parte-modelo.ts";
+import { aBase64 } from "./zip.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const SES_API_ENDPOINT = Deno.env.get("SES_API_ENDPOINT");
-const SES_ESTABLISHMENT_CODE = Deno.env.get("SES_ESTABLISHMENT_CODE") || "PENDING_ALTA_MIR";
+const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-    auth: { persistSession: false },
-});
+const sb: SupabaseClient = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
 
-const CORS_HEADERS = {
+const CORS = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
 const json = (status: number, body: unknown) =>
-    new Response(JSON.stringify(body), {
-        status, headers: { ...CORS_HEADERS, "content-type": "application/json" },
-    });
+    new Response(JSON.stringify(body), { status, headers: { ...CORS, "content-type": "application/json" } });
 
-const escapeXml = (s: string | null | undefined): string => {
-    if (s == null) return "";
-    return String(s)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&apos;");
-};
+const ahora = () => new Date().toISOString();
+const hoy = () => new Date().toISOString().slice(0, 10);
 
-interface TravelerRow {
-    id: string;
-    booking_id: number;
-    is_titular: boolean;
-    apellido_primero: string;
-    apellido_segundo: string | null;
-    nombre: string;
-    sexo: string;
-    tipo_documento: string;
-    numero_documento: string;
-    soporte_documento: string | null;
-    nacionalidad: string;
-    fecha_nacimiento: string;
-    direccion_via: string;
-    direccion_municipio: string;
-    direccion_cp: string;
-    direccion_pais: string;
-    telefono_fijo: string | null;
-    telefono_movil: string | null;
-    email: string | null;
-    parentesco: string | null;
-    firma_base64: string | null;
-}
+// ---------------------------------------------------------------------------
+// Autorización
+// ---------------------------------------------------------------------------
+// Aquí se manejan datos de documento de identidad: sólo entra la propia
+// infraestructura (cron) o alguien del equipo con sesión iniciada.
+//
+// ⚠️ Esta función se despliega con `verify_jwt = false` (la pasarela NO
+// comprueba la firma del token, para que el cron pueda llamar con la clave
+// de servicio en cualquiera de sus formatos). Eso obliga a que la
+// comprobación de aquí sea infalsificable:
+//   · el camino de «sistema» es una comparación EXACTA con la clave de
+//     servicio, que es un secreto. Leer el claim `role` del JWT sin
+//     verificar la firma sería un coladero: cualquiera se fabrica un token
+//     con role=service_role y se lleva los documentos de identidad.
+//   · el camino de persona pasa por `auth.getUser`, que sí valida la firma
+//     contra el servidor de autenticación.
 
-interface BookingRow {
-    id: number;
-    booking_code: string;
-    check_in: string;
-    check_out: string;
-    apartment_id: number;
-}
+type Quien = { ok: true; quien: string } | { ok: false; status: number; error: string };
 
-// Genera el XML del parte de viajero según RD 933/2021 Anexo III.
-// Esquema simplificado en línea con lo publicado por el MIR para SES.HOSPEDAJES.
-// La especificación oficial completa incluye namespaces y firma XAdES — al
-// integrar con el cert.cliente real se ampliará.
-function buildPartXml(opts: {
-    establishmentCode: string;
-    booking: BookingRow;
-    travelers: TravelerRow[];
-}): string {
-    const { establishmentCode, booking, travelers } = opts;
-    const now = new Date().toISOString();
-    const titular = travelers.find(t => t.is_titular) || travelers[0];
-
-    const viajerosXml = travelers.map(t => `
-    <viajero>
-      <rol>${t.is_titular ? "TITULAR" : "ACOMPANANTE"}</rol>
-      <nombre>${escapeXml(t.nombre)}</nombre>
-      <apellidoPrimero>${escapeXml(t.apellido_primero)}</apellidoPrimero>
-      <apellidoSegundo>${escapeXml(t.apellido_segundo)}</apellidoSegundo>
-      <sexo>${escapeXml(t.sexo)}</sexo>
-      <documento>
-        <tipo>${escapeXml(t.tipo_documento)}</tipo>
-        <numero>${escapeXml(t.numero_documento)}</numero>
-        <soporte>${escapeXml(t.soporte_documento)}</soporte>
-        <nacionalidad>${escapeXml(t.nacionalidad)}</nacionalidad>
-      </documento>
-      <fechaNacimiento>${escapeXml(t.fecha_nacimiento)}</fechaNacimiento>
-      <direccionHabitual>
-        <via>${escapeXml(t.direccion_via)}</via>
-        <municipio>${escapeXml(t.direccion_municipio)}</municipio>
-        <codigoPostal>${escapeXml(t.direccion_cp)}</codigoPostal>
-        <pais>${escapeXml(t.direccion_pais)}</pais>
-      </direccionHabitual>
-      <contacto>
-        <telefonoFijo>${escapeXml(t.telefono_fijo)}</telefonoFijo>
-        <telefonoMovil>${escapeXml(t.telefono_movil)}</telefonoMovil>
-        <email>${escapeXml(t.email)}</email>
-      </contacto>
-      ${t.parentesco ? `<parentescoConTitular>${escapeXml(t.parentesco)}</parentescoConTitular>` : ""}
-    </viajero>`).join("");
-
-    return `<?xml version="1.0" encoding="UTF-8"?>
-<parteViajeros xmlns="https://sede.mir.gob.es/ses-hospedajes/schemas/v1">
-  <cabecera>
-    <codigoEstablecimiento>${escapeXml(establishmentCode)}</codigoEstablecimiento>
-    <referenciaInterna>${escapeXml(booking.booking_code)}</referenciaInterna>
-    <fechaEntrada>${escapeXml(booking.check_in)}</fechaEntrada>
-    <fechaSalida>${escapeXml(booking.check_out)}</fechaSalida>
-    <fechaGeneracion>${escapeXml(now)}</fechaGeneracion>
-    <numeroViajeros>${travelers.length}</numeroViajeros>
-    <titular>${escapeXml(titular?.numero_documento || "")}</titular>
-  </cabecera>
-  <viajeros>${viajerosXml}
-  </viajeros>
-</parteViajeros>`;
-}
-
-Deno.serve(async (req) => {
-    if (req.method === "OPTIONS") return new Response(null, { headers: CORS_HEADERS });
-    if (req.method !== "POST") return json(405, { error: "method_not_allowed" });
-
-    // Cargar bookings con viajeros pendientes (submitted_at IS NULL) cuyo
-    // check_in ya ha ocurrido o es hoy. Eso garantiza que solo enviamos al
-    // MIR al inicio de la estancia (el RD 933/2021 exige transmisión en 24h
-    // desde la entrada efectiva).
-    const { data: pending, error } = await supabase
-        .from("traveler_records")
-        .select(`id, booking_id, is_titular,
-                 apellido_primero, apellido_segundo, nombre, sexo,
-                 tipo_documento, numero_documento, soporte_documento,
-                 nacionalidad, fecha_nacimiento,
-                 direccion_via, direccion_municipio, direccion_cp, direccion_pais,
-                 telefono_fijo, telefono_movil, email, parentesco, firma_base64,
-                 guest_bookings!inner(id, booking_code, check_in, check_out, apartment_id, status)`)
-        .is("submitted_at", null)
-        .lte("guest_bookings.check_in", new Date().toISOString().slice(0, 10))
-        .in("guest_bookings.status", ["confirmed", "completed"]);
-
-    if (error) return json(500, { error: error.message });
-
-    if (!pending || pending.length === 0) return json(200, { sent: 0, message: "no_pending_records" });
-
-    // Agrupar por booking_id
-    const byBooking = new Map<number, { booking: BookingRow; travelers: TravelerRow[] }>();
-    for (const row of pending) {
-        const b = (row.guest_bookings as unknown as BookingRow);
-        if (!byBooking.has(b.id)) byBooking.set(b.id, { booking: b, travelers: [] });
-        byBooking.get(b.id)!.travelers.push(row as unknown as TravelerRow);
+async function autorizar(req: Request): Promise<Quien> {
+    const cabecera = req.headers.get("authorization") || "";
+    const token = cabecera.replace(/^Bearer\s+/i, "").trim();
+    if (!token) return { ok: false, status: 401, error: "falta_token" };
+    if (SERVICE_KEY && token === SERVICE_KEY) {
+        return { ok: true, quien: "sistema" };
     }
+    const { data, error } = await sb.auth.getUser(token);
+    if (error || !data?.user) return { ok: false, status: 401, error: "token_no_valido" };
+    const { data: perfil } = await sb.from("profiles").select("role").eq("id", data.user.id).maybeSingle();
+    const rol = (perfil as { role?: string } | null)?.role;
+    if (!rol || !["admin", "staff"].includes(rol)) {
+        return { ok: false, status: 403, error: "sin_permiso" };
+    }
+    return { ok: true, quien: `${rol}:${data.user.id}` };
+}
 
-    let sent = 0, errors = 0, stubbed = 0;
-    const details: Array<{ bookingCode: string; status: string; xmlSize: number; mirRef?: string; error?: string }> = [];
+// ---------------------------------------------------------------------------
+// Carga de datos
+// ---------------------------------------------------------------------------
 
-    for (const [, group] of byBooking) {
-        try {
-            const xml = buildPartXml({
-                establishmentCode: SES_ESTABLISHMENT_CODE,
-                booking: group.booking,
-                travelers: group.travelers,
-            });
+const CAMPOS_RESERVA = `id, booking_code, check_in, check_out, pax_count, created_at,
+    payment_method, channel, guest_name, status, apartment_id, apartments(name)`;
 
-            let mirRef: string | null = null;
-            let responseStatus = "stub_no_credentials";
-            let responsePayload: Record<string, unknown> = { xml, stub: true };
+const CAMPOS_VIAJERO = `id, booking_id, is_titular, nombre, apellido_primero, apellido_segundo,
+    sexo, tipo_documento, numero_documento, soporte_documento, nacionalidad, fecha_nacimiento,
+    direccion_via, direccion_municipio, direccion_cp, direccion_pais,
+    telefono_fijo, telefono_movil, email, parentesco, firma_base64,
+    submitted_at, mir_reference, mir_response_status, mir_response_payload`;
 
-            if (SES_API_ENDPOINT) {
-                // Modo real (cuando el operador haya configurado endpoint + cert).
-                // Nota: la negociación TLS mTLS desde Deno requiere Deno.connectTls
-                // con cert/key; aquí dejamos el shape preparado. En la primera
-                // integración real lo ajustamos al método exacto que pida el MIR.
-                const res = await fetch(SES_API_ENDPOINT, {
-                    method: "POST",
-                    headers: {
-                        "content-type": "application/xml; charset=utf-8",
-                        "accept": "application/xml",
-                        "x-establishment-code": SES_ESTABLISHMENT_CODE,
-                    },
-                    body: xml,
-                });
-                const text = await res.text();
-                if (res.ok) {
-                    responseStatus = "ok";
-                    // Heurística: extraer <referenciaMIR> del XML de respuesta
-                    const m = text.match(/<referenciaMIR>([^<]+)<\/referenciaMIR>/);
-                    mirRef = m?.[1] || null;
-                    responsePayload = { xml, response: text, httpStatus: res.status };
-                } else {
-                    responseStatus = "error";
-                    responsePayload = { xml, response: text, httpStatus: res.status };
-                    throw new Error(`MIR HTTP ${res.status}: ${text.slice(0, 300)}`);
-                }
-            } else {
-                stubbed++;
-            }
+interface Grupo {
+    reserva: FilaReserva & { status: string };
+    filas: Array<FilaViajero & { submitted_at: string | null; mir_response_status: string | null; mir_response_payload: Record<string, unknown> | null }>;
+    contrato: ContratoParte;
+    viajeros: ViajeroParte[];
+}
 
-            // Marcar todos los viajeros del booking como enviados (o stubbed)
-            const ids = group.travelers.map(t => t.id);
-            await supabase
-                .from("traveler_records")
-                .update({
-                    submitted_at: new Date().toISOString(),
-                    mir_reference: mirRef,
-                    mir_response_status: responseStatus,
-                    mir_response_payload: responsePayload,
-                })
-                .in("id", ids);
+async function cargarGrupo(bookingId: number): Promise<Grupo | null> {
+    const { data: reserva } = await sb
+        .from("guest_bookings").select(CAMPOS_RESERVA).eq("id", bookingId).maybeSingle();
+    if (!reserva) return null;
 
-            sent++;
-            details.push({ bookingCode: group.booking.booking_code, status: responseStatus, xmlSize: xml.length, mirRef: mirRef || undefined });
-        } catch (e) {
-            errors++;
-            const msg = e instanceof Error ? e.message : String(e);
-            const ids = group.travelers.map(t => t.id);
-            await supabase
-                .from("traveler_records")
-                .update({
-                    mir_response_status: "retry",
-                    mir_response_payload: { error: msg, at: new Date().toISOString() },
-                })
-                .in("id", ids);
-            details.push({ bookingCode: group.booking.booking_code, status: "error", xmlSize: 0, error: msg });
+    const { data: filas } = await sb
+        .from("traveler_records").select(CAMPOS_VIAJERO)
+        .eq("booking_id", bookingId)
+        .order("is_titular", { ascending: false })
+        .order("created_at", { ascending: true });
+
+    const lista = (filas || []) as unknown as Grupo["filas"];
+    const r = reserva as unknown as Grupo["reserva"];
+    const viajeros = lista.map((f) => aViajero(f, r.check_in));
+    return { reserva: r, filas: lista, contrato: aContrato(r, viajeros.length), viajeros };
+}
+
+/** Reservas con viajeros que todavía no se han comunicado y ya han entrado. */
+async function reservasPendientes(): Promise<number[]> {
+    const { data } = await sb
+        .from("traveler_records")
+        .select("booking_id, guest_bookings!inner(id, check_in, status)")
+        .is("submitted_at", null)
+        .lte("guest_bookings.check_in", hoy())
+        .in("guest_bookings.status", ["confirmed", "completed"]);
+    const ids = new Set<number>();
+    (data || []).forEach((f) => ids.add((f as { booking_id: number }).booking_id));
+    return [...ids];
+}
+
+// ---------------------------------------------------------------------------
+// Escritura del estado
+// ---------------------------------------------------------------------------
+
+/** Añade un renglón al historial sin perder los anteriores. */
+function conHistorial(
+    anterior: Record<string, unknown> | null | undefined,
+    entrada: Record<string, unknown>,
+): Record<string, unknown>[] {
+    const previo = Array.isArray(anterior?.historial) ? anterior!.historial as Record<string, unknown>[] : [];
+    return [...previo.slice(-19), { cuando: ahora(), ...entrada }];
+}
+
+async function anotar(grupo: Grupo, cambios: {
+    estado: string;
+    referencia?: string | null;
+    enviado?: boolean;
+    payload: Record<string, unknown>;
+}) {
+    const ids = grupo.filas.map((f) => f.id);
+    if (ids.length === 0) return;
+    const base = grupo.filas[0]?.mir_response_payload ?? null;
+
+    // Hay cosas del apunte anterior que NO se pueden perder al cambiar de
+    // estado: lo que se mandó (`xml`) y lo que contestó el Ministerio
+    // (`lote`, `acuse`) son la trazabilidad del parte. El resto (pegas,
+    // secretos que faltaban…) sí se renueva en cada apunte, porque describe
+    // la situación de ahora y no la de antes.
+    const previo = (base ?? {}) as Record<string, unknown>;
+    const pegajosos: Record<string, unknown> = {};
+    for (const clave of ["xml", "preparado_en", "lote", "acuse"]) {
+        if (previo[clave] !== undefined && cambios.payload[clave] === undefined) {
+            pegajosos[clave] = previo[clave];
         }
     }
 
-    return json(200, { sent, errors, stubbed, details: details.slice(0, 20) });
+    const payload = {
+        ...pegajosos,
+        ...cambios.payload,
+        historial: conHistorial(base, { estado: cambios.estado, nota: cambios.payload.mensaje ?? null }),
+    };
+    const fila: Record<string, unknown> = {
+        mir_response_status: cambios.estado,
+        mir_response_payload: payload,
+        updated_at: ahora(),
+    };
+    if (cambios.referencia !== undefined) fila.mir_reference = cambios.referencia;
+    if (cambios.enviado === true) fila.submitted_at = ahora();
+    if (cambios.enviado === false) fila.submitted_at = null;
+    await sb.from("traveler_records").update(fila).in("id", ids);
+}
+
+// ---------------------------------------------------------------------------
+// Acciones
+// ---------------------------------------------------------------------------
+
+interface Salida {
+    estado: "mandado" | "preparado" | "faltan" | "error" | "sin_datos";
+    mensaje: string;
+    documento?: { nombre: string; tipo: string; base64: string };
+    detalle?: Record<string, unknown>;
+}
+
+async function pdfDe(grupo: Grupo, nota: string | null): Promise<{ nombre: string; tipo: string; base64: string }> {
+    const bytes = await renderHojaRegistro({ contrato: grupo.contrato, viajeros: grupo.viajeros, nota });
+    return {
+        nombre: `hoja-de-registro-${grupo.reserva.booking_code}.pdf`,
+        tipo: "application/pdf",
+        base64: aBase64(bytes),
+    };
+}
+
+/**
+ * Manda (o prepara) el parte de una reserva.
+ * `conDocumento` sólo cuando alguien lo ha pedido desde una pantalla: en la
+ * tanda automática no tiene sentido maquetar un PDF que nadie va a abrir.
+ */
+async function accionMandar(grupo: Grupo, conDocumento = true): Promise<Salida> {
+    if (grupo.viajeros.length === 0) {
+        return { estado: "sin_datos", mensaje: "Todavía no ha rellenado sus datos nadie de esta reserva." };
+    }
+
+    const yaComunicado = grupo.filas.some((f) => f.submitted_at);
+
+    const pegas = pegasDelParte(grupo.viajeros);
+    if (pegas.length > 0) {
+        const resumen = pegas.slice(0, 4).map((p) => `${p.viajero}: falta ${p.falta}`).join(" · ");
+        // Si el parte ya se comunicó, no se degrada su estado por que ahora
+        // falte algo: se avisa y punto. Un parte mandado no vuelve atrás.
+        if (!yaComunicado) {
+            await anotar(grupo, { estado: "faltan_datos", payload: { mensaje: resumen, pegas } });
+        }
+        return {
+            estado: "faltan",
+            mensaje: `No se puede mandar todavía. ${resumen}.`,
+            detalle: { pegas },
+        };
+    }
+
+    // ---- Sin credenciales: modo preparado -------------------------------
+    if (!hayCredenciales()) {
+        const xml = xmlParteViajeros({
+            codigoEstablecimiento: SECRETOS.establecimiento || "PENDIENTE-DE-ALTA",
+            contrato: grupo.contrato,
+            viajeros: grupo.viajeros,
+        });
+        const documento = conDocumento
+            ? await pdfDe(
+                grupo,
+                "Documento generado por el sistema del alojamiento. Pendiente de comunicación por el servicio web del Ministerio del Interior.",
+            )
+            : undefined;
+        await anotar(grupo, {
+            estado: ESTADO.PENDIENTE_DE_ALTA,
+            enviado: false,
+            payload: {
+                mensaje: "Documento preparado. Faltan credenciales del servicio web.",
+                faltan_secretos: secretosQueFaltan(),
+                xml,
+                preparado_en: ahora(),
+            },
+        });
+        return {
+            estado: "preparado",
+            mensaje: "Te he preparado la hoja de registro para que la mandes como siempre.",
+            documento,
+        };
+    }
+
+    // ---- Con credenciales: envío de verdad -------------------------------
+    const resultado = await mandarParte({
+        codigoEstablecimiento: SECRETOS.establecimiento,
+        contrato: grupo.contrato,
+        viajeros: grupo.viajeros,
+    });
+
+    if (resultado.ok) {
+        await anotar(grupo, {
+            estado: ESTADO.EN_CURSO,
+            enviado: true,
+            referencia: resultado.respuesta?.lote ?? null,
+            payload: {
+                mensaje: resultado.mensaje,
+                lote: resultado.respuesta?.lote ?? null,
+                codigo: resultado.respuesta?.codigo ?? null,
+                acuse: resultado.respuesta?.crudo ?? null,
+                intentos: resultado.intentos,
+                xml: resultado.xmlEnviado,
+            },
+        });
+        return { estado: "mandado", mensaje: "Parte mandado." };
+    }
+
+    await anotar(grupo, {
+        estado: resultado.definitivo ? ESTADO.RECHAZADO : ESTADO.REINTENTAR,
+        enviado: false,
+        payload: {
+            mensaje: resultado.mensaje,
+            resultado: resultado.definitivo ? "rechazado" : "sin_respuesta",
+            codigo: resultado.respuesta?.codigo ?? null,
+            acuse: resultado.respuesta?.crudo ?? null,
+            intentos: resultado.intentos,
+            xml: resultado.xmlEnviado,
+        },
+    });
+    return { estado: "error", mensaje: resultado.mensaje };
+}
+
+/** La persona del alojamiento dice que ya lo ha mandado por su vía. */
+async function accionYaLoHeMandado(grupo: Grupo, quien: string): Promise<Salida> {
+    if (grupo.filas.length === 0) {
+        return { estado: "sin_datos", mensaje: "No hay datos de viajeros en esta reserva." };
+    }
+    await anotar(grupo, {
+        estado: ESTADO.MANDADO_A_MANO,
+        enviado: true,
+        payload: { mensaje: "Mandado por el alojamiento por su vía habitual", por: quien },
+    });
+    return { estado: "mandado", mensaje: "Queda apuntado como mandado." };
+}
+
+/** Pregunta al Ministerio cómo quedó el lote de una reserva ya mandada. */
+async function accionComprobar(grupo: Grupo): Promise<Salida> {
+    const lote = grupo.filas[0]?.mir_reference;
+    if (!lote) return { estado: "sin_datos", mensaje: "Esta reserva no tiene ningún lote que comprobar." };
+    if (!hayCredenciales()) return { estado: "error", mensaje: "Sin credenciales no se puede comprobar." };
+
+    const r = await consultarLote(String(lote));
+    if (!r.consultado) {
+        return { estado: "error", mensaje: "No se ha podido consultar el lote.", detalle: { errores: r.errores } };
+    }
+    if (r.aceptado === true) {
+        await anotar(grupo, {
+            estado: ESTADO.ACEPTADO,
+            enviado: true,
+            payload: { mensaje: "Aceptado", lote, comunicaciones: r.codigosComunicacion, acuse: r.crudo },
+        });
+        return { estado: "mandado", mensaje: "El Ministerio lo ha aceptado.", detalle: { comunicaciones: r.codigosComunicacion } };
+    }
+    if (r.aceptado === false) {
+        await anotar(grupo, {
+            estado: ESTADO.RECHAZADO,
+            enviado: false,
+            payload: { mensaje: r.errores.join(" · "), resultado: "rechazado", lote, acuse: r.crudo },
+        });
+        return { estado: "error", mensaje: `Rechazado: ${r.errores.join(" · ")}` };
+    }
+    return { estado: "mandado", mensaje: "El lote sigue en proceso. Vuelve a comprobarlo más tarde." };
+}
+
+// ---------------------------------------------------------------------------
+// Puerta
+// ---------------------------------------------------------------------------
+
+Deno.serve(async (req) => {
+    if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
+    if (req.method !== "POST") return json(405, { error: "metodo_no_permitido" });
+
+    const permiso = await autorizar(req);
+    if (!permiso.ok) return json(permiso.status, { error: permiso.error, mensaje: "No tienes permiso para esto." });
+
+    let cuerpo: Record<string, unknown> = {};
+    try { cuerpo = await req.json(); } catch { cuerpo = {}; }
+
+    const accion = String(cuerpo.accion ?? cuerpo.action ?? "").trim() || "tanda";
+    const bookingId = Number(cuerpo.booking_id ?? cuerpo.bookingId ?? 0) || 0;
+
+    // ---- Tanda automática (el cron diario) --------------------------------
+    if (accion === "tanda") {
+        const ids = await reservasPendientes();
+        const detalles: Array<{ reserva: string; estado: string; mensaje: string }> = [];
+        let mandados = 0, preparados = 0, fallos = 0;
+
+        for (const id of ids) {
+            const grupo = await cargarGrupo(id);
+            if (!grupo) continue;
+            try {
+                const r = await accionMandar(grupo, false);
+                if (r.estado === "mandado") mandados++;
+                else if (r.estado === "preparado") preparados++;
+                else fallos++;
+                detalles.push({ reserva: grupo.reserva.booking_code, estado: r.estado, mensaje: r.mensaje });
+            } catch (e) {
+                fallos++;
+                const msg = e instanceof Error ? e.message : String(e);
+                await anotar(grupo, { estado: ESTADO.REINTENTAR, enviado: false, payload: { mensaje: msg } });
+                detalles.push({ reserva: grupo.reserva.booking_code, estado: "error", mensaje: msg });
+            }
+        }
+        return json(200, {
+            reservas: ids.length, mandados, preparados, fallos,
+            credenciales: hayCredenciales(),
+            faltan_secretos: secretosQueFaltan(),
+            detalles: detalles.slice(0, 30),
+        });
+    }
+
+    // ---- El resto de acciones son sobre una reserva concreta --------------
+    if (!bookingId) return json(400, { error: "falta_booking_id", mensaje: "No sé de qué reserva hablas." });
+
+    const grupo = await cargarGrupo(bookingId);
+    if (!grupo) return json(404, { error: "reserva_no_encontrada", mensaje: "No encuentro esa reserva." });
+
+    try {
+        switch (accion) {
+            case "mandar":
+                return json(200, await accionMandar(grupo));
+
+            case "ya-lo-he-mandado":
+                return json(200, await accionYaLoHeMandado(grupo, permiso.quien));
+
+            case "comprobar":
+                return json(200, await accionComprobar(grupo));
+
+            case "documento": {
+                if (grupo.viajeros.length === 0) {
+                    return json(200, { estado: "sin_datos", mensaje: "Todavía no hay datos de viajeros." });
+                }
+                const enviado = grupo.filas.some((f) => f.submitted_at);
+                const documento = await pdfDe(
+                    grupo,
+                    enviado
+                        ? `Comunicado el ${String(grupo.filas.find((f) => f.submitted_at)?.submitted_at ?? "").slice(0, 10)}.`
+                        : "Documento generado por el sistema del alojamiento. Pendiente de comunicación.",
+                );
+                return json(200, { estado: "preparado", mensaje: "Documento listo.", documento });
+            }
+
+            case "estado": {
+                const f = grupo.filas[0];
+                return json(200, {
+                    ok: true,
+                    detalle: {
+                        booking_code: grupo.reserva.booking_code,
+                        viajeros: grupo.viajeros.length,
+                        pax: grupo.reserva.pax_count,
+                        pegas: pegasDelParte(grupo.viajeros),
+                        mir_response_status: f?.mir_response_status ?? null,
+                        submitted_at: f?.submitted_at ?? null,
+                        lote: f?.mir_reference ?? null,
+                        payload: f?.mir_response_payload ?? null,
+                        credenciales: hayCredenciales(),
+                        faltan_secretos: secretosQueFaltan(),
+                    },
+                });
+            }
+
+            default:
+                return json(400, { error: "accion_desconocida", mensaje: `No sé hacer «${accion}».` });
+        }
+    } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        return json(500, { estado: "error", error: "fallo_interno", mensaje: msg });
+    }
 });
