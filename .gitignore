@@ -10,3 +10,4 @@ skills-lock.json
 # Local secrets (no commit)
 .env.local
 .env.*.local
+supabase/.temp/
