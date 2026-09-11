@@ -4,7 +4,7 @@ import Paso1Cuando from './nueva-reserva/Paso1Cuando';
 import Paso2Quien from './nueva-reserva/Paso2Quien';
 import Paso3Cobro from './nueva-reserva/Paso3Cobro';
 import Guardada from './nueva-reserva/Guardada';
-import { hoyISO } from './ui';
+import { hoyISO, Aviso } from './ui';
 import {
     crearReserva, apuntarCobro, mandarConfirmacion, pedirEnlaceDePago, masUnDia,
 } from './nueva-reserva/datos';
@@ -34,6 +34,9 @@ import { explicarError } from './nueva-reserva/textos';
 // `params` puede traer { fecha, apartamentoId } cuando se llega desde el
 // calendario. Al terminar: ir('reserva', { reservaId }).
 // ============================================================
+
+/** true mientras MisterPlan mande en los canales. Se apaga al cerrar F2. */
+const CONVIVENCIA_MISTERPLAN = true;
 
 const VALORES_INICIALES = {
     // paso 1
@@ -193,6 +196,15 @@ const NuevaReservaPanel = ({ ir, volver, params = {} }) => {
     return (
         <div>
             <Progreso paso={paso} onAtras={atras} />
+
+            {/* Mientras MisterPlan siga siendo el channel manager (F2 del plan),
+                Booking y Airbnb solo se enteran de lo que se apunta ALLÍ. Quitar
+                este aviso el día que TJM mande la disponibilidad a los canales. */}
+            {CONVIVENCIA_MISTERPLAN && paso === 1 && (
+                <Aviso tono="atencion" className="mb-5"
+                    titulo="Apúntala también en MisterPlan."
+                    texto="De momento Booking y Airbnb solo cierran las fechas que se apuntan en MisterPlan. Si la apuntas solo aquí, ellos siguen vendiéndolas." />
+            )}
 
             {paso === 1 && (
                 <Paso1Cuando
