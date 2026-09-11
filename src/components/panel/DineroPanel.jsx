@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Euro, ChevronRight, FileText } from 'lucide-react';
 import {
     Boton, Tarjeta, Aviso, Cargando, Chip,
-    formatoEuro, pendienteDe, canalSiImporta, nombreCanal, fechaCorta,
+    formatoEuro, pendienteDe, canalSiImporta, nombreCanal, fechaCorta, hoyISO,
 } from './ui';
 import { CifraGrande } from './dinero/ui';
 import {
@@ -232,7 +232,7 @@ const FilaPendiente = ({ reserva, ir, onCobrar }) => {
                                 {reserva.guest_name || 'Sin nombre'}
                             </span>
                             <span className="block text-base text-gray-600 mt-0.5">
-                                {reserva.apartamento} · llega el {diaMesYAno(reserva.check_in)}
+                                {reserva.apartamento} · {reserva.check_out < hoyISO() ? 'estuvo' : 'llega'} el {diaMesYAno(reserva.check_in)}
                             </span>
                         </span>
                         <span className="text-right shrink-0">

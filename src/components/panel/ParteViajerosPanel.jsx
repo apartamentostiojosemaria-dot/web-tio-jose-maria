@@ -112,8 +112,8 @@ function semaforoDe(fila, hoy) {
         };
     }
     return {
-        tono: 'ambar', color: 'bg-amber-500', etiqueta: `Faltan ${faltan} de ${total}`,
-        texto: `Faltan ${faltan} de ${total}`,
+        tono: 'ambar', color: 'bg-amber-500', etiqueta: `${faltan === 1 ? 'Falta' : 'Faltan'} ${faltan} de ${total}`,
+        texto: `${faltan === 1 ? 'Falta' : 'Faltan'} ${faltan} de ${total}`,
         mandado: false, listo: false, noTocaAun: false, faltan, rellenos, total,
     };
 }

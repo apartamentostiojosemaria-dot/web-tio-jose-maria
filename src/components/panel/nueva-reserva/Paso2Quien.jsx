@@ -116,7 +116,7 @@ const Paso2Quien = ({ valores, alCambiar, alSeguir, alAtras }) => {
 
             <Campo etiqueta="Correo" htmlFor="email"
                 error={correoMal ? 'Ese correo está incompleto. Tiene que llevar arroba y un punto.' : ''}
-                ayuda="Si no lo pones, no se le puede mandar la confirmación ni el enlace para que rellene sus datos.">
+                ayuda="Si no lo pones, no se le puede mandar la confirmación ni, la víspera, el enlace para que rellene sus datos.">
                 <input
                     id="email" type="email" className={claseInput}
                     autoComplete="email" inputMode="email" maxLength={200}

@@ -7,6 +7,13 @@ import {
 import PageHead from '../components/seo/PageHead';
 import { supabase } from '../lib/supabase';
 
+// «2026-09-15» → «15 de septiembre de 2026». El huésped no lee fechas ISO.
+const fechaLegible = (iso) => {
+    if (!iso) return '';
+    const d = new Date(`${iso}T00:00:00`);
+    return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+};
+
 // /precheckin?code=TJM-XXXXXX
 // ============================
 // Formulario público del registro documental de viajeros (RD 933/2021).
@@ -598,7 +605,7 @@ const Portada = ({ booking, huboBorrador, onEmpezar }) => (
                 {booking?.apartments?.name || booking?.apartment_name}
             </p>
             <p className="text-base text-gray-700">
-                Del {booking?.check_in} al {booking?.check_out} · {booking?.pax_count || 1}{' '}
+                Del {fechaLegible(booking?.check_in)} al {fechaLegible(booking?.check_out)} · {booking?.pax_count || 1}{' '}
                 {(booking?.pax_count || 1) === 1 ? 'persona' : 'personas'}
             </p>
             <p className="font-mono text-sm text-rural-700 font-bold mt-1">{booking?.booking_code}</p>

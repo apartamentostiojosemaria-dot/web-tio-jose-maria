@@ -9,8 +9,9 @@ import { CalendarDays, Check } from 'lucide-react';
 import { Boton, Campo, claseInput, Aviso, formatoEuro, hoyISO } from '../ui';
 import { Hoja, Opciones } from './ui';
 import { moverReserva, ajustarPrecio } from './datos';
+import { diaMesYAno } from './formato';
 
-export default function HojaCambiar({ abierta, reserva, apartamentos = [], onCerrar, onCambiada }) {
+export default function HojaCambiar({ abierta, reserva, apartamentos = [], factura = null, onCerrar, onCambiada }) {
     const [apartamentoId, setApartamentoId] = useState(reserva?.apartment_id);
     const [entrada, setEntrada] = useState(reserva?.check_in || hoyISO());
     const [salida, setSalida] = useState(reserva?.check_out || hoyISO());
@@ -81,6 +82,11 @@ export default function HojaCambiar({ abierta, reserva, apartamentos = [], onCer
             </Campo>
 
             {error && <Aviso tono="urgente" titulo={error} />}
+
+            {factura && factura.tipo !== 'rectificativa' && !resultado?.ok && (
+                <Aviso tono="atencion" titulo={`Esta reserva ya tiene factura (del ${diaMesYAno(factura.fecha_emision)}).`}
+                    texto="Si cambias las fechas o el apartamento, la factura se queda con lo antiguo y habrá que hacer una rectificativa. Díselo a Jesús después de cambiarla." />
+            )}
 
             {resultado?.ok && (
                 <Aviso

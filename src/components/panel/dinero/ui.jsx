@@ -161,7 +161,7 @@ export function SemaforoPolicia({ parte, className }) {
     return (
         <Chip tono={s.tono} icono={s.icono} className={className}>
             {clave === 'faltan' && cuantos > 0
-                ? `Faltan ${cuantos} ${cuantos === 1 ? 'persona' : 'personas'}`
+                ? (cuantos === 1 ? 'Falta 1 persona' : `Faltan ${cuantos} personas`)
                 : s.texto}
         </Chip>
     );

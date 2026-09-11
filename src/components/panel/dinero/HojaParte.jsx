@@ -40,7 +40,7 @@ export default function HojaParte({ abierta, reserva, parte, onCerrar, onVerDato
 
             {parte?.faltan === true && (
                 <Aviso tono="atencion"
-                    titulo={`Faltan ${parte.faltan_cuantos} ${parte.faltan_cuantos === 1 ? 'persona' : 'personas'} por rellenar sus datos`}
+                    titulo={parte.faltan_cuantos === 1 ? 'Falta 1 persona por rellenar sus datos' : `Faltan ${parte.faltan_cuantos} personas por rellenar sus datos`}
                     texto="Hay que tenerlos antes de que entren." />
             )}
 

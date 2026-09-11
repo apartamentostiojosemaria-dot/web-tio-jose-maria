@@ -24,8 +24,10 @@ import { explicarError } from './nueva-reserva/textos';
 //
 // Al guardar: se crea la reserva (create_manual_booking), se apunta el
 // cobro si lo hay (register_payment) y se le manda el correo de
-// confirmación (send-booking-email, plantilla 'confirmation'), que lleva
-// dentro el enlace para que rellene sus datos. Si el correo falla, la
+// confirmación (send-booking-email, plantilla 'confirmation'). El enlace
+// para que rellene sus datos NO va ahí: va en el recordatorio de la víspera
+// (plantilla 'reminder_24h'), porque la reserva solo se abre al huésped 7
+// días antes de entrar (tjm_precheckin_reserva). Si el correo falla, la
 // reserva NO se pierde: se guarda igual y se dice en pantalla.
 //
 // Props del armazón (PanelApp): ir, volver, perfil, params.
@@ -137,7 +139,7 @@ const NuevaReservaPanel = ({ ir, volver, params = {} }) => {
             if (apunte?.ok) cobradoDeVerdad = Number(apunte.paid_amount) || cobrado;
         }
 
-        // 3) El correo de confirmación (lleva dentro el enlace de sus datos)
+        // 3) El correo de confirmación (el enlace de sus datos va en el de la víspera)
         let estadoCorreo = 'sin-correo';
         if (correoLimpio) {
             const enviado = await mandarConfirmacion(creada.booking_code);

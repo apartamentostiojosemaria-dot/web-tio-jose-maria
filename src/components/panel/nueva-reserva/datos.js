@@ -29,7 +29,10 @@ export const nochesEntre = (entrada, salida) => {
     if (!entrada || !salida) return 0;
     const a = new Date(`${entrada}T00:00:00`);
     const b = new Date(`${salida}T00:00:00`);
-    return Math.round((b - a) / 86400000);
+    const n = Math.round((b - a) / 86400000);
+    // Una fecha imposible (un año de cinco cifras tecleado a mano) daba NaN
+    // y la pantalla enseñaba «NaN noches».
+    return Number.isFinite(n) ? n : 0;
 };
 
 export const masUnDia = (iso) => (iso ? sumaDias(iso, 1) : '');

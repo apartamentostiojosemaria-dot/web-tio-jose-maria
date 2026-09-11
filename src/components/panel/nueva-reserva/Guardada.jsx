@@ -52,7 +52,7 @@ const Guardada = ({ resultado, alVerReserva, alApuntarOtra }) => {
             {correo === 'enviado' && (
                 <Aviso tono="bien" className="mb-4"
                     titulo="Le hemos mandado la confirmación por correo"
-                    texto="Dentro va el enlace para que rellene sus datos." />
+                    texto="El enlace para que rellene sus datos le llegará solo la víspera de entrar. Si quieres dárselo antes, está en «Hacer el check-in»." />
             )}
             {correo === 'sin-correo' && (
                 <Aviso tono="info" className="mb-4"

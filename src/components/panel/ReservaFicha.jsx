@@ -156,6 +156,10 @@ const ReservaFicha = ({ ir, params = {} }) => {
                 <Aviso tono="info" titulo="Esta reserva está cancelada."
                     texto="Las fechas están libres y no se le pide dinero." />
             )}
+            {cancelada && factura && factura.tipo !== 'rectificativa' && (
+                <Aviso tono="atencion" titulo={`Tiene una factura hecha el ${diaMesYAno(factura.fecha_emision)} y la reserva se ha cancelado.`}
+                    texto="Una factura hecha no se borra: hay que hacer una factura rectificativa. Todavía no se hace desde aquí; díselo a Jesús." />
+            )}
 
             {/* ---------- EL DINERO ---------- */}
             <Tarjeta>
@@ -269,7 +273,7 @@ const ReservaFicha = ({ ir, params = {} }) => {
                 onCambio={refrescar}
             />
             <HojaCambiar
-                abierta={hoja === 'cambiar'} reserva={reserva} apartamentos={apartamentos}
+                abierta={hoja === 'cambiar'} reserva={reserva} apartamentos={apartamentos} factura={factura}
                 onCerrar={() => setHoja(null)}
                 onCambiada={refrescar}
             />

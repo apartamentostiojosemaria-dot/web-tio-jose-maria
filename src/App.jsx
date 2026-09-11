@@ -96,26 +96,41 @@ export default function App() {
     const [loadingProfile, setLoadingProfile] = useState(true);
 
     useEffect(() => {
+        // Supabase dispara SIGNED_IN / TOKEN_REFRESHED cada vez que la pestaña
+        // vuelve a primer plano o renueva el token. Antes, CADA aviso volvía a
+        // poner "Verificando acceso..." y eso desmontaba el árbol entero de
+        // rutas: el panel de la madre saltaba a "Hoy" a media reserva, el área
+        // de clientes perdía lo abierto (medido el 11-sep-2026 en el navegador
+        // de Jesús). Solo se bloquea la pantalla la PRIMERA vez; después, el
+        // perfil se refresca en silencio y solo si cambia el usuario.
+        let usuarioActual = null;
+
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
-            if (session) fetchProfile(session.user.id);
-            else setLoadingProfile(false);
+            if (session) {
+                usuarioActual = session.user.id;
+                fetchProfile(session.user.id, { bloquear: true });
+            } else setLoadingProfile(false);
         });
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
-            if (session) fetchProfile(session.user.id);
-            else {
+            if (!session) {
+                usuarioActual = null;
                 setUserProfile(null);
                 setLoadingProfile(false);
+                return;
             }
+            if (session.user.id === usuarioActual) return;   // mismo usuario: nada que remontar
+            usuarioActual = session.user.id;
+            fetchProfile(session.user.id, { bloquear: false });
         });
 
         return () => subscription.unsubscribe();
     }, []);
 
-    async function fetchProfile(userId) {
-        setLoadingProfile(true);
+    async function fetchProfile(userId, { bloquear }) {
+        if (bloquear) setLoadingProfile(true);
         const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
         if (data) setUserProfile(data);
         setLoadingProfile(false);
