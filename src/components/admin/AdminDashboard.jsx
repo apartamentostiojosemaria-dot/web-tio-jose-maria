@@ -5,7 +5,7 @@ import {
     LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar, Star, Eye, Users,
     BarChart3, QrCode, CalendarCheck, Route, MessageSquare, PartyPopper, MapPin, Menu, X,
     BookOpen, ClipboardList,
-    Shield, Brush, KeyRound, Euro, Link2, Bot, Tag, Wrench, Inbox, ShoppingBag,
+    Shield, Brush, KeyRound, Euro, Link2, Bot, Tag, Wrench, Inbox, ShoppingBag, Sun,
 } from 'lucide-react';
 
 // Operaciones core (carga inmediata, son los más usados)
@@ -165,6 +165,10 @@ const AdminDashboard = () => {
                 </nav>
 
                 <div className="p-3 border-t border-gray-50">
+                    <a href="/panel"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-rural-700 hover:bg-rural-50 rounded-xl transition-colors text-sm font-bold">
+                        <Sun size={16} /> Vista sencilla
+                    </a>
                     <button onClick={() => supabase.auth.signOut()}
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-red-500 hover:bg-red-50 rounded-xl transition-colors text-sm font-bold">
                         <LogOut size={16} /> Cerrar sesión

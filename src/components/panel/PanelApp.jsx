@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect, lazy, Suspense } from 'react';
 import { supabase } from '../../lib/supabase';
 import {
     Sun, CalendarDays, PlusCircle, BookMarked, Users, Euro, Tag, Brush, Shield,
-    LogOut, ChevronLeft,
+    LogOut, ChevronLeft, LayoutGrid,
 } from 'lucide-react';
 import { Cargando } from './ui';
 
@@ -103,6 +103,8 @@ const PanelApp = ({ perfil }) => {
     const actual = buscarSeccion(vista.seccion);
     const props = { ir, volver, perfil, params: vista.params || {} };
     const nombre = (perfil?.full_name || perfil?.email || '').split(' ')[0];
+    // Cambiar de vista: solo quien tiene el panel completo. La madre (staff) no lo ve.
+    const esAdmin = perfil?.role === 'admin';
 
     return (
         <div className="min-h-screen bg-rural-50 md:flex">
@@ -139,6 +141,12 @@ const PanelApp = ({ perfil }) => {
                     <p className="px-4 pb-2 text-sm text-gray-600 truncate">
                         {perfil?.full_name || perfil?.email}
                     </p>
+                    {esAdmin && (
+                        <a href="/admin"
+                            className="w-full flex items-center gap-3 px-4 min-h-[52px] rounded-2xl text-base font-bold text-rural-700 hover:bg-rural-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-rural-600/30">
+                            <LayoutGrid size={20} aria-hidden="true" /> Vista completa
+                        </a>
+                    )}
                     <button type="button" onClick={salir} disabled={saliendo}
                         className="w-full flex items-center gap-3 px-4 min-h-[52px] rounded-2xl text-base font-bold text-red-700 hover:bg-red-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-red-600/20">
                         <LogOut size={20} aria-hidden="true" /> Salir
@@ -170,6 +178,12 @@ const PanelApp = ({ perfil }) => {
                             <p className="hidden sm:block text-sm text-gray-600 shrink-0">
                                 Hola, <span className="font-bold text-text-primary">{nombre}</span>
                             </p>
+                        )}
+                        {esAdmin && (
+                            <a href="/admin" aria-label="Vista completa"
+                                className="md:hidden shrink-0 inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-xl text-rural-700 hover:bg-rural-50">
+                                <LayoutGrid size={20} aria-hidden="true" />
+                            </a>
                         )}
                         <button type="button" onClick={salir} disabled={saliendo}
                             className="md:hidden shrink-0 inline-flex items-center gap-1.5 min-h-[44px] px-3 rounded-xl text-sm font-bold text-red-700 hover:bg-red-50">
