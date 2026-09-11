@@ -9,7 +9,7 @@ const ApartmentsGrid = ({ apartments }) => {
     const defaultApartments = [
         { name: 'Albahaca', tag: 'Romántico', capacityPeople: 2, bathrooms: 1, href: '/Albahaca.html', img: `${WP}/ALBAHACA-1.jpg`, desc: 'Íntimo y acogedor. Diseñado para parejas. Disfruta de una cena romántica frente a la chimenea después de una ruta por el parque.' },
         { name: 'Tomillo', tag: 'Con Vistas', capacityPeople: 2, bathrooms: 1, href: '/Tomillo.html', img: `${WP}/TOMILLOHOME1.jpg`, desc: 'Ubicado en la segunda planta con balcón y vistas al valle. Techos de madera abuhardillados que le dan un encanto especial.' },
-        { name: 'Lavanda', tag: 'Familiar', capacityPeople: 4, bathrooms: 2, href: '/Lavanda.html', img: `${WP}/LAVANDAHOME1.jpg`, desc: 'Espacioso y luminoso. Salón con chimenea, cocina completa, dormitorio de matrimonio y otro doble. Ideal para familias.' },
+        { name: 'Lavanda', tag: 'Familiar', capacityPeople: 4, bathrooms: 1, href: '/Lavanda.html', img: `${WP}/LAVANDAHOME1.jpg`, desc: 'Espacioso y luminoso. Salón con chimenea, cocina completa, dormitorio de matrimonio y otro doble. Ideal para familias.' },
         { name: 'Romero', tag: 'Familiar', capacityPeople: 4, bathrooms: 2, href: '/Romero.html', img: `${WP}/ROMEROHOME1.jpg`, desc: 'Confort rústico con todas las comodidades. Salón con chimenea para las noches de invierno y dos dormitorios independientes.' },
     ];
 
