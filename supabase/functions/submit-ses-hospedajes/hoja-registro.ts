@@ -23,15 +23,19 @@ const arena = rgb(MARCA.arena.r, MARCA.arena.g, MARCA.arena.b);
 const linea = rgb(MARCA.linea.r, MARCA.linea.g, MARCA.linea.b);
 const blanco = rgb(1, 1, 1);
 
-/** WinAnsi no tiene todos los caracteres: sustituimos los que romperían. */
+/**
+ * WinAnsi no tiene todos los caracteres: sustituimos los que romperían.
+ * El espacio duro va escapado como \u00A0 a propósito: en el fuente era un
+ * carácter invisible y se perdía al copiar el fichero.
+ */
 function winAnsi(s: string): string {
     return (s || "")
         .replace(/[–—]/g, "-")
         .replace(/[‘’]/g, "'")
         .replace(/[“”]/g, '"')
         .replace(/…/g, "...")
-        .replace(/ /g, " ")
-        .replace(/[^\x20-\x7E -ÿ€]/g, "");
+        .replace(/\u00A0/g, " ")
+        .replace(/[^\x20-\x7E\u00A0-\u00FF€]/g, "");
 }
 
 function fechaLarga(iso: string | null | undefined): string {

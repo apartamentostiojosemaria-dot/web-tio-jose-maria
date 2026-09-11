@@ -970,7 +970,6 @@ nada, con el secreto `SES_NS_RESERVA`.
 |---|---|
 | **Alta en SES Hospedajes**, marcando la casilla de comunicación por servicio web | Es un trámite con certificado digital o Cl@ve, a nombre del titular |
 | Poner los cinco secretos (`SES_WS_USER`, `SES_WS_PASSWORD`, `SES_ARRENDADOR`, `SES_ESTABLECIMIENTO`, `SES_ENDPOINT`) | Los da el Ministerio al dar de alta |
-| Copiar `SES_CRON_TOKEN` de Vault al secreto de la edge function | La llave se generó sola en Vault (migración `0010`); el sistema no puede escribir sus propios secretos |
 | Las **cinco URL de los anuncios** | Sólo las tiene él |
 | Confirmar los **dormitorios** de Lavanda y Romero (2 ó 3) | No hay ningún dato en la base que lo diga |
 | Conseguir el **XSD de la reserva de hospedaje** (`altaReservaHospedaje`) desde dentro de la plataforma | Es lo ÚNICO que sigue sin verificar. Los demás esquemas ya se abrieron el 10-sep y con ellos se corrigieron dos cosas que estaban mal. Si la primera reserva devuelve el error 10118, se arregla poniendo el secreto `SES_NS_RESERVA` — sin desplegar nada |

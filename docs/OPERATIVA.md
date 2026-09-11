@@ -228,6 +228,9 @@ supabase functions deploy send-booking-email --project-ref nmtukksbzbnuzqsksdmw 
 > - Proyecto: `tjm-jobs` (ref `proj_azldqeufdufzorjzhnkk`, org padron-ia).
 > - Env vars Production: `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (secret).
 > - Desplegado (`trigger deploy`, versión 20260701.3, 3 tasks). Schedules ACTIVAS.
+>   **11-sep-2026**: quedan 2 tasks (`daily-booking-emails`, `sync-ical-channels`). `daily-ses-submit`
+>   se retiró: el parte de viajeros lo dispara pg_cron dentro de la base (`tjm_disparar_ses`), que
+>   no depende de Trigger.dev ni de copiar claves a mano.
 > - Descubierto: el backend Supabase de TJM ya estaba casi todo desplegado
 >   (57 migraciones, 17 edge functions). Faltaba **`submit-ses-hospedajes`** →
 >   desplegada hoy (stub mode, verify_jwt=false como sus hermanas). Test-runs OK:

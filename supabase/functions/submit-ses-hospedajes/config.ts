@@ -60,7 +60,8 @@ export const MARCA = {
 //   SES_ARRENDADOR                  código de arrendador (10 dígitos)
 //   SES_ESTABLECIMIENTO             código de establecimiento
 //   SES_ENDPOINT                    URL del servicio (pruebas o producción)
-//   SES_CRON_TOKEN                  llave compartida con los crones (Vault)
+//   SES_CRON_TOKEN                  (opcional) llave de los crones; si no
+//                                   esta, se lee de Vault al arrancar
 //   SES_NS_RESERVA                  (opcional) corrige el namespace de la RH
 //
 // Mientras falte cualquiera de los cinco primeros, la función trabaja en MODO
@@ -74,6 +75,26 @@ export const SECRETOS = {
     endpoint: Deno.env.get("SES_ENDPOINT") ?? "",
     llaveDeCron: Deno.env.get("SES_CRON_TOKEN") ?? "",
 } as const;
+
+/**
+ * Llave con la que llaman los crones de la base (`tjm_disparar_ses`).
+ * Vive en Vault (`ses_cron_token`, migracion 0010). Antes habia que copiarla
+ * a mano al secreto SES_CRON_TOKEN y ese paso no se dio: 401 cada hora
+ * desde el 10-sep. Ahora la funcion se la pide a la base al arrancar con la
+ * clave de servicio (`tjm_llave_cron()`, migracion 0016): una sola fuente,
+ * nadie copia nada. El secreto de entorno, si existe, tiene preferencia.
+ */
+export async function cargarLlaveDeCron(
+    sb: { rpc: (fn: string) => PromiseLike<{ data: unknown; error: { message: string } | null }> },
+): Promise<string> {
+    if (SECRETOS.llaveDeCron) return SECRETOS.llaveDeCron;
+    const { data, error } = await sb.rpc("tjm_llave_cron");
+    if (error) {
+        console.error("[submit-ses-hospedajes] no se pudo leer ses_cron_token de Vault:", error.message);
+        return "";
+    }
+    return typeof data === "string" ? data.trim() : "";
+}
 
 /** Cierto sólo cuando están los cinco y se puede enviar de verdad. */
 export function hayCredenciales(): boolean {

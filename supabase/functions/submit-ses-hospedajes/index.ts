@@ -26,7 +26,7 @@
 import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import {
     ALTA_MINISTERIO, CUBO_LIBRO_REGISTRO, ESPERA_BARRIDO_MIN, ESTADO, ESTADO_SES,
-    SECRETOS, hayCredenciales, secretosQueFaltan,
+    SECRETOS, cargarLlaveDeCron, hayCredenciales, secretosQueFaltan,
 } from "./config.ts";
 import {
     consultarLote, mandarAnulacion, mandarParte, mandarReserva,
@@ -43,6 +43,9 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const sb: SupabaseClient = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
+
+// Llave de los crones de la base: de Vault, una vez por arranque (ver config.ts).
+const LLAVE_CRON = await cargarLlaveDeCron(sb);
 
 const CORS = {
     "Access-Control-Allow-Origin": "*",
@@ -66,6 +69,10 @@ const hoy = () => new Date().toISOString().slice(0, 10);
 // que la comprobación de aquí sea infalsificable: los dos caminos de «sistema»
 // son comparaciones EXACTAS con secretos. Leer el claim `role` de un JWT sin
 // verificar la firma sería un coladero.
+//
+// Los crones de la base (`tjm_disparar_ses`) llaman con `ses_cron_token`, que
+// la función lee de Vault al arrancar (LLAVE_CRON). No dependen de la clave
+// de servicio ni de ningún secreto copiado a mano.
 
 type Quien = { ok: true; quien: string } | { ok: false; status: number; error: string };
 
@@ -81,7 +88,7 @@ async function autorizar(req: Request): Promise<Quien> {
     const token = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
     if (!token) return { ok: false, status: 401, error: "falta_token" };
     if (SERVICE_KEY && igualSinPrisa(token, SERVICE_KEY)) return { ok: true, quien: "sistema" };
-    if (SECRETOS.llaveDeCron && igualSinPrisa(token, SECRETOS.llaveDeCron)) return { ok: true, quien: "cron" };
+    if (LLAVE_CRON && igualSinPrisa(token, LLAVE_CRON)) return { ok: true, quien: "cron" };
 
     const { data, error } = await sb.auth.getUser(token);
     if (error || !data?.user) return { ok: false, status: 401, error: "token_no_valido" };

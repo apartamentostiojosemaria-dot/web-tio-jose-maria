@@ -45,7 +45,7 @@ hoja de registro en PDF para que se mande como se venía mandando.
 | Motor del parte | `supabase/functions/submit-ses-hospedajes/` | Arma el XML, lo comprime, lo manda, guarda el acuse, y genera la hoja en PDF. |
 | Pantalla de la madre | `src/components/panel/ParteViajerosPanel.jsx` | Semáforo por reserva, «Recordárselo» y «Mandar el parte». Cero jerga. |
 | Pantalla técnica | `src/components/admin/TravelersManager.jsx` | Estados reales, lote, acuse, reintentos, XML e histórico. |
-| Cron diario | `tjm-jobs/src/trigger/daily-ses-submit.ts` | 10:00 Europe/Madrid, procesa los pendientes del día anterior. |
+| Crones | pg_cron en la base: `tjm-parte-viajeros` (08:00 UTC, diario) y `tjm-ses-reservas` (minuto 23 de cada hora) | Llaman a la función vía `tjm_disparar_ses()` con la llave `ses_cron_token` de Vault. Hasta el 11-sep-2026 había además un cron en Trigger.dev (`daily-ses-submit`) que hacía lo mismo a la misma hora con la clave de servicio: se retiró (duplicado y sin permiso desde el 10-sep). |
 
 ### Los ficheros de la edge function
 
@@ -70,10 +70,13 @@ POST { accion:"comprobar",        booking_id }   cómo quedó el lote
 POST { accion:"estado",           booking_id }   detalle técnico
 ```
 
-Entra sólo la clave de servicio (el cron) o un usuario con `role` `admin` o
-`staff`. La función se despliega con `verify_jwt = false`, así que la
-comprobación de «soy el sistema» es una **comparación exacta con la clave de
-servicio**: leer el `role` de un JWT sin verificar la firma sería un coladero.
+Entra la clave de servicio, la llave de los crones (`ses_cron_token`, que
+la función lee de Vault al arrancar con `tjm_llave_cron()`, migración 0016)
+o un usuario con `role` `admin` o `staff`. La función se despliega con
+`verify_jwt = false`, así que la comprobación de «soy el sistema» es una
+**comparación exacta con un secreto**: leer el `role` de un JWT sin verificar
+la firma sería un coladero. Nadie copia la llave a mano a ningún sitio: la
+única fuente es Vault.
 
 ---
 
