@@ -13,6 +13,7 @@
 //    esta capa devuelve `null` y la pantalla lo enseña en gris. Nunca revienta.
 
 import { supabase } from '../../../lib/supabase';
+import { sinPruebas } from '../ui';
 
 /** Reservas que siguen vivas y por tanto pueden deber dinero. Una cancelada nunca. */
 export const ESTADOS_QUE_DEBEN = ['confirmed', 'pending', 'completed'];
@@ -285,7 +286,7 @@ export const MOTIVOS_SIN_ENLACE = {
 /** Todo lo que falta por cobrar, lo que llega antes primero. Sin canceladas. */
 export async function cargarPendientes() {
     const [{ data: reservas, error }, apartamentos] = await Promise.all([
-        supabase.from('guest_bookings').select('*')
+        sinPruebas(supabase.from('guest_bookings').select('*'))
             .in('status', ESTADOS_QUE_DEBEN)
             .gt('pending_amount', 0)
             .order('check_in', { ascending: true }),
@@ -313,8 +314,8 @@ export async function cargarCobrosDelMes({ desde, hasta }) {
  * como que no hace falta. Para que la lista no engañe.
  */
 export async function cargarSinFactura() {
-    const { data, error } = await supabase.from('guest_bookings')
-        .select('id, guest_name, booking_code, check_in, check_out, total_price, paid_amount, apartment_id, channel, invoice_not_needed, status')
+    const { data, error } = await sinPruebas(supabase.from('guest_bookings')
+        .select('id, guest_name, booking_code, check_in, check_out, total_price, paid_amount, apartment_id, channel, invoice_not_needed, status'))
         .in('status', ESTADOS_QUE_DEBEN)
         .eq('invoice_not_needed', false)
         .gt('paid_amount', 0)

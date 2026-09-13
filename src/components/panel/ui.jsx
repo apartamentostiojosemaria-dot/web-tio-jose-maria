@@ -375,6 +375,21 @@ export const vinoDeFuera = (r) => CANALES_DE_FUERA.includes((r?.channel || '').t
 /** Nombre del canal solo si vino de fuera; si no, cadena vacia. */
 export const canalSiImporta = (r) => (vinoDeFuera(r) ? nombreCanal(r) : '');
 
+// ---------- Reservas de prueba ----------
+
+/**
+ * Las reservas de prueba (`source='test'`) no son de nadie: nadie llega, nadie
+ * debe dinero y nadie tiene que limpiar. En las pantallas de ella no salen.
+ *
+ * Se envuelve la consulta entera para que la regla esté escrita en un sitio y
+ * no haya que acordarse de repetir el filtro en cada pantalla nueva:
+ *
+ *   sinPruebas(supabase.from('guest_bookings').select('*')).in('status', …)
+ *
+ * En el panel completo (el de Jesús) SÍ salen: son suyas, las hizo él.
+ */
+export const sinPruebas = (consulta) => consulta.neq('source', 'test');
+
 // ---------- Hoja (la ventana que sube desde abajo) ----------
 
 /**

@@ -3,7 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { ChevronLeft, ChevronRight, CalendarDays, Rows3, LayoutGrid } from 'lucide-react';
 import {
     Boton, Aviso, Cargando,
-    aFecha, aISO, hoyISO, canalSiImporta,
+    aFecha, aISO, hoyISO, canalSiImporta, sinPruebas,
 } from './ui';
 
 // ============================================================
@@ -218,8 +218,8 @@ const CalendarioPanel = ({ ir, params = {} }) => {
         setCargando(true);
         (async () => {
             const [res, blo] = await Promise.all([
-                supabase.from('guest_bookings')
-                    .select('id, guest_name, apartment_id, check_in, check_out, status, channel, source, pax_count, expires_at')
+                sinPruebas(supabase.from('guest_bookings')
+                    .select('id, guest_name, apartment_id, check_in, check_out, status, channel, source, pax_count, expires_at'))
                     .in('status', ESTADOS_VIVOS)
                     .lte('check_in', hasta)
                     .gte('check_out', desde),

@@ -5,7 +5,7 @@ import {
     Tarjeta, Aviso, Cargando, formatoEuro,
     hoyISO, aISO, aFecha, fechaEnPalabrasRelativa, saludo,
     pendienteDe, canalSiImporta,
-    HORA_ENTRADA, HORA_SALIDA, sumarDias
+    HORA_ENTRADA, HORA_SALIDA, sumarDias, sinPruebas,
 } from './ui';
 
 // ============================================================
@@ -46,16 +46,16 @@ const PanelHome = ({ ir, perfil, secciones = [] }) => {
 
             const [apart, delDia, proximas, vencidas, limpiezas] = await Promise.all([
                 supabase.from('apartments').select('id, name'),
-                supabase.from('guest_bookings').select('*')
+                sinPruebas(supabase.from('guest_bookings').select('*'))
                     .in('status', ESTADOS_VIVOS)
                     .or(`check_in.eq.${hoy},check_out.eq.${hoy}`),
-                supabase.from('guest_bookings').select('*')
+                sinPruebas(supabase.from('guest_bookings').select('*'))
                     .in('status', ['confirmed', 'pending'])
                     .gte('check_in', hoy)
                     .lte('check_in', dentroDe(DIAS_AVISO_COBRO))
                     .order('check_in', { ascending: true }),
                 // Ya se fueron y todavía deben.
-                supabase.from('guest_bookings').select('*')
+                sinPruebas(supabase.from('guest_bookings').select('*'))
                     .in('status', ESTADOS_VIVOS)
                     .lt('check_out', hoy)
                     .gte('check_out', dentroDe(-DIAS_DEUDA_VIEJA))

@@ -3,7 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { Search, PlusCircle, ChevronRight, BookMarked, X } from 'lucide-react';
 import {
     Boton, Aviso, Cargando, Vacio, Campo, claseInput,
-    aFecha, hoyISO, formatoEuro, cobradoDe, pendienteDe, canalSiImporta,
+    aFecha, hoyISO, formatoEuro, cobradoDe, pendienteDe, canalSiImporta, sinPruebas,
 } from './ui';
 
 // ============================================================
@@ -71,8 +71,8 @@ const ReservasPanel = ({ ir }) => {
         (async () => {
             const [apart, res] = await Promise.all([
                 supabase.from('apartments').select('id, name'),
-                supabase.from('guest_bookings')
-                    .select('id, guest_name, guest_phone, apartment_id, check_in, check_out, status, payment_status, total_price, paid_amount, pending_amount, channel, source, pax_count')
+                sinPruebas(supabase.from('guest_bookings')
+                    .select('id, guest_name, guest_phone, apartment_id, check_in, check_out, status, payment_status, total_price, paid_amount, pending_amount, channel, source, pax_count'))
                     .neq('status', 'hold')
                     .order('check_in', { ascending: false })
                     .limit(CUANTAS_TRAEMOS),
