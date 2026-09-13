@@ -12,7 +12,7 @@
 -- el solo código de reserva por secreto. Lo que faltaba era DECIR POR QUÉ.
 --
 -- A partir de aquí devuelve SIEMPRE una fila si el código existe, con:
---   · `ventana` = abierta | pronto | pasada | sin_confirmar
+--   · `ventana` = abierta | pronto | pasada | cancelada | sin_confirmar
 --   · `check_in`, para poder decir el día exacto en que se abre
 --   · el resto de los campos SOLO cuando la ventana está abierta (fuera de
 --     ella van a NULL: ni nombre, ni correo, ni teléfono, ni apartamento).
@@ -48,6 +48,7 @@ AS $function$
                b.pax_count, b.check_in, b.check_out, b.status, b.channel,
                b.payment_status, a.name AS apartment_name, b.payment_holder,
                CASE
+                   WHEN b.status = 'cancelled'                      THEN 'cancelada'
                    WHEN b.status NOT IN ('confirmed', 'completed') THEN 'sin_confirmar'
                    WHEN b.check_out < current_date                 THEN 'pasada'
                    WHEN b.check_in - current_date > 7              THEN 'pronto'

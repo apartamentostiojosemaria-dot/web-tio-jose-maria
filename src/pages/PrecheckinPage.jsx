@@ -151,9 +151,11 @@ const claveBorrador = (code) => `tjm-precheckin-${code}`;
 const seAbreEl = (checkIn) => {
     const base = 'Este formulario se abre una semana antes de tu llegada';
     if (!checkIn) return `${base}. Te avisaremos por correo.`;
-    const d = new Date(`${checkIn}T00:00:00`);
+    // En UTC a propósito: restando en hora local, el paso a ISO se come un día
+    // (en Madrid, el 16 a las 00:00 es el 15 a las 22:00Z).
+    const d = new Date(`${checkIn}T00:00:00Z`);
     if (Number.isNaN(d.getTime())) return `${base}. Te avisaremos por correo.`;
-    d.setDate(d.getDate() - 7);
+    d.setUTCDate(d.getUTCDate() - 7);
     return `${base}: el ${fechaLegible(d.toISOString().slice(0, 10))}. Te avisaremos por correo.`;
 };
 
@@ -294,13 +296,16 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
         (async () => {
             const data = await leerReserva(code);
 
-            // `ventana` la dice la base: abierta / pronto / pasada / sin_confirmar.
+            // `ventana` la dice la base: abierta / pronto / pasada / cancelada /
+            // sin_confirmar.
             // Fuera de la ventana llega la fila sin ningún dato personal, solo
             // para poder decir la verdad en vez de «no encontramos esa reserva».
             const ventana = data?.ventana || (data ? 'abierta' : null);
 
             if (!data) {
                 setErrorCarga('No encontramos esa reserva. Revisa el enlace o escríbenos.');
+            } else if (ventana === 'cancelada' || data.status === 'cancelled') {
+                setErrorCarga('Esta reserva está cancelada. Si crees que es un error, escríbenos.');
             } else if (ventana === 'sin_confirmar' || !['confirmed', 'completed'].includes(data.status)) {
                 setErrorCarga('Esta reserva todavía no está confirmada. Termina el pago primero.');
             } else if (ventana === 'pasada') {

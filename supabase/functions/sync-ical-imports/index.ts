@@ -12,8 +12,9 @@
 //   · Si el evento choca con una reserva PROPIA -> no se aplica a ciegas:
 //     se anota en `channel_sync_conflicts` y se avisa. El bloqueo sí se crea
 //     (bloquear es el lado seguro; lo que provoca overbooking es NO bloquear).
-//   · Si el evento desaparece del feed -> el bloqueo se retira y la reserva
-//     importada se marca 'cancelled'. Nunca se borra una reserva.
+//   · Si el evento desaparece del feed ENTERO (con nombre o sin él) -> el
+//     bloqueo se retira, la reserva importada se marca 'cancelled' y se AVISA.
+//     Nunca se borra una reserva.
 //
 // IDEMPOTENCIA: la clave es el UID del VEVENT, guardado en
 // `blocked_dates.external_uid` y `guest_bookings.external_uid`. Reejecutar el
@@ -249,6 +250,7 @@ interface SyncOutcome {
     bookings_created: number;
     bookings_updated: number;
     bookings_cancelled: number;
+    cancelled_detail: string[];
     conflicts: number;
     conflict_detail: string[];
     error_message: string | null;
@@ -264,6 +266,7 @@ async function syncOne(
         channel, ok: false, fetched: false, events_parsed: 0,
         blocks_inserted: 0, blocks_removed: 0, blocks_uid_backfilled: 0,
         bookings_created: 0, bookings_updated: 0, bookings_cancelled: 0,
+        cancelled_detail: [],
         conflicts: 0, conflict_detail: [], error_message: null, duration_ms: 0,
     };
 
@@ -397,7 +400,15 @@ async function syncOne(
 
     // ---- reservas de verdad ---------------------------------------------
     const reservas = plans.filter((p) => p.asReservation);
+    // OJO a la diferencia entre estos dos conjuntos: de ella depende que una
+    // reserva viva se cancele sola (ver más abajo, «ya no está en el feed»).
+    //   · `uidsReserva` = los eventos que traen NOMBRE de huésped.
+    //   · `uidsEnFeed`  = TODOS los eventos del calendario del canal.
+    // Airbnb nunca manda el nombre: sus eventos son «Reserved» a secas. Una
+    // reserva apuntada a mano con el UID de Airbnb (las traídas de MisterPlan)
+    // está en el feed y aun así no está en `uidsReserva`.
     const uidsReserva = new Set(reservas.map((p) => p.uid));
+    const uidsEnFeed = new Set(plans.map((p) => p.uid));
 
     if (puedeReservar) {
         const { data: yaImportadas } = await supabase
@@ -469,11 +480,38 @@ async function syncOne(
             }
         }
 
+        // Un evento sin nombre cuyo UID ya tiene reserva apuntada (las traídas
+        // de MisterPlan): la reserva manda en el nombre y el dinero, pero las
+        // FECHAS las manda el canal. Si el huésped las cambia en Airbnb, la
+        // reserva se mueve con él en vez de quedarse desfasada.
+        for (const p of plans) {
+            if (p.asReservation) continue;
+            const previa = porUid.get(p.uid);
+            if (!previa || previa.status === "cancelled") continue;
+            if (previa.check_in === p.start && previa.check_out === p.endExclusive) continue;
+
+            out.bookings_updated++;
+            if (opts.dryRun) continue;
+            await supabase.from("guest_bookings").update({
+                check_in: p.start,
+                check_out: p.endExclusive,
+                nights: Math.round((Date.parse(p.endExclusive) - Date.parse(p.start)) / 86400_000),
+                updated_at: new Date().toISOString(),
+            }).eq("id", previa.id);
+        }
+
         // Reserva importada que ya no está en el feed -> cancelada, nunca borrada.
+        // Se mira el feed ENTERO (`uidsEnFeed`), no solo los eventos con nombre:
+        // con `uidsReserva` se cancelaba sola toda reserva de Airbnb en la
+        // primera pasada (José Luis, 11-sep-2026, 220 € que desaparecieron del
+        // calendario nueve minutos después de traerlos de MisterPlan).
         for (const [uid, b] of porUid) {
-            if (uidsReserva.has(uid)) continue;
+            if (uidsEnFeed.has(uid)) continue;
             if (b.status === "cancelled") continue;
             out.bookings_cancelled++;
+            out.cancelled_detail.push(
+                `${b.guest_name || "sin nombre"} (${b.check_in} -> ${b.check_out})`,
+            );
             if (opts.dryRun) continue;
             await supabase.from("guest_bookings").update({
                 status: "cancelled",
@@ -676,6 +714,23 @@ Deno.serve(async (req) => {
                     duration_ms: outcome.duration_ms,
                     error_message: outcome.error_message,
                 });
+            }
+
+            // Que una reserva se caiga sola es NOTICIA: o el huésped ha
+            // cancelado en el canal (y esas noches vuelven a estar libres), o
+            // el importador se ha equivocado. Callado, ninguna de las dos se
+            // ve: la de José Luis estuvo dos días cancelada sin que nadie lo
+            // supiera. Se avisa siempre, sin silenciar por repetición: son
+            // raras, y cada una lleva su nombre y sus fechas.
+            if (!dryRun && outcome.bookings_cancelled > 0) {
+                await pushAlert(
+                    `Reserva caída del calendario de ${ch.label} (${apt.name})`,
+                    `Ha desaparecido del calendario de ${ch.label}:\n` +
+                    outcome.cancelled_detail.map((d) => `· ${d}`).join("\n") +
+                    `\n\nEn TJM queda como cancelada (no se borra). Comprueba en ${ch.label} si ` +
+                    `el huésped canceló de verdad: si sigue ahí, avisa a Jesús — el fallo sería ` +
+                    `nuestro y esas noches estarían libres sin deber estarlo.`,
+                );
             }
 
             // Un canal que no se puede descargar es un canal que deja de
