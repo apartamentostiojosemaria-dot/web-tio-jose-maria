@@ -5,7 +5,7 @@ import {
     Mail, X, Check,
 } from 'lucide-react';
 import {
-    Boton, Tarjeta, Campo, Chip, Aviso, Cargando, Vacio, claseInput,
+    Boton, Tarjeta, Campo, Chip, Aviso, Cargando, Vacio, claseInput, Confirmar,
     hoyISO, fechaCorta, fechaEnPalabras, canalSiImporta,
 } from './ui';
 
@@ -527,6 +527,8 @@ const Apuntes = ({ cliente, perfil, apuntes, cargando, onCambio }) => {
     const [guardando, setGuardando] = useState(false);
     const [editandoId, setEditandoId] = useState(null);
     const [textoEditado, setTextoEditado] = useState('');
+    const [aBorrar, setABorrar] = useState(null);   // el apunte que se va a borrar
+    const [borrando, setBorrando] = useState(false);
     const [error, setError] = useState('');
 
     const quien = perfil?.full_name || perfil?.email || 'panel';
@@ -569,9 +571,12 @@ const Apuntes = ({ cliente, perfil, apuntes, cargando, onCambio }) => {
         await onCambio();
     };
 
-    const borrar = async (id) => {
-        if (!window.confirm('¿Borro este apunte?')) return;
-        await supabase.from('customer_notes').delete().eq('id', id);
+    const borrar = async () => {
+        if (!aBorrar) return;
+        setBorrando(true);
+        await supabase.from('customer_notes').delete().eq('id', aBorrar.id);
+        setBorrando(false);
+        setABorrar(null);
         await onCambio();
     };
 
@@ -633,7 +638,7 @@ const Apuntes = ({ cliente, perfil, apuntes, cargando, onCambio }) => {
                                         className="inline-flex items-center gap-1.5 min-h-[44px] px-3 rounded-xl text-base font-bold text-rural-700 hover:bg-rural-50">
                                         <Pencil size={18} aria-hidden="true" /> Cambiarlo
                                     </button>
-                                    <button type="button" onClick={() => borrar(a.id)}
+                                    <button type="button" onClick={() => setABorrar(a)}
                                         className="inline-flex items-center gap-1.5 min-h-[44px] px-3 rounded-xl text-base font-bold text-red-700 hover:bg-red-50">
                                         <Trash2 size={18} aria-hidden="true" /> Borrarlo
                                     </button>
@@ -643,6 +648,19 @@ const Apuntes = ({ cliente, perfil, apuntes, cargando, onCambio }) => {
                     </div>
                 ))}
             </div>
+
+            <Confirmar
+                abierta={!!aBorrar}
+                titulo="¿Borro este apunte?"
+                texto={aBorrar
+                    ? `«${String(aBorrar.body || '').slice(0, 120)}${String(aBorrar.body || '').length > 120 ? '…' : ''}». No se puede deshacer.`
+                    : ''}
+                textoSi="Sí, borrarlo"
+                textoNo="No, dejarlo"
+                cargando={borrando}
+                onSi={borrar}
+                onNo={() => setABorrar(null)}
+            />
         </Tarjeta>
     );
 };

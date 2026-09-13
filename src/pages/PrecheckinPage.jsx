@@ -145,6 +145,18 @@ const emptyTraveler = (isTitular = false) => ({
 
 const claveBorrador = (code) => `tjm-precheckin-${code}`;
 
+// Cuando el huésped abre el enlace antes de tiempo se le dice el día exacto
+// en que se abre (la llegada menos siete días), no un «no encontramos» que
+// parece que su reserva no existe.
+const seAbreEl = (checkIn) => {
+    const base = 'Este formulario se abre una semana antes de tu llegada';
+    if (!checkIn) return `${base}. Te avisaremos por correo.`;
+    const d = new Date(`${checkIn}T00:00:00`);
+    if (Number.isNaN(d.getTime())) return `${base}. Te avisaremos por correo.`;
+    d.setDate(d.getDate() - 7);
+    return `${base}: el ${fechaLegible(d.toISOString().slice(0, 10))}. Te avisaremos por correo.`;
+};
+
 /** Qué le falta a este viajero para poder seguir. */
 function pegasDe(t, fechaEntrada) {
     const p = {};
@@ -282,12 +294,20 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
         (async () => {
             const data = await leerReserva(code);
 
+            // `ventana` la dice la base: abierta / pronto / pasada / sin_confirmar.
+            // Fuera de la ventana llega la fila sin ningún dato personal, solo
+            // para poder decir la verdad en vez de «no encontramos esa reserva».
+            const ventana = data?.ventana || (data ? 'abierta' : null);
+
             if (!data) {
                 setErrorCarga('No encontramos esa reserva. Revisa el enlace o escríbenos.');
-            } else if (!['confirmed', 'completed'].includes(data.status)) {
+            } else if (ventana === 'sin_confirmar' || !['confirmed', 'completed'].includes(data.status)) {
                 setErrorCarga('Esta reserva todavía no está confirmada. Termina el pago primero.');
-            } else if (data.check_in && new Date(data.check_in) - new Date() > 7 * 86400000) {
-                setErrorCarga('Este formulario se abre una semana antes de tu llegada. Te avisaremos por correo.');
+            } else if (ventana === 'pasada') {
+                setErrorCarga('Esta estancia ya ha terminado. Si necesitas algo, escríbenos.');
+            } else if (ventana === 'pronto'
+                || (data.check_in && new Date(data.check_in) - new Date() > 7 * 86400000)) {
+                setErrorCarga(seAbreEl(data.check_in));
             } else {
                 setBooking(data);
                 const guardado = leerBorrador(code);

@@ -6,8 +6,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Check, Link2, Copy, MessageCircle } from 'lucide-react';
-import { Boton, Campo, claseInput, Aviso, formatoEuro, hoyISO } from '../ui';
-import { Hoja, Opciones } from './ui';
+import { Hoja, Boton, Campo, claseInput, Aviso, formatoEuro, hoyISO } from '../ui';
+import { Opciones } from './ui';
 import { FORMAS_DE_PAGO, enlaceWhatsApp, textoRecordatorioCobro } from './formato';
 import { apuntarCobro, pedirEnlaceDePago, MOTIVOS_SIN_ENLACE } from './datos';
 

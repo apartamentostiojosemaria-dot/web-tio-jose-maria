@@ -6,8 +6,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { XCircle, AlertCircle } from 'lucide-react';
-import { Boton, Campo, claseInput, Aviso, formatoEuro, hoyISO, aFecha, cobradoDe } from '../ui';
-import { Hoja } from './ui';
+import { Hoja, Boton, Campo, claseInput, Aviso, formatoEuro, hoyISO, aFecha, cobradoDe } from '../ui';
 import { cancelarReserva } from './datos';
 
 const diasHasta = (iso) => {

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Bloque, Tarjeta, Fila, Campo, Texto, Fecha, Boton, BotonFila, Aviso, Vacio } from './ui';
+import { Confirmar } from '../ui';
 import { rango, hoy } from './formato';
 import { anadirTemporada, quitarTemporada } from './datos';
 
@@ -11,6 +12,8 @@ export default function BloqueTemporadas({ temporadas, onActualizar }) {
     const [desde, setDesde] = useState('');
     const [hasta, setHasta] = useState('');
     const [guardando, setGuardando] = useState(false);
+    const [aQuitar, setAQuitar] = useState(null);
+    const [quitando, setQuitando] = useState(false);
     const [bien, setBien] = useState('');
     const [mal, setMal] = useState('');
 
@@ -47,16 +50,24 @@ export default function BloqueTemporadas({ temporadas, onActualizar }) {
         }
     }
 
-    async function quitar(t) {
+    function quitar(t) {
         setBien(''); setMal('');
-        const seguro = window.confirm(`¿Quitar "${t.name}" (${rango(t.start_date, t.end_date)})?\n\nEsos días pasarán a cobrarse al precio de días normales.`);
-        if (!seguro) return;
+        setAQuitar(t);
+    }
+
+    async function confirmarQuitar() {
+        const t = aQuitar;
+        if (!t) return;
+        setQuitando(true);
         try {
             const nuevas = await quitarTemporada(t.id);
             onActualizar(nuevas);
             setBien(`Quitada. ${rango(t.start_date, t.end_date)} vuelve al precio de días normales.`);
         } catch (e) {
             setMal(e.message);
+        } finally {
+            setQuitando(false);
+            setAQuitar(null);
         }
     }
 
@@ -111,6 +122,19 @@ export default function BloqueTemporadas({ temporadas, onActualizar }) {
                     </Tarjeta>
                 )}
             </div>
+
+            <Confirmar
+                abierta={!!aQuitar}
+                titulo={aQuitar ? `¿Quito "${aQuitar.name}"?` : ''}
+                texto={aQuitar
+                    ? `${rango(aQuitar.start_date, aQuitar.end_date)} pasará a cobrarse al precio de días normales.`
+                    : ''}
+                textoSi="Sí, quitarla"
+                textoNo="No, dejarla"
+                cargando={quitando}
+                onSi={confirmarQuitar}
+                onNo={() => setAQuitar(null)}
+            />
         </Bloque>
     );
 }

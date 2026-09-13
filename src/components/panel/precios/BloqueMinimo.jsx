@@ -8,6 +8,7 @@
 
 import React, { useState } from 'react';
 import { Bloque, Tarjeta, Fila, Campo, Cifra, Chips, Boton, BotonFila, Aviso, Vacio } from './ui';
+import { Confirmar } from '../ui';
 import { rango, noches, aNumero, hoy } from './formato';
 import { guardarMinimo, quitarMinimo } from './datos';
 
@@ -20,6 +21,8 @@ export default function BloqueMinimo({ minimos, temporadas, onActualizar }) {
 
     const [cifra, setCifra] = useState(String(general?.threshold_days ?? POR_DEFECTO));
     const [guardando, setGuardando] = useState(false);
+    const [aQuitar, setAQuitar] = useState(null);
+    const [quitando, setQuitando] = useState(false);
     const [bien, setBien] = useState('');
     const [mal, setMal] = useState('');
 
@@ -84,15 +87,24 @@ export default function BloqueMinimo({ minimos, temporadas, onActualizar }) {
         }
     }
 
-    async function quitar(m) {
+    function quitar(m) {
         setBien(''); setMal('');
-        if (!window.confirm('¿Quitar este mínimo?')) return;
+        setAQuitar(m);
+    }
+
+    async function confirmarQuitar() {
+        const m = aQuitar;
+        if (!m) return;
+        setQuitando(true);
         try {
             const nuevos = await quitarMinimo(m.id);
             onActualizar(nuevos);
             setBien(`Quitado. Esas fechas se quedan con el mínimo de todo el año: ${noches(nGeneral)}.`);
         } catch (e) {
             setMal(e.message);
+        } finally {
+            setQuitando(false);
+            setAQuitar(null);
         }
     }
 
@@ -161,6 +173,17 @@ export default function BloqueMinimo({ minimos, temporadas, onActualizar }) {
                 {bien && <Aviso tono="bien">{bien}</Aviso>}
                 {mal && <Aviso tono="mal">{mal}</Aviso>}
             </div>
+
+            <Confirmar
+                abierta={!!aQuitar}
+                titulo="¿Quito este mínimo?"
+                texto={`Esas fechas se quedarán con el mínimo de todo el año: ${noches(nGeneral)}.`}
+                textoSi="Sí, quitarlo"
+                textoNo="No, dejarlo"
+                cargando={quitando}
+                onSi={confirmarQuitar}
+                onNo={() => setAQuitar(null)}
+            />
         </Bloque>
     );
 }

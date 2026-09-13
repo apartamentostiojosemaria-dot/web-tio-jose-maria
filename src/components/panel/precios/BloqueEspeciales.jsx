@@ -3,6 +3,7 @@
 
 import React, { useState } from 'react';
 import { Bloque, Tarjeta, Fila, Campo, Fecha, Cifra, Chips, Boton, BotonFila, Aviso, Vacio } from './ui';
+import { Confirmar } from '../ui';
 import { rango, euros, aNumero, hoy } from './formato';
 import { ponerPrecioEspecial, quitarPrecioEspecial } from './datos';
 
@@ -14,6 +15,8 @@ export default function BloqueEspeciales({ apartamentos, especiales, onActualiza
     const [cual, setCual] = useState(TODOS);
     const [precio, setPrecio] = useState('');
     const [guardando, setGuardando] = useState(false);
+    const [aQuitar, setAQuitar] = useState(null);
+    const [quitando, setQuitando] = useState(false);
     const [bien, setBien] = useState('');
     const [mal, setMal] = useState('');
 
@@ -48,16 +51,24 @@ export default function BloqueEspeciales({ apartamentos, especiales, onActualiza
         }
     }
 
-    async function quitar(e) {
+    function quitar(e) {
         setBien(''); setMal('');
-        const seguro = window.confirm('¿Quitar este precio especial?\n\nEsos días volverán a cobrarse al precio de siempre.');
-        if (!seguro) return;
+        setAQuitar(e);
+    }
+
+    async function confirmarQuitar() {
+        const e = aQuitar;
+        if (!e) return;
+        setQuitando(true);
         try {
             const nuevos = await quitarPrecioEspecial(e.id);
             onActualizar(nuevos);
             setBien('Quitado. Esos días vuelven al precio de siempre.');
         } catch (err) {
             setMal(err.message);
+        } finally {
+            setQuitando(false);
+            setAQuitar(null);
         }
     }
 
@@ -108,6 +119,19 @@ export default function BloqueEspeciales({ apartamentos, especiales, onActualiza
                     ))}
                 </div>
             </div>
+
+            <Confirmar
+                abierta={!!aQuitar}
+                titulo="¿Quito este precio especial?"
+                texto={aQuitar
+                    ? `${rango(aQuitar.valid_from, aQuitar.valid_until)} volverá a cobrarse al precio de siempre.`
+                    : ''}
+                textoSi="Sí, quitarlo"
+                textoNo="No, dejarlo"
+                cargando={quitando}
+                onSi={confirmarQuitar}
+                onNo={() => setAQuitar(null)}
+            />
         </Bloque>
     );
 }

@@ -4,9 +4,8 @@ import {
 } from 'lucide-react';
 import {
     Boton, Tarjeta, Chip, Aviso, Cargando,
-    hoyISO, fechaEnPalabras, HORA_ENTRADA,
+    hoyISO, fechaEnPalabras, HORA_ENTRADA, Hoja,
 } from './ui';
-import { Hoja } from './dinero/ui';
 import CodigoQR from './checkin/CodigoQR';
 import Persona from './checkin/Persona';
 import {
@@ -53,6 +52,7 @@ const CheckinPanel = ({ ir, volver, params = {} }) => {
     const [verFormulario, setVerFormulario] = useState(false);
     const [mensaje, setMensaje] = useState(null);
     const [terminando, setTerminando] = useState(false);
+    const [adelantar, setAdelantar] = useState(false);   // han llegado antes del día
     const [ultimaLectura, setUltimaLectura] = useState(null);
 
     const cuantosAntes = useRef(0);
@@ -192,6 +192,11 @@ const CheckinPanel = ({ ir, volver, params = {} }) => {
     const todosComprobados = personas.length > 0 && cuantosComprobados === personas.length;
     const sinFirma = personas.filter((p) => !p.firma_base64 && necesitaFirmar(p, reserva.check_in));
     const yaEntraron = !!reserva.checkin_at;
+    // El check-in se termina el día que entran. Antes de ese día el botón
+    // está frenado: si se toca sin querer queda apuntada una hora de entrada
+    // que no fue, y esa hora es la que va en el parte de la policía.
+    const esAntesDeTiempo = !!reserva.check_in && reserva.check_in > hoy;
+    const frenado = esAntesDeTiempo && !adelantar;
     const yaSalieron = !!reserva.checkout_at;
 
     return (
@@ -353,14 +358,32 @@ const CheckinPanel = ({ ir, volver, params = {} }) => {
                             ancho
                             onClick={terminar}
                             cargando={terminando}
+                            disabled={frenado}
                         >
                             Terminar el check-in
                         </Boton>
-                        <p className="text-sm text-gray-600 leading-snug">
-                            {estanTodos && todosComprobados
-                                ? 'Están todos y los has comprobado. Se apunta la hora de entrada y ya está.'
-                                : 'Se apunta la hora a la que han entrado. Puedes darle aunque falte gente: lo que falte se queda avisado.'}
-                        </p>
+                        {frenado ? (
+                            <>
+                                <p className="text-sm text-gray-600 leading-snug">
+                                    Esta reserva llega el {fechaEnPalabras(reserva.check_in)}. El check-in se
+                                    termina el día que entran: así queda apuntada la hora de verdad.
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={() => setAdelantar(true)}
+                                    className="min-h-[44px] px-3 -ml-3 rounded-xl text-base font-bold text-rural-700 hover:bg-rural-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-rural-600/30"
+                                >
+                                    Han llegado antes de tiempo
+                                </button>
+                            </>
+                        ) : (
+                            <p className="text-sm text-gray-600 leading-snug">
+                                {estanTodos && todosComprobados
+                                    ? 'Están todos y los has comprobado. Se apunta la hora de entrada y ya está.'
+                                    : 'Se apunta la hora a la que han entrado. Puedes darle aunque falte gente: lo que falte se queda avisado.'}
+                                {esAntesDeTiempo && ' Ojo: llegan el ' + fechaEnPalabras(reserva.check_in) + '.'}
+                            </p>
+                        )}
                     </>
                 ) : (
                     <Boton

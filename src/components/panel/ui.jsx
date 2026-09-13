@@ -1,5 +1,5 @@
-import React from 'react';
-import { Loader2, AlertCircle, Info, CheckCircle2, Inbox } from 'lucide-react';
+import React, { useEffect, useRef } from 'react';
+import { Loader2, AlertCircle, Info, CheckCircle2, Inbox, X } from 'lucide-react';
 
 // ============================================================
 // ui.jsx — piezas compartidas del panel sencillo (/panel)
@@ -374,3 +374,112 @@ export const vinoDeFuera = (r) => CANALES_DE_FUERA.includes((r?.channel || '').t
 
 /** Nombre del canal solo si vino de fuera; si no, cadena vacia. */
 export const canalSiImporta = (r) => (vinoDeFuera(r) ? nombreCanal(r) : '');
+
+// ---------- Hoja (la ventana que sube desde abajo) ----------
+
+/**
+ * Una hoja que sube desde abajo en el movil y sale centrada en el ordenador.
+ * Se cierra con la X, tocando fuera o con la tecla Escape.
+ *
+ * Vivia en `dinero/ui.jsx`; se sube aqui porque la usan el dinero, el
+ * check-in, los precios y los clientes: es pieza del panel entero.
+ *
+ * <Hoja abierta={...} titulo="Apuntar un cobro" onCerrar={...}>…</Hoja>
+ */
+export const Hoja = ({ abierta, titulo, explicacion, onCerrar, children }) => {
+    const caja = useRef(null);
+    const tituloId = React.useId();
+
+    useEffect(() => {
+        if (!abierta) return undefined;
+        const alPulsarTecla = (e) => { if (e.key === 'Escape') onCerrar?.(); };
+        document.addEventListener('keydown', alPulsarTecla);
+        const antes = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        // El foco entra en la hoja para que el teclado y el lector no se
+        // queden detras, en la pantalla que ya no se ve.
+        const t = setTimeout(() => caja.current?.focus(), 30);
+        return () => {
+            document.removeEventListener('keydown', alPulsarTecla);
+            document.body.style.overflow = antes;
+            clearTimeout(t);
+        };
+    }, [abierta, onCerrar]);
+
+    if (!abierta) return null;
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center">
+            <div className="absolute inset-0 bg-black/40" onClick={onCerrar} aria-hidden="true" />
+            <div
+                ref={caja}
+                tabIndex={-1}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={tituloId}
+                className={[
+                    'relative w-full sm:max-w-lg bg-white shadow-2xl outline-none',
+                    'rounded-t-3xl sm:rounded-3xl',
+                    'max-h-[92vh] sm:max-h-[86vh] overflow-y-auto',
+                    'pb-[max(1.25rem,env(safe-area-inset-bottom))]',
+                ].join(' ')}
+            >
+                <div className="sticky top-0 bg-white border-b border-gray-100 px-5 pt-4 pb-3 flex items-start gap-3 rounded-t-3xl">
+                    <div className="flex-1 min-w-0">
+                        <h2 id={tituloId} className="font-serif text-2xl font-bold text-text-primary leading-tight">
+                            {titulo}
+                        </h2>
+                        {explicacion && <p className="text-base text-gray-600 mt-1 leading-snug">{explicacion}</p>}
+                    </div>
+                    <button
+                        type="button" onClick={onCerrar} aria-label="Cerrar"
+                        className="shrink-0 -mr-1 w-11 h-11 flex items-center justify-center rounded-2xl text-gray-500 hover:bg-gray-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-rural-600/30"
+                    >
+                        <X size={24} aria-hidden="true" />
+                    </button>
+                </div>
+                <div className="px-5 pt-5 space-y-5">{children}</div>
+            </div>
+        </div>
+    );
+};
+
+// ---------- Confirmar ----------
+
+/**
+ * La pregunta de «¿seguro?» con la cara del panel, no la del navegador.
+ *
+ * El aviso del navegador (`window.confirm`) sale con letra pequena, en
+ * ingles a veces, y no dice que pasa despues. Esta dice que va a pasar y
+ * deja el boton de peligro en rojo y el de salir primero bajo el dedo.
+ *
+ * <Confirmar
+ *     abierta={!!aQuitar}
+ *     titulo="¿Quito este mínimo?"
+ *     texto="Esos días volverán a poder reservarse de una noche."
+ *     textoSi="Sí, quitarlo"
+ *     onSi={quitar} onNo={() => setAQuitar(null)}
+ * />
+ */
+export const Confirmar = ({
+    abierta, titulo, texto, textoSi = 'Sí', textoNo = 'No, dejarlo como está',
+    tono = 'peligro', onSi, onNo, cargando = false,
+}) => (
+    <Hoja abierta={abierta} titulo={titulo} onCerrar={cargando ? undefined : onNo}>
+        {texto && <p className="text-base text-gray-700 leading-snug">{texto}</p>}
+        <div className="space-y-3 pb-1">
+            <Boton
+                variante={tono === 'peligro' ? 'peligro' : 'principal'}
+                tamano="grande"
+                ancho
+                cargando={cargando}
+                onClick={onSi}
+            >
+                {textoSi}
+            </Boton>
+            <Boton variante="secundario" tamano="grande" ancho disabled={cargando} onClick={onNo}>
+                {textoNo}
+            </Boton>
+        </div>
+    </Hoja>
+);

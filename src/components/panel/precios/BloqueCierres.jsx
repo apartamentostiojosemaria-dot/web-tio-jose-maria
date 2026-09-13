@@ -8,6 +8,7 @@
 
 import React, { useState } from 'react';
 import { Bloque, Tarjeta, Fila, Campo, Fecha, Texto, ChipsVarios, Boton, BotonFila, Aviso, Vacio } from './ui';
+import { Confirmar } from '../ui';
 import { rango, hoy, listaY } from './formato';
 import { cerrarDias, quitarCierre } from './datos';
 
@@ -17,6 +18,8 @@ export default function BloqueCierres({ apartamentos, cierres, ocupadosFuera, on
     const [elegidos, setElegidos] = useState([]);
     const [motivo, setMotivo] = useState('');
     const [guardando, setGuardando] = useState(false);
+    const [aAbrir, setAAbrir] = useState(null);
+    const [abriendo, setAbriendo] = useState(false);
     const [bien, setBien] = useState('');
     const [mal, setMal] = useState('');
 
@@ -48,16 +51,26 @@ export default function BloqueCierres({ apartamentos, cierres, ocupadosFuera, on
         }
     }
 
-    async function abrir(c) {
+    // Se pregunta antes, con la cara del panel: abrir unos días es ponerlos
+    // otra vez a la venta, aquí y en las webs de fuera.
+    function abrir(c) {
         setBien(''); setMal('');
-        const seguro = window.confirm(`¿Volver a poner en alquiler ${nombreDe(c.apartment_id)} ${rango(c.start_date, c.end_date)}?`);
-        if (!seguro) return;
+        setAAbrir(c);
+    }
+
+    async function confirmarAbrir() {
+        const c = aAbrir;
+        if (!c) return;
+        setAbriendo(true);
         try {
             const nuevos = await quitarCierre(c.id, hoyStr);
             onActualizar(nuevos);
             setBien(`Listo. ${nombreDe(c.apartment_id)} vuelve a estar libre ${rango(c.start_date, c.end_date)}.`);
         } catch (e) {
             setMal(e.message);
+        } finally {
+            setAbriendo(false);
+            setAAbrir(null);
         }
     }
 
@@ -125,6 +138,20 @@ export default function BloqueCierres({ apartamentos, cierres, ocupadosFuera, on
                     )}
                 </div>
             </div>
+
+            <Confirmar
+                abierta={!!aAbrir}
+                tono="normal"
+                titulo={aAbrir ? `¿Vuelve a alquilarse ${nombreDe(aAbrir.apartment_id)}?` : ''}
+                texto={aAbrir
+                    ? `${rango(aAbrir.start_date, aAbrir.end_date)} volverá a poder reservarse, aquí y en las webs de fuera.`
+                    : ''}
+                textoSi="Sí, volver a alquilarlo"
+                textoNo="No, dejarlo cerrado"
+                cargando={abriendo}
+                onSi={confirmarAbrir}
+                onNo={() => setAAbrir(null)}
+            />
         </Bloque>
     );
 }

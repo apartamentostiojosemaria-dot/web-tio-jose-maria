@@ -11,3 +11,4 @@ skills-lock.json
 .env.local
 .env.*.local
 supabase/.temp/
+.playwright-mcp

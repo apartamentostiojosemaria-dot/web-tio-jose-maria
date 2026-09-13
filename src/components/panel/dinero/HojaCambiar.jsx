@@ -6,8 +6,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { CalendarDays, Check } from 'lucide-react';
-import { Boton, Campo, claseInput, Aviso, formatoEuro, hoyISO } from '../ui';
-import { Hoja, Opciones } from './ui';
+import { Hoja, Boton, Campo, claseInput, Aviso, formatoEuro, hoyISO } from '../ui';
+import { Opciones } from './ui';
 import { moverReserva, ajustarPrecio } from './datos';
 import { diaMesYAno } from './formato';
 

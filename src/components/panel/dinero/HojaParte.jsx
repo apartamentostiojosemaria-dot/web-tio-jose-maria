@@ -6,8 +6,8 @@
 
 import React from 'react';
 import { MessageCircle, ArrowRight } from 'lucide-react';
-import { Boton, Aviso } from '../ui';
-import { Hoja, SemaforoPolicia } from './ui';
+import { Hoja, Boton, Aviso } from '../ui';
+import { SemaforoPolicia } from './ui';
 import { enlaceWhatsApp, textoRecordatorioPolicia } from './formato';
 
 export default function HojaParte({ abierta, reserva, parte, onCerrar, onVerDatos }) {

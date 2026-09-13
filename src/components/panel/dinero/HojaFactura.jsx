@@ -6,8 +6,7 @@
 
 import React, { useState } from 'react';
 import { FileText, Send, Eye, Check } from 'lucide-react';
-import { Boton, Aviso } from '../ui';
-import { Hoja } from './ui';
+import { Hoja, Boton, Aviso } from '../ui';
 import { diaMesYAno } from './formato';
 import { hacerFactura, mandarFactura, verFacturaPdf, marcarSinFactura } from './datos';
 
