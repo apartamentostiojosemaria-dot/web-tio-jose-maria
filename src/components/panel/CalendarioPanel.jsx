@@ -3,7 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { ChevronLeft, ChevronRight, CalendarDays, Rows3, LayoutGrid } from 'lucide-react';
 import {
     Boton, Aviso, Cargando,
-    aFecha, aISO, hoyISO, canalSiImporta, sinPruebas,
+    aFecha, aISO, hoyISO, canalSiImporta, nombreCanal, sinPruebas,
 } from './ui';
 
 // ============================================================
@@ -33,8 +33,16 @@ import {
 // propio recuadro lo dice debajo en letra pequeña ("por Booking").
 //
 // Los días que llegan de otras webs (`blocked_dates` con source distinto
-// de 'manual'/'cierre') se enseñan como "Ocupado por otra web" y no se
-// pueden tocar desde aquí: los pone la otra web y los quitaría ella sola.
+// de 'manual'/'cierre') no se pueden tocar desde aquí: los pone la otra web
+// y los quitaría ella sola. Lo que SÍ se distingue es qué son, porque para
+// ella no es lo mismo (mig. 0019, `external_kind`):
+//   · 'reserved' → azul, "Ocupado · por Airbnb": entra alguien.
+//   · 'closed'   → gris, "No alquilable · cerrado desde Airbnb": no se vende.
+//   · sin tipo   → azul, "Ocupado · por otra web", como hasta el 15-sep.
+// Mientras Booking no exporte a TJM, una reserva de Booking que MisterPlan
+// empuje a Airbnb llega como cierre: la que ya está apuntada aquí manda
+// (la reserva pisa al bloqueo), la que no, sale gris hasta que se conecte
+// Booking (plan §F2).
 // Los días cerrados a mano tampoco se quitan aquí; eso vive en Precios
 // ("No alquilar estos días").
 //
@@ -56,6 +64,20 @@ const BLOQUEOS_PROPIOS = ['manual', 'cierre'];
 // A partir de este ancho de contenedor la rejilla del mes se lee bien
 // (7 columnas de ~95 px o más). Por debajo, semana y punto.
 const ANCHO_MINIMO_MES = 700;
+
+// ---------- Qué es un bloqueo, dicho como lo diría ella ----------
+
+const queEsElBloqueo = (b, propio) => {
+    if (propio) return { estado: 'cerrado', titulo: 'No alquilable', pie: b.reason || '' };
+    const canal = nombreCanal(b) || 'otra web';
+    if (b.external_kind === 'closed') {
+        return { estado: 'cerrado', titulo: 'No alquilable', pie: `cerrado desde ${canal}`, deFuera: true };
+    }
+    if (b.external_kind === 'reserved') {
+        return { estado: 'ocupado', titulo: 'Ocupado', pie: `por ${canal}`, deFuera: true };
+    }
+    return { estado: 'ocupado', titulo: 'Ocupado', pie: 'por otra web', deFuera: true };
+};
 
 // ---------- Fechas (locales de esta pantalla; ui.jsx no se toca) ----------
 
@@ -224,7 +246,7 @@ const CalendarioPanel = ({ ir, params = {} }) => {
                     .lte('check_in', hasta)
                     .gte('check_out', desde),
                 supabase.from('blocked_dates')
-                    .select('id, apartment_id, start_date, end_date, source, reason')
+                    .select('id, apartment_id, start_date, end_date, source, reason, external_kind')
                     .lte('start_date', hasta)
                     .gte('end_date', desde),
             ]);
@@ -252,10 +274,9 @@ const CalendarioPanel = ({ ir, params = {} }) => {
             const propio = BLOQUEOS_PROPIOS.includes(String(b.source || 'manual').toLowerCase());
             const ini = b.start_date > desde ? b.start_date : desde;
             const fin = b.end_date < hasta ? b.end_date : hasta;
+            const info = queEsElBloqueo(b, propio);
             diasEntre(ini, fin).forEach((dia) => {
-                mapa.set(`${b.apartment_id}|${dia}`, propio
-                    ? { estado: 'cerrado', titulo: 'No alquilable', pie: b.reason || '' }
-                    : { estado: 'ocupado', titulo: 'Ocupado', pie: 'por otra web', deFuera: true });
+                mapa.set(`${b.apartment_id}|${dia}`, info);
             });
         });
 
@@ -426,7 +447,7 @@ const Leyenda = () => (
                 {PINTA[e].palabra}
             </span>
         ))}
-        <span className="text-sm text-gray-600">Lo que llega de otras webs sale como ocupado, y ahí no se toca.</span>
+        <span className="text-sm text-gray-600">Lo que llega de otras webs sale como ocupado o como no alquilable, según lo que diga esa web, y ahí no se toca.</span>
     </div>
 );
 

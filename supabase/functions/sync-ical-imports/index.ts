@@ -8,7 +8,10 @@
 //   · Si trae NOMBRE de huésped (Booking a veces; Airbnb nunca) -> crea una
 //     RESERVA de verdad en `guest_bookings` con su canal, localizador,
 //     nombre, fechas y status 'confirmed'.
-//   · Si no trae nada -> crea el BLOQUEO en `blocked_dates`, como hasta hoy.
+//   · Si no trae nada -> crea el BLOQUEO en `blocked_dates`, como hasta hoy,
+//     y apunta en `external_kind` si el canal dice que hay alguien dentro
+//     («Reserved») o que está cerrado («Not available»): para la madre no es
+//     lo mismo. Un bloqueo antiguo sin tipo se clasifica en la pasada siguiente.
 //   · Si el evento choca con una reserva PROPIA -> no se aplica a ciegas:
 //     se anota en `channel_sync_conflicts` y se avisa. El bloqueo sí se crea
 //     (bloquear es el lado seguro; lo que provoca overbooking es NO bloquear).
@@ -112,6 +115,7 @@ interface ApartmentRow {
 
 interface Caps {
     blockUid: boolean;        // blocked_dates.external_uid
+    blockKind: boolean;       // blocked_dates.external_kind (mig. 0019)
     bookingUid: boolean;      // guest_bookings.external_uid
     bookingChannel: boolean;  // guest_bookings.channel + external_locator
     syncLog: boolean;         // tabla channel_sync_log
@@ -131,6 +135,7 @@ async function probeCaps(): Promise<Caps> {
     };
     return {
         blockUid: await has("blocked_dates", "external_uid"),
+        blockKind: await has("blocked_dates", "external_kind"),
         bookingUid: await has("guest_bookings", "external_uid"),
         bookingChannel: await has("guest_bookings", "channel, external_locator"),
         syncLog: await has("channel_sync_log", "id"),
@@ -247,6 +252,7 @@ interface SyncOutcome {
     blocks_inserted: number;
     blocks_removed: number;
     blocks_uid_backfilled: number;
+    blocks_kind_updated: number;
     bookings_created: number;
     bookings_updated: number;
     bookings_cancelled: number;
@@ -264,7 +270,7 @@ async function syncOne(
     const t0 = Date.now();
     const out: SyncOutcome = {
         channel, ok: false, fetched: false, events_parsed: 0,
-        blocks_inserted: 0, blocks_removed: 0, blocks_uid_backfilled: 0,
+        blocks_inserted: 0, blocks_removed: 0, blocks_uid_backfilled: 0, blocks_kind_updated: 0,
         bookings_created: 0, bookings_updated: 0, bookings_cancelled: 0,
         cancelled_detail: [],
         conflicts: 0, conflict_detail: [], error_message: null, duration_ms: 0,
@@ -287,7 +293,11 @@ async function syncOne(
 
     const { data: existingBlocks, error: ebErr } = await supabase
         .from("blocked_dates")
-        .select(caps.blockUid ? "id, start_date, end_date, external_uid" : "id, start_date, end_date")
+        .select(
+            "id, start_date, end_date" +
+            (caps.blockUid ? ", external_uid" : "") +
+            (caps.blockKind ? ", external_kind" : ""),
+        )
         .eq("apartment_id", apt.id)
         .eq("source", channel);
 
@@ -297,7 +307,7 @@ async function syncOne(
         return out;
     }
     const existing = (existingBlocks || []) as Array<
-        { id: string; start_date: string; end_date: string; external_uid?: string | null }
+        { id: string; start_date: string; end_date: string; external_uid?: string | null; external_kind?: string | null }
     >;
 
     // ---- clasificar eventos --------------------------------------------
@@ -540,6 +550,10 @@ async function syncOne(
     const aInsertar: Record<string, unknown>[] = [];
     const aBackfill: Array<{ id: string; uid: string }> = [];
     const aMoverFechas: Array<{ id: string; start: string; end: string }> = [];
+    // Bloqueos que ya existen y cuyo tipo (reserva/cierre) falta o cambió:
+    // los 38 anteriores a la migración 0019 se clasifican aquí en la primera
+    // pasada, y un evento que pase de «Not available» a «Reserved» también.
+    const aRetipar: Array<{ id: string; kind: string }> = [];
 
     for (const p of plans) {
         const yaPorUid = caps.blockUid ? porUidBloq.get(p.uid) : undefined;
@@ -547,6 +561,9 @@ async function syncOne(
             vistos.add(yaPorUid.id);
             if (yaPorUid.start_date !== p.start || yaPorUid.end_date !== p.endInclusive) {
                 aMoverFechas.push({ id: yaPorUid.id, start: p.start, end: p.endInclusive });
+            }
+            if (caps.blockKind && yaPorUid.external_kind !== p.guest.blockKind) {
+                aRetipar.push({ id: yaPorUid.id, kind: p.guest.blockKind });
             }
             continue;
         }
@@ -558,12 +575,16 @@ async function syncOne(
         if (libre) {
             vistos.add(libre.id);
             if (caps.blockUid) { aBackfill.push({ id: libre.id, uid: p.uid }); out.blocks_uid_backfilled++; }
+            if (caps.blockKind && libre.external_kind !== p.guest.blockKind) {
+                aRetipar.push({ id: libre.id, kind: p.guest.blockKind });
+            }
             continue;
         }
         const fila: Record<string, unknown> = {
             apartment_id: apt.id, start_date: p.start, end_date: p.endInclusive, source: channel,
         };
         if (caps.blockUid) fila.external_uid = p.uid;
+        if (caps.blockKind) fila.external_kind = p.guest.blockKind;
         aInsertar.push(fila);
     }
 
@@ -579,6 +600,7 @@ async function syncOne(
 
     out.blocks_inserted = aInsertar.length;
     out.blocks_removed = feedVacioSospechoso ? 0 : aRetirar.length;
+    out.blocks_kind_updated = aRetipar.length;
 
     if (!opts.dryRun) {
         if (aInsertar.length > 0) {
@@ -594,6 +616,9 @@ async function syncOne(
         for (const m of aMoverFechas) {
             await supabase.from("blocked_dates")
                 .update({ start_date: m.start, end_date: m.end }).eq("id", m.id);
+        }
+        for (const r of aRetipar) {
+            await supabase.from("blocked_dates").update({ external_kind: r.kind }).eq("id", r.id);
         }
         if (!feedVacioSospechoso && aRetirar.length > 0) {
             const { error } = await supabase.from("blocked_dates").delete().in("id", aRetirar);

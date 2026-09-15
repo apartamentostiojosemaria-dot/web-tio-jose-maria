@@ -27,9 +27,16 @@ export interface IcalEvent {
     status?: string;      // CONFIRMED | CANCELLED | TENTATIVE
 }
 
+/** Qué es el evento para el calendario de la madre: `reserved` = un huésped
+ *  ocupa las noches; `closed` = el canal las tiene cerradas y no entra nadie.
+ *  Va a `blocked_dates.external_kind`. */
+export type BlockKind = "reserved" | "closed";
+
 export interface GuestInfo {
     /** 'reservation' solo cuando hay nombre de huésped fiable. */
     kind: "reservation" | "block";
+    /** Reserva o cierre, también cuando no hay nombre (Airbnb nunca lo manda). */
+    blockKind: BlockKind;
     guestName?: string;
     guestEmail?: string;
     guestPhone?: string;
@@ -213,7 +220,29 @@ export function extractGuestInfo(ev: IcalEvent): GuestInfo {
     }
 
     if (name) {
-        return { kind: "reservation", guestName: name, guestEmail: email, guestPhone: phone, locator };
+        return { kind: "reservation", blockKind: "reserved", guestName: name, guestEmail: email, guestPhone: phone, locator };
     }
-    return { kind: "block", guestEmail: email, guestPhone: phone, locator };
+    return { kind: "block", blockKind: classifyBlock(summary), guestEmail: email, guestPhone: phone, locator };
+}
+
+// ---------------------------------------------------------------------------
+// 4. Sin nombre: ¿hay alguien dentro, o está cerrado?
+// ---------------------------------------------------------------------------
+// Medido en los feeds reales (15-sep-2026):
+//   Airbnb   "Reserved"                -> un huésped de Airbnb.
+//            "Airbnb (Not available)"  -> cierre (lo que MisterPlan empuja).
+//   Booking  "CLOSED - Not available"  -> cierre si no trae NAME (con NAME
+//                                        ya salió como reserva más arriba).
+// En la duda (SUMMARY vacío o raro) se queda en `reserved`: enseñar «ocupado»
+// donde había un cierre no hace daño; enseñar «cerrado» donde entra un
+// huésped, sí.
+const CLOSED_SUMMARY = [
+    "not available", "unavailable", "closed", "blocked", "block",
+    "no disponible", "cerrado", "cerrada", "bloqueado", "bloqueada",
+];
+
+export function classifyBlock(summary: string): BlockKind {
+    const s = (summary || "").toLowerCase().replace(/[^a-z0-9áéíóúñ ]+/gi, " ").trim();
+    if (!s) return "reserved";
+    return CLOSED_SUMMARY.some((p) => s.includes(p)) ? "closed" : "reserved";
 }

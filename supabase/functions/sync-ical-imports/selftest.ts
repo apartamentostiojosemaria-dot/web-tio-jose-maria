@@ -6,7 +6,7 @@
 //
 // No toca la base ni la red: solo feeds de mentira contra el parser.
 
-import { addDays, extractGuestInfo, parseIcal } from "./parse.ts";
+import { addDays, classifyBlock, extractGuestInfo, parseIcal } from "./parse.ts";
 
 const CRLF = "\r\n";
 const ics = (...l: string[]) => l.join(CRLF) + CRLF;
@@ -66,6 +66,18 @@ export function runSelfTest() {
         const g = extractGuestInfo({ uid: "x", start: "2026-01-01", end: "2026-01-02", summary: s });
         eq(`opaco "${s}" no pasa por nombre`, g.kind, "block");
     }
+
+    // Reserva o cierre, para el calendario de la madre (mig. 0019).
+    eq("airbnb: Reserved -> reserved", ga.blockKind, "reserved");
+    eq("booking: con nombre -> reserved aunque diga CLOSED", gb.blockKind, "reserved");
+    for (const s of ["Airbnb (Not available)", "CLOSED - Not available", "Not available", "Blocked", "No disponible", "Cerrado"]) {
+        eq(`cierre "${s}" -> closed`, classifyBlock(s), "closed");
+    }
+    for (const s of ["Reserved", "Reservado", "Booked", "Ocupado", ""]) {
+        eq(`"${s || "(vacio)"}" -> reserved`, classifyBlock(s), "reserved");
+    }
+    const gc = extractGuestInfo({ uid: "y", start: "2026-01-01", end: "2026-01-02", summary: "CLOSED - Not available" });
+    eq("booking sin nombre: bloqueo cerrado", `${gc.kind}/${gc.blockKind}`, "block/closed");
 
     eq("addDays fin de mes", addDays("2026-02-28", 1), "2026-03-01");
     eq("addDays cambio de hora", addDays("2026-03-28", 2), "2026-03-30");

@@ -9,7 +9,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { parseIcal, extractGuestInfo, addDays } from "./parse.ts";
+import { parseIcal, extractGuestInfo, addDays, classifyBlock } from "./parse.ts";
 
 const CRLF = "\r\n";
 const ics = (...lines: string[]) => lines.join(CRLF) + CRLF;
@@ -178,4 +178,27 @@ test("addDays no se descoloca en cambio de mes ni de horario de verano", () => {
     assert.equal(addDays("2026-03-28", 2), "2026-03-30");   // cambio de hora en Madrid
     assert.equal(addDays("2026-12-31", 1), "2027-01-01");
     assert.equal(addDays("2026-11-23", -1), "2026-11-22");
+});
+
+// --- Reserva o cierre: lo que ve la madre en el calendario -----------------
+test("Airbnb: 'Reserved' es un huesped; 'Airbnb (Not available)' es un cierre", () => {
+    assert.equal(classifyBlock("Reserved"), "reserved");
+    assert.equal(classifyBlock("Airbnb (Not available)"), "closed");
+});
+
+test("Booking: 'CLOSED - Not available' sin NAME es cierre; con NAME es reserva", () => {
+    const sinNombre = extractGuestInfo({ uid: "a", start: "2026-01-01", end: "2026-01-02", summary: "CLOSED - Not available" });
+    assert.equal(sinNombre.kind, "block");
+    assert.equal(sinNombre.blockKind, "closed");
+    const conNombre = extractGuestInfo({
+        uid: "b", start: "2026-01-01", end: "2026-01-02", summary: "CLOSED - Not available",
+        description: "NAME: Carmen Lopez",
+    });
+    assert.equal(conNombre.kind, "reservation");
+    assert.equal(conNombre.blockKind, "reserved");
+});
+
+test("En la duda, ocupado: SUMMARY vacio o desconocido no se enseña como cerrado", () => {
+    for (const s of ["", "Booked", "Ocupado", "Reservado", "xyz"]) assert.equal(classifyBlock(s), "reserved");
+    for (const s of ["Not available", "Unavailable", "Blocked", "No disponible", "Cerrado", "Bloqueado"]) assert.equal(classifyBlock(s), "closed");
 });
