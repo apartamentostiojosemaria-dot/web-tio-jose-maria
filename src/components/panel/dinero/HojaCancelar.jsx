@@ -132,7 +132,7 @@ export default function HojaCancelar({ abierta, reserva, onCerrar, onCancelada }
                         </label>
                     ) : (
                         <p className="text-sm text-gray-600 leading-relaxed">
-                            {reserva?.channel && ['booking', 'airbnb', 'escapada', 'casasrurales'].includes(String(reserva.channel).toLowerCase())
+                            {reserva?.channel && ['booking', 'airbnb', 'escapada', 'casasrurales', 'holidu'].includes(String(reserva.channel).toLowerCase())
                                 ? 'A este huésped le avisa la web por la que reservó: aquí no se le manda correo.'
                                 : 'Este huésped no tiene correo apuntado: no se le puede avisar desde aquí. Llámale.'}
                         </p>

@@ -36,7 +36,7 @@ export default function HojaCobro({ abierta, reserva, pendiente, onCerrar, onCob
     useEffect(() => {
         if (!abierta) return;
         setImporte(falta > 0 ? String(falta).replace('.', ',') : '');
-        setForma(reserva?.channel === 'booking' ? 'booking' : 'transferencia');
+        setForma(reserva?.channel === 'booking' ? 'booking' : reserva?.channel === 'holidu' ? 'ota' : 'transferencia');
         setFecha(hoyISO());
         setError(null);
         setEnlace(null);

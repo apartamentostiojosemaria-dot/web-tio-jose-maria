@@ -347,6 +347,7 @@ export const NOMBRES_CANAL = {
     airbnb: 'Airbnb',
     escapada: 'Escapada Rural',
     casasrurales: 'CasasRurales.net',
+    holidu: 'Holidu',
     telefono: 'por teléfono',
     whatsapp: 'por WhatsApp',
     web: 'por la web',
@@ -368,7 +369,7 @@ export const nombreCanal = (r) => {
  * "por la web" en cada linea es ruido; en cambio "por Booking" si importa,
  * porque cambia quien cobra y cuando.
  */
-export const CANALES_DE_FUERA = ['booking', 'airbnb', 'escapada', 'casasrurales'];
+export const CANALES_DE_FUERA = ['booking', 'airbnb', 'escapada', 'casasrurales', 'holidu'];
 
 export const vinoDeFuera = (r) => CANALES_DE_FUERA.includes((r?.channel || '').toLowerCase());
 

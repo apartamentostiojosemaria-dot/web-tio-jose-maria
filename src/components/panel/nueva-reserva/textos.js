@@ -27,6 +27,7 @@ export const CANALES = [
     { valor: 'airbnb', etiqueta: 'Airbnb', icono: Home, deFuera: true },
     { valor: 'escapada', etiqueta: 'Escapada Rural', icono: Trees, deFuera: true },
     { valor: 'casasrurales', etiqueta: 'CasasRurales.net', icono: Globe, deFuera: true },
+    { valor: 'holidu', etiqueta: 'Holidu', icono: Globe, deFuera: true },
     { valor: 'otro', etiqueta: 'Vino en persona', icono: HandCoins, deFuera: false },
 ];
 

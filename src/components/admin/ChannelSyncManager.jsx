@@ -25,6 +25,7 @@ const CANALES = [
     { key: 'booking', columna: 'booking_ical_url', label: 'Booking', refresco: 'cada 2 h' },
     { key: 'escapada', columna: 'escapada_ical_url', label: 'Escapada Rural', refresco: 'cada 3 h' },
     { key: 'casasrurales', columna: 'casasrurales_ical_url', label: 'CasasRurales.net', refresco: 'sin declarar' },
+    { key: 'holidu', columna: 'holidu_ical_url', label: 'Holidu (y Clubrural)', refresco: 'sin declarar' },
 ];
 
 const BASE_ICAL = 'https://tiojosemaria.com/ical';
@@ -68,7 +69,7 @@ const ChannelSyncManager = () => {
         const conTodas = await supabase.from('apartments')
             .select(columnasCompletas).eq('is_active', true).order('name');
         if (conTodas.error) {
-            pendientes.push('Faltan las columnas de Escapada Rural y CasasRurales.net en `apartments`. Aplicar supabase/migrations/_pendiente_canales.sql.');
+            pendientes.push('Faltan columnas de canales en `apartments` (Escapada Rural, CasasRurales.net o Holidu). Aplicar las migraciones 0006 y 0022.');
             const basico = await supabase.from('apartments')
                 .select('id, slug, name, is_active, airbnb_ical_url, booking_ical_url')
                 .eq('is_active', true).order('name');

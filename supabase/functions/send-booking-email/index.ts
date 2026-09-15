@@ -133,7 +133,7 @@ Deno.serve(async (req) => {
     // confunde (y en Airbnb el correo ni siquiera lo tenemos).
     if (STAFF_ONLY_TEMPLATES.includes(template)) {
         const canal = String(booking.channel || "").toLowerCase();
-        if (["booking", "airbnb", "escapada", "casasrurales"].includes(canal)) {
+        if (["booking", "airbnb", "escapada", "casasrurales", "holidu"].includes(canal)) {
             return json(200, { ok: true, skipped: "channel_booking", channel: canal });
         }
         if (template === "booking_cancelled" && booking.status !== "cancelled") {

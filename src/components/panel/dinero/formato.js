@@ -73,13 +73,14 @@ export const rangoEnPalabras = (entrada, salida) =>
 
 // ───────────────────────── Formas de pago ─────────────────────────
 
-// Las claves son las de booking_payments_method_check (migración 0002).
+// Las claves son las de booking_payments_method_check (migraciones 0002 y 0021).
 export const FORMAS_DE_PAGO = [
     { valor: 'transferencia', etiqueta: 'Transferencia' },
     { valor: 'bizum', etiqueta: 'Bizum' },
     { valor: 'efectivo', etiqueta: 'Efectivo' },
     { valor: 'tarjeta', etiqueta: 'Tarjeta' },
     { valor: 'booking', etiqueta: 'Lo paga Booking' },
+    { valor: 'ota', etiqueta: 'Lo paga el portal (Holidu, Clubrural…)' },
 ];
 
 const NOMBRE_FORMA = {
@@ -88,6 +89,7 @@ const NOMBRE_FORMA = {
     efectivo: 'efectivo',
     tarjeta: 'tarjeta',
     booking: 'lo paga Booking',
+    ota: 'lo paga el portal',
     stripe: 'pago por la web',
 };
 

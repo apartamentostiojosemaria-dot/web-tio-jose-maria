@@ -389,7 +389,7 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
     // Booking o Airbnb paga la plataforma, y si ya se pagó con tarjeta por la
     // web el nombre lo devuelve la pasarela: en los dos casos, ni una
     // pregunta de más.
-    const canalDeFuera = ['booking', 'airbnb', 'escapada', 'casasrurales']
+    const canalDeFuera = ['booking', 'airbnb', 'escapada', 'casasrurales', 'holidu']
         .includes(String(booking?.channel || '').toLowerCase());
     const pagadoPorLaWeb = booking?.payment_status === 'paid'
         && ['web', ''].includes(String(booking?.channel || '').toLowerCase());

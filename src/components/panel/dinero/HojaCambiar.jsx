@@ -156,7 +156,7 @@ export default function HojaCambiar({ abierta, reserva, apartamentos = [], factu
             )}
             {resultado?.ok && !puedeAvisar && (
                 <p className="text-sm text-gray-600 leading-relaxed">
-                    {reserva?.channel && ['booking', 'airbnb', 'escapada', 'casasrurales'].includes(String(reserva.channel).toLowerCase())
+                    {reserva?.channel && ['booking', 'airbnb', 'escapada', 'casasrurales', 'holidu'].includes(String(reserva.channel).toLowerCase())
                         ? 'A este huésped le avisa la web por la que reservó: aquí no se le manda correo.'
                         : 'Este huésped no tiene correo apuntado, así que no se le puede avisar desde aquí. Llámale o apúntale el correo en su ficha.'}
                 </p>

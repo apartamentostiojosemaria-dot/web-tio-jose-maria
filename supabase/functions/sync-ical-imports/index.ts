@@ -1,8 +1,8 @@
 // Edge function: sync-ical-imports
 // =================================
-// Lee las URL de calendario de los CUATRO canales (Airbnb, Booking,
-// EscapadaRural, CasasRurales.net) en cada apartamento, descarga el feed y
-// reconcilia lo que hay en la base.
+// Lee las URL de calendario de los CINCO canales (Airbnb, Booking,
+// EscapadaRural, CasasRurales.net, Holidu) en cada apartamento, descarga el
+// feed y reconcilia lo que hay en la base.
 //
 // Qué hace con cada evento del canal:
 //   · Si trae NOMBRE de huésped (Booking a veces; Airbnb nunca) -> crea una
@@ -80,6 +80,7 @@ const CHANNELS = [
     { key: "booking", column: "booking_ical_url", label: "Booking" },
     { key: "escapada", column: "escapada_ical_url", label: "Escapada Rural" },
     { key: "casasrurales", column: "casasrurales_ical_url", label: "CasasRurales.net" },
+    { key: "holidu", column: "holidu_ical_url", label: "Holidu" },
 ] as const;
 
 type ChannelKey = typeof CHANNELS[number]["key"];
@@ -122,6 +123,7 @@ interface Caps {
     conflicts: boolean;       // tabla channel_sync_conflicts
     alertDedup: boolean;      // tabla channel_alerts
     extraUrlCols: boolean;    // apartments.escapada_ical_url / casasrurales_ical_url
+    holiduUrlCol: boolean;    // apartments.holidu_ical_url (mig. 0022)
 }
 
 // ---------------------------------------------------------------------------
@@ -142,6 +144,7 @@ async function probeCaps(): Promise<Caps> {
         conflicts: await has("channel_sync_conflicts", "id"),
         alertDedup: await has("channel_alerts", "id"),
         extraUrlCols: await has("apartments", "escapada_ical_url, casasrurales_ical_url"),
+        holiduUrlCol: await has("apartments", "holidu_ical_url"),
     };
 }
 
@@ -443,7 +446,14 @@ async function syncOne(
                 const cambios: Record<string, unknown> = {};
                 if (previa.check_in !== p.start) cambios.check_in = p.start;
                 if (previa.check_out !== p.endExclusive) { cambios.check_out = p.endExclusive; cambios.nights = noches; }
-                if (previa.guest_name !== p.guest.guestName) cambios.guest_name = p.guest.guestName;
+                // Holidu abrevia el nombre («Michael S.»): un nombre completo ya
+                // apuntado no se pisa con una versión más corta que empieza igual.
+                const nombreNuevo = String(p.guest.guestName || "");
+                const nombreActual = String(previa.guest_name || "");
+                const primeraPalabra = nombreNuevo.replace(/\.$/, "").split(/\s+/)[0].toLowerCase();
+                const esAbreviatura = nombreActual.length > nombreNuevo.length &&
+                    !!primeraPalabra && nombreActual.toLowerCase().startsWith(primeraPalabra);
+                if (nombreActual !== nombreNuevo && !esAbreviatura) cambios.guest_name = nombreNuevo;
                 if (previa.status === "cancelled") cambios.status = "confirmed";
                 if (p.guest.locator && previa.external_locator !== p.guest.locator) {
                     cambios.external_locator = p.guest.locator;
@@ -477,9 +487,12 @@ async function syncOne(
                 external_locator: p.guest.locator || null,
                 booking_code: await bookingCodeFromUid(p.uid),
                 payment_status: "pending",
+                // Holidu cobra al huésped y abona tras la llegada: nada que cobrar en persona.
+                ...(channel === "holidu" ? { payment_method: "ota", payment_holder: "Holidu" } : {}),
                 internal_notes: `Importada del calendario de ${CHANNEL_LABEL[channel]} el ` +
                     `${new Date().toLocaleDateString("es-ES")}. El importe no viaja por iCal: ` +
-                    `hay que ponerlo a mano.`,
+                    `hay que ponerlo a mano.` +
+                    (channel === "holidu" ? " Lo cobra Holidu al huésped y lo abona tras la llegada: NO cobrar nada en persona." : ""),
             };
             for (const f of EMAIL_FLAGS) fila[f] = ahora;
 
@@ -704,6 +717,7 @@ Deno.serve(async (req) => {
 
     const cols = ["id", "slug", "name", "airbnb_ical_url", "booking_ical_url"];
     if (caps.extraUrlCols) cols.push("escapada_ical_url", "casasrurales_ical_url");
+    if (caps.holiduUrlCol) cols.push("holidu_ical_url");
 
     let q = supabase.from("apartments").select(cols.join(", ")).eq("is_active", true).order("id");
     if (soloApt) q = q.eq("id", soloApt);
@@ -717,6 +731,7 @@ Deno.serve(async (req) => {
         for (const ch of CHANNELS) {
             if (soloCanales && !soloCanales.includes(ch.key)) continue;
             if (!caps.extraUrlCols && (ch.key === "escapada" || ch.key === "casasrurales")) continue;
+            if (!caps.holiduUrlCol && ch.key === "holidu") continue;
 
             const override = feedOverride?.[`${apt.id}:${ch.key}`];
             const configurada = (apt[ch.column] as string | null) || null;
