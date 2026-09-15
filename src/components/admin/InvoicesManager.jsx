@@ -124,7 +124,14 @@ const InvoicesManager = () => {
             .in('status', ['confirmed', 'completed'])
             .order('check_in', { ascending: false })
             .limit(200);
-        const conFactura = new Set(filas.filter((f) => f.tipo !== 'rectificativa').map((f) => f.booking_id));
+        // Una factura ANULADA (abonada entera por una rectificativa) no cuenta:
+        // esa reserva vuelve a «sin factura» para poder emitir la buena.
+        const abonadoDe = (id) => filas
+            .filter((r) => r.rectifica_invoice_id === id)
+            .reduce((acc, r) => acc + Math.abs(Number(r.total) || 0), 0);
+        const conFactura = new Set(filas
+            .filter((f) => f.tipo !== 'rectificativa' && abonadoDe(f.id) < (Number(f.total) || 0) - 0.001)
+            .map((f) => f.booking_id));
         setSinFacturar((reservas || []).filter((r) => !conFactura.has(r.id)));
 
         setLoading(false);
@@ -384,6 +391,12 @@ const InvoicesManager = () => {
                                                 {numeroFactura(i.serie, i.numero)}
                                             </span>
                                             {esRect && <span className="block text-[10px] font-sans font-normal text-rose-600">Rectificativa</span>}
+                                            {!esRect && invoices.some((r) => r.rectifica_invoice_id === i.id) && (
+                                                <span className="block text-[10px] font-sans font-normal text-rose-600">
+                                                    {Math.abs(invoices.filter((r) => r.rectifica_invoice_id === i.id).reduce((a, r) => a + Number(r.total || 0), 0)) >= (Number(i.total) || 0) - 0.001
+                                                        ? 'Anulada' : 'Con abono'}
+                                                </span>
+                                            )}
                                             {i.tipo === 'simplificada' && <span className="block text-[10px] font-sans font-normal text-gray-400">Simplificada</span>}
                                         </td>
                                         <td className="px-4 py-3 tabular-nums text-gray-700 whitespace-nowrap">{fmtFecha(i.fecha_emision)}</td>

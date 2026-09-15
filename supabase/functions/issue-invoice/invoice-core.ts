@@ -250,20 +250,52 @@ export async function resolveReceptor(
 }
 
 /**
+ * Estado de facturación de una reserva: cada factura original con sus
+ * rectificativas y si ha quedado ANULADA (abonada entera). Una factura
+ * anulada no cuenta como «la factura de la reserva»: la reserva vuelve a
+ * poder facturarse (con número nuevo), que es justo lo que hace falta
+ * cuando cambian las fechas o el precio y no vale con un abono parcial.
+ */
+export interface InvoiceState {
+    original: InvoiceRow;
+    rectificativas: InvoiceRow[];
+    abonado: number;      // suma de los abonos, en positivo
+    anulada: boolean;     // abonado >= total
+}
+
+export async function invoiceStateForBooking(sb: SupabaseClient, bookingId: number): Promise<InvoiceState[]> {
+    const { data } = await sb
+        .from("invoices")
+        .select("*")
+        .eq("booking_id", bookingId)
+        .order("created_at", { ascending: true });
+    const rows = (data as InvoiceRow[]) || [];
+    return rows
+        .filter((r) => r.tipo !== "rectificativa")
+        .map((original) => {
+            const rectificativas = rows.filter((r) => r.rectifica_invoice_id === original.id);
+            const abonado = round2(rectificativas.reduce((acc, r) => acc + Math.abs(toNum(r.total)), 0));
+            return { original, rectificativas, abonado, anulada: abonado >= round2(toNum(original.total)) - 0.001 };
+        });
+}
+
+/** La factura VIVA de la reserva (original no anulada), o null. */
+export async function liveInvoiceForBooking(sb: SupabaseClient, bookingId: number): Promise<InvoiceRow | null> {
+    const estados = await invoiceStateForBooking(sb, bookingId);
+    return estados.find((e) => !e.anulada)?.original ?? null;
+}
+
+/**
  * Emite la factura ordinaria de una reserva. IDEMPOTENTE: si ya existe una
- * factura no rectificativa para esa reserva, devuelve la que hay.
+ * factura VIVA para esa reserva, devuelve la que hay.
  */
 export async function issueInvoice(
     sb: SupabaseClient, booking: BookingRow, receptorOverride: Receptor = {},
 ): Promise<{ invoice: InvoiceRow; created: boolean }> {
-    const existing = await sb
-        .from("invoices")
-        .select("*")
-        .eq("booking_id", booking.id)
-        .neq("tipo", "rectificativa")
-        .limit(1)
-        .maybeSingle();
-    if (existing.data) return { invoice: existing.data as InvoiceRow, created: false };
+    // Si ya hay una factura viva se devuelve esa; una anulada por rectificativa
+    // no bloquea: se emite otra con número nuevo.
+    const existing = await liveInvoiceForBooking(sb, booking.id);
+    if (existing) return { invoice: existing, created: false };
 
     const receptor = await resolveReceptor(sb, booking, receptorOverride);
     const aptName = booking.apartments?.name || "el apartamento";

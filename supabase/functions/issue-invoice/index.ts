@@ -21,7 +21,7 @@
 import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { PDF_BUCKET, SIGNED_URL_TTL, formatInvoiceNumber } from "./config.ts";
 import {
-    getCobroInfo, issueInvoice, issueRectificative,
+    getCobroInfo, invoiceStateForBooking, issueInvoice, issueRectificative, liveInvoiceForBooking,
     type BookingRow, type InvoiceRow, type CobroInfo,
 } from "./invoice-core.ts";
 import { renderInvoicePdf } from "./pdf.ts";
@@ -245,10 +245,18 @@ Deno.serve(async (req) => {
                 } else {
                     booking = await loadBooking(ref);
                     if (!booking) return json(404, { error: "booking_not_found" });
-                    const { data } = await sb.from("invoices").select("*")
-                        .eq("booking_id", booking.id).neq("tipo", "rectificativa").limit(1).maybeSingle();
-                    inv = data as InvoiceRow | null;
-                    if (!inv) return json(404, { error: "invoice_not_found_for_booking" });
+                    // Solo la factura VIVA: una anulada por rectificativa no se manda.
+                    inv = await liveInvoiceForBooking(sb, booking.id);
+                    if (!inv) {
+                        const estados = await invoiceStateForBooking(sb, booking.id);
+                        return json(estados.length ? 409 : 404, {
+                            error: estados.length ? "invoice_anulada" : "invoice_not_found_for_booking",
+                        });
+                    }
+                }
+                if (inv.tipo !== "rectificativa" && booking) {
+                    const estado = (await invoiceStateForBooking(sb, booking.id)).find((e) => e.original.id === inv!.id);
+                    if (estado?.anulada) return json(409, { error: "invoice_anulada" });
                 }
 
                 const cobro = booking ? await getCobroInfo(sb, booking) : null;
@@ -314,18 +322,20 @@ Deno.serve(async (req) => {
                 const booking = await loadBooking(ref);
                 if (!booking) return json(404, { error: "booking_not_found" });
                 const cobro = await getCobroInfo(sb, booking);
-                const { data } = await sb.from("invoices").select("*")
-                    .eq("booking_id", booking.id).order("created_at", { ascending: true });
-                const rows = (data as InvoiceRow[]) || [];
-                const principal = rows.find((r) => r.tipo !== "rectificativa") || null;
+                const estados = await invoiceStateForBooking(sb, booking.id);
+                const viva = estados.find((e) => !e.anulada) || null;
                 return json(200, {
                     ok: true,
                     bookingCode: booking.booking_code,
-                    tieneFactura: Boolean(principal),
+                    tieneFactura: Boolean(viva),
                     cobro,
-                    factura: principal ? await present(principal, cobro, booking.booking_code) : null,
+                    factura: viva ? await present(viva.original, cobro, booking.booking_code) : null,
+                    abonado: viva?.abonado ?? 0,
+                    anuladas: await Promise.all(
+                        estados.filter((e) => e.anulada).map((e) => present(e.original, null, booking.booking_code)),
+                    ),
                     rectificativas: await Promise.all(
-                        rows.filter((r) => r.tipo === "rectificativa").map((r) => present(r, null, booking.booking_code)),
+                        estados.flatMap((e) => e.rectificativas).map((r) => present(r, null, booking.booking_code)),
                     ),
                 });
             }

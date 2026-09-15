@@ -105,28 +105,57 @@ export async function cargarParte(bookingId) {
 }
 
 /** La factura principal de una reserva (no la rectificativa). null si no hay. */
-export async function cargarFactura(bookingId) {
+/**
+ * Facturas de una reserva, con su estado. Una factura original puede tener
+ * rectificativas (abonos, los hace Jesús desde el panel completo); si los
+ * abonos suman el total, la factura está ANULADA y la reserva vuelve a
+ * poder facturarse. Devuelve las originales con `abonado`, `anulada` y
+ * `rectificativas` (cada una con fecha y motivo).
+ */
+function agruparFacturas(filas) {
+    const todas = filas || [];
+    return todas
+        .filter((f) => f.tipo !== 'rectificativa')
+        .map((original) => {
+            const rectificativas = todas.filter((r) => r.rectifica_invoice_id === original.id);
+            const abonado = Math.round(rectificativas.reduce((acc, r) => acc + Math.abs(Number(r.total) || 0), 0) * 100) / 100;
+            return { ...original, rectificativas, abonado, anulada: abonado >= (Number(original.total) || 0) - 0.001 };
+        });
+}
+
+const COLUMNAS_FACTURA = 'id, booking_id, serie, numero, fecha_emision, tipo, total, pdf_url, email_sent_at, receptor_email, rectifica_invoice_id, motivo_rectificacion';
+
+/** { factura: la VIVA (o null), anuladas: las que Jesús anuló con una rectificativa }. */
+export async function cargarEstadoFactura(bookingId) {
     try {
         const { data, error } = await supabase
             .from('invoices')
-            .select('id, serie, numero, fecha_emision, tipo, total, pdf_url, email_sent_at, receptor_email')
+            .select(COLUMNAS_FACTURA)
             .eq('booking_id', bookingId)
-            .neq('tipo', 'rectificativa')
-            .order('created_at', { ascending: true })
-            .limit(1).maybeSingle();
-        if (error) return null;
-        return data || null;
-    } catch { return null; }
+            .order('created_at', { ascending: true });
+        if (error) return { factura: null, anuladas: [] };
+        const originales = agruparFacturas(data);
+        return {
+            factura: originales.find((f) => !f.anulada) || null,
+            anuladas: originales.filter((f) => f.anulada),
+        };
+    } catch { return { factura: null, anuladas: [] }; }
 }
 
+/** Solo la factura viva (o null). */
+export async function cargarFactura(bookingId) {
+    return (await cargarEstadoFactura(bookingId)).factura;
+}
+
+/** Por reserva, la factura VIVA. Una anulada no cuenta: esa reserva vuelve a «sin factura». */
 export async function cargarFacturasDe(bookingIds) {
     if (!bookingIds?.length) return {};
     try {
         const { data, error } = await supabase
-            .from('invoices').select('id, booking_id, tipo').in('booking_id', bookingIds).neq('tipo', 'rectificativa');
+            .from('invoices').select('id, booking_id, tipo, total, rectifica_invoice_id').in('booking_id', bookingIds);
         if (error) return {};
         const por = {};
-        (data || []).forEach((f) => { por[f.booking_id] = f; });
+        agruparFacturas(data).forEach((f) => { if (!f.anulada) por[f.booking_id] = f; });
         return por;
     } catch { return {}; }
 }
@@ -209,6 +238,7 @@ const FALLOS_FACTURA = {
     booking_not_invoiceable: 'Esta reserva está cancelada: no se le puede hacer factura.',
     invoice_not_found: 'Esa factura ya no está.',
     invoice_not_found_for_booking: 'Esta reserva todavía no tiene factura. Hazla primero.',
+    invoice_anulada: 'La factura de esta reserva está anulada: no se manda. Si hace falta, haz una nueva.',
     sin_email: 'Este huésped no tiene correo apuntado, así que no se le puede mandar. Apúntale el correo en su ficha.',
     ya_enviada: 'Esta factura ya se le mandó.',
     forbidden: NO_GUARDADO,

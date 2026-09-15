@@ -12,7 +12,7 @@ import {
     enlaceLlamar, enlaceWhatsApp,
 } from './dinero/formato';
 import {
-    cargarReserva, cargarCobros, cargarParte, cargarFactura,
+    cargarReserva, cargarCobros, cargarParte, cargarEstadoFactura,
     cargarApartamentos, guardarNotas,
 } from './dinero/datos';
 import HojaCobro from './dinero/HojaCobro';
@@ -47,7 +47,8 @@ const ReservaFicha = ({ ir, params = {} }) => {
     const [apartamentos, setApartamentos] = useState([]);
     const [cobros, setCobros] = useState([]);
     const [parte, setParte] = useState(null);
-    const [factura, setFactura] = useState(null);
+    const [factura, setFactura] = useState(null);       // la VIVA
+    const [anuladas, setAnuladas] = useState([]);       // anuladas por rectificativa (Jesús)
     const [hoja, setHoja] = useState(null);   // cobro | parte | factura | cambiar | cancelar
 
     const refrescar = useCallback(async () => {
@@ -55,9 +56,9 @@ const ReservaFicha = ({ ir, params = {} }) => {
             cargarReserva(reservaId),
             cargarCobros(reservaId),
             cargarParte(reservaId),
-            cargarFactura(reservaId),
+            cargarEstadoFactura(reservaId),
         ]);
-        setReserva(r); setCobros(c); setParte(p); setFactura(f);
+        setReserva(r); setCobros(c); setParte(p); setFactura(f.factura); setAnuladas(f.anuladas);
         return r;
     }, [reservaId]);
 
@@ -156,9 +157,9 @@ const ReservaFicha = ({ ir, params = {} }) => {
                 <Aviso tono="info" titulo="Esta reserva está cancelada."
                     texto="Las fechas están libres y no se le pide dinero." />
             )}
-            {cancelada && factura && factura.tipo !== 'rectificativa' && (
+            {cancelada && factura && (
                 <Aviso tono="atencion" titulo={`Tiene una factura hecha el ${diaMesYAno(factura.fecha_emision)} y la reserva se ha cancelado.`}
-                    texto="Una factura hecha no se borra: hay que hacer una factura rectificativa. Todavía no se hace desde aquí; díselo a Jesús." />
+                    texto="Una factura hecha no se borra: hay que hacer una factura rectificativa. Eso lo hace Jesús desde la vista completa; díselo." />
             )}
 
             {/* ---------- EL DINERO ---------- */}
@@ -209,10 +210,15 @@ const ReservaFicha = ({ ir, params = {} }) => {
                     <span className="text-base font-bold text-text-primary">Factura:</span>
                     {factura ? (
                         <Chip tono="verde" icono={Check}>Hecha el {diaMesYAno(factura.fecha_emision)}</Chip>
+                    ) : anuladas.length > 0 ? (
+                        <Chip tono="rojo" icono={XCircle}>Anulada{cancelada || reserva.invoice_not_needed ? '' : ' · falta hacer otra'}</Chip>
                     ) : reserva.invoice_not_needed ? (
                         <Chip tono="neutro">No hace falta</Chip>
                     ) : (
                         <Chip tono="ambar">Sin hacer</Chip>
+                    )}
+                    {factura && factura.abonado > 0 && (
+                        <Chip tono="ambar">Con un abono de {formatoEuro(factura.abonado)}</Chip>
                     )}
                 </div>
             </Tarjeta>
@@ -268,7 +274,7 @@ const ReservaFicha = ({ ir, params = {} }) => {
                 onVerDatos={() => { setHoja(null); ir('parte', { reservaId: reserva.id }); }}
             />
             <HojaFactura
-                abierta={hoja === 'factura'} reserva={reserva} factura={factura}
+                abierta={hoja === 'factura'} reserva={reserva} factura={factura} anuladas={anuladas}
                 onCerrar={() => setHoja(null)}
                 onCambio={refrescar}
             />
