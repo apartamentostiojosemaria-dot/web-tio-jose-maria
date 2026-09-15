@@ -568,3 +568,16 @@ A partir de ahí: entra en `tiojosemaria.com/panel`, escribe su correo, recibe u
 código de 6 cifras y entra. La sesión se queda guardada en su móvil.
 
 **Para quitarle el acceso**: `update profiles set is_active = false where email = '…'`.
+
+## 13. Dominios — estado desde el 15-sep-2026
+
+| Dominio | Registrador | DNS | Sirve | Caduca | Autorrenovación |
+|---|---|---|---|---|---|
+| `tiojosemaria.com` | Hostinger | (sin cambios) | la web (VPS Hostinger, EasyPanel) | 2027-12-28 | ✅ |
+| `casaruralcazorla.es` | Hostinger (transferido desde Loading; aceptado en Red.es el 9-sep, visible en hPanel el 15-sep) | Hostinger (`lunar` / `solar.dns-parking.com`; antes Cloudflare) | **redirección 301 → `https://tiojosemaria.com`** (hPanel › dominio › DNS › Redirecciones) | 2026-11-23 (la transferencia .es NO alarga el plazo) | ✅ |
+
+- Redirección comprobada el 15-sep contra el redirector de Hostinger (`2.57.91.91`): `http://casaruralcazorla.es` y `http://www.` → `301 https://tiojosemaria.com`. La propagación del cambio de NS tarda hasta 24 h; hasta entonces sigue respondiendo la web vieja de Loading.
+- SSL del dominio redirigido: pedido en hPanel (pestaña SSL) el 15-sep; se emite cuando propaguen los NS. Sin él, `https://casaruralcazorla.es` (los enlaces antiguos) no redirige — **comprobar el 16-sep**.
+- La zona antigua de Cloudflare tenía MX de IONOS (`mx00/mx01.ionos.es`) y SPF de IONOS. **No se replican** (decisión 9-sep: el correo de la casa es el Gmail). Si alguien dice que escribe a `@casaruralcazorla.es` y no llega, es por esto.
+- Titular en hPanel («Propiedad del dominio»): José Pedro Martínez Padrón, `jpmartinezpadron@hotmail.com` (perfil de contacto de la cuenta Hostinger). El titular ante Red.es debería seguir siendo el padre; comprobar en el WHOIS de nic.es si hace falta acreditar titularidad.
+- Loading: baja pedida por ticket 9451686 (9-sep); revisión y rescate de correo/web viejas → evento de calendario del 13-oct.
