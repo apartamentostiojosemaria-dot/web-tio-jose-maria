@@ -7,13 +7,18 @@
 // Disparadores:
 //   - stripe-webhook tras marcar booking confirmed → confirmation
 //   - Trigger.dev cron diario daily-booking-emails → resto
+//   - El panel de la madre (un toque, nunca solo) → booking_changed y
+//     booking_cancelled. Estas dos EXIGEN sesión de staff o la clave de
+//     servicio: con solo el código de reserva cualquiera podría decirle a
+//     un huésped que su reserva está cancelada. `booking_changed` se puede
+//     repetir (cada cambio, su aviso); `booking_cancelled` no.
 //
 // Env vars requeridas:
 //   RESEND_API_KEY                 re_...
 //   PUBLIC_SITE_URL                https://tiojosemaria.com (opcional)
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { render, TEMPLATE_TO_FLAG, type TemplateKey } from "../_shared/templates/index.ts";
+import { render, REPEATABLE_TEMPLATES, TEMPLATE_TO_FLAG, type TemplateKey } from "../_shared/templates/index.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -27,7 +32,35 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 const VALID_TEMPLATES: TemplateKey[] = [
     "confirmation", "reminder_7d", "reminder_24h", "arrival",
     "departure", "review_request", "reactivation", "operator_new_booking",
+    "booking_changed", "booking_cancelled",
 ];
+
+/** Las que manda una persona desde el panel: solo staff (o servicio). */
+const STAFF_ONLY_TEMPLATES: TemplateKey[] = ["booking_changed", "booking_cancelled"];
+
+/** Correo de relleno de las reservas de canal sin correo: ahí no se escribe. */
+const PLACEHOLDER_DOMAIN = "@example.invalid";
+
+function jwtRole(token: string): string | null {
+    try {
+        const payload = token.split(".")[1];
+        if (!payload) return null;
+        const txt = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+        return (JSON.parse(txt) as { role?: string }).role ?? null;
+    } catch { return null; }
+}
+
+/** Mismo criterio que issue-invoice: clave de servicio, o usuario con rol de gestión. */
+async function esStaffOServicio(req: Request): Promise<boolean> {
+    const token = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
+    if (!token) return false;
+    if (token === SUPABASE_SERVICE_ROLE_KEY || jwtRole(token) === "service_role") return true;
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data?.user) return false;
+    const { data: profile } = await supabase.from("profiles").select("role").eq("id", data.user.id).maybeSingle();
+    const role = (profile as { role?: string } | null)?.role;
+    return !!role && ["admin", "staff", "contabilidad"].includes(role);
+}
 
 const CORS_HEADERS = {
     "Access-Control-Allow-Origin": "*",
@@ -62,7 +95,10 @@ Deno.serve(async (req) => {
     if (req.method !== "POST") return json(405, { error: "method_not_allowed" });
     if (!RESEND_API_KEY) return json(503, { error: "resend_not_configured" });
 
-    let body: { bookingCode?: string; template?: string };
+    let body: {
+        bookingCode?: string; template?: string;
+        previous?: { check_in?: string; check_out?: string; apartment_name?: string } | null;
+    };
     try { body = await req.json(); } catch { return json(400, { error: "invalid_json" }); }
 
     const code = (body.bookingCode || "").trim().toUpperCase();
@@ -70,13 +106,17 @@ Deno.serve(async (req) => {
     if (!code || !/^TJM-[A-Z0-9]{6}$/.test(code)) return json(400, { error: "invalid_booking_code" });
     if (!template || !VALID_TEMPLATES.includes(template)) return json(400, { error: "invalid_template" });
 
+    if (STAFF_ONLY_TEMPLATES.includes(template) && !(await esStaffOServicio(req))) {
+        return json(403, { error: "forbidden" });
+    }
+
     const flag = TEMPLATE_TO_FLAG[template];
 
     // Cargar booking + apartment (incluye images para mostrar foto en el email)
     const { data: booking, error: bErr } = await supabase
         .from("guest_bookings")
         .select(`id, booking_code, guest_name, guest_email, check_in, check_out,
-                 total_price, apartment_id, status,
+                 total_price, apartment_id, status, paid_amount, channel, internal_notes,
                  ${flag},
                  apartments(name, slug, images)`)
         .eq("booking_code", code)
@@ -84,9 +124,28 @@ Deno.serve(async (req) => {
 
     if (bErr || !booking) return json(404, { error: "booking_not_found" });
     if (!booking.guest_email) return json(400, { error: "no_guest_email" });
+    if (booking.guest_email.toLowerCase().endsWith(PLACEHOLDER_DOMAIN)) {
+        return json(200, { ok: true, skipped: "placeholder_email" });
+    }
 
-    // Idempotencia: si ya se envió, no reenviar
-    if (booking[flag as keyof typeof booking]) {
+    // Los avisos del panel van solo a quien reservó directo: al huésped de
+    // Booking o Airbnb le escribe el canal, y escribirle nosotros encima
+    // confunde (y en Airbnb el correo ni siquiera lo tenemos).
+    if (STAFF_ONLY_TEMPLATES.includes(template)) {
+        const canal = String(booking.channel || "").toLowerCase();
+        if (["booking", "airbnb", "escapada", "casasrurales"].includes(canal)) {
+            return json(200, { ok: true, skipped: "channel_booking", channel: canal });
+        }
+        if (template === "booking_cancelled" && booking.status !== "cancelled") {
+            return json(409, { error: "booking_not_cancelled" });
+        }
+        if (template === "booking_changed" && booking.status === "cancelled") {
+            return json(409, { error: "booking_cancelled" });
+        }
+    }
+
+    // Idempotencia: si ya se envió, no reenviar (salvo las que se repiten a propósito)
+    if (!REPEATABLE_TEMPLATES.includes(template) && booking[flag as keyof typeof booking]) {
         return json(200, { ok: true, skipped: "already_sent", sentAt: booking[flag as keyof typeof booking] });
     }
 
@@ -140,6 +199,28 @@ Deno.serve(async (req) => {
         customer_warnings,
         customer_tags,
         customer_preferences,
+        previous: (template === "booking_changed" && body.previous && body.previous.check_in && body.previous.check_out)
+            ? {
+                check_in: String(body.previous.check_in),
+                check_out: String(body.previous.check_out),
+                apartment_name: String(body.previous.apartment_name || apt.name),
+            }
+            : null,
+        // Lo que se le devuelve NO se fía del cliente: `cancel_booking` lo dejó
+        // escrito en las notas («… a devolver 135 EUR»); si no está, se
+        // recalcula con la misma regla (gratis con 7 días o más de antelación).
+        ...(template === "booking_cancelled" ? (() => {
+            const pagado = Number(booking.paid_amount || 0);
+            const notas = String((booking as { internal_notes?: string | null }).internal_notes || "");
+            const anotado = [...notas.matchAll(/a devolver ([0-9]+(?:[.,][0-9]+)?) EUR/gi)].pop();
+            if (anotado) {
+                const devolver = Number(anotado[1].replace(",", "."));
+                return { paid_amount: pagado, refund_amount: devolver, free_cancellation: devolver > 0 || pagado === 0 };
+            }
+            const dias = Math.round((Date.parse(booking.check_in + "T00:00:00Z") - Date.parse(new Date().toISOString().slice(0, 10) + "T00:00:00Z")) / 86400_000);
+            const gratis = dias >= 7;
+            return { paid_amount: pagado, refund_amount: gratis ? Math.max(pagado, 0) : 0, free_cancellation: gratis };
+        })() : {}),
     };
 
     const { subject, html, from } = render(template, payload);

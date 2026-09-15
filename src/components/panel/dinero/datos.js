@@ -13,7 +13,7 @@
 //    esta capa devuelve `null` y la pantalla lo enseña en gris. Nunca revienta.
 
 import { supabase } from '../../../lib/supabase';
-import { sinPruebas } from '../ui';
+import { sinPruebas, vinoDeFuera } from '../ui';
 
 /** Reservas que siguen vivas y por tanto pueden deber dinero. Una cancelada nunca. */
 export const ESTADOS_QUE_DEBEN = ['confirmed', 'pending', 'completed'];
@@ -235,6 +235,49 @@ export async function mandarFactura(bookingId, { forzar = false } = {}) {
         throw new Error(FALLOS_FACTURA[motivo] || 'No se ha podido mandar el correo. Inténtalo otra vez.');
     }
     return res;
+}
+
+// ───────────────── Avisar al huésped de un cambio o una cancelación ─────────────────
+// Solo a quien reservó directo y tiene correo de verdad; a los de Booking o
+// Airbnb les avisa el canal. Lo decide ella con un toque, nunca sale solo.
+
+const CORREO_DE_RELLENO = '@example.invalid';
+
+/** ¿Tiene sentido ofrecerle a ella mandar un correo a este huésped? */
+export function sePuedeAvisarPorCorreo(reserva) {
+    if (!reserva) return false;
+    if (vinoDeFuera(reserva)) return false;
+    const correo = String(reserva.guest_email || '').trim().toLowerCase();
+    if (!correo || !correo.includes('@') || correo.endsWith(CORREO_DE_RELLENO)) return false;
+    return true;
+}
+
+const FALLOS_AVISO = {
+    forbidden: NO_GUARDADO,
+    booking_not_found: 'No encuentro esa reserva.',
+    no_guest_email: 'Este huésped no tiene correo apuntado.',
+    booking_not_cancelled: 'La reserva no está cancelada: no se le manda el correo de cancelación.',
+    booking_cancelled: 'La reserva está cancelada: no se le manda el correo de cambio.',
+    resend_not_configured: 'El correo no está configurado por dentro. Avisa a Jesús.',
+    resend_error: 'El correo no ha salido. Inténtalo otra vez en un momento.',
+};
+
+/**
+ * Manda el aviso de cambio (`booking_changed`, con cómo estaba antes) o de
+ * cancelación (`booking_cancelled`). Devuelve { ok, saltado } y solo lanza
+ * con un mensaje en castellano.
+ */
+export async function avisarPorCorreo(reserva, plantilla, { antes = null } = {}) {
+    const cuerpo = { bookingCode: reserva.booking_code, template: plantilla };
+    if (plantilla === 'booking_changed' && antes) cuerpo.previous = antes;
+    const { data, error } = await supabase.functions.invoke('send-booking-email', { body: cuerpo });
+    if (error) {
+        let motivo = null;
+        try { motivo = (await error.context?.json?.())?.error; } catch { /* sin cuerpo */ }
+        throw new Error(FALLOS_AVISO[motivo] || 'No se ha podido mandar el correo. Inténtalo otra vez.');
+    }
+    if (data?.error) throw new Error(FALLOS_AVISO[data.error] || 'No se ha podido mandar el correo.');
+    return { ok: !!data?.ok && !data?.skipped, saltado: data?.skipped || null };
 }
 
 /** Enlace firmado para ver el PDF de una factura ya hecha. */

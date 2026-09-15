@@ -17,6 +17,12 @@ interface BookingPayload {
     check_in: string;
     check_out: string;
     total_price: number;
+    /** Solo booking_changed: cómo estaba antes del cambio (opcional). */
+    previous?: { check_in: string; check_out: string; apartment_name: string } | null;
+    /** Solo booking_cancelled: lo que se le devuelve y lo que había pagado. */
+    refund_amount?: number;
+    paid_amount?: number;
+    free_cancellation?: boolean;
 }
 
 const SITE_URL = "https://tiojosemaria.com";
@@ -86,7 +92,7 @@ const bookingSummary = (b: BookingPayload) => `
   </td></tr>
 </table>`;
 
-type TemplateKey = "confirmation" | "reminder_7d" | "reminder_24h" | "arrival" | "departure" | "review_request" | "reactivation" | "operator_new_booking";
+type TemplateKey = "confirmation" | "reminder_7d" | "reminder_24h" | "arrival" | "departure" | "review_request" | "reactivation" | "operator_new_booking" | "booking_changed" | "booking_cancelled";
 
 interface RenderedEmail { subject: string; html: string; from: string; }
 
@@ -243,6 +249,61 @@ function escapeHtml(s: string | null | undefined): string {
     return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+// ---------------------------------------------------------------------------
+// Cambios y cancelaciones hechos desde el panel (los dispara Mari Carmen, un
+// toque por reserva; solo a quien reservó directo — a los de Booking/Airbnb
+// les avisa el canal).
+// ---------------------------------------------------------------------------
+const nightsBetween = (a: string, b: string) =>
+    Math.round((Date.parse(b + "T00:00:00Z") - Date.parse(a + "T00:00:00Z")) / 86400_000);
+
+const renderBookingChanged = (b: BookingPayload): RenderedEmail => {
+    const p = b.previous;
+    const cambioApto = p && p.apartment_name && p.apartment_name !== b.apartment_name;
+    const cambioFechas = p && (p.check_in !== b.check_in || p.check_out !== b.check_out);
+    const antes = p
+        ? `<p style="font-size:14px;color:#8C8468;margin:0 0 4px;">Antes: ${p.apartment_name}, del ${formatDate(p.check_in)} al ${formatDate(p.check_out)}.</p>`
+        : "";
+    const noches = nightsBetween(b.check_in, b.check_out);
+    return {
+        from: EMAIL_FROM,
+        subject: `Tu reserva ha cambiado — ${b.booking_code}`,
+        html: shell(
+            `Hola ${firstName(b.guest_name)}, hemos actualizado tu reserva`,
+            `<p>Tal y como hemos hablado, tu reserva queda así${cambioApto && !cambioFechas ? " (cambia el apartamento)" : cambioFechas && !cambioApto ? " (cambian las fechas)" : ""}:</p>
+            ${antes}
+            ${bookingSummary(b)}
+            <p>${noches === 1 ? "Una noche" : `${noches} noches`} en <strong>${b.apartment_name}</strong>, con entrada el ${formatDate(b.check_in)} y salida el ${formatDate(b.check_out)}. El total que aparece arriba es el precio actual de la reserva.</p>
+            <p>Si algo no cuadra con lo que habíamos hablado, contéstanos a este correo o escríbenos por WhatsApp y lo ajustamos.</p>
+            ${SIGNATURE}`,
+            "Ver tu reserva",
+            `${SITE_URL}/reservar/confirmada?code=${b.booking_code}`
+        ),
+    };
+};
+
+const renderBookingCancelled = (b: BookingPayload): RenderedEmail => {
+    const pagado = Number(b.paid_amount || 0);
+    const devolver = Number(b.refund_amount || 0);
+    let dinero = "";
+    if (devolver > 0) {
+        dinero = `<p><strong>Te devolvemos ${formatPrice(devolver)}.</strong> Si pagaste con tarjeta por la web, la devolución llega sola a esa misma tarjeta en unos días. Si pagaste por transferencia o Bizum, te lo ingresamos nosotros; si no lo ves en unos días, escríbenos.</p>`;
+    } else if (pagado > 0) {
+        dinero = `<p>Según nuestras condiciones de cancelación (gratuita hasta 7 días antes de la llegada), el importe pagado (${formatPrice(pagado)}) no se devuelve. Si crees que hay un error, escríbenos y lo miramos.</p>`;
+    }
+    return {
+        from: EMAIL_FROM,
+        subject: `Reserva cancelada — ${b.booking_code}`,
+        html: shell(
+            `Hola ${firstName(b.guest_name)}, tu reserva queda cancelada`,
+            `<p>Hemos cancelado tu reserva en <strong>${b.apartment_name}</strong> del ${formatDate(b.check_in)} al ${formatDate(b.check_out)} (código ${b.booking_code}). Esas fechas vuelven a estar libres.</p>
+            ${dinero}
+            <p>Sentimos que no puedas venir esta vez. Cuando quieras volver a Hinojares, aquí estamos.</p>
+            ${SIGNATURE}`,
+        ),
+    };
+};
+
 export const render = (key: TemplateKey, b: BookingPayload): RenderedEmail => {
     switch (key) {
         case "confirmation":            return renderConfirmation(b);
@@ -253,6 +314,8 @@ export const render = (key: TemplateKey, b: BookingPayload): RenderedEmail => {
         case "review_request":          return renderReviewRequest(b);
         case "reactivation":            return renderReactivation(b);
         case "operator_new_booking":    return renderOperatorNewBooking(b);
+        case "booking_changed":         return renderBookingChanged(b);
+        case "booking_cancelled":       return renderBookingCancelled(b);
     }
 };
 
@@ -265,6 +328,11 @@ export const TEMPLATE_TO_FLAG: Record<TemplateKey, string> = {
     review_request:         "review_request_email_sent_at",
     reactivation:           "reactivation_email_sent_at",
     operator_new_booking:   "operator_notified_at",       // anotamos pero no bloqueamos reenvíos
+    booking_changed:        "change_email_sent_at",       // se anota la última vez; NO bloquea reenvíos
+    booking_cancelled:      "cancellation_email_sent_at",
 };
+
+/** Plantillas que se pueden mandar más de una vez por reserva. */
+export const REPEATABLE_TEMPLATES: TemplateKey[] = ["booking_changed"];
 
 export type { BookingPayload, TemplateKey, RenderedEmail };
