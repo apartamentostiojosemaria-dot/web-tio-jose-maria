@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Users, ChevronLeft, ChevronRight, Check, AlertCircle, ArrowRight, Phone, Mail, User, MapPin } from 'lucide-react';
@@ -33,6 +33,16 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
         end.setHours(23, 59, 59, 999);
         return date >= start && date <= end;
     });
+
+    // Formato YYYY-MM-DD respetando zona horaria local (toISOString convierte
+    // a UTC y rompe fechas en zonas con offset positivo: 2026-09-08 00:00 CEST
+    // pasa a 2026-09-07 22:00 UTC y queda guardado como 7 en BD).
+    const toLocalDateString = (d) => {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    };
 
     const isPastDate = (date) => {
         const today = new Date();
@@ -69,32 +79,61 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
         }
     };
 
-    const priceBreakdown = useMemo(() => {
-        if (!checkIn || !checkOut) return null;
-        let lowNights = 0, highNights = 0;
-        const d = new Date(checkIn);
-        while (d < checkOut) {
-            if (isHighSeason(d)) highNights++; else lowNights++;
-            d.setDate(d.getDate() + 1);
-        }
-        const priceLow = apartment.price_low;
-        const priceHigh = apartment.price_high;
-        const hasPrices = priceLow && priceHigh;
-        const total = hasPrices ? (lowNights * priceLow) + (highNights * priceHigh) : null;
-        return { lowNights, highNights, priceLow, priceHigh, total, nights: lowNights + highNights, hasPrices };
-    }, [checkIn, checkOut, apartment, highSeasons]);
+    // El precio lo dice el motor (`check_availability`), no el navegador:
+    // ahí viven las temporadas, las reglas (última hora, mínimo de noches)
+    // y lo que se enseña en /reservar. Calcularlo aquí a mano daba otro
+    // total en cuanto había una regla activa. Si el motor no responde, se
+    // cae al cálculo simple de temporadas para no dejar el widget mudo.
+    const [priceBreakdown, setPriceBreakdown] = useState(null);
+    useEffect(() => {
+        if (!checkIn || !checkOut) { setPriceBreakdown(null); return; }
+        let vivo = true;
+        const local = () => {
+            let lowNights = 0, highNights = 0;
+            const d = new Date(checkIn);
+            while (d < checkOut) {
+                if (isHighSeason(d)) highNights++; else lowNights++;
+                d.setDate(d.getDate() + 1);
+            }
+            const priceLow = apartment.price_low;
+            const priceHigh = apartment.price_high;
+            const hasPrices = Boolean(priceLow && priceHigh);
+            const total = hasPrices ? (lowNights * priceLow) + (highNights * priceHigh) : null;
+            return { lowNights, highNights, priceLow, priceHigh, total, subtotal: total, discount: null, nights: lowNights + highNights, hasPrices };
+        };
+        (async () => {
+            try {
+                const { data, error: rpcError } = await supabase.rpc('check_availability', {
+                    p_check_in: toLocalDateString(checkIn),
+                    p_check_out: toLocalDateString(checkOut),
+                    p_pax: form.pax,
+                });
+                if (rpcError) throw rpcError;
+                const fila = (data || []).find(r => r.apartment_id === apartment.id);
+                if (!vivo) return;
+                if (!fila) { setPriceBreakdown({ ...local(), noDisponible: true }); return; }
+                const noches = fila.price_breakdown?.breakdown || [];
+                const highNights = noches.filter(n => Number(n.base) === Number(apartment.price_high) && Number(apartment.price_high) !== Number(apartment.price_low)).length;
+                setPriceBreakdown({
+                    lowNights: noches.length - highNights,
+                    highNights,
+                    priceLow: apartment.price_low,
+                    priceHigh: apartment.price_high,
+                    total: Number(fila.total_price),
+                    subtotal: Number(fila.price_breakdown?.subtotal ?? fila.total_price),
+                    discount: fila.price_breakdown?.discount || null,
+                    nights: fila.nights,
+                    hasPrices: true,
+                });
+            } catch (e) {
+                logError('BookingWidget.precio', e);
+                if (vivo) setPriceBreakdown(local());
+            }
+        })();
+        return () => { vivo = false; };
+    }, [checkIn, checkOut, apartment, highSeasons, form.pax]);
 
     const formatDate = (d) => d ? `${d.getDate()} ${MONTH_NAMES[d.getMonth()].substring(0, 3)}` : '\u2014';
-
-    // Formato YYYY-MM-DD respetando zona horaria local (toISOString convierte
-    // a UTC y rompe fechas en zonas con offset positivo: 2026-09-08 00:00 CEST
-    // pasa a 2026-09-07 22:00 UTC y queda guardado como 7 en BD).
-    const toLocalDateString = (d) => {
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        return `${y}-${m}-${day}`;
-    };
 
     const handleSubmit = async () => {
         if (!form.name || !form.email || !checkIn || !checkOut) return;
@@ -236,11 +275,18 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
                                         <span>{priceBreakdown.highNights * priceBreakdown.priceHigh}€</span>
                                     </div>
                                 )}
+                                {priceBreakdown.discount && (
+                                    <div className="flex justify-between text-xs text-green-700 font-bold">
+                                        <span>−{priceBreakdown.discount.pct} % por reservar a última hora</span>
+                                        <span>−{priceBreakdown.discount.amount}€</span>
+                                    </div>
+                                )}
+                                {priceBreakdown.noDisponible && <p className="text-xs text-amber-700 font-bold">Estas fechas no están libres para este apartamento: prueba otras o mira los demás en Reservar.</p>}
                                 {!priceBreakdown.hasPrices && <p className="text-xs text-gray-600 italic">El precio final te lo confirmaremos tras enviar la solicitud.</p>}
                             </motion.div>
                         )}
                         {error && <p className="text-xs text-red-500 flex items-center gap-1" role="alert"><AlertCircle size={12} /> {error}</p>}
-                        <button disabled={!checkIn || !checkOut} onClick={() => setStep(2)} className="w-full py-3.5 rounded-2xl font-bold text-white text-sm flex items-center justify-center gap-2 bg-primary transition-all hover:shadow-lg disabled:opacity-40">
+                        <button disabled={!checkIn || !checkOut || priceBreakdown?.noDisponible} onClick={() => setStep(2)} className="w-full py-3.5 rounded-2xl font-bold text-white text-sm flex items-center justify-center gap-2 bg-primary transition-all hover:shadow-lg disabled:opacity-40">
                             Continuar <ArrowRight size={16} />
                         </button>
                     </motion.div>

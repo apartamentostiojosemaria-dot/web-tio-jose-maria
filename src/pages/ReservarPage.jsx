@@ -294,6 +294,12 @@ const ChooseApartment = ({ checkIn, checkOut, guests, available, onBack, onSelec
                                 )}
                                 <div className="mt-auto flex items-end justify-between flex-wrap gap-3">
                                     <div>
+                                        {apt.price_breakdown?.discount && (
+                                            <p className="text-xs text-gray-500">
+                                                <span className="line-through">{formatPrice(apt.price_breakdown.subtotal)}</span>
+                                                <span className="ml-2 font-bold text-green-700">−{apt.price_breakdown.discount.pct} % última hora</span>
+                                            </p>
+                                        )}
                                         <p className="font-serif text-2xl font-bold text-text-primary">{formatPrice(apt.total_price)}</p>
                                         <p className="text-xs text-gray-500">{apt.nights} {apt.nights === 1 ? 'noche' : 'noches'} · {formatPrice(apt.nightly_avg)}/noche</p>
                                     </div>
@@ -322,6 +328,9 @@ const GuestForm = ({ selected, checkIn, checkOut, guests, form, setForm, holding
             <p className="font-serif text-lg font-bold text-text-primary">{selected.name}</p>
             <p className="text-sm text-gray-600">{checkIn} → {checkOut} · {guests} {guests === 1 ? 'persona' : 'personas'} · {selected.nights} {selected.nights === 1 ? 'noche' : 'noches'}</p>
             <p className="font-serif text-2xl font-bold text-primary mt-2">{formatPrice(selected.total_price)}</p>
+            {selected.price_breakdown?.discount && (
+                <p className="text-xs text-green-700 font-bold">Incluye −{selected.price_breakdown.discount.pct} % por reservar a última hora ({formatPrice(selected.price_breakdown.discount.amount)} menos)</p>
+            )}
         </div>
 
         <h2 className="font-serif text-2xl md:text-3xl font-bold text-text-primary mb-4">Tus datos</h2>
