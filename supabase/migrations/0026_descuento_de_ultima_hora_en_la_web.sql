@@ -2,7 +2,7 @@
 -- =======================================================
 -- Decisión de Jesús (plan de captación, §13 + estudio de descuentos del
 -- 16-sep): en los portales se activa un 10 % si la llegada es en los
--- próximos 5 días. Para que la web siga siendo la más barata, la MISMA
+-- próximos 2 días (Jesús: «5 son muchos»). Para que la web siga siendo la más barata, la MISMA
 -- regla tiene que existir aquí. El motor (`check_availability`) ya sabía
 -- aplicar reglas `last_minute`; lo que faltaba era:
 --
@@ -192,8 +192,8 @@ BEGIN
     ORDER BY total_price ASC;
 END $function$;
 
--- La regla: 10 % menos si la llegada es en los próximos 5 días (misma
+-- La regla: 10 % menos si la llegada es en los próximos 2 días (misma
 -- ventana que en Holidu). Sin fecha de fin: se apaga poniendo active=false.
 INSERT INTO public.pricing_rules (name, rule_type, multiplier, threshold_days, active, priority)
-SELECT 'Última hora: −10 % si entras en los próximos 5 días', 'last_minute', 0.900, 5, true, 10
+SELECT 'Última hora: −10 % si entras en los próximos 2 días', 'last_minute', 0.900, 2, true, 10
 WHERE NOT EXISTS (SELECT 1 FROM public.pricing_rules WHERE rule_type = 'last_minute');
