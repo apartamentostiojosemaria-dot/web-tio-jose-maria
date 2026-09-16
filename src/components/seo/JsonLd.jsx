@@ -26,8 +26,8 @@ const JsonLd = ({ data }) => {
 // dinamicos (reviews + rango de precios real) como un nodo complementario.
 export const HomeJsonLd = ({ reviews, apartments }) => {
     const priceRange = apartments.length > 0
-        ? `${Math.min(...apartments.map(a => Number(a.price_low) || 60))}€ - ${Math.max(...apartments.map(a => Number(a.price_high) || 110))}€`
-        : '60€ - 110€';
+        ? `${Math.min(...apartments.map(a => Number(a.price_low) || 60))}€ - ${Math.max(...apartments.map(a => Number(a.price_high) || 130))}€`
+        : '60€ - 130€';
 
     const data = {
         '@context': 'https://schema.org',
@@ -37,6 +37,14 @@ export const HomeJsonLd = ({ reviews, apartments }) => {
         url: 'https://tiojosemaria.com',
         priceRange,
         numberOfRooms: apartments.length || 4,
+        identifier: 'VTAR/JA/00044',
+        checkinTime: '16:00',
+        checkoutTime: '12:00',
+        petsAllowed: false,
+        sameAs: [
+            'https://www.booking.com/hotel/es/casa-rural-tio-jose-maria.es.html',
+            'https://www.airbnb.es/rooms/11131593',
+        ],
     };
 
     // Solo emitimos AggregateRating si hay reseñas REALES en BD. Inventar un rating
@@ -125,8 +133,8 @@ export const ApartmentJsonLd = ({ apartment, reviews }) => {
             },
             {
                 '@type': 'Offer',
-                name: 'Temporada Alta (Navidad, Semana Santa y puentes)',
-                price: String(apartment.price_high || 70),
+                name: 'Temporada Alta (puentes, Navidad, Semana Santa y verano)',
+                price: String(apartment.price_high || 75),
                 priceCurrency: 'EUR',
                 unitCode: 'DAY',
                 availability: 'https://schema.org/InStock'
