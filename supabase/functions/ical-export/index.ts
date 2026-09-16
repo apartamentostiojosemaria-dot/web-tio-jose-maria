@@ -1,7 +1,7 @@
 // Edge function: ical-export
 // ===========================
 // Publica el calendario de ocupación de un apartamento para que Airbnb,
-// Booking, EscapadaRural y CasasRurales.net lo importen.
+// Booking, EscapadaRural, CasasRurales.net y Holidu lo importen.
 //
 //   GET /ical/{slug}.ics                 -> todo lo que ocupa
 //   GET /ical/{slug}-{canal}.ics         -> todo MENOS lo que vino de ese canal
@@ -47,6 +47,7 @@ const CANALES: Record<string, string> = {
     booking: "Booking",
     escapada: "Escapada Rural",
     casasrurales: "CasasRurales.net",
+    holidu: "Holidu",
 };
 
 const hoy = () => new Date().toISOString().slice(0, 10);
