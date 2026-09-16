@@ -148,7 +148,7 @@ const ReservarPage = () => {
                         <span aria-hidden="true">·</span>
                         <span>Sin intermediarios</span>
                         <span aria-hidden="true">·</span>
-                        <span>VTAR/JA/00044</span>
+                        <span>A/JA/00060</span>
                     </div>
                 </div>
             </nav>

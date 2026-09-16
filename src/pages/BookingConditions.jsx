@@ -33,7 +33,7 @@ const BookingConditions = () => (
                     <li><strong>Domicilio:</strong> Calle Baja 1, 23486 Hinojares, Jaén (España)</li>
                     <li><strong>Teléfono / WhatsApp:</strong> +34 676 34 46 75</li>
                     <li><strong>Email:</strong> apartamentostiojosemaria@gmail.com</li>
-                    <li><strong>Inscripción turística:</strong> Vivienda Turística de Alojamiento Rural, Registro de Turismo de Andalucía, código <strong>VTAR/JA/00044</strong>.</li>
+                    <li><strong>Inscripción turística:</strong> Apartamentos turísticos (conjunto rural, 1 llave), Registro de Turismo de Andalucía, código <strong>A/JA/00060</strong>.</li>
                 </ul>
                 <p className="text-gray-700 leading-relaxed mb-4">
                     Más datos de identificación en el <Link to="/aviso-legal" className="underline text-rural-700">Aviso legal</Link>.

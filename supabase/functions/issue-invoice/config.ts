@@ -35,7 +35,7 @@ export const EMISOR = {
     direccion: "Calle Baja 1, 23486 Hinojares, Jaén, España",
     // Datos del establecimiento (no fiscales, pero van en el PDF)
     alojamiento: "Apartamentos Rurales Tío José María",
-    registroTuristico: "VTAR/JA/00044",
+    registroTuristico: "A/JA/00060",
     email: "apartamentostiojosemaria@gmail.com",
     telefono: "+34 676 344 675",
     web: "https://tiojosemaria.com",

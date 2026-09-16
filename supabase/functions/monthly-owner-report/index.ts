@@ -109,7 +109,7 @@ Deno.serve(async (req) => {
 
     <p style="margin-top:32px;font-size:12px;color:#8C8468;">Datos extraídos el ${new Date().toLocaleString("es-ES")}. Para detalle completo, entra en el panel de gestión.</p>
   </td></tr>
-  <tr><td style="padding:20px 32px;border-top:1px solid #F0EDE6;background:#FCFBF9;font-size:12px;color:#8C8468;">Apartamentos Rurales Tío José María · RTA VTAR/JA/00044 · NIF 26433801Q</td></tr>
+  <tr><td style="padding:20px 32px;border-top:1px solid #F0EDE6;background:#FCFBF9;font-size:12px;color:#8C8468;">Apartamentos Rurales Tío José María · RTA A/JA/00060 · NIF 26433801Q</td></tr>
 </table></td></tr></table></body></html>`;
 
     const res = await fetch("https://api.resend.com/emails", {

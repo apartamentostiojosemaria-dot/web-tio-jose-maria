@@ -8,7 +8,7 @@ const Footer = () => (
             <div>
                 <h3 className="font-serif text-2xl font-bold mb-6">Tío José María</h3>
                 <p className="text-white/80 text-sm leading-relaxed max-w-xs mb-6">
-                    Vivienda turística de Alojamiento Rural registrada en la Junta de Andalucía (VTAR/JA/00044). Tu casa en Hinojares.
+                    Apartamentos turísticos (conjunto rural) inscritos en el Registro de Turismo de Andalucía (A/JA/00060). Tu casa en Hinojares.
                 </p>
                 <div className="flex gap-3">
                     <a
@@ -22,7 +22,7 @@ const Footer = () => (
                     </a>
                 </div>
                 <p className="mt-6 inline-block text-[10px] uppercase tracking-widest font-bold text-white/70 border border-white/20 px-3 py-1.5 rounded-full">
-                    Registro Turismo Andalucía · VTAR/JA/00044
+                    Registro Turismo Andalucía · A/JA/00060
                 </p>
             </div>
             <div>

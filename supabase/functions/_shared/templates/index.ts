@@ -58,7 +58,7 @@ const shell = (heading: string, body: string, ctaLabel?: string, ctaUrl?: string
       </td></tr>
       <tr><td style="padding:24px 32px;border-top:1px solid #F0EDE6;background:#FCFBF9;font-size:12px;color:#8C8468;">
         <p style="margin:0 0 8px;">¿Cualquier cosa? Estamos a un mensaje: <a href="${WHATSAPP_URL}" style="color:#556B2F;text-decoration:underline;">WhatsApp</a> · <a href="tel:${WHATSAPP_E164}" style="color:#556B2F;text-decoration:underline;">${WHATSAPP_E164}</a> · <a href="mailto:apartamentostiojosemaria@gmail.com" style="color:#556B2F;text-decoration:underline;">email</a></p>
-        <p style="margin:0;">Calle Baja 1, 23486 Hinojares (Jaén) · VTAR/JA/00044 · <a href="${SITE_URL}/privacidad" style="color:#8C8468;">Privacidad</a></p>
+        <p style="margin:0;">Calle Baja 1, 23486 Hinojares (Jaén) · A/JA/00060 · <a href="${SITE_URL}/privacidad" style="color:#8C8468;">Privacidad</a></p>
       </td></tr>
     </table>
   </td></tr></table>

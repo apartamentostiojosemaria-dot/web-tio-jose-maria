@@ -37,7 +37,7 @@ export const HomeJsonLd = ({ reviews, apartments }) => {
         url: 'https://tiojosemaria.com',
         priceRange,
         numberOfRooms: apartments.length || 4,
-        identifier: 'VTAR/JA/00044',
+        identifier: 'A/JA/00060',
         checkinTime: '16:00',
         checkoutTime: '12:00',
         petsAllowed: false,

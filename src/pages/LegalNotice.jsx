@@ -37,8 +37,8 @@ const LegalNotice = () => (
                     <li><strong>Teléfono:</strong> +34 676 34 46 75</li>
                     <li><strong>Email:</strong> apartamentostiojosemaria@gmail.com</li>
                     <li>
-                        <strong>Inscripción turística:</strong> Vivienda Turística de Alojamiento Rural inscrita en el
-                        Registro de Turismo de Andalucía con código <strong>VTAR/JA/00044</strong>.
+                        <strong>Inscripción turística:</strong> Apartamentos turísticos (conjunto rural, categoría 1 llave) inscritos en el
+                        Registro de Turismo de Andalucía con código <strong>A/JA/00060</strong>.
                     </li>
                 </ul>
 

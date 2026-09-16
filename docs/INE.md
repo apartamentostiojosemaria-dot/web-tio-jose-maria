@@ -1,5 +1,11 @@
 # INE — Encuesta mensual de ocupación (EOTR)
 
+> ⚠️ **Corrección 16-sep-2026 (foto de la placa oficial)**: el registro es **A/JA/00060** — «AT», **apartamentos
+> turísticos, conjunto rural, categoría 1 llave, unidades 1 a 5**. No VTAR/JA/00044 (ese número no es el nuestro).
+> Régimen: apartamentos turísticos (Decreto 194/2010), no vivienda turística de alojamiento rural (Decreto 20/2002).
+> Las referencias a «VTAR» y al Decreto 20/2002 de este documento están pendientes de revisar con ese régimen.
+
+
 > Qué se envía, cuándo, quién, cómo, y qué **no** sale del sistema.
 > Paquete P5.1–P5.2 del plan «sustituir MisterPlan».
 > Escrito el 10-sep-2026 contra el cuestionario en vigor **Mod. EOTR-21**.
@@ -23,7 +29,7 @@ mandado el cuestionario con su etiqueta y sus credenciales. Si algún mes deja d
 llegar, no se inventa un envío: se comprueba.
 
 **Datos del alojamiento**: Apartamentos Rurales Tío José María, Hinojares (Jaén),
-4 apartamentos, 12 plazas (2 + 4 + 4 + 2), registro `VTAR/JA/00044`.
+4 apartamentos, 12 plazas (2 + 4 + 4 + 2), registro `A/JA/00060`.
 
 ---
 

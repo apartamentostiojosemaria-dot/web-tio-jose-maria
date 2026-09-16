@@ -189,7 +189,7 @@ const IneManager = () => {
 
         const lineas = [
             fila(`INE - Encuesta de ocupacion en alojamientos de turismo rural (Mod. EOTR-21)`),
-            fila(`Establecimiento`, 'Apartamentos Rurales Tio Jose Maria - Hinojares (Jaen) - VTAR/JA/00044'),
+            fila(`Establecimiento`, 'Apartamentos Rurales Tio Jose Maria - Hinojares (Jaen) - A/JA/00060'),
             fila(`Mes de referencia`, etiquetaMes),
             fila(`Generado`, new Date().toLocaleString('es-ES')),
             '',

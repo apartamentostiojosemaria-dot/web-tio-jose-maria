@@ -1,7 +1,13 @@
 # Check-in legal — qué exige la ley, qué nos falta y cómo debería hacerse
 
+> ⚠️ **Corrección 16-sep-2026 (foto de la placa oficial)**: el registro es **A/JA/00060** — «AT», **apartamentos
+> turísticos, conjunto rural, categoría 1 llave, unidades 1 a 5**. No VTAR/JA/00044 (ese número no es el nuestro).
+> Régimen: apartamentos turísticos (Decreto 194/2010), no vivienda turística de alojamiento rural (Decreto 20/2002).
+> Las referencias a «VTAR» y al Decreto 20/2002 de este documento están pendientes de revisar con ese régimen.
+
+
 > **Alojamiento**: Apartamentos Rurales Tío José María · Calle Baja 1, 23486 Hinojares (Jaén).
-> 4 apartamentos (2+4+4+2 plazas) · Registro turístico **VTAR/JA/00044** · Titular persona física.
+> 4 apartamentos (2+4+4+2 plazas) · Registro turístico **A/JA/00060** · Titular persona física.
 > **Estudio cerrado el 10 de septiembre de 2026.** Todas las fuentes se consultaron ese día.
 >
 > Marcas usadas en todo el documento:
@@ -58,7 +64,7 @@ mucho:
 | Datos del inmueble | Dentro de la transacción (A.4.c) | Bloque propio (B.2) |
 
 **Tío José María es apartado A), ejercicio profesional.** Está inscrito en el Registro de Turismo de
-Andalucía con número VTAR/JA/00044, se anuncia en cinco canales, cobra precio y opera los cuatro
+Andalucía con número A/JA/00060, se anuncia en cinco canales, cobra precio y opera los cuatro
 apartamentos de forma habitual. Todo lo que sigue usa el **apartado A)**. ✅ (calificación jurídica
 propia a partir del art. 5.4; el RD no define «no profesional», lo cual es 🟡 — pero ninguna lectura
 razonable deja fuera a un VTAR registrado con cuatro unidades y cinco canales de venta).
@@ -374,7 +380,7 @@ BOJA).
   decreto:
   - **Art. 35 «Distintivos y publicidad»**: exhibir **placa identificativa en el exterior** y hacer
     constar el **número de inscripción en el Registro de Turismo de Andalucía** en la publicidad.
-    Para nosotros: **VTAR/JA/00044** debe aparecer en la web propia y en los anuncios de Booking,
+    Para nosotros: **A/JA/00060** debe aparecer en la web propia y en los anuncios de Booking,
     Airbnb, Escapada Rural y CasasRurales.net.
   - **Art. 36 «Obligaciones de los titulares»**: comunicar a las personas usuarias los **precios
     máximos y mínimos** y **entregar justificante del pago**.
@@ -754,7 +760,7 @@ en el paso 1.
 | Qué | Norma | Dónde |
 |---|---|---|
 | **Placa identificativa** con la categoría | Decreto 20/2002, art. 35 | fijada en el exterior |
-| **VTAR/JA/00044** en toda la publicidad | Decreto 20/2002, art. 35 | web propia y **los cuatro portales** |
+| **A/JA/00060** en toda la publicidad | Decreto 20/2002, art. 35 | web propia y **los cuatro portales** |
 | **Hojas de quejas y reclamaciones** + cartel anunciador | Decreto 82/2022 · Ley 13/2011 art. 24 | carpeta del recibidor + cartel visible |
 | **Precios máximos y mínimos** y **justificante del pago** | Decreto 20/2002, art. 36 | cartel de precios + recibo |
 | **Factura** desglosada si la piden | Ley 13/2011, art. 24 · Decreto 20/2002, art. 37 | por correo, automática |
@@ -883,7 +889,7 @@ Todas consultadas el **10 de septiembre de 2026**.
    `documento` vs `numeroDocumento`, y a si existen `medioPago` y `caducidadTarjeta` con esos
    nombres. **Se resuelve descargando el WSDL y los XSD desde dentro de la plataforma**, ya
    autenticado, el día del alta. Hasta entonces, ningún cambio de nombres de elemento.
-2. **⚠️ Uno o cuatro establecimientos.** Los cuatro apartamentos comparten VTAR/JA/00044. Si el
+2. **⚠️ Uno o cuatro establecimientos.** Los cuatro apartamentos comparten A/JA/00060. Si el
    Ministerio asigna cuatro códigos de establecimiento, `numHabitaciones` y el código dejan de ser
    constantes y pasan a ser columnas de `apartments`. Se pregunta en el propio trámite del alta.
 3. **🟡 Vigencia formal del Decreto 20/2002 para las VTAR.** Confirmada por su aplicación práctica y

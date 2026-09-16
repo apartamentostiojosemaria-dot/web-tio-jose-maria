@@ -1,5 +1,11 @@
 # Parte de viajeros — cómo se manda y qué falta para poder mandarlo
 
+> ⚠️ **Corrección 16-sep-2026 (foto de la placa oficial)**: el registro es **A/JA/00060** — «AT», **apartamentos
+> turísticos, conjunto rural, categoría 1 llave, unidades 1 a 5**. No VTAR/JA/00044 (ese número no es el nuestro).
+> Régimen: apartamentos turísticos (Decreto 194/2010), no vivienda turística de alojamiento rural (Decreto 20/2002).
+> Las referencias a «VTAR» y al Decreto 20/2002 de este documento están pendientes de revisar con ese régimen.
+
+
 > Última revisión: **10-sep-2026**.
 > Todo lo marcado ✅ está comprobado en fuente oficial o probado contra el
 > sistema. Lo marcado 🟡 viene de integradores y **hay que confirmarlo** con
@@ -163,7 +169,7 @@ digital o Cl@ve del titular.
   o Cl@ve. En `internal_tasks` hay una tarea abierta: «Renovación certificado
   digital del titular». Si está caducado, **eso es lo primero**.
 - Datos del alojamiento a mano: **Apartamentos Rurales Tío José María**,
-  Calle Baja 1, 23486 Hinojares (Jaén), registro turístico **VTAR/JA/00044**.
+  Calle Baja 1, 23486 Hinojares (Jaén), registro turístico **A/JA/00060**.
 
 ### Los pasos
 1. Entrar en **`https://sede.interior.gob.es/portal/sede/informacion_hospedajes`**
@@ -172,7 +178,7 @@ digital o Cl@ve del titular.
 3. Rellenar el formulario de la **entidad** (el titular como arrendador) y el
    de **cada establecimiento**. ⚠️ Antes de esto hay que decidir una cosa de
    negocio: **los cuatro apartamentos comparten el número de registro
-   `VTAR/JA/00044`**. Hay que preguntar en el propio trámite si van como UN
+   `A/JA/00060`**. Hay que preguntar en el propio trámite si van como UN
    establecimiento o como cuatro. Del resultado depende si `SES_ESTABLECIMIENTO`
    es un solo código o hacen falta cuatro (ver §7).
 4. 🟡 **Marcar la casilla «Envío de comunicaciones por servicio web»**, que
@@ -254,7 +260,7 @@ estado.
 ## 7. Lo que hay que decidir (no es código)
 
 1. **¿Uno o cuatro establecimientos?** Los cuatro apartamentos comparten
-   `VTAR/JA/00044`. Si el Ministerio da **cuatro** códigos, hay que cambiar
+   `A/JA/00060`. Si el Ministerio da **cuatro** códigos, hay que cambiar
    `SES_ESTABLECIMIENTO` por un código **por apartamento** (lo natural:
    una columna `ses_codigo_establecimiento` en `apartments`) y leerlo en
    `aContrato()`. Con **uno** solo, se queda como está.

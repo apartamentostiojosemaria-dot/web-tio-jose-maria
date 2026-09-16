@@ -15,7 +15,7 @@ export const ESTABLECIMIENTO = {
     provincia: "Jaén",
     codigoMunicipio: "23044",          // INE: Hinojares, provincia 23 (Jaén)
     codigoPostal: "23486",
-    registroTuristico: "VTAR/JA/00044",
+    registroTuristico: "A/JA/00060",
     email: "apartamentostiojosemaria@gmail.com",
     telefono: "+34676344675",
     web: "https://tiojosemaria.com",

@@ -274,7 +274,7 @@ const ApartmentDetail = () => {
                                 <span className="opacity-20">|</span>
                                 <span className="flex items-center gap-1"><Users size={14} /> {apartment.capacity_people} plazas</span>
                                 <span className="opacity-20">|</span>
-                                <span className="flex items-center gap-1"><ShieldCheck size={14} /> {apartment.registration_number || 'VTAR/JA/00044'}</span>
+                                <span className="flex items-center gap-1"><ShieldCheck size={14} /> {apartment.registration_number || 'A/JA/00060'}</span>
                             </div>
                             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-rural-900 mb-6 leading-tight">
                                 {apartment.name}

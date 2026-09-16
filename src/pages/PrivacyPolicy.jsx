@@ -42,7 +42,7 @@ const PrivacyPolicy = () => {
                         <li><strong>Domicilio:</strong> Calle Baja 1, 23486 Hinojares, Jaén (España)</li>
                         <li><strong>Email:</strong> apartamentostiojosemaria@gmail.com</li>
                         <li><strong>Teléfono:</strong> +34 676 34 46 75</li>
-                        <li><strong>Registro turístico:</strong> VTAR/JA/00044 (Junta de Andalucía)</li>
+                        <li><strong>Registro turístico:</strong> A/JA/00060 (Junta de Andalucía)</li>
                     </ul>
 
                     <h2 className="font-serif text-xl font-bold mt-8 mb-3 text-text-primary">2. Delegado de Protección de Datos (DPO)</h2>
