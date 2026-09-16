@@ -21,7 +21,7 @@ const AvailabilityManager   = lazy(() => import('./AvailabilityManager'));
 const SeasonsManager        = lazy(() => import('./SeasonsManager'));
 const GuestGuidesManager    = lazy(() => import('./GuestGuidesManager'));
 const GuestUserManager      = lazy(() => import('./GuestUserManager'));
-const AnalyticsDashboard    = lazy(() => import('./AnalyticsDashboard'));
+const InformesManager       = lazy(() => import('./InformesManager'));
 const IneManager            = lazy(() => import('./IneManager'));
 const QRCodeManager         = lazy(() => import('./QRCodeManager'));
 const RoutesManager         = lazy(() => import('./RoutesManager'));
@@ -104,7 +104,7 @@ const NAV_GROUPS = [
         title: 'Más',
         items: [
             { id: 'bot_logs',     label: 'Conversaciones del asistente', icon: Bot },
-            { id: 'analitica',    label: 'Estadísticas',                 icon: BarChart3 },
+            { id: 'analitica',    label: 'Informes del mes',             icon: BarChart3 },
             { id: 'ine',          label: 'Encuesta del INE',             icon: ClipboardList },
             { id: 'documentos',   label: 'Documentos para huéspedes',    icon: FileText },
             { id: 'qrcodes',      label: 'Códigos QR',                   icon: QrCode },
@@ -206,7 +206,7 @@ const AdminDashboard = () => {
                     {activeTab === 'addons'         && <AddonsManager />}
                     {activeTab === 'inbox'          && <InboxManager />}
                     {activeTab === 'bot_logs'       && <BotLogsManager />}
-                    {activeTab === 'analitica'      && <AnalyticsDashboard />}
+                    {activeTab === 'analitica'      && <InformesManager />}
                     {activeTab === 'ine'            && <IneManager />}
                     {activeTab === 'documentos'     && <DocumentsManager />}
                     {activeTab === 'qrcodes'        && <QRCodeManager />}

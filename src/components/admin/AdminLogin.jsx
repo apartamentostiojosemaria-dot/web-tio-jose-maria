@@ -110,7 +110,7 @@ const AdminLogin = () => {
                                     required
                                     disabled={isLocked}
                                     className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50"
-                                    placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
+                                    placeholder="••••••••"
                                     autoComplete="current-password"
                                 />
                             </div>
