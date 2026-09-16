@@ -276,7 +276,8 @@ async function crear(sb: SupabaseClient, apt: Apt, p: CorreoParseado, recibido: 
         pax_count: p.pax || 2,
         check_in: p.checkIn, check_out: p.checkOut,
         total_price: p.total ?? null,
-        status: "confirmed",
+        // Una estancia que ya terminó entra como completada (historia), no como confirmada.
+        status: p.checkOut! < new Date().toISOString().slice(0, 10) ? "completed" : "confirmed",
         source: "manual",
         channel: canal,
         external_locator: p.locator || (p.misterplanRef ? `MisterPlan ${p.misterplanRef}` : null),
