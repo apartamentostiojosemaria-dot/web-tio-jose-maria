@@ -235,7 +235,7 @@ supabase functions deploy send-booking-email --project-ref nmtukksbzbnuzqsksdmw 
 >   lo que no sabe apuntar lo marca `necesita_atencion` y avisa por correo (SMTP con la misma cuenta) a
 >   `AVISOS_A` (opcional; por defecto jesusmartinezpadron@gmail.com). Prueba en seco desde el repo:
 >   `npm run misterplan:prueba -- --desde 2026-09-01` (añadir `--real` para escribir). Parser probado con
->   `npm test`. Mientras falten las variables, las ejecuciones fallan con «Falta la variable de entorno».
+>   `npm test`. Variables subidas el 16-sep por el SDK (`envvars.upload` con el PAT del CLI, sin pasar por pantalla); primer run real 10:20 UTC en verde (51 correos vistos, 0 nuevos, 6,9 s).
 > - Desplegado (`trigger deploy`, versión 20260701.3, 3 tasks). Schedules ACTIVAS.
 >   **11-sep-2026**: quedan 2 tasks (`daily-booking-emails`, `sync-ical-channels`). `daily-ses-submit`
 >   se retiró: el parte de viajeros lo dispara pg_cron dentro de la base (`tjm_disparar_ses`), que
