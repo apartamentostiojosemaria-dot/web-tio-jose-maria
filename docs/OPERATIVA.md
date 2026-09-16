@@ -227,6 +227,15 @@ supabase functions deploy send-booking-email --project-ref nmtukksbzbnuzqsksdmw 
 > **ESTADO 2026-07-01 — DESPLEGADO Y VIVO (3 crons verificadas en verde).**
 > - Proyecto: `tjm-jobs` (ref `proj_azldqeufdufzorjzhnkk`, org padron-ia).
 > - Env vars Production: `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (secret).
+>   **16-sep-2026**: además `CORREO_TJM_USER` (`apartamentostiojosemaria@gmail.com`) y `CORREO_TJM_PASS`
+>   (contraseña de aplicación de Google «OS Claude correo», la misma que usa el MCP `correo` del OS; está en
+>   el Vaultwarden) para la task **`misterplan-correo`** (cada 10 min, versión 20260916.1): lee por IMAP el
+>   Gmail del negocio y apunta lo que MisterPlan avisa por correo (reserva nueva de cualquier canal,
+>   cancelación / modificación desde Booking, confirmación del motor web). Registro en `mail_import_log`;
+>   lo que no sabe apuntar lo marca `necesita_atencion` y avisa por correo (SMTP con la misma cuenta) a
+>   `AVISOS_A` (opcional; por defecto jesusmartinezpadron@gmail.com). Prueba en seco desde el repo:
+>   `npm run misterplan:prueba -- --desde 2026-09-01` (añadir `--real` para escribir). Parser probado con
+>   `npm test`. Mientras falten las variables, las ejecuciones fallan con «Falta la variable de entorno».
 > - Desplegado (`trigger deploy`, versión 20260701.3, 3 tasks). Schedules ACTIVAS.
 >   **11-sep-2026**: quedan 2 tasks (`daily-booking-emails`, `sync-ical-channels`). `daily-ses-submit`
 >   se retiró: el parte de viajeros lo dispara pg_cron dentro de la base (`tjm_disparar_ses`), que

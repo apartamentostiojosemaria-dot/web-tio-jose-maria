@@ -117,6 +117,7 @@ en este MANIFEST**. Un único agente aplica DDL; el resto no toca el esquema.
 | `0020_correo_al_huesped_al_cambiar_o_cancelar_desde_el_panel.sql` | aplicada | **Correo al huésped al cambiar o cancelar desde el panel.** `guest_bookings.change_email_sent_at` (última vez; se repite) y `cancellation_email_sent_at` (idempotente). Punto 2 de §7 bis del plan de MisterPlan |
 | `0021_lo_paga_el_portal_como_forma_de_cobro.sql` | aplicada | **«Lo paga el portal» (`ota`) como forma de cobro** en `booking_payments` y `guest_bookings`. Holidu cobra al huésped y abona tras la llegada: sin esto una reserva suya solo cabía como «transferencia» y el panel de ella pedía cobrar al huésped |
 | `0022_holidu_como_canal_con_ical.sql` | aplicada | **Holidu como canal**: `apartments.holidu_ical_url` y `holidu` en `guest_bookings_channel_check`. Los cuatro apartamentos conectados el 15-sep |
+| `0023_registro_de_correos_de_misterplan.sql` | aplicada | **Registro de los correos de MisterPlan** que lee el job `misterplan-correo` de tjm-jobs: tabla `mail_import_log` (una fila por correo, `message_id` único = idempotencia, `kind`/`action`/`booking_id`/`necesita_atencion`). Solo lectura para staff; escribe la clave de servicio |
 
 ### Lo que añadió `0002`
 - **`guest_bookings`**: `channel`, `external_locator`, `commission_pct`, `commission_amount`,

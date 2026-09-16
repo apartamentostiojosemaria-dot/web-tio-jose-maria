@@ -6,15 +6,22 @@
   "description": "Trigger.dev jobs para Apartamentos Tío José María (cron emails, sync iCal canales, retención).",
   "scripts": {
     "dev": "trigger dev",
-    "deploy": "trigger deploy"
+    "deploy": "trigger deploy",
+    "test": "node --import tsx --test src/lib/*.test.ts",
+    "misterplan:prueba": "tsx scripts/misterplan-correo-prueba.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.48.0",
     "@trigger.dev/sdk": "4.5.16",
+    "imapflow": "^1.7.8",
+    "mailparser": "^3.9.28",
+    "nodemailer": "^6.10.1",
     "ws": "^8.18.0"
   },
   "devDependencies": {
+    "@types/mailparser": "^3.4.6",
     "@types/node": "^20.11.0",
+    "@types/nodemailer": "^8.0.2",
     "@types/ws": "^8.5.10",
     "trigger.dev": "4.5.16",
     "tsx": "^4.7.0",
