@@ -45,6 +45,9 @@
 //   { "selftest": true }      -> ejercita el parser dentro del runtime
 //
 // Invocada cada 15 min por tjm-jobs `sync-ical-channels`.
+//
+// v11 (16-sep-2026): un cierre del canal ya no cuenta como overbooking contra
+// una reserva propia (solo lo que trae huésped).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { addDays, extractGuestInfo, parseIcal } from "./parse.ts";
@@ -365,6 +368,15 @@ async function syncOne(
         });
 
         for (const p of futuros) {
+            // Un CIERRE del canal («Airbnb (Not available)», «CLOSED - Not
+            // available») no es un segundo huésped: es lo que MisterPlan (y
+            // mañana nuestro propio export) empuja al portal para reflejar una
+            // reserva que YA tenemos. Avisar por él era avisar de la misma
+            // reserva contra sí misma cada 15 min (conflictos #4-#6 del
+            // 15-sep: Adrián y Michael «pisados» por su propio cierre). Solo
+            // cuenta lo que trae huésped: nombre, «Reserved» o un SUMMARY que
+            // no sepamos leer (en la duda, sigue avisando).
+            if (p.guest.blockKind === "closed") continue;
             const choque = candidatas.find(
                 (b) => (b.check_in as string) < p.endExclusive && (b.check_out as string) > p.start,
             );
