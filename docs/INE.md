@@ -135,7 +135,10 @@ viajeros** (`traveler_records.direccion_pais` + `direccion_cp`), nunca de
 
 ## 6. Qué calcula el sistema y con qué criterio
 
-Todo está en `supabase/migrations/_pendiente_ine.sql`:
+Todo está en `supabase/migrations/0007_ine.sql` (+ `0024`, 16-sep-2026: los **cierres
+que el canal refleja** —`blocked_dates.external_kind = 'closed'`, lo que MisterPlan empuja a
+Airbnb— ya no cuentan como noches ocupadas, y un día con los cuatro apartamentos cerrados
+no es día abierto; antes septiembre salía con 38 alojamientos ocupados y eran 5):
 
 | Función | Qué devuelve |
 |---|---|

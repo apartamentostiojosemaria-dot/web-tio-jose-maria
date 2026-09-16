@@ -118,6 +118,7 @@ en este MANIFEST**. Un único agente aplica DDL; el resto no toca el esquema.
 | `0021_lo_paga_el_portal_como_forma_de_cobro.sql` | aplicada | **«Lo paga el portal» (`ota`) como forma de cobro** en `booking_payments` y `guest_bookings`. Holidu cobra al huésped y abona tras la llegada: sin esto una reserva suya solo cabía como «transferencia» y el panel de ella pedía cobrar al huésped |
 | `0022_holidu_como_canal_con_ical.sql` | aplicada | **Holidu como canal**: `apartments.holidu_ical_url` y `holidu` en `guest_bookings_channel_check`. Los cuatro apartamentos conectados el 15-sep |
 | `0023_registro_de_correos_de_misterplan.sql` | aplicada | **Registro de los correos de MisterPlan** que lee el job `misterplan-correo` de tjm-jobs: tabla `mail_import_log` (una fila por correo, `message_id` único = idempotencia, `kind`/`action`/`booking_id`/`necesita_atencion`). Solo lectura para staff; escribe la clave de servicio |
+| `0024_el_ine_no_cuenta_los_cierres_de_canal_como_ocupacion.sql` | aplicada | **El INE no cuenta los cierres de canal como ocupación.** `v_ine_mes` y `v_ine_mes_detalle` (de 0007) tratan `blocked_dates.external_kind = 'closed'` (0019) como lo que es: MisterPlan cerrando fechas en Airbnb, no huéspedes; y un día con los cuatro apartamentos cerrados (propio o por canal) deja de ser día abierto. Septiembre 2026: 38 → 5 alojamientos ocupados, 30 → 22 días abiertos |
 
 ### Lo que añadió `0002`
 - **`guest_bookings`**: `channel`, `external_locator`, `commission_pct`, `commission_amount`,
