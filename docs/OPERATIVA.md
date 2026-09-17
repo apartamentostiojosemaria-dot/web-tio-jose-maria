@@ -21,7 +21,15 @@ gh auth switch -u apartamentostiojosemaria-dot
 git push origin main
 ```
 
-Easypanel detecta el push y despliega automáticamente.
+**Un push NO despliega** (comprobado el 17-sep-2026: push a las 18:35, producción
+seguía en la build del 15-sep hasta que Jesús disparó el despliegue a las 19:08).
+Hay que disparar el despliegue a mano en EasyPanel (VPS 148.230.126.72 →
+servicio de la web → Deploy, o su webhook). Comprobación de que ha llegado:
+
+```bash
+curl -sI https://tiojosemaria.com/ | grep -i last-modified   # fecha de la build
+curl -sL https://tiojosemaria.com/ | grep -c 'A/JA/00060'     # > 0
+```
 
 ## 2. Bot IA — activación en producción
 
