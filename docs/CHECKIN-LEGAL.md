@@ -977,5 +977,5 @@ nada, con el secreto `SES_NS_RESERVA`.
 | **Alta en SES Hospedajes**, marcando la casilla de comunicación por servicio web | Es un trámite con certificado digital o Cl@ve, a nombre del titular |
 | Poner los cinco secretos (`SES_WS_USER`, `SES_WS_PASSWORD`, `SES_ARRENDADOR`, `SES_ESTABLECIMIENTO`, `SES_ENDPOINT`) | Los da el Ministerio al dar de alta |
 | Las **cinco URL de los anuncios** | Sólo las tiene él |
-| Confirmar los **dormitorios** de Lavanda y Romero (2 ó 3) | No hay ningún dato en la base que lo diga |
+| ~~Confirmar los **dormitorios** de Lavanda y Romero~~ ✅ **RESUELTO 17-sep-2026: 2 dormitorios cada uno** (confirmado por Jesús; coincide con `apartments.num_habitaciones`). Total del establecimiento: **6 habitaciones y 12 plazas** (Albahaca 1/2 · Lavanda 2/4 · Romero 2/4 · Tomillo 1/2) | — |
 | Conseguir el **XSD de la reserva de hospedaje** (`altaReservaHospedaje`) desde dentro de la plataforma | Es lo ÚNICO que sigue sin verificar. Los demás esquemas ya se abrieron el 10-sep y con ellos se corrigieron dos cosas que estaban mal. Si la primera reserva devuelve el error 10118, se arregla poniendo el secreto `SES_NS_RESERVA` — sin desplegar nada |
