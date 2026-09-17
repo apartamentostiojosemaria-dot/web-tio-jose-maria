@@ -97,7 +97,7 @@ const Footer = () => (
                 <span className="opacity-20" aria-hidden="true">|</span>
                 <Link to="/clientes" className="hover:text-white transition-colors">Área clientes</Link>
                 <span className="opacity-20" aria-hidden="true">|</span>
-                <Link to="/admin" className="hover:text-white transition-colors">Acceso administración</Link>
+                <Link to="/panel" className="hover:text-white transition-colors">Acceso gestión</Link>
             </div>
             <span>&copy; {new Date().getFullYear()} Apartamentos Rurales Tío José María — Hinojares, Jaén.</span>
         </div>

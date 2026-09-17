@@ -44,7 +44,6 @@ const ReservarPage = lazy(() => import('./pages/ReservarPage'));
 const BookingConditions = lazy(() => import('./pages/BookingConditions'));
 const ReservaConfirmada = lazy(() => import('./pages/ReservaConfirmada'));
 const PrecheckinPage = lazy(() => import('./pages/PrecheckinPage'));
-const AdminLogin = lazy(() => import('./components/admin/AdminLogin'));
 const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard'));
 const ClientLogin = lazy(() => import('./components/client/ClientLogin'));
 const ClientArea = lazy(() => import('./components/client/ClientArea'));
@@ -170,8 +169,11 @@ export default function App() {
                         <Route
                             path="/admin"
                             element={
+                                // Sin sesión se entra SIEMPRE por /panel (código al correo).
+                                // La pantalla vieja de contraseña + Google no servía: Google no
+                                // está activado y ningún usuario tiene contraseña (17-sep-2026).
                                 !session
-                                    ? <AdminLogin />
+                                    ? <Navigate to="/panel" replace />
                                     : userProfile?.role === 'admin'
                                         ? <AdminDashboard />
                                         : <AdminNoPermission email={session?.user?.email} profileLoaded={!loadingProfile && userProfile !== null} />
