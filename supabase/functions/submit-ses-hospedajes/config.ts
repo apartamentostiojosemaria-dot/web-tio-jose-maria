@@ -67,14 +67,34 @@ export const MARCA = {
 // Mientras falte cualquiera de los cinco primeros, la función trabaja en MODO
 // PREPARADO: genera el documento, lo guarda y lo deja «pendiente de alta».
 // Nunca revienta y nunca dice que ha mandado algo que no ha mandado.
-export const SECRETOS = {
+interface Secretos {
+    usuario: string;
+    contrasena: string;
+    arrendador: string;
+    establecimiento: string;
+    endpoint: string;
+    llaveDeCron: string;
+}
+
+// Mutable a proposito: el entorno lo rellena al importar y `cargarSecretos`
+// completa desde Vault lo que siga vacio. Nadie lo lee antes del arranque.
+export const SECRETOS: Secretos = {
     usuario: Deno.env.get("SES_WS_USER") ?? "",
     contrasena: Deno.env.get("SES_WS_PASSWORD") ?? "",
     arrendador: Deno.env.get("SES_ARRENDADOR") ?? "",
     establecimiento: Deno.env.get("SES_ESTABLECIMIENTO") ?? "",
     endpoint: Deno.env.get("SES_ENDPOINT") ?? "",
     llaveDeCron: Deno.env.get("SES_CRON_TOKEN") ?? "",
-} as const;
+};
+
+/** Correspondencia entre el campo de `SECRETOS` y su nombre en Vault. */
+const EN_VAULT: ReadonlyArray<[keyof Secretos, string]> = [
+    ["usuario", "ses_ws_user"],
+    ["contrasena", "ses_ws_password"],
+    ["arrendador", "ses_arrendador"],
+    ["establecimiento", "ses_establecimiento"],
+    ["endpoint", "ses_endpoint"],
+];
 
 /**
  * Llave con la que llaman los crones de la base (`tjm_disparar_ses`).
@@ -94,6 +114,31 @@ export async function cargarLlaveDeCron(
         return "";
     }
     return typeof data === "string" ? data.trim() : "";
+}
+
+/**
+ * Completa desde Vault (`tjm_secretos_ses`, migracion 0027) los secretos que
+ * el entorno no traiga. Misma razon que `cargarLlaveDeCron`: el panel de
+ * Edge Functions vive en otra cuenta de Supabase y copiar a mano ya fallo una
+ * vez. El entorno manda; Vault es el respaldo que siempre esta.
+ *
+ * Se llama UNA vez al arrancar, antes de atender ninguna peticion.
+ */
+export async function cargarSecretos(
+    sb: { rpc: (fn: string) => PromiseLike<{ data: unknown; error: { message: string } | null }> },
+): Promise<void> {
+    if (hayCredenciales()) return;
+    const { data, error } = await sb.rpc("tjm_secretos_ses");
+    if (error) {
+        console.error("[submit-ses-hospedajes] no se pudieron leer los secretos de Vault:", error.message);
+        return;
+    }
+    const enVault = (data ?? {}) as Record<string, unknown>;
+    for (const [campo, nombre] of EN_VAULT) {
+        if (SECRETOS[campo]) continue;               // el entorno tiene preferencia
+        const valor = enVault[nombre];
+        if (typeof valor === "string" && valor.trim()) SECRETOS[campo] = valor.trim();
+    }
 }
 
 /** Cierto sólo cuando están los cinco y se puede enviar de verdad. */

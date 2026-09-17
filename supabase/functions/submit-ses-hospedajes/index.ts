@@ -26,7 +26,7 @@
 import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import {
     ALTA_MINISTERIO, CUBO_LIBRO_REGISTRO, ESPERA_BARRIDO_MIN, ESTADO, ESTADO_SES,
-    SECRETOS, cargarLlaveDeCron, hayCredenciales, secretosQueFaltan,
+    SECRETOS, cargarLlaveDeCron, cargarSecretos, hayCredenciales, secretosQueFaltan,
 } from "./config.ts";
 import {
     consultarLote, mandarAnulacion, mandarParte, mandarReserva,
@@ -45,6 +45,7 @@ const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const sb: SupabaseClient = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
 
 // Llave de los crones de la base: de Vault, una vez por arranque (ver config.ts).
+await cargarSecretos(sb);                 // los cinco del MIR, de Vault si faltan
 const LLAVE_CRON = await cargarLlaveDeCron(sb);
 
 const CORS = {
