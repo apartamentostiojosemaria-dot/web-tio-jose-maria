@@ -278,7 +278,10 @@ async function crear(sb: SupabaseClient, apt: Apt, p: CorreoParseado, recibido: 
         total_price: p.total ?? null,
         // Una estancia que ya terminó entra como completada (historia), no como confirmada.
         status: p.checkOut! < new Date().toISOString().slice(0, 10) ? "completed" : "confirmed",
-        source: "manual",
+        // `source` = por dónde entró la fila en NUESTRO sistema (web / manual /
+        // <canal iCal> / test). Estas las crea este job leyendo el correo de
+        // MisterPlan; dejarlas en 'manual' hacía creer que las tecleó alguien.
+        source: "misterplan-correo",
         channel: canal,
         external_locator: p.locator || (p.misterplanRef ? `MisterPlan ${p.misterplanRef}` : null),
         payment_method: canal === "booking" ? "booking" : canal === "airbnb" ? "ota" : canal === "web" ? "transferencia" : null,

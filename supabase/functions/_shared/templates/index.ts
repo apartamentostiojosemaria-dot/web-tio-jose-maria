@@ -23,6 +23,8 @@ interface BookingPayload {
     refund_amount?: number;
     paid_amount?: number;
     free_cancellation?: boolean;
+    /** Solo reminder_24h: cuántos han rellenado los datos de la policía y cuántos se esperan. */
+    precheckin?: { rellenos: number; total: number } | null;
 }
 
 const SITE_URL = "https://tiojosemaria.com";
@@ -37,6 +39,18 @@ const formatDate = (s: string) => {
 };
 const formatPrice = (n: number) => new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
 const firstName = (full: string) => (full.trim().split(/\s+/)[0] || full).trim();
+const precheckinUrl = (b: BookingPayload) => `${SITE_URL}/precheckin?code=${b.booking_code}`;
+
+// Frase corta y llana para pedir los datos de la policía. Se abre 7 días
+// antes de la llegada (migración 0018): antes de eso el enlace dice cuándo.
+const precheckinBlock = (b: BookingPayload, intro: string) => `
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F4F6EC;border:1px solid #D9DFC6;border-radius:12px;margin:16px 0;">
+  <tr><td style="padding:16px 20px;">
+    <p style="margin:0 0 6px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#556B2F;font-weight:700;">Datos para la policía</p>
+    <p style="margin:0;font-size:14px;color:#2C3319;">${intro} Se rellena desde el móvil en un par de minutos, una persona por pantalla, y no hace falta foto de ningún documento.</p>
+    <p style="margin:10px 0 0;font-size:14px;"><a href="${precheckinUrl(b)}" style="color:#556B2F;font-weight:700;text-decoration:underline;">Rellenar los datos ahora</a></p>
+  </td></tr>
+</table>`;
 
 const shell = (heading: string, body: string, ctaLabel?: string, ctaUrl?: string) => `<!DOCTYPE html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -104,7 +118,8 @@ const renderConfirmation = (b: BookingPayload): RenderedEmail => ({
         `<p>Tu reserva en <strong>${b.apartment_name}</strong> está confirmada. Te esperamos en Hinojares.</p>
         ${apartmentPhoto(b)}
         ${bookingSummary(b)}
-        <p>Unos días antes de tu llegada te mandaremos las instrucciones para entrar al apartamento, el horario de check-in y el formulario corto que la Guardia Civil nos pide para huéspedes. Mientras tanto, si necesitas cualquier cosa, escríbenos sin más.</p>
+        <p>Unos días antes de tu llegada te mandaremos cómo llegar y el horario de check-in. Mientras tanto, si necesitas cualquier cosa, escríbenos sin más.</p>
+        ${precheckinBlock(b, "La ley nos obliga a comunicar a la policía los datos de cada persona que se aloja. El formulario se abre siete días antes de tu llegada; si lo rellenáis antes de venir, la entrada son dos minutos.")}
         <p>Gracias por reservar directamente. Eso nos permite cuidarte mejor y mantener el precio justo.</p>
         ${SIGNATURE}`,
         "Ver tu reserva",
@@ -123,14 +138,31 @@ const renderReminder7d = (b: BookingPayload): RenderedEmail => ({
           <li><strong>Cómo llegar:</strong> Hinojares está a la salida 314 de la A-44 (Madrid–Granada) → Quesada → Pozo Alcón. Aparcamiento gratis junto a la casa.</li>
           <li><strong>Tiempo:</strong> echa un ojo a la previsión un día antes. La sierra cambia rápido.</li>
           <li><strong>Qué traer:</strong> nosotros ponemos sábanas, toallas, menaje y leña para la chimenea. Tú trae ganas.</li>
+          <li><strong>Qué hacer por aquí:</strong> <a href="${SITE_URL}/hinojares" style="color:#556B2F;text-decoration:underline;">la guía de la zona</a>, con rutas y sitios para comer.</li>
         </ul>
+        ${precheckinBlock(b, "Desde hoy ya se puede rellenar el formulario con los datos de cada persona que viene (nombre, documento y poco más). Nos lo pide la ley y hay que tenerlo antes de que lleguéis.")}
         ${bookingSummary(b)}
         <p>Si necesitas adelantar la entrada, retrasar la salida o tienes una alergia o preferencia que debamos saber, mándanos un mensaje hoy mismo.</p>
         ${SIGNATURE}`,
-        "Ver guía de la zona",
-        `${SITE_URL}/hinojares`
+        "Rellenar los datos de la policía",
+        precheckinUrl(b)
     ),
 });
+
+// Solo sale si faltan datos de la policía (lo decide send-booking-email); por
+// eso el texto dice cuántos faltan en vez de repetir el mismo correo a todos.
+const faltanEnPalabras = (p: { rellenos: number; total: number } | null | undefined) => {
+    if (!p) return "Nos falta el formulario con los datos de cada persona que viene.";
+    const faltan = Math.max(p.total - p.rellenos, 0);
+    if (p.rellenos === 0) {
+        return p.total === 1
+            ? "Todavía no tenemos tus datos para la policía."
+            : `Todavía no tenemos los datos para la policía de ninguna de las ${p.total} personas que venís.`;
+    }
+    return faltan === 1
+        ? `Ya tenemos los datos de ${p.rellenos} de ${p.total}: falta 1 persona.`
+        : `Ya tenemos los datos de ${p.rellenos} de ${p.total}: faltan ${faltan} personas.`;
+};
 
 const renderReminder24h = (b: BookingPayload): RenderedEmail => ({
     from: EMAIL_FROM,
@@ -138,13 +170,13 @@ const renderReminder24h = (b: BookingPayload): RenderedEmail => ({
     html: shell(
         `Mañana te recibimos en ${b.apartment_name}`,
         `<p>Hola ${firstName(b.guest_name)}, recta final.</p>
+        ${precheckinBlock(b, `${faltanEnPalabras(b.precheckin)} Si lo rellenáis hoy, mañana solo nos chocamos los cinco y a disfrutar.`)}
         <p><strong>Check-in:</strong> entre las 16:00 y las 20:00. Te recibimos en persona y te enseñamos la casa. Si vas a llegar fuera de ese horario, dinos por WhatsApp para coordinarnos.</p>
         <p><strong>Dirección:</strong> Calle Baja 1, 23486 Hinojares. Cuando llegues al pueblo, búscanos con Google Maps; cualquier vecino te indica también.</p>
         ${bookingSummary(b)}
-        <p>Te enviamos también el <strong>enlace al formulario de precheckin</strong> que tenemos que rellenar todos los huéspedes (obligación legal del Ministerio del Interior). Si lo completas antes, en la llegada solo nos chocamos los cinco y a disfrutar.</p>
         ${SIGNATURE}`,
-        "Rellenar precheckin",
-        `${SITE_URL}/precheckin?code=${b.booking_code}`
+        "Rellenar los datos que faltan",
+        precheckinUrl(b)
     ),
 });
 

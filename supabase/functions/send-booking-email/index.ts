@@ -38,8 +38,14 @@ const VALID_TEMPLATES: TemplateKey[] = [
 /** Las que manda una persona desde el panel: solo staff (o servicio). */
 const STAFF_ONLY_TEMPLATES: TemplateKey[] = ["booking_changed", "booking_cancelled"];
 
-/** Correo de relleno de las reservas de canal sin correo: ahí no se escribe. */
-const PLACEHOLDER_DOMAIN = "@example.invalid";
+/** Correos de relleno de las reservas de canal sin correo: ahí no se escribe.
+ *  `example.invalid` lo ponen los importadores de ahora; `tiojosemaria.local`
+ *  lo puso el barrido a mano del 11-sep. Ninguno de los dos es un buzón. */
+const PLACEHOLDER_DOMAINS = ["@example.invalid", "@tiojosemaria.local"];
+const esPlaceholder = (email: string) => {
+    const e = email.toLowerCase();
+    return PLACEHOLDER_DOMAINS.some((d) => e.endsWith(d));
+};
 
 function jwtRole(token: string): string | null {
     try {
@@ -117,14 +123,14 @@ Deno.serve(async (req) => {
         .from("guest_bookings")
         .select(`id, booking_code, guest_name, guest_email, check_in, check_out,
                  total_price, apartment_id, status, paid_amount, channel, internal_notes,
-                 ${flag},
+                 pax_count, ${flag},
                  apartments(name, slug, images)`)
         .eq("booking_code", code)
         .single();
 
     if (bErr || !booking) return json(404, { error: "booking_not_found" });
     if (!booking.guest_email) return json(400, { error: "no_guest_email" });
-    if (booking.guest_email.toLowerCase().endsWith(PLACEHOLDER_DOMAIN)) {
+    if (esPlaceholder(booking.guest_email)) {
         return json(200, { ok: true, skipped: "placeholder_email" });
     }
 
@@ -167,6 +173,25 @@ Deno.serve(async (req) => {
         }
     }
 
+    // El de la víspera solo sale si faltan datos de la policía, y dice cuántos
+    // (docs/CHECKIN-LEGAL.md, paso 1). Si están todos, no se manda nada y el
+    // flag se queda a NULL: no se apunta como enviado algo que no se envió.
+    // Se cuenta la tabla directamente: `v_parte_estado` pide sesión de staff
+    // y aquí se entra con la clave de servicio.
+    let precheckin: { rellenos: number; total: number } | null = null;
+    if (template === "reminder_24h") {
+        const { count, error: cErr } = await supabase
+            .from("traveler_records")
+            .select("id", { count: "exact", head: true })
+            .eq("booking_id", booking.id);
+        if (cErr) return json(500, { error: "precheckin_count_failed", detail: cErr.message });
+        const total = Math.max(Number((booking as { pax_count?: number }).pax_count) || 1, 1);
+        precheckin = { rellenos: count ?? 0, total };
+        if (precheckin.rellenos >= total) {
+            return json(200, { ok: true, skipped: "precheckin_completo", ...precheckin });
+        }
+    }
+
     const apt = (booking.apartments as unknown as { name: string; slug: string; images?: string[] }) || { name: "Apartamento", slug: "" };
     const firstImage = Array.isArray(apt.images) && apt.images.length > 0 ? apt.images[0] : null;
 
@@ -199,6 +224,7 @@ Deno.serve(async (req) => {
         customer_warnings,
         customer_tags,
         customer_preferences,
+        precheckin,
         previous: (template === "booking_changed" && body.previous && body.previous.check_in && body.previous.check_out)
             ? {
                 check_in: String(body.previous.check_in),

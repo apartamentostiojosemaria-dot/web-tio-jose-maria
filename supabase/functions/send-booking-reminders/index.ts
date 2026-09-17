@@ -88,7 +88,10 @@ Deno.serve(async (req) => {
         }
 
         const candidates = (due ?? []).map((b) => b.booking_code);
-        let sent = 0, failed = 0;
+        // `skipped` = send-booking-email decidió no mandarlo (correo de relleno,
+        // datos de la policía ya completos en el de la víspera...). No es un fallo.
+        let sent = 0, failed = 0, skipped = 0;
+        const skips: Record<string, string> = {};
 
         if (!dryRun) {
             for (const code of candidates) {
@@ -101,7 +104,9 @@ Deno.serve(async (req) => {
                         },
                         body: JSON.stringify({ bookingCode: code, template: rule.template }),
                     });
-                    if (r.ok) sent++; else failed++;
+                    if (!r.ok) { failed++; continue; }
+                    const out = await r.json().catch(() => ({})) as { skipped?: string };
+                    if (out.skipped) { skipped++; skips[code] = out.skipped; } else sent++;
                 } catch { failed++; }
             }
         }
@@ -110,7 +115,7 @@ Deno.serve(async (req) => {
             template: rule.template,
             target,
             candidates: candidates.length,
-            ...(dryRun ? { dryRun: true, codes: candidates } : { sent, failed }),
+            ...(dryRun ? { dryRun: true, codes: candidates } : { sent, skipped, failed, skips }),
         });
     }
 
