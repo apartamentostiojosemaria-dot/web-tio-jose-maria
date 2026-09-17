@@ -313,10 +313,15 @@ datos, pero NO transmite al MIR.
 2. **Alta como sujeto obligado** en sede.mir.gob.es:
    - Web → Servicios → Hospedajes → arrendador de vivienda turística (VTAR).
    - Acceso con el certificado del paso 1.
-   - Obtienes: usuario, clave de panel, **código de establecimiento**, y
-     credenciales API (cert.cliente para conexión M2M).
-3. Solicitar el **certificado de cliente API** (separado del FNMT personal).
-   Lo emite el MIR para conexiones máquina-a-máquina contra su API.
+   - ⚠️ Marcar la casilla **«envío de comunicaciones por servicio web»**: sin
+     ella el servicio devuelve siempre el error 10120.
+   - Obtienes: usuario, clave de panel, **código de establecimiento** y las
+     credenciales del servicio web.
+3. ~~Solicitar el certificado de cliente API~~ — **CORREGIDO el 10-sep-2026**:
+   el MIR **no usa certificado de cliente** para la conexión máquina-a-máquina.
+   Es SOAP con **usuario y contraseña por HTTP Basic**; el certificado digital
+   del titular solo hace falta para **identificarse en el alta**. Ver el plan
+   `2026-09-10-sustituir-misterplan/plan.md` §P3.1.
 
 ### 7.2. Despliegue del módulo (cuando los trámites estén)
 
