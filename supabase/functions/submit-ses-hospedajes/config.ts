@@ -189,6 +189,9 @@ export const ESTADO = {
     PENDIENTE_DE_ALTA: "pendiente_de_alta",
     REINTENTAR: "retry",
     MANDADO_A_MANO: "enviado_a_mano",
+    /** Procede mandarla, pero se ha decidido esperar. El barrido la salta
+     *  (migracion 0028) y no se pierde. Desaparcar = volver a PENDIENTE_DE_ALTA. */
+    APARCADO: "aparcado",
 } as const;
 
 /**
