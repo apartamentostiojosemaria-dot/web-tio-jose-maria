@@ -157,10 +157,12 @@ async function cargarGrupo(bookingId: number): Promise<Grupo | null> {
 async function reservasPendientes(): Promise<number[]> {
     const { data } = await sb
         .from("traveler_records")
-        .select("booking_id, guest_bookings!inner(id, check_in, status)")
+        .select("booking_id, guest_bookings!inner(id, check_in, status, source)")
         .is("submitted_at", null)
         .lte("guest_bookings.check_in", hoy())
-        .in("guest_bookings.status", ["confirmed", "completed"]);
+        .in("guest_bookings.status", ["confirmed", "completed"])
+        // Una reserva de prueba nunca va al MIR (migración 0031).
+        .neq("guest_bookings.source", "test");
     const ids = new Set<number>();
     (data || []).forEach((f) => ids.add((f as { booking_id: number }).booking_id));
     return [...ids];
