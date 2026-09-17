@@ -99,14 +99,13 @@ const ALL_CHANNEL_KEYS = CHANNELS.map((c) => c.key) as string[];
 const PLACEHOLDER_EMAIL = "sin-correo@example.invalid";
 
 /** Marcas de email ya enviado. Se ponen a now() al crear una reserva de canal
- *  para que `send-booking-reminders` NO le escriba al huésped: la
- *  confirmación se la mandó el canal, y escribirle desde TJM es una decisión
- *  de negocio que nadie ha tomado. Para activarlo algún día basta con dejar
- *  estas columnas a NULL. */
+ *  para que `send-booking-reminders` NO le escriba al huésped lo que ya le
+ *  manda el canal (confirmación, llegada, salida) ni promoción (reactivación).
+ *  Decisión de Jesús (17-sep-2026): los de 7 días y víspera SÍ se mandan,
+ *  porque llevan el enlace de los datos de la policía (obligación legal, no
+ *  marketing) y el alias del canal reenvía al huésped. Por eso NO están aquí. */
 const EMAIL_FLAGS = [
     "confirmation_email_sent_at",
-    "reminder_7d_email_sent_at",
-    "reminder_24h_email_sent_at",
     "arrival_email_sent_at",
     "departure_email_sent_at",
     "reactivation_email_sent_at",

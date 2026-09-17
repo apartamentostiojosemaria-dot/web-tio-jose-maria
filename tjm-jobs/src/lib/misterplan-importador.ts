@@ -49,11 +49,14 @@ export interface Resultado {
 const ARRANQUE_POR_DEFECTO = "2026-09-11"; // día del barrido manual de MisterPlan (§7 ter)
 const REMITENTE = /ruralgest\.net|ruralgest\.com|misterplan/i;
 
-/** Marcas de correo «ya enviado» para reservas de canal: la confirmación se la
- *  mandó el canal, TJM no le escribe encima (misma regla que sync-ical-imports). */
+/** Marcas de correo «ya enviado» para reservas de canal: lo que ya manda el canal
+ *  (confirmación, llegada, salida) y la promoción no se escriben encima. Los de
+ *  7 días y víspera SÍ salen: llevan el enlace de los datos de la policía y el
+ *  alias del canal reenvía (decisión de Jesús, 17-sep-2026; misma regla que
+ *  sync-ical-imports). */
 const EMAIL_FLAGS_CANAL = [
-    "confirmation_email_sent_at", "reminder_7d_email_sent_at", "reminder_24h_email_sent_at",
-    "arrival_email_sent_at", "departure_email_sent_at", "reactivation_email_sent_at",
+    "confirmation_email_sent_at", "arrival_email_sent_at",
+    "departure_email_sent_at", "reactivation_email_sent_at",
 ];
 const PLACEHOLDER_EMAIL = "sin-correo@example.invalid";
 
