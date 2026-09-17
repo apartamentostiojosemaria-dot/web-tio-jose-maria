@@ -23,7 +23,10 @@ export const SERIE_RECTIFICATIVA_PREFIX = "R";
 /**
  * Tipo de IVA aplicable. Alojamiento turístico rural en España = 10 %
  * (Ley 37/1992, art. 91.Uno.2.2.º, servicios de hostelería y alojamiento).
- * Si algún día cambia el tipo, se cambia AQUÍ y nada más.
+ * DECIDIDO por Jesús el 17-sep-2026: 10 %. Se valoró la exención del
+ * art. 20.Uno.23.º (arrendamiento de vivienda sin servicios de hostelería
+ * durante la estancia); no aplica. Si algún día cambia el tipo, se cambia
+ * AQUÍ y nada más.
  */
 export const IVA_RATE = 10.0;
 
