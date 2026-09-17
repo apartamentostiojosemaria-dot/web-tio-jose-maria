@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
     ChevronLeft, ChevronRight, Check, Shield, Trash2, Eraser, Save,
-    UserPlus, Pencil, AlertCircle,
+    UserPlus, Pencil, AlertCircle, Users,
 } from 'lucide-react';
 import PageHead from '../components/seo/PageHead';
 import { supabase } from '../lib/supabase';
@@ -320,15 +320,24 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
                     setTravelers(guardado.travelers);
                     setHuboBorrador(true);
                 } else {
+                    // Una ficha por persona de la reserva desde el principio:
+                    // si son dos, la cabecera dice «1 de 2» y el paso siguiente
+                    // es la segunda persona. Antes salía «1 de 1» y la segunda
+                    // había que añadirla al final, y eso se entendía como que
+                    // la reserva era de uno (visto por Jesús el 17-sep-2026).
                     const partes = (data.guest_name || '').trim().split(/\s+/);
-                    setTravelers([{
-                        ...emptyTraveler(true),
-                        nombre: partes[0] || '',
-                        apellido_primero: partes[1] || '',
-                        apellido_segundo: partes.slice(2).join(' ') || '',
-                        email: data.guest_email || '',
-                        telefono_movil: data.guest_phone || '',
-                    }]);
+                    const plazas = Math.max(Number(data.pax_count) || 1, 1);
+                    setTravelers([
+                        {
+                            ...emptyTraveler(true),
+                            nombre: partes[0] || '',
+                            apellido_primero: partes[1] || '',
+                            apellido_segundo: partes.slice(2).join(' ') || '',
+                            email: data.guest_email || '',
+                            telefono_movil: data.guest_phone || '',
+                        },
+                        ...Array.from({ length: plazas - 1 }, () => emptyTraveler(false)),
+                    ]);
                 }
             }
             setCargando(false);
@@ -420,7 +429,8 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
         .filter((m) => m.falta).length;
     const pagadorPendiente = preguntarPagador
         && (!pagador.quien || (pagador.quien === 'otra' && !pagador.nombre.trim()));
-    const sePuedeEnviar = menoresPendientes === 0 && !pagadorPendiente;
+    const incompletos = travelers.filter((t) => Object.keys(pegasDe(t, fechaEntrada)).length > 0).length;
+    const sePuedeEnviar = incompletos === 0 && menoresPendientes === 0 && !pagadorPendiente;
 
     const enviar = async () => {
         if (!accept || !sePuedeEnviar) return;
@@ -647,6 +657,11 @@ const Portada = ({ booking, huboBorrador, onEmpezar }) => (
                 Sólo se usan para cumplir esa obligación. No se comparten con nadie más.</li>
             <li className="flex gap-2"><Save size={18} className="mt-1 shrink-0 text-rural-600" aria-hidden="true" />
                 Puedes dejarlo a medias: lo que escribas se queda guardado en este móvil.</li>
+            {(booking?.pax_count || 1) > 1 && (
+                <li className="flex gap-2"><Users size={18} className="mt-1 shrink-0 text-rural-600" aria-hidden="true" />
+                    Puedes rellenar a todos desde este móvil, o que cada uno lo haga desde el suyo
+                    con este mismo enlace.</li>
+            )}
         </ul>
 
         <button
@@ -686,6 +701,12 @@ const PasoViajero = ({ idx, traveler: t, total, fechaEntrada, paises, mostrarPeg
                     ? 'Empezamos por quien reserva.'
                     : 'Los datos de cada persona que duerme aquí, también los niños.'}
             </p>
+            {idx > 0 && (
+                <p className="text-sm text-gray-600 mt-2 leading-snug">
+                    Si prefiere rellenarlo ella misma desde su móvil con el mismo enlace, toca
+                    «Quitar»: su ficha no se pierde, la hace ella.
+                </p>
+            )}
 
             <Caja className="mt-5">
                 <Campo etiqueta="Nombre" id={`n${idx}`} error={pegas.nombre}>
