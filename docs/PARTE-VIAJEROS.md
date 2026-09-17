@@ -176,11 +176,11 @@ digital o Cl@ve del titular.
    → trámite **«Registro de establecimientos y entidades»**.
 2. Identificarse con certificado digital o Cl@ve.
 3. Rellenar el formulario de la **entidad** (el titular como arrendador) y el
-   de **cada establecimiento**. ⚠️ Antes de esto hay que decidir una cosa de
-   negocio: **los cuatro apartamentos comparten el número de registro
-   `A/JA/00060`**. Hay que preguntar en el propio trámite si van como UN
-   establecimiento o como cuatro. Del resultado depende si `SES_ESTABLECIMIENTO`
-   es un solo código o hacen falta cuatro (ver §7).
+   del **establecimiento**. ✅ **DECIDIDO el 17-sep-2026 por Jesús: van como UN
+   SOLO establecimiento**, coherente con que los cuatro apartamentos comparten
+   el número de registro turístico `A/JA/00060`. Por tanto `SES_ESTABLECIMIENTO`
+   es **un único código** y el módulo `submit-ses-hospedajes` **no se toca**
+   (ya lee un solo código en `config.ts`).
 4. 🟡 **Marcar la casilla «Envío de comunicaciones por servicio web»**, que
    está al final del formulario de alta de la entidad. Si se olvida, el alta
    sale bien pero el servicio web contesta siempre `10120`; se puede activar
