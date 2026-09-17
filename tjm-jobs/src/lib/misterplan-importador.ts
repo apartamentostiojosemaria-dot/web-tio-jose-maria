@@ -314,7 +314,22 @@ async function crear(sb: SupabaseClient, apt: Apt, p: CorreoParseado, recibido: 
     if (error) throw new Error(`insert guest_bookings: ${error.message}`);
     const id = (data as { id: number }).id;
 
-    if (canal === "web" && p.paid && p.paid > 0) {
+    // Una estancia que YA TERMINÓ cuando se trae es historia (informes, INE),
+    // no una reserva viva: su cobro pasó antes de este sistema, por la vía de
+    // entonces (tarjeta virtual de Booking, transferencia...). Se apunta como
+    // cobrada con la fecha de salida y la nota dice de dónde sale; si no, el
+    // panel de la madre le pide dinero de gente que se fue hace meses (visto
+    // por Jesús el 17-sep-2026 con 12 estancias de Booking de mayo a agosto).
+    const yaTerminada = fila.status === "completed";
+    if (yaTerminada && p.total && p.total > 0) {
+        const { error: pErr } = await sb.from("booking_payments").insert({
+            booking_id: id, amount: p.total, method: esCanal ? (canal === "booking" ? "booking" : "ota") : "transferencia",
+            paid_on: p.checkOut,
+            note: "Estancia anterior a este sistema, traída de MisterPlan como historia: el cobro se hizo entonces por la vía de la época. Apuntado para cerrarla, no es un cobro registrado aquí.",
+            created_by: "importacion-misterplan-correo",
+        });
+        if (pErr) return { action: "creada", booking_id: id, necesita_atencion: true, detail: { motivo: `estancia terminada creada pero no se pudo cerrar su cobro: ${pErr.message}` } };
+    } else if (canal === "web" && p.paid && p.paid > 0) {
         const { error: pErr } = await sb.from("booking_payments").insert({
             booking_id: id, amount: p.paid, method: "transferencia", paid_on: recibido.slice(0, 10),
             note: "Anticipo que consta pagado en la confirmación de MisterPlan; fecha = la del correo", created_by: "importacion-misterplan-correo",
