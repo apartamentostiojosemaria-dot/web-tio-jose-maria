@@ -48,6 +48,8 @@
 //
 // v11 (16-sep-2026): un cierre del canal ya no cuenta como overbooking contra
 // una reserva propia (solo lo que trae huésped).
+// v12 (17-sep-2026): «no se pudo leer el calendario» solo avisa si también
+// falló la pasada anterior (un timeout suelto de Holidu no es noticia).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { addDays, extractGuestInfo, parseIcal } from "./parse.ts";
@@ -221,6 +223,22 @@ async function pushAlert(titulo: string, mensaje: string): Promise<string> {
     } catch {
         return "email_error";
     }
+}
+
+/** ¿La pasada anterior (la última apuntada en channel_sync_log antes de
+ *  la de ahora) tampoco pudo descargar este canal? Sin log no se sabe:
+ *  se avisa como antes. */
+async function fallóLaPasadaAnterior(caps: Caps, apartmentId: number, channel: string): Promise<boolean> {
+    if (!caps.syncLog) return true;
+    const { data } = await supabase
+        .from("channel_sync_log")
+        .select("fetched")
+        .eq("apartment_id", apartmentId)
+        .eq("channel", channel)
+        .order("ran_at", { ascending: false })
+        .range(1, 1); // la fila 0 es la pasada de ahora, recién insertada
+    if (!data || data.length === 0) return true;
+    return data[0].fetched === false;
 }
 
 /** No repetir el mismo aviso cada 15 minutos. Sin la tabla de dedupe no se
@@ -787,7 +805,10 @@ Deno.serve(async (req) => {
 
             // Un canal que no se puede descargar es un canal que deja de
             // proteger contra overbooking: se avisa, no solo se pinta.
-            if (!dryRun && !outcome.fetched) {
+            // Pero no al primer tropiezo: el 17-sep Holidu tardó >20 s un
+            // minuto y mandó cuatro correos por nada. Solo si la pasada
+            // anterior también falló (30 min sin poder leer el canal).
+            if (!dryRun && !outcome.fetched && await fallóLaPasadaAnterior(caps, apt.id, ch.key)) {
                 await alertOnce(
                     caps, apt.id, ch.key, "no_descarga", 6,
                     `No se pudo leer el calendario de ${ch.label} (${apt.name})`,
