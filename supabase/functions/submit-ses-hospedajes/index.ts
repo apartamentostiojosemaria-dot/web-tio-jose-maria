@@ -444,10 +444,68 @@ async function accionYaLoHeMandado(grupo: Grupo, quien: string): Promise<Salida>
     return { estado: "mandado", mensaje: "Queda apuntado como mandado." };
 }
 
+/**
+ * Comprueba el acuse de una RESERVA o ANULACION, cuyo lote vive en
+ * `ses_comunicaciones` y NO en `traveler_records`.
+ *
+ * Por que existe: hasta el 17-sep-2026 `accionComprobar` solo miraba
+ * `grupo.filas[0].mir_reference`, que son filas de VIAJEROS. Con el parte aun
+ * sin datos, esas filas estan vacias, asi que el lote de la reserva —guardado
+ * y visible en la base— nunca se encontraba y la respuesta era «no tiene
+ * ningun lote que comprobar». Se descubrio al mandar la primera comunicacion
+ * real de la historia del alojamiento. Sin esto no hay forma de pasar de
+ * «Recibido» a «Aceptado», que es la unica diferencia que cuenta: el MIR
+ * responde codigo 0 al encolar, no al aceptar.
+ */
+async function comprobarComunicacion(
+    bookingId: number, tipo: "reserva" | "anulacion",
+): Promise<Salida | null> {
+    const com = await leerComunicacion(bookingId, tipo);
+    if (!com?.lote) return null;
+    if (com.estado === ESTADO_SES.ACEPTADO) {
+        return { estado: "mandado", mensaje: `La ${tipo} ya estaba aceptada por el Ministerio.` };
+    }
+
+    const r = await consultarLote(String(com.lote));
+    if (!r.consultado) {
+        return { estado: "error", mensaje: `No se ha podido consultar el lote de la ${tipo}.`, detalle: { errores: r.errores } };
+    }
+    if (r.aceptado === true) {
+        await anotarComunicacion(bookingId, tipo, {
+            estado: ESTADO_SES.ACEPTADO,
+            mensaje: `Aceptado por el Ministerio. Lote ${com.lote}`,
+            intentos: com.intentos, lote: com.lote,
+            codigos: r.codigosComunicacion, acuse: r.crudo, reintentar: false,
+        });
+        return {
+            estado: "mandado", mensaje: `El Ministerio ha aceptado la ${tipo}.`,
+            detalle: { lote: com.lote, comunicaciones: r.codigosComunicacion },
+        };
+    }
+    if (r.aceptado === false) {
+        await anotarComunicacion(bookingId, tipo, {
+            estado: ESTADO_SES.RECHAZADO,
+            mensaje: `Rechazado: ${r.errores.join(" · ")}`,
+            intentos: com.intentos, lote: com.lote,
+            acuse: r.crudo, reintentar: false,
+        });
+        return { estado: "error", mensaje: `El Ministerio ha RECHAZADO la ${tipo}: ${r.errores.join(" · ")}` };
+    }
+    return { estado: "mandado", mensaje: `El lote de la ${tipo} sigue en proceso. Vuelve a comprobarlo mas tarde.` };
+}
+
 async function accionComprobar(grupo: Grupo): Promise<Salida> {
+    if (!hayCredenciales()) return { estado: "error", mensaje: "Sin credenciales no se puede comprobar." };
+
+    // La reserva y la anulacion van por su propia tabla. Se miran primero
+    // porque son lo unico que existe mientras no haya datos de viajeros.
+    for (const tipo of ["anulacion", "reserva"] as const) {
+        const r = await comprobarComunicacion(grupo.reserva.id, tipo);
+        if (r) return r;
+    }
+
     const lote = grupo.filas[0]?.mir_reference;
     if (!lote) return { estado: "sin_datos", mensaje: "Esta reserva no tiene ningún lote que comprobar." };
-    if (!hayCredenciales()) return { estado: "error", mensaje: "Sin credenciales no se puede comprobar." };
 
     const r = await consultarLote(String(lote));
     if (!r.consultado) {
