@@ -316,8 +316,17 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
             } else {
                 setBooking(data);
                 const guardado = leerBorrador(code);
+                const plazas = Math.max(Number(data.pax_count) || 1, 1);
                 if (guardado?.travelers?.length) {
-                    setTravelers(guardado.travelers);
+                    // Un borrador guardado con menos personas que plazas (por
+                    // ejemplo, de antes de que el formulario abriera con una
+                    // ficha por persona) se completa hasta las plazas: lo
+                    // escrito se conserva, y las que faltan aparecen vacías.
+                    const faltan = Math.max(plazas - guardado.travelers.length, 0);
+                    setTravelers([
+                        ...guardado.travelers,
+                        ...Array.from({ length: faltan }, () => emptyTraveler(false)),
+                    ]);
                     setHuboBorrador(true);
                 } else {
                     // Una ficha por persona de la reserva desde el principio:
@@ -326,7 +335,6 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
                     // había que añadirla al final, y eso se entendía como que
                     // la reserva era de uno (visto por Jesús el 17-sep-2026).
                     const partes = (data.guest_name || '').trim().split(/\s+/);
-                    const plazas = Math.max(Number(data.pax_count) || 1, 1);
                     setTravelers([
                         {
                             ...emptyTraveler(true),
