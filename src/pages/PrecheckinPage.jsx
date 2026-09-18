@@ -14,6 +14,13 @@ const fechaLegible = (iso) => {
     return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
 };
 
+/** ['Jesús', 'María'] → «Jesús y María» · ['Ana'] → «Ana» */
+const listaNombres = (ns) => {
+    const l = (ns || []).filter(Boolean);
+    if (l.length <= 1) return l[0] || 'una persona';
+    return `${l.slice(0, -1).join(', ')} y ${l[l.length - 1]}`;
+};
+
 // /precheckin?code=TJM-XXXXXX
 // ============================
 // Formulario público del registro documental de viajeros (RD 933/2021).
@@ -280,6 +287,9 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
     const [errorEnvio, setErrorEnvio] = useState(null);
     const [hecho, setHecho] = useState(false);
     const [huboBorrador, setHuboBorrador] = useState(false);
+    // Fichas que YA están en la base (otro móvil las mandó antes): cuántas y
+    // los nombres de pila. Con dos móviles, el segundo solo rellena lo que falta.
+    const [yaHay, setYaHay] = useState({ rellenas: 0, nombres: [] });
     const [guardadoAviso, setGuardadoAviso] = useState(false);
     const [pagador, setPagador] = useState({ quien: '', nombre: '' });
 
@@ -317,7 +327,15 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
                 setBooking(data);
                 const guardado = leerBorrador(code);
                 const plazas = Math.max(Number(data.pax_count) || 1, 1);
-                if (guardado?.travelers?.length) {
+                const rellenas = Math.max(Number(data.rellenas) || 0, 0);
+                setYaHay({ rellenas, nombres: Array.isArray(data.nombres_ya) ? data.nombres_ya : [] });
+                if (!guardado?.travelers?.length && rellenas > 0) {
+                    // Otro móvil ya mandó fichas (migración 0038): aquí solo se
+                    // piden las que faltan, sin prellenar al titular (ya está).
+                    // Si están todas, una vacía por si viene alguien más.
+                    const faltan = Math.max(plazas - rellenas, 0);
+                    setTravelers(Array.from({ length: Math.max(faltan, 1) }, () => emptyTraveler(false)));
+                } else if (guardado?.travelers?.length) {
                     // Un borrador guardado con menos personas que plazas (por
                     // ejemplo, de antes de que el formulario abriera con una
                     // ficha por persona) se completa hasta las plazas: lo
@@ -534,6 +552,7 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
                         <Portada
                             booking={booking}
                             huboBorrador={huboBorrador}
+                            yaHay={yaHay}
                             onEmpezar={() => setPaso(1)}
                         />
                     ) : paso <= total ? (
@@ -631,7 +650,7 @@ const Caja = ({ children, className = '' }) => (
     <div className={`bg-white rounded-3xl border border-gray-200 shadow-sm p-6 ${className}`}>{children}</div>
 );
 
-const Portada = ({ booking, huboBorrador, onEmpezar }) => (
+const Portada = ({ booking, huboBorrador, yaHay, onEmpezar }) => (
     <>
         <h1 className="font-serif text-3xl font-bold text-text-primary leading-tight">
             Tus datos antes de llegar
@@ -657,6 +676,13 @@ const Portada = ({ booking, huboBorrador, onEmpezar }) => (
         {huboBorrador && (
             <p className="mt-4 text-base text-rural-800 bg-rural-50 border border-rural-200 rounded-2xl px-4 py-3">
                 Ya habías empezado. Seguimos donde lo dejaste.
+            </p>
+        )}
+        {!huboBorrador && yaHay?.rellenas > 0 && (
+            <p className="mt-4 text-base text-rural-800 bg-rural-50 border border-rural-200 rounded-2xl px-4 py-3">
+                {yaHay.rellenas >= (booking?.pax_count || 1)
+                    ? <>Ya tenemos los datos de {listaNombres(yaHay.nombres)} ({yaHay.rellenas} de {booking?.pax_count || 1}). Si viene alguien más, añade aquí sus datos; si no, no hace falta nada.</>
+                    : <>Ya tenemos los datos de {listaNombres(yaHay.nombres)} ({yaHay.rellenas} de {booking?.pax_count || 1}). {(booking?.pax_count || 1) - yaHay.rellenas === 1 ? 'Falta 1 persona: rellena la tuya.' : `Faltan ${(booking?.pax_count || 1) - yaHay.rellenas} personas: rellena la tuya.`}</>}
             </p>
         )}
 
@@ -705,9 +731,11 @@ const PasoViajero = ({ idx, traveler: t, total, fechaEntrada, paises, mostrarPeg
                 )}
             </div>
             <p className="text-base text-gray-600 mt-1">
-                {idx === 0
+                {idx === 0 && t.is_titular
                     ? 'Empezamos por quien reserva.'
-                    : 'Los datos de cada persona que duerme aquí, también los niños.'}
+                    : idx === 0
+                        ? 'Los tuyos. Los de quien reservó ya los tenemos.'
+                        : 'Los datos de cada persona que duerme aquí, también los niños.'}
             </p>
             {idx > 0 && (
                 <p className="text-sm text-gray-600 mt-2 leading-snug">
