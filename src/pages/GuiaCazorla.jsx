@@ -73,8 +73,8 @@ const GuiaCazorla = () => (
         <main className="max-w-3xl mx-auto px-6 pb-20">
             <Section icon={Home} title="La casa y quien la lleva">
                 <p>La casa lleva el nombre del bisabuelo, <strong>Tío José María</strong>, que vivió aquí y dejó esta casona del siglo XVII en pie. Cuatro generaciones después, la siguen llevando los suyos: <strong>Mari Carmen y Jesús</strong>, en persona. Si necesitas algo durante la estancia, son ellos quienes te lo arreglan.</p>
-                <p>Cuando tocó restaurarla, respetamos lo que merecía respeto: los muros originales de piedra y barro a la vista, los techos de madera y caña, la chimenea de leña en cada salón. Lo demás —cocina equipada, calefacción, aire, WiFi— lo añadimos para que vivirla sea cómodo, no incómodamente auténtico.</p>
-                <p><strong>Albahaca</strong> y <strong>Tomillo</strong> son para dos personas que vienen a desconectar. <strong>Lavanda</strong> y <strong>Romero</strong>, para familias o grupos pequeños. Los cuatro tienen chimenea, los cuatro tienen vistas al Valle del Guadiana Menor, y los cuatro son independientes: nadie cruza tu salón.</p>
+                <p>Cuando tocó restaurarla, respetamos lo que merecía respeto: los muros originales de piedra y barro a la vista, los techos de madera y caña. Lo demás —cocina equipada, calefacción, aire, WiFi— lo añadimos para que vivirla sea cómodo, no incómodamente auténtico.</p>
+                <p><strong>Albahaca</strong> y <strong>Tomillo</strong> son para dos personas que vienen a desconectar. <strong>Lavanda</strong> y <strong>Romero</strong>, para familias o grupos pequeños. Los cuatro tienen vistas al Valle del Guadiana Menor, y los cuatro son independientes: nadie cruza tu salón.</p>
             </Section>
 
             <Section icon={Sparkles} title="Hinojares: el pueblo más pequeño de Jaén">
@@ -224,7 +224,7 @@ const GuiaCazorla = () => (
                     </div>
                     <div>
                         <p className="font-serif font-bold text-text-primary mb-1">❄️ Invierno (diciembre-febrero)</p>
-                        <p>Chimenea, gastronomía de matanza, Candelaria el 2 de febrero con sus hogueras, nieve ocasional en cumbres. Evita la A-319 al puerto con hielo y excursiones tarde — anochece a las 18:00.</p>
+                        <p>Gastronomía de matanza, Candelaria el 2 de febrero con sus hogueras, nieve ocasional en cumbres. Evita la A-319 al puerto con hielo y excursiones tarde — anochece a las 18:00.</p>
                     </div>
                 </div>
             </Section>

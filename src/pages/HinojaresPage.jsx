@@ -62,7 +62,7 @@ const FAQ_ITEMS = [
     },
     {
         question: '¿Cuál es la mejor época para visitar Hinojares y la Sierra de Cazorla?',
-        answer: 'Primavera (abril-junio) y otoño (septiembre-noviembre) son las mejores épocas: temperaturas agradables (15-25 °C), paisajes en plena explosión (almendros en flor en primavera, ocres del olivar en otoño) y menos afluencia. El verano es cálido pero seco (20-32 °C) y permite disfrutar de ríos y piscinas naturales. En invierno (3-10 °C) la sierra ofrece silencio, cielos limpios y planes junto a la chimenea.'
+        answer: 'Primavera (abril-junio) y otoño (septiembre-noviembre) son las mejores épocas: temperaturas agradables (15-25 °C), paisajes en plena explosión (almendros en flor en primavera, ocres del olivar en otoño) y menos afluencia. El verano es cálido pero seco (20-32 °C) y permite disfrutar de ríos y piscinas naturales. En invierno (3-10 °C) la sierra ofrece silencio, cielos limpios y pueblos tranquilos.'
     },
     {
         question: '¿Qué se puede hacer en Hinojares y alrededores?',

@@ -472,7 +472,7 @@ const ApartmentPanel = ({ booking, guidebook }) => {
             {/* Aparatos del guidebook */}
             {guidebook?.appliance_instructions && (
                 <Section title="Cómo usar los aparatos">
-                    <ExpandableCard icon={Flame} title="Calefacción, chimenea, electrodomésticos…" defaultOpen>
+                    <ExpandableCard icon={Flame} title="Calefacción y electrodomésticos" defaultOpen>
                         <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{guidebook.appliance_instructions}</p>
                     </ExpandableCard>
                 </Section>

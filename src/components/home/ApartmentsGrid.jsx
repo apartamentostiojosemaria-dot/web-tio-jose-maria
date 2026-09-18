@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Users, Bath, Flame } from 'lucide-react';
+import { Users, Bath } from 'lucide-react';
 import FadeInUp from '../shared/FadeInUp';
 import ApartmentComparison from './ApartmentComparison';
 import { WP, whatsappLink } from '../../constants/urls';
@@ -7,10 +7,10 @@ import { imgAttrs } from '../../utils/supabaseImage';
 
 const ApartmentsGrid = ({ apartments }) => {
     const defaultApartments = [
-        { name: 'Albahaca', tag: 'Romántico', capacityPeople: 2, bathrooms: 1, href: '/Albahaca.html', img: `${WP}/ALBAHACA-1.jpg`, desc: 'Íntimo y acogedor. Diseñado para parejas. Disfruta de una cena romántica frente a la chimenea después de una ruta por el parque.' },
+        { name: 'Albahaca', tag: 'Romántico', capacityPeople: 2, bathrooms: 1, href: '/Albahaca.html', img: `${WP}/ALBAHACA-1.jpg`, desc: 'Íntimo y acogedor. Diseñado para parejas. Una cena tranquila en casa después de una ruta por el parque.' },
         { name: 'Tomillo', tag: 'Con Vistas', capacityPeople: 2, bathrooms: 1, href: '/Tomillo.html', img: `${WP}/TOMILLOHOME1.jpg`, desc: 'Ubicado en la segunda planta con balcón y vistas al valle. Techos de madera abuhardillados que le dan un encanto especial.' },
-        { name: 'Lavanda', tag: 'Familiar', capacityPeople: 4, bathrooms: 1, href: '/Lavanda.html', img: `${WP}/LAVANDAHOME1.jpg`, desc: 'Espacioso y luminoso. Salón con chimenea, cocina completa, dormitorio de matrimonio y otro doble. Ideal para familias.' },
-        { name: 'Romero', tag: 'Familiar', capacityPeople: 4, bathrooms: 2, href: '/Romero.html', img: `${WP}/ROMEROHOME1.jpg`, desc: 'Confort rústico con todas las comodidades. Salón con chimenea para las noches de invierno y dos dormitorios independientes.' },
+        { name: 'Lavanda', tag: 'Familiar', capacityPeople: 4, bathrooms: 1, href: '/Lavanda.html', img: `${WP}/LAVANDAHOME1.jpg`, desc: 'Espacioso y luminoso. Salón amplio, cocina completa, dormitorio de matrimonio y otro doble. Ideal para familias.' },
+        { name: 'Romero', tag: 'Familiar', capacityPeople: 4, bathrooms: 2, href: '/Romero.html', img: `${WP}/ROMEROHOME1.jpg`, desc: 'Confort rústico con todas las comodidades. Salón para las noches de invierno y dos dormitorios independientes.' },
     ];
 
     const activeApartments = apartments?.filter(apt => apt.is_active) || [];
@@ -70,9 +70,6 @@ const ApartmentsGrid = ({ apartments }) => {
                                             </span>
                                             <span className="flex items-center gap-1.5">
                                                 <Bath size={15} className="text-accent" aria-hidden="true" /> {apt.bathrooms} baño{apt.bathrooms !== 1 ? 's' : ''}
-                                            </span>
-                                            <span className="flex items-center gap-1.5">
-                                                <Flame size={15} className="text-accent" aria-hidden="true" /> Chimenea
                                             </span>
                                         </div>
 

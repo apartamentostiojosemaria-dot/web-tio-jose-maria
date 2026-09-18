@@ -69,7 +69,6 @@ const AMENITY_LABELS = {
     tv: 'TV de pantalla plana',
     heating: 'Calefacción',
     ac: 'Aire acondicionado',
-    fireplace: 'Chimenea de leña',
     kitchen: 'Vitrocerámica y menaje',
     fridge: 'Frigorífico',
     microwave: 'Microondas y tostadora',

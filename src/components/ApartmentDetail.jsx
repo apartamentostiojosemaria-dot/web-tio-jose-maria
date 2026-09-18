@@ -22,7 +22,6 @@ const AMENITIES_ICONS = {
     wifi: { label: 'WiFi Gratis', icon: Wifi },
     heating: { label: 'Calefacción', icon: Thermometer },
     ac: { label: 'Aire Acondicionado', icon: Wind },
-    fireplace: { label: 'Chimenea', icon: Flame },
     kitchen: { label: 'Vitrocerámica y Menaje', icon: UtensilsCrossed },
     fridge: { label: 'Frigorífico', icon: Refrigerator },
     microwave: { label: 'Microondas y Tostadora', icon: Microwave },

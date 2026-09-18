@@ -2,11 +2,11 @@ import FadeInUp from '../shared/FadeInUp';
 import { WP } from '../../constants/urls';
 import { imgAttrs } from '../../utils/supabaseImage';
 
-const DEFAULT_INTRO_TEXT = `Bienvenidos a Tío José María. Ubicados en el sur del Parque Natural de Cazorla, nuestros 4 apartamentos combinan la arquitectura tradicional andaluza con el confort moderno.\n\nMuros de piedra, techos de vigas de madera y el calor de la chimenea te esperan. Ideal para parejas que buscan intimidad o familias que desean reconectar con la naturaleza.`;
+const DEFAULT_INTRO_TEXT = `Bienvenidos a Tío José María. Ubicados en el sur del Parque Natural de Cazorla, nuestros 4 apartamentos combinan la arquitectura tradicional andaluza con el confort moderno.\n\nMuros de piedra, techos de vigas de madera y el silencio del pueblo te esperan. Ideal para parejas que buscan intimidad o familias que desean reconectar con la naturaleza.`;
 const DEFAULT_HEADING = 'Más que una casa rural, es historia viva.';
 const DEFAULT_BULLETS = [
     'Ubicación privilegiada en Hinojares',
-    'Chimenea de leña en todos los apartamentos',
+    'Calefacción y aire acondicionado en todos los apartamentos',
     'WiFi gratuito y ambiente familiar',
 ];
 
