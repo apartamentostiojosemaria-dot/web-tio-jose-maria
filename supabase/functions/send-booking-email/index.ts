@@ -31,7 +31,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 
 const VALID_TEMPLATES: TemplateKey[] = [
     "confirmation", "reminder_7d", "reminder_24h",
-    "review_request", "reactivation", "operator_new_booking",
+    "review_request", "reactivation", "operator_new_booking", "operator_precheckin_done",
     "booking_changed", "booking_cancelled",
 ];
 
@@ -117,6 +117,9 @@ Deno.serve(async (req) => {
     }
 
     const flag = TEMPLATE_TO_FLAG[template];
+    // Los avisos internos van al buzón del negocio: no dependen del correo del
+    // huésped (los de Holidu no lo tienen) ni de si vino por un canal.
+    const esInterno = template.startsWith("operator_");
 
     // Cargar booking + apartment (incluye images para mostrar foto en el email)
     const { data: booking, error: bErr } = await supabase
@@ -129,9 +132,11 @@ Deno.serve(async (req) => {
         .single();
 
     if (bErr || !booking) return json(404, { error: "booking_not_found" });
-    if (!booking.guest_email) return json(400, { error: "no_guest_email" });
-    if (esPlaceholder(booking.guest_email)) {
-        return json(200, { ok: true, skipped: "placeholder_email" });
+    if (!esInterno) {
+        if (!booking.guest_email) return json(400, { error: "no_guest_email" });
+        if (esPlaceholder(booking.guest_email)) {
+            return json(200, { ok: true, skipped: "placeholder_email" });
+        }
     }
 
     // Los avisos del panel van solo a quien reservó directo: al huésped de
@@ -218,7 +223,15 @@ Deno.serve(async (req) => {
         customer_preferences = customer?.preferences || null;
     }
 
+    // Para el aviso de «ya han rellenado»: los nombres de pila, nada más.
+    let precheckin_nombres: string[] = [];
+    if (template === "operator_precheckin_done") {
+        const { data: fichas } = await supabase.from("traveler_records").select("nombre, is_titular").eq("booking_id", booking.id).order("is_titular", { ascending: false });
+        precheckin_nombres = (fichas || []).map((f) => String((f as { nombre?: string }).nombre || "").trim()).filter(Boolean);
+    }
+
     const payload = {
+        precheckin_nombres,
         booking_code: booking.booking_code,
         guest_name: booking.guest_name,
         guest_email: booking.guest_email,
@@ -260,7 +273,7 @@ Deno.serve(async (req) => {
     const { subject, html, from } = render(template, payload);
 
     // El destinatario depende del template: operator_new_booking va al operador.
-    const recipient = template === "operator_new_booking" ? OPERATOR_NOTIFY_EMAIL : booking.guest_email;
+    const recipient = esInterno ? OPERATOR_NOTIFY_EMAIL : booking.guest_email;
 
     let resendId: string | undefined;
     try {
@@ -281,5 +294,5 @@ Deno.serve(async (req) => {
         .update(flags)
         .eq("id", booking.id);
 
-    return json(200, { ok: true, template, resendId, sentTo: booking.guest_email });
+    return json(200, { ok: true, template, resendId, sentTo: recipient });
 });

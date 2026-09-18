@@ -27,6 +27,8 @@ interface BookingPayload {
     free_cancellation?: boolean;
     /** Solo reminder_24h: cuántos han rellenado los datos de la policía y cuántos se esperan. */
     precheckin?: { rellenos: number; total: number } | null;
+    /** Solo operator_precheckin_done: nombres de pila de quienes han rellenado. */
+    precheckin_nombres?: string[];
     /** Solo confirmation: si el formulario de la policía ya está abierto (llegada a 7 días o menos).
      *  Si no lo está, la confirmación no lo menciona: lo pide el correo de los 7 días. */
     precheckin_abierto?: boolean;
@@ -148,7 +150,7 @@ const bookingSummary = (b: BookingPayload) => `
 const LLEGADA = `<p><strong>Cómo llegar:</strong> Calle Baja 1, Hinojares. Se aparca gratis justo enfrente. Con este enlace el móvil te lleva a la puerta:<br><a href="${MAPS_URL}" style="display:inline-block;margin-top:6px;color:#556B2F;font-weight:700;text-decoration:underline;">Abrir en Google Maps</a></p>
 <p><strong>Entrada:</strong> a partir de las 16:00. Las llaves te las damos en mano. Si vas a llegar después de las 21:00, avísanos por WhatsApp y te decimos cómo lo hacemos.</p>`;
 
-type TemplateKey = "confirmation" | "reminder_7d" | "reminder_24h" | "review_request" | "reactivation" | "operator_new_booking" | "booking_changed" | "booking_cancelled" | "guide_link";
+type TemplateKey = "confirmation" | "reminder_7d" | "reminder_24h" | "review_request" | "reactivation" | "operator_new_booking" | "operator_precheckin_done" | "booking_changed" | "booking_cancelled" | "guide_link";
 
 interface RenderedEmail { subject: string; html: string; from: string; }
 
@@ -310,6 +312,29 @@ const customerAlertsBlock = (b: BookingPayload): string => {
     return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;margin:16px 0;"><tr><td style="padding:14px 18px;">${warningsHtml}${tagsHtml}${prefsHtml}</td></tr></table>`;
 };
 
+// 11. Aviso interno: ya han rellenado los datos de la policía. Lo dispara la
+// base (trigger de la migración 0040) cuando entra la última ficha. Al buzón
+// del negocio, no al huésped. Lo que ella tiene que hacer: darles la llave y
+// «Terminar el check-in» en el panel.
+const renderOperatorPrecheckinDone = (b: BookingPayload): RenderedEmail => {
+    const nombres = (b.precheckin_nombres || []).filter(Boolean);
+    const quienes = nombres.length === 0 ? "Los huéspedes" : nombres.length === 1 ? nombres[0] : `${nombres.slice(0, -1).join(", ")} y ${nombres[nombres.length - 1]}`;
+    const hoyMadrid = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+    const cuando = b.check_in === hoyMadrid ? "hoy" : `el ${diaMes(b.check_in)}`;
+    return {
+        from: EMAIL_FROM,
+        subject: `${quienes} ya ${nombres.length === 1 ? "ha" : "han"} rellenado los datos de la policía — ${b.apartment_name}, ${cuando}`,
+        html: shell(
+            `Datos de la policía: ya están todos`,
+            `<p><strong>${quienes}</strong> ${nombres.length === 1 ? "ha" : "han"} rellenado sus datos para la reserva de <strong>${b.apartment_name}</strong> (entra ${cuando}). En el panel el semáforo está en verde.</p>
+            ${bookingSummary(b)}
+            <p>Lo que queda: darles la llave y pulsar <strong>«Terminar el check-in»</strong> en su reserva, para que quede la hora de entrada. El parte a la policía sale solo.</p>`,
+            "Abrir la reserva en el panel",
+            `${SITE_URL}/panel`
+        ),
+    };
+};
+
 // 10. Aviso interno: va al buzón del negocio (la cuenta de Mari Carmen), no al huésped.
 const renderOperatorNewBooking = (b: BookingPayload): RenderedEmail => ({
     from: EMAIL_FROM,
@@ -392,6 +417,7 @@ export const render = (key: TemplateKey, b: BookingPayload): RenderedEmail => {
         case "review_request":          return renderReviewRequest(b);
         case "reactivation":            return renderReactivation(b);
         case "operator_new_booking":    return renderOperatorNewBooking(b);
+        case "operator_precheckin_done": return renderOperatorPrecheckinDone(b);
         case "booking_changed":         return renderBookingChanged(b);
         case "booking_cancelled":       return renderBookingCancelled(b);
         case "guide_link":              return renderGuideLink(b);
@@ -405,6 +431,7 @@ export const TEMPLATE_TO_FLAG: Record<TemplateKey, string> = {
     review_request:         "review_request_email_sent_at",
     reactivation:           "reactivation_email_sent_at",
     operator_new_booking:   "operator_notified_at",       // anotamos pero no bloqueamos reenvíos
+    operator_precheckin_done: "precheckin_completo_avisado_at",
     booking_changed:        "change_email_sent_at",       // se anota la última vez; NO bloquea reenvíos
     booking_cancelled:      "cancellation_email_sent_at",
     guide_link:             "",                            // no se apunta: se puede pedir las veces que haga falta

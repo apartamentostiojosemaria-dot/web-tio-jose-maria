@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { ArrowDownRight, ArrowUpRight, Shield, Euro, Brush, ChevronRight } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, Shield, Euro, Brush, ChevronRight, Check } from 'lucide-react';
 import {
     Tarjeta, Aviso, Cargando, formatoEuro,
     hoyISO, aISO, aFecha, fechaEnPalabrasRelativa, saludo,
@@ -236,7 +236,24 @@ async function construirAvisos(proximas, vencidas, limpiezasAtrasadas, hoy, dent
                 // v_parte_estado expone `faltan` (booleano) y `faltan_cuantos`.
                 // Si la reserva no sale en la vista, no avisamos: mejor callar
                 // que dar un aviso falso todos los dias.
-                if (!p || p.faltan !== true) return;
+                if (!p) return;
+                // Ya han rellenado, llegan hoy y no se ha apuntado la entrada:
+                // lo que toca es darles la llave y terminar el check-in.
+                if (p.faltan !== true) {
+                    if (p.completo === true && r.check_in === hoy && !r.checkin_at) {
+                        avisos.push({
+                            clave: `checkin-${r.id}`,
+                            tono: 'bien',
+                            icono: Check,
+                            titulo: `${r.guest_name || 'El huésped'} ya ha rellenado los datos de la policía`,
+                            texto: `Llega hoy a ${r.apartamento}. Cuando le des la llave, termina el check-in.`,
+                            accion: 'Terminar el check-in',
+                            seccion: 'checkin',
+                            params: { reservaId: r.id },
+                        });
+                    }
+                    return;
+                }
                 avisos.push({
                     clave: `policia-${r.id}`,
                     tono: r.check_in === hoy ? 'urgente' : 'atencion',

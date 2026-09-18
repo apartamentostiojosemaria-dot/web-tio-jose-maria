@@ -259,8 +259,8 @@ const ReservaFicha = ({ ir, params = {} }) => {
                             </Boton>
                         </>
                     ) : esElDia ? (
-                        <Boton ancho tamano="grande" icono={QrCode} onClick={() => ir('checkin', { reservaId: reserva.id })} disabled={cancelada || noSePresento}>
-                            Hacer el check-in
+                        <Boton ancho tamano="grande" icono={parte?.completo ? Check : QrCode} onClick={() => ir('checkin', { reservaId: reserva.id })} disabled={cancelada || noSePresento}>
+                            {parte?.completo ? 'Terminar el check-in' : 'Hacer el check-in'}
                         </Boton>
                     ) : (
                         <Boton ancho tamano="grande" variante="secundario" icono={Shield} onClick={() => ir('checkin', { reservaId: reserva.id })} disabled={cancelada}>
