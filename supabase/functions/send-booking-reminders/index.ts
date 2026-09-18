@@ -8,8 +8,6 @@
 // Tipos cubiertos aquí:
 //   reminder_7d   → 7 días antes del check_in
 //   reminder_24h  → 1 día antes del check_in
-//   arrival       → el día del check_in
-//   departure     → el día del check_out
 //   reactivation  → 30 días después del check_out (requiere marketing_consent)
 //
 // review_request NO se gestiona aquí: lo hace la función request-review con su
@@ -35,11 +33,20 @@ const CORS_HEADERS = {
 };
 
 // regla = {template, columna de fecha, offset en días respecto a hoy, flag de idempotencia}
-const RULES = [
-    { template: "reminder_7d", dateCol: "check_in", offset: 7, flag: "reminder_7d_email_sent_at" },
+// `desde`: si está, la regla coge todo lo que caiga entre hoy+desde y hoy+offset,
+// no solo el día exacto. El de los 7 días lo lleva: una reserva hecha 5 días
+// antes de llegar no lo recibía nunca (Adrián, 15→18-sep) y se enteraba en la
+// víspera. Ahora lo recibe al día siguiente de hacerla. El tope de 2 deja el
+// día de antes al correo de la víspera.
+const RULES: { template: string; dateCol: string; offset: number; desde?: number; flag: string }[] = [
+    { template: "reminder_7d", dateCol: "check_in", offset: 7, desde: 2, flag: "reminder_7d_email_sent_at" },
     { template: "reminder_24h", dateCol: "check_in", offset: 1, flag: "reminder_24h_email_sent_at" },
-    { template: "arrival", dateCol: "check_in", offset: 0, flag: "arrival_email_sent_at" },
-    { template: "departure", dateCol: "check_out", offset: 0, flag: "departure_email_sent_at" },
+    // Red de seguridad de la confirmación: la manda stripe-webhook o el panel al
+    // momento; si aquello falló, sale aquí al día siguiente (solo directos: los
+    // importadores de canal ya marcan el flag). Antes lo hacía la tarea
+    // daily-booking-emails de Trigger.dev con la vista bookings_email_queue;
+    // las dos se retiraron el 18-sep-2026 para tener UN despachador.
+    { template: "confirmation", dateCol: "check_in", offset: 400, desde: 0, flag: "confirmation_email_sent_at" },
     { template: "reactivation", dateCol: "check_out", offset: -30, flag: "reactivation_email_sent_at" },
 ];
 
@@ -75,12 +82,15 @@ Deno.serve(async (req) => {
 
     for (const rule of RULES) {
         const target = addDays(today, rule.offset);
-        const { data: due, error } = await supabase
+        let q = supabase
             .from("guest_bookings")
             .select("booking_code")
             .eq("status", "confirmed")
-            .is(rule.flag, null)
-            .eq(rule.dateCol, target);
+            .is(rule.flag, null);
+        q = rule.desde !== undefined
+            ? q.gte(rule.dateCol, addDays(today, rule.desde)).lte(rule.dateCol, target)
+            : q.eq(rule.dateCol, target);
+        const { data: due, error } = await q;
 
         if (error) {
             summary.push({ template: rule.template, target, error: error.message });

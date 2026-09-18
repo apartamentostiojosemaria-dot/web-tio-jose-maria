@@ -1,4 +1,6 @@
-// Plantillas HTML transaccionales — tono cercano, sin jerga corporativa.
+// Plantillas HTML transaccionales — escritas como habla Mari Carmen: corto,
+// educado, sin gracietas, y solo lo que el huésped necesita saber.
+// Reescritas el 18-sep-2026 (antes decían «nos chocamos los cinco»).
 // =====================================================================
 // CSS inline para máxima compatibilidad. Sin imágenes externas excepto el
 // logo (que se puede activar cambiando LOGO_URL). Tablas para estructura
@@ -25,6 +27,9 @@ interface BookingPayload {
     free_cancellation?: boolean;
     /** Solo reminder_24h: cuántos han rellenado los datos de la policía y cuántos se esperan. */
     precheckin?: { rellenos: number; total: number } | null;
+    /** Solo confirmation: si el formulario de la policía ya está abierto (llegada a 7 días o menos).
+     *  Si no lo está, la confirmación no lo menciona: lo pide el correo de los 7 días. */
+    precheckin_abierto?: boolean;
 }
 
 const SITE_URL = "https://tiojosemaria.com";
@@ -41,14 +46,24 @@ const formatPrice = (n: number) => new Intl.NumberFormat("es-ES", { style: "curr
 const firstName = (full: string) => (full.trim().split(/\s+/)[0] || full).trim();
 const precheckinUrl = (b: BookingPayload) => `${SITE_URL}/precheckin?code=${b.booking_code}`;
 
-// Frase corta y llana para pedir los datos de la policía. Se abre 7 días
-// antes de la llegada (migración 0018): antes de eso el enlace dice cuándo.
+const MAPS_URL = "https://maps.app.goo.gl/EPzh8j2HivLfqUeN8";
+const PHONE_HUMAN = "676 34 46 75";
+
+// Fechas como las dice ella: «el 18 de septiembre», no «18/09/2026».
+const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+const diaMes = (s: string) => {
+    const [, m, d] = s.split("-");
+    return `${Number(d)} de ${MESES[Number(m) - 1]}`;
+};
+
+// El recuadro de los datos de la policía. Una frase de por qué, una de cómo,
+// y el enlace. Se abre 7 días antes de la llegada (migración 0018).
 const precheckinBlock = (b: BookingPayload, intro: string) => `
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F4F6EC;border:1px solid #D9DFC6;border-radius:12px;margin:16px 0;">
   <tr><td style="padding:16px 20px;">
     <p style="margin:0 0 6px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#556B2F;font-weight:700;">Datos para la policía</p>
-    <p style="margin:0;font-size:14px;color:#2C3319;">${intro} Se rellena desde el móvil en un par de minutos, una persona por pantalla, y no hace falta foto de ningún documento.</p>
-    <p style="margin:10px 0 0;font-size:14px;"><a href="${precheckinUrl(b)}" style="color:#556B2F;font-weight:700;text-decoration:underline;">Rellenar los datos ahora</a></p>
+    <p style="margin:0;font-size:14px;color:#2C3319;">${intro} Se rellena desde el móvil, una persona por pantalla, y no hay que mandar foto de ningún documento.</p>
+    <p style="margin:10px 0 0;font-size:14px;"><a href="${precheckinUrl(b)}" style="color:#556B2F;font-weight:700;text-decoration:underline;">Rellenar los datos</a></p>
   </td></tr>
 </table>`;
 
@@ -71,7 +86,7 @@ const shell = (heading: string, body: string, ctaLabel?: string, ctaUrl?: string
         </p>` : ""}
       </td></tr>
       <tr><td style="padding:24px 32px;border-top:1px solid #F0EDE6;background:#FCFBF9;font-size:12px;color:#8C8468;">
-        <p style="margin:0 0 8px;">¿Cualquier cosa? Estamos a un mensaje: <a href="${WHATSAPP_URL}" style="color:#556B2F;text-decoration:underline;">WhatsApp</a> · <a href="tel:${WHATSAPP_E164}" style="color:#556B2F;text-decoration:underline;">${WHATSAPP_E164}</a> · <a href="mailto:apartamentostiojosemaria@gmail.com" style="color:#556B2F;text-decoration:underline;">email</a></p>
+        <p style="margin:0 0 8px;">Para lo que necesitéis: <a href="${WHATSAPP_URL}" style="color:#556B2F;text-decoration:underline;">WhatsApp</a> · <a href="tel:${WHATSAPP_E164}" style="color:#556B2F;text-decoration:underline;">${PHONE_HUMAN}</a> · <a href="mailto:apartamentostiojosemaria@gmail.com" style="color:#556B2F;text-decoration:underline;">correo</a></p>
         <p style="margin:0;">Calle Baja 1, 23486 Hinojares (Jaén) · A/JA/00060 · <a href="${SITE_URL}/privacidad" style="color:#8C8468;">Privacidad</a></p>
       </td></tr>
     </table>
@@ -90,7 +105,8 @@ const apartmentPhoto = (b: BookingPayload) => {
     </table>`;
 };
 
-const SIGNATURE = `<p style="margin:24px 0 0;color:#2C3319;">Un abrazo,<br><strong style="font-family:'Playfair Display',Georgia,serif;font-size:17px;color:#556B2F;">Mari Carmen y Jesús</strong><br><span style="font-size:12px;color:#8C8468;">Apartamentos Rurales Tío José María</span></p>`;
+// Firma: como firma ella. Sin abrazos a desconocidos.
+const SIGNATURE = `<p style="margin:24px 0 0;color:#2C3319;">Un saludo,<br><strong style="font-family:'Playfair Display',Georgia,serif;font-size:17px;color:#556B2F;">Mari Carmen y Jesús</strong><br><span style="font-size:12px;color:#8C8468;">Apartamentos Rurales Tío José María · ${PHONE_HUMAN}</span></p>`;
 
 const bookingSummary = (b: BookingPayload) => `
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FCFBF9;border:1px solid #F0EDE6;border-radius:12px;margin:16px 0;">
@@ -106,51 +122,72 @@ const bookingSummary = (b: BookingPayload) => `
   </td></tr>
 </table>`;
 
-type TemplateKey = "confirmation" | "reminder_7d" | "reminder_24h" | "arrival" | "departure" | "review_request" | "reactivation" | "operator_new_booking" | "booking_changed" | "booking_cancelled";
+// Lo que ella dice siempre al que llega. Un solo sitio, para que los correos
+// no se contradigan entre sí. Fuente: la guía del huésped (apartment_instructions).
+const LLEGADA = `<p><strong>Cómo llegar:</strong> Calle Baja 1, Hinojares. Se aparca gratis justo enfrente. Con este enlace el móvil te lleva a la puerta:<br><a href="${MAPS_URL}" style="display:inline-block;margin-top:6px;color:#556B2F;font-weight:700;text-decoration:underline;">Abrir en Google Maps</a></p>
+<p><strong>Entrada:</strong> a partir de las 16:00. Las llaves te las damos en mano. Si vas a llegar después de las 21:00, avísanos por WhatsApp y te decimos cómo lo hacemos.</p>`;
+
+type TemplateKey = "confirmation" | "reminder_7d" | "reminder_24h" | "review_request" | "reactivation" | "operator_new_booking" | "booking_changed" | "booking_cancelled";
 
 interface RenderedEmail { subject: string; html: string; from: string; }
 
+// 1. Al reservar en la web (solo reservas directas).
+// Con tiempo: corto, y el de «cómo llegar» ya vendrá. A menos de 7 días: un
+// solo correo con todo (llegar, casa, policía) y send-booking-email apunta el
+// de los 7 días como enviado para no repetirlo (Jesús, 18-sep).
+// Sin chimenea (desde el invierno de 2026 no se sube leña; Jesús, 18-sep) y sin
+// enlace a la guía de la zona hasta que esté terminada.
+const CASA = `<p><strong>Lo que hay en la casa:</strong> sábanas, toallas y mantas, y la cocina completa con lo básico para cocinar. No hace falta que traigas nada de eso.</p>`;
+
 const renderConfirmation = (b: BookingPayload): RenderedEmail => ({
     from: EMAIL_FROM,
-    subject: `Reserva confirmada — ${b.booking_code}`,
+    subject: `Reserva confirmada en Tío José María — ${b.booking_code}`,
     html: shell(
-        `Hola ${firstName(b.guest_name)}, todo listo`,
-        `<p>Tu reserva en <strong>${b.apartment_name}</strong> está confirmada. Te esperamos en Hinojares.</p>
+        `Hola ${firstName(b.guest_name)}, tu reserva está hecha`,
+        b.precheckin_abierto
+            ? `<p>Tienes reservado el apartamento <strong>${b.apartment_name}</strong> del ${diaMes(b.check_in)} al ${diaMes(b.check_out)}. Gracias por reservar con nosotros. Como ya queda poco, te dejo aquí todo lo que hace falta saber.</p>
         ${apartmentPhoto(b)}
         ${bookingSummary(b)}
-        <p>Unos días antes de tu llegada te mandaremos cómo llegar y el horario de check-in. Mientras tanto, si necesitas cualquier cosa, escríbenos sin más.</p>
-        ${precheckinBlock(b, "La ley nos obliga a comunicar a la policía los datos de cada persona que se aloja. El formulario se abre siete días antes de tu llegada; si lo rellenáis antes de venir, la entrada son dos minutos.")}
-        <p>Gracias por reservar directamente. Eso nos permite cuidarte mejor y mantener el precio justo.</p>
+        ${LLEGADA}
+        <p><strong>Salida:</strong> antes de las 12:00.</p>
+        ${CASA}
+        ${precheckinBlock(b, "Por ley tenemos que comunicar a la policía los datos de cada persona que se aloja. Con este enlace los rellenáis vosotros mismos antes de llegar (nombre, documento y poco más).")}
+        <p>Si alguien tiene alergia o necesitáis algo en especial, decídnoslo y lo preparamos.</p>
+        ${SIGNATURE}`
+            : `<p>Tienes reservado el apartamento <strong>${b.apartment_name}</strong> del ${diaMes(b.check_in)} al ${diaMes(b.check_out)}. Gracias por reservar con nosotros.</p>
+        ${apartmentPhoto(b)}
+        ${bookingSummary(b)}
+        <p>La entrada es a partir de las 16:00 y la salida antes de las 12:00. Las llaves te las damos en mano cuando llegues.</p>
+        <p>Unos días antes de venir te vuelvo a escribir con cómo llegar y lo que hay en la casa. Si mientras tanto necesitas algo, llámanos o escríbenos.</p>
         ${SIGNATURE}`,
-        "Ver tu reserva",
-        `${SITE_URL}/reservar/confirmada?code=${b.booking_code}`
+        b.precheckin_abierto ? "Rellenar los datos" : "Ver mi reserva",
+        b.precheckin_abierto ? precheckinUrl(b) : `${SITE_URL}/reservar/confirmada?code=${b.booking_code}`
     ),
 });
 
+// 2. Entre 7 y 2 días antes (directos y canales). No siempre son 7 justos:
+// una reserva hecha tarde lo recibe al día siguiente, por eso el asunto
+// dice la fecha y no «la semana que viene».
 const renderReminder7d = (b: BookingPayload): RenderedEmail => ({
     from: EMAIL_FROM,
-    subject: `Falta una semana — ${b.apartment_name}`,
+    subject: `Os esperamos el ${diaMes(b.check_in)} en Hinojares`,
     html: shell(
-        `${firstName(b.guest_name)}, en una semana en Hinojares`,
-        `<p>Queremos que el viaje empiece bien desde antes. Aquí tienes lo esencial:</p>
+        `Hola ${firstName(b.guest_name)}, ya queda poco`,
+        `<p>El ${diaMes(b.check_in)} te esperamos en el apartamento <strong>${b.apartment_name}</strong>. Te cuento lo que hace falta saber para venir tranquilo.</p>
         ${apartmentPhoto(b)}
-        <ul style="padding-left:20px;color:#2C3319;">
-          <li><strong>Cómo llegar:</strong> Hinojares está a la salida 314 de la A-44 (Madrid–Granada) → Quesada → Pozo Alcón. Aparcamiento gratis junto a la casa.</li>
-          <li><strong>Tiempo:</strong> echa un ojo a la previsión un día antes. La sierra cambia rápido.</li>
-          <li><strong>Qué traer:</strong> nosotros ponemos sábanas, toallas, menaje y leña para la chimenea. Tú trae ganas.</li>
-          <li><strong>Qué hacer por aquí:</strong> <a href="${SITE_URL}/hinojares" style="color:#556B2F;text-decoration:underline;">la guía de la zona</a>, con rutas y sitios para comer.</li>
-        </ul>
-        ${precheckinBlock(b, "Desde hoy ya se puede rellenar el formulario con los datos de cada persona que viene (nombre, documento y poco más). Nos lo pide la ley y hay que tenerlo antes de que lleguéis.")}
+        ${LLEGADA}
+        ${CASA}
+        ${precheckinBlock(b, "Ya se puede rellenar el formulario con los datos de cada persona que viene (nombre, documento y poco más). Nos lo pide la ley y lo necesitamos antes de que lleguéis.")}
         ${bookingSummary(b)}
-        <p>Si necesitas adelantar la entrada, retrasar la salida o tienes una alergia o preferencia que debamos saber, mándanos un mensaje hoy mismo.</p>
+        <p>Si alguien tiene alergia o necesitáis algo en especial, decídnoslo y lo preparamos.</p>
         ${SIGNATURE}`,
-        "Rellenar los datos de la policía",
+        "Rellenar los datos",
         precheckinUrl(b)
     ),
 });
 
-// Solo sale si faltan datos de la policía (lo decide send-booking-email); por
-// eso el texto dice cuántos faltan en vez de repetir el mismo correo a todos.
+// 3. La víspera. Solo sale si faltan datos de la policía (lo decide
+// send-booking-email); por eso dice cuántos faltan.
 const faltanEnPalabras = (p: { rellenos: number; total: number } | null | undefined) => {
     if (!p) return "Nos falta el formulario con los datos de cada persona que viene.";
     const faltan = Math.max(p.total - p.rellenos, 0);
@@ -166,13 +203,11 @@ const faltanEnPalabras = (p: { rellenos: number; total: number } | null | undefi
 
 const renderReminder24h = (b: BookingPayload): RenderedEmail => ({
     from: EMAIL_FROM,
-    subject: `Mañana te esperamos — ${b.booking_code}`,
+    subject: `Mañana os esperamos — nos faltan los datos para la policía`,
     html: shell(
-        `Mañana te recibimos en ${b.apartment_name}`,
-        `<p>Hola ${firstName(b.guest_name)}, recta final.</p>
-        ${precheckinBlock(b, `${faltanEnPalabras(b.precheckin)} Si lo rellenáis hoy, mañana solo nos chocamos los cinco y a disfrutar.`)}
-        <p><strong>Check-in:</strong> entre las 16:00 y las 20:00. Te recibimos en persona y te enseñamos la casa. Si vas a llegar fuera de ese horario, dinos por WhatsApp para coordinarnos.</p>
-        <p><strong>Dirección:</strong> Calle Baja 1, 23486 Hinojares. Cuando llegues al pueblo, búscanos con Google Maps; cualquier vecino te indica también.</p>
+        `Hola ${firstName(b.guest_name)}, mañana os esperamos`,
+        `${precheckinBlock(b, `${faltanEnPalabras(b.precheckin)} Nos lo pide la ley y tiene que estar hecho antes de entrar. Si lo hacéis hoy desde el móvil, mañana os damos las llaves y ya está.`)}
+        ${LLEGADA}
         ${bookingSummary(b)}
         ${SIGNATURE}`,
         "Rellenar los datos que faltan",
@@ -180,64 +215,36 @@ const renderReminder24h = (b: BookingPayload): RenderedEmail => ({
     ),
 });
 
-const renderArrival = (b: BookingPayload): RenderedEmail => ({
-    from: EMAIL_FROM,
-    subject: `Bienvenido a Tío José María`,
-    html: shell(
-        `Estás en casa, ${firstName(b.guest_name)}`,
-        `<p>Esperamos que el viaje haya ido bien. Una vez te hayamos recibido y enseñado el apartamento, aquí tienes lo básico para los primeros minutos a solas:</p>
-        <ul style="padding-left:20px;">
-          <li><strong>WiFi:</strong> nombre y clave en la tarjeta de la mesa de la cocina.</li>
-          <li><strong>Calefacción:</strong> termostato junto a la puerta del salón. Sube poco a poco, la casa retiene bien.</li>
-          <li><strong>Chimenea:</strong> leña seca en la caja, papel y mecheros en el cajón. Si dudas, escríbenos antes de prenderla.</li>
-        </ul>
-        <p>Si echas algo en falta o algo no funciona como debe, dinos enseguida. Estamos cerca.</p>
-        <p>Disfruta de Hinojares.</p>
-        ${SIGNATURE}`,
-        "Qué hacer estos días",
-        `${SITE_URL}/rutas`
-    ),
-});
+// (Los antiguos correos del día de llegada y del día de salida se quitaron el
+// 18-sep-2026: Mari Carmen lo explica al dar las llaves y la ficha del huésped
+// /guia/<código> lo tendrá por escrito.)
 
-const renderDeparture = (b: BookingPayload): RenderedEmail => ({
-    from: EMAIL_FROM,
-    subject: `Buen viaje de vuelta`,
-    html: shell(
-        `${firstName(b.guest_name)}, gracias por venir`,
-        `<p>Esperamos que la estancia haya sido todo lo que esperabas.</p>
-        <p><strong>Antes de salir:</strong> deja la llave en la cerradura por dentro y cierra la puerta. Si has dejado algo en la chimenea, retíralo si ya está frío.</p>
-        <p>Mañana o pasado te escribiremos para que nos cuentes qué tal todo. Tus comentarios reales son lo que ayuda a otros viajeros a decidirse.</p>
-        ${bookingSummary(b)}
-        <p>Hasta la próxima.</p>
-        ${SIGNATURE}`
-    ),
-});
-
+// 6. Pedir opinión, unos días después.
 const renderReviewRequest = (b: BookingPayload): RenderedEmail => ({
     from: EMAIL_FROM,
-    subject: `¿Qué tal Tío José María?`,
+    subject: `¿Qué tal en Tío José María?`,
     html: shell(
-        `${firstName(b.guest_name)}, dos minutos de tu tiempo`,
-        `<p>Volvemos a aparecer en tu bandeja porque tu opinión nos ayuda muchísimo. La sierra es pequeña y boca a boca todavía manda — una reseña en Google nos cambia el mes.</p>
-        <p>Si tienes un par de minutos, cuéntanos qué tal la estancia: lo que estuvo bien y, sobre todo, lo que mejoraríamos. Sin filtros.</p>
-        <p>Y si vinisteis por Booking o Airbnb, allí también podéis dejarla y se agradece igual.</p>
+        `Hola ${firstName(b.guest_name)}, ¿qué tal ha ido?`,
+        `<p>Esperamos que hayáis descansado. Si tenéis un momento, nos gustaría que dejarais vuestra opinión en Google: para una casa pequeña como la nuestra, lo que cuentan los que ya han venido es lo que más nos ayuda.</p>
+        <p>Y si hay algo que no os ha gustado, decídnoslo a nosotros también, que es como se arregla.</p>
+        <p>Si vinisteis por Booking o Airbnb, allí también podéis dejarla.</p>
         ${SIGNATURE}`,
-        "Dejar una reseña en Google",
+        "Dejar una opinión en Google",
         GOOGLE_REVIEW_URL
     ),
 });
 
+// 7. Un mes después, solo directos. Sin código de descuento: no existe
+// ninguno en la base (discount_codes vacía); si Jesús decide uno, se añade aquí.
 const renderReactivation = (b: BookingPayload): RenderedEmail => ({
     from: EMAIL_FROM,
-    subject: `Volver a Hinojares (con un guiño)`,
+    subject: `Cuando queráis volver a Hinojares`,
     html: shell(
-        `Por si quieres volver`,
-        `<p>Hola ${firstName(b.guest_name)}, hace un mes te despedías de Hinojares.</p>
-        <p>No te escribimos por escribir: como ya nos conoces y la reserva fue directa, te dejamos un código para que tu siguiente estancia (cuando te apetezca, sin prisa) salga un 10% más barata.</p>
-        <p>Código: <strong style="font-family:'SF Mono',Menlo,monospace;background:#FCFBF9;padding:4px 10px;border-radius:6px;border:1px solid #F0EDE6;">VUELVE10</strong></p>
-        <p>Es para ti y caduca dentro de seis meses. Si no usas, no pasa nada — sigue siendo un placer haberte tenido aquí.</p>
+        `Hola ${firstName(b.guest_name)}`,
+        `<p>Hace un mes que estuvisteis en casa. Solo quería deciros que, cuando os apetezca volver, aquí estamos.</p>
+        <p>Si es en otra época del año, escribidnos y os contamos qué hay por aquí en esas fechas. Y reservando con nosotros directamente os atendemos igual que esta vez.</p>
         ${SIGNATURE}`,
-        "Mirar fechas",
+        "Ver fechas libres",
         `${SITE_URL}/reservar`
     ),
 });
@@ -260,18 +267,19 @@ const customerAlertsBlock = (b: BookingPayload): string => {
     return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;margin:16px 0;"><tr><td style="padding:14px 18px;">${warningsHtml}${tagsHtml}${prefsHtml}</td></tr></table>`;
 };
 
+// 10. Aviso interno: va al buzón del negocio (la cuenta de Mari Carmen), no al huésped.
 const renderOperatorNewBooking = (b: BookingPayload): RenderedEmail => ({
     from: EMAIL_FROM,
-    subject: `${(b.customer_warnings || []).length > 0 ? "⚠️ " : "🎉 "}Nueva reserva ${b.booking_code} — ${b.apartment_name}`,
+    subject: `${(b.customer_warnings || []).length > 0 ? "⚠️ " : ""}Reserva nueva ${b.booking_code} — ${b.apartment_name}, ${diaMes(b.check_in)}`,
     html: shell(
-        `Nueva reserva confirmada`,
-        `<p>Entra reserva nueva en el sistema. Datos al día:</p>
+        `Ha entrado una reserva nueva`,
+        `<p>${escapeHtml(b.guest_name)} ha reservado <strong>${b.apartment_name}</strong> del ${diaMes(b.check_in)} al ${diaMes(b.check_out)}.</p>
         ${customerAlertsBlock(b)}
         ${bookingSummary(b)}
-        <p><strong>Huésped:</strong> ${escapeHtml(b.guest_name)} · <a href="mailto:${b.guest_email}">${b.guest_email}</a></p>
-        <p>Para gestionarla (factura, recordatorios, precheckin, notas internas) entra al panel.</p>`,
-        "Abrir cockpit",
-        `${SITE_URL}/admin`
+        <p><strong>Correo del huésped:</strong> <a href="mailto:${b.guest_email}">${b.guest_email}</a></p>
+        <p>No hay que hacer nada: el huésped ya tiene su confirmación. En el panel la ves con el resto.</p>`,
+        "Abrir el panel",
+        `${SITE_URL}/panel`
     ),
 });
 
@@ -282,33 +290,30 @@ function escapeHtml(s: string | null | undefined): string {
 }
 
 // ---------------------------------------------------------------------------
-// Cambios y cancelaciones hechos desde el panel (los dispara Mari Carmen, un
-// toque por reserva; solo a quien reservó directo — a los de Booking/Airbnb
-// les avisa el canal).
+// 8 y 9. Cambios y cancelaciones hechos desde el panel (los dispara Mari
+// Carmen, un toque por reserva; solo a quien reservó directo — a los de
+// Booking/Airbnb les avisa el canal).
 // ---------------------------------------------------------------------------
 const nightsBetween = (a: string, b: string) =>
     Math.round((Date.parse(b + "T00:00:00Z") - Date.parse(a + "T00:00:00Z")) / 86400_000);
 
 const renderBookingChanged = (b: BookingPayload): RenderedEmail => {
     const p = b.previous;
-    const cambioApto = p && p.apartment_name && p.apartment_name !== b.apartment_name;
-    const cambioFechas = p && (p.check_in !== b.check_in || p.check_out !== b.check_out);
     const antes = p
-        ? `<p style="font-size:14px;color:#8C8468;margin:0 0 4px;">Antes: ${p.apartment_name}, del ${formatDate(p.check_in)} al ${formatDate(p.check_out)}.</p>`
+        ? `<p style="font-size:14px;color:#8C8468;margin:0 0 4px;">Antes era: ${p.apartment_name}, del ${diaMes(p.check_in)} al ${diaMes(p.check_out)}.</p>`
         : "";
     const noches = nightsBetween(b.check_in, b.check_out);
     return {
         from: EMAIL_FROM,
         subject: `Tu reserva ha cambiado — ${b.booking_code}`,
         html: shell(
-            `Hola ${firstName(b.guest_name)}, hemos actualizado tu reserva`,
-            `<p>Tal y como hemos hablado, tu reserva queda así${cambioApto && !cambioFechas ? " (cambia el apartamento)" : cambioFechas && !cambioApto ? " (cambian las fechas)" : ""}:</p>
+            `Hola ${firstName(b.guest_name)}, te confirmo el cambio`,
+            `<p>Como hemos hablado, tu reserva queda así: ${noches === 1 ? "una noche" : `${noches} noches`} en <strong>${b.apartment_name}</strong>, entrando el ${diaMes(b.check_in)} y saliendo el ${diaMes(b.check_out)}.</p>
             ${antes}
             ${bookingSummary(b)}
-            <p>${noches === 1 ? "Una noche" : `${noches} noches`} en <strong>${b.apartment_name}</strong>, con entrada el ${formatDate(b.check_in)} y salida el ${formatDate(b.check_out)}. El total que aparece arriba es el precio actual de la reserva.</p>
-            <p>Si algo no cuadra con lo que habíamos hablado, contéstanos a este correo o escríbenos por WhatsApp y lo ajustamos.</p>
+            <p>El total de arriba es el precio de la reserva tal y como queda ahora. Si algo no es como lo habíamos hablado, contéstame a este correo o escríbeme por WhatsApp y lo arreglamos.</p>
             ${SIGNATURE}`,
-            "Ver tu reserva",
+            "Ver mi reserva",
             `${SITE_URL}/reservar/confirmada?code=${b.booking_code}`
         ),
     };
@@ -319,18 +324,18 @@ const renderBookingCancelled = (b: BookingPayload): RenderedEmail => {
     const devolver = Number(b.refund_amount || 0);
     let dinero = "";
     if (devolver > 0) {
-        dinero = `<p><strong>Te devolvemos ${formatPrice(devolver)}.</strong> Si pagaste con tarjeta por la web, la devolución llega sola a esa misma tarjeta en unos días. Si pagaste por transferencia o Bizum, te lo ingresamos nosotros; si no lo ves en unos días, escríbenos.</p>`;
+        dinero = `<p><strong>Te devolvemos ${formatPrice(devolver)}.</strong> Si pagaste con tarjeta en la web, te llega sola a la misma tarjeta en unos días. Si fue por transferencia o Bizum, te lo ingresamos nosotros; si en una semana no lo ves, escríbenos.</p>`;
     } else if (pagado > 0) {
-        dinero = `<p>Según nuestras condiciones de cancelación (gratuita hasta 7 días antes de la llegada), el importe pagado (${formatPrice(pagado)}) no se devuelve. Si crees que hay un error, escríbenos y lo miramos.</p>`;
+        dinero = `<p>Según las condiciones de cancelación (gratis hasta 7 días antes de la llegada), lo pagado (${formatPrice(pagado)}) no se devuelve. Si crees que hay un error, escríbenos y lo miramos.</p>`;
     }
     return {
         from: EMAIL_FROM,
         subject: `Reserva cancelada — ${b.booking_code}`,
         html: shell(
             `Hola ${firstName(b.guest_name)}, tu reserva queda cancelada`,
-            `<p>Hemos cancelado tu reserva en <strong>${b.apartment_name}</strong> del ${formatDate(b.check_in)} al ${formatDate(b.check_out)} (código ${b.booking_code}). Esas fechas vuelven a estar libres.</p>
+            `<p>He cancelado tu reserva en <strong>${b.apartment_name}</strong> del ${diaMes(b.check_in)} al ${diaMes(b.check_out)} (código ${b.booking_code}). Esos días quedan libres.</p>
             ${dinero}
-            <p>Sentimos que no puedas venir esta vez. Cuando quieras volver a Hinojares, aquí estamos.</p>
+            <p>Sentimos que no podáis venir esta vez. Cuando queráis, aquí estamos.</p>
             ${SIGNATURE}`,
         ),
     };
@@ -341,8 +346,6 @@ export const render = (key: TemplateKey, b: BookingPayload): RenderedEmail => {
         case "confirmation":            return renderConfirmation(b);
         case "reminder_7d":             return renderReminder7d(b);
         case "reminder_24h":            return renderReminder24h(b);
-        case "arrival":                 return renderArrival(b);
-        case "departure":               return renderDeparture(b);
         case "review_request":          return renderReviewRequest(b);
         case "reactivation":            return renderReactivation(b);
         case "operator_new_booking":    return renderOperatorNewBooking(b);
@@ -355,8 +358,6 @@ export const TEMPLATE_TO_FLAG: Record<TemplateKey, string> = {
     confirmation:           "confirmation_email_sent_at",
     reminder_7d:            "reminder_7d_email_sent_at",
     reminder_24h:           "reminder_24h_email_sent_at",
-    arrival:                "arrival_email_sent_at",
-    departure:              "departure_email_sent_at",
     review_request:         "review_request_email_sent_at",
     reactivation:           "reactivation_email_sent_at",
     operator_new_booking:   "operator_notified_at",       // anotamos pero no bloqueamos reenvíos

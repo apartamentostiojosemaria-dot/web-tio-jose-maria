@@ -22,8 +22,6 @@ const EMAIL_FLAGS = [
     { key: 'confirmation_email_sent_at', label: 'Confirmación de reserva' },
     { key: 'reminder_7d_email_sent_at',  label: 'Recordatorio 7 días antes' },
     { key: 'reminder_24h_email_sent_at', label: 'Recordatorio 24h antes' },
-    { key: 'arrival_email_sent_at',      label: 'Bienvenida (día de entrada)' },
-    { key: 'departure_email_sent_at',    label: 'Despedida (día de salida)' },
     { key: 'review_request_email_sent_at', label: 'Petición de reseña' },
     { key: 'reactivation_email_sent_at', label: 'Reactivación (+30 días)' },
 ];

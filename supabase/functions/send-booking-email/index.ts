@@ -30,8 +30,8 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 });
 
 const VALID_TEMPLATES: TemplateKey[] = [
-    "confirmation", "reminder_7d", "reminder_24h", "arrival",
-    "departure", "review_request", "reactivation", "operator_new_booking",
+    "confirmation", "reminder_7d", "reminder_24h",
+    "review_request", "reactivation", "operator_new_booking",
     "booking_changed", "booking_cancelled",
 ];
 
@@ -192,6 +192,13 @@ Deno.serve(async (req) => {
         }
     }
 
+    // La confirmación solo habla de la policía si el formulario ya está abierto
+    // (se abre 7 días antes de la llegada, migración 0018). Fecha en Madrid,
+    // igual que send-booking-reminders.
+    const hoyMadrid = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+    const diasHastaLlegada = Math.round((Date.parse(String(booking.check_in) + "T00:00:00Z") - Date.parse(hoyMadrid + "T00:00:00Z")) / 86400_000);
+    const precheckin_abierto = diasHastaLlegada <= 7;
+
     const apt = (booking.apartments as unknown as { name: string; slug: string; images?: string[] }) || { name: "Apartamento", slug: "" };
     const firstImage = Array.isArray(apt.images) && apt.images.length > 0 ? apt.images[0] : null;
 
@@ -225,6 +232,7 @@ Deno.serve(async (req) => {
         customer_tags,
         customer_preferences,
         precheckin,
+        precheckin_abierto,
         previous: (template === "booking_changed" && body.previous && body.previous.check_in && body.previous.check_out)
             ? {
                 check_in: String(body.previous.check_in),
@@ -262,10 +270,15 @@ Deno.serve(async (req) => {
         return json(502, { error: "resend_error", detail: e instanceof Error ? e.message : String(e) });
     }
 
-    // Marcar flag como enviado (idempotencia)
+    // Marcar flag como enviado (idempotencia). Si la confirmación salió con
+    // todo (llegada a ≤ 7 días: cómo llegar, casa y policía), el de los 7 días
+    // ya no aporta nada: se apunta también como enviado para no repetirlo.
+    const ahora = new Date().toISOString();
+    const flags: Record<string, string> = { [flag]: ahora };
+    if (template === "confirmation" && precheckin_abierto) flags.reminder_7d_email_sent_at = ahora;
     await supabase
         .from("guest_bookings")
-        .update({ [flag]: new Date().toISOString() })
+        .update(flags)
         .eq("id", booking.id);
 
     return json(200, { ok: true, template, resendId, sentTo: booking.guest_email });

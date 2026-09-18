@@ -106,8 +106,6 @@ const PLACEHOLDER_EMAIL = "sin-correo@example.invalid";
  *  marketing) y el alias del canal reenvía al huésped. Por eso NO están aquí. */
 const EMAIL_FLAGS = [
     "confirmation_email_sent_at",
-    "arrival_email_sent_at",
-    "departure_email_sent_at",
     "reactivation_email_sent_at",
 ];
 

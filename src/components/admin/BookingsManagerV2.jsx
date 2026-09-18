@@ -254,8 +254,6 @@ const BookingDetail = ({ b, busy, onAction }) => {
         { key: 'confirmation', label: 'Confirmación', sent: !!b.confirmation_email_sent_at, ts: b.confirmation_email_sent_at },
         { key: 'reminder_7d', label: 'Recordatorio 7 días', sent: !!b.reminder_7d_email_sent_at, ts: b.reminder_7d_email_sent_at },
         { key: 'reminder_24h', label: 'Recordatorio 24h', sent: !!b.reminder_24h_email_sent_at, ts: b.reminder_24h_email_sent_at },
-        { key: 'arrival', label: 'Bienvenida', sent: !!b.arrival_email_sent_at, ts: b.arrival_email_sent_at },
-        { key: 'departure', label: 'Despedida', sent: !!b.departure_email_sent_at, ts: b.departure_email_sent_at },
         { key: 'review_request', label: 'Pedir reseña', sent: !!b.review_request_email_sent_at, ts: b.review_request_email_sent_at },
     ];
 

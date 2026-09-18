@@ -245,7 +245,10 @@ supabase functions deploy send-booking-email --project-ref nmtukksbzbnuzqsksdmw 
 >   `npm run misterplan:prueba -- --desde 2026-09-01` (añadir `--real` para escribir). Parser probado con
 >   `npm test`. Variables subidas el 16-sep por el SDK (`envvars.upload` con el PAT del CLI, sin pasar por pantalla); primer run real 10:20 UTC en verde (51 correos vistos, 0 nuevos, 6,9 s).
 > - Desplegado (`trigger deploy`, versión 20260701.3, 3 tasks). Schedules ACTIVAS.
->   **11-sep-2026**: quedan 2 tasks (`daily-booking-emails`, `sync-ical-channels`). `daily-ses-submit`
+>   **18-sep-2026**: `daily-booking-emails` retirada (y la vista `bookings_email_queue`, migración 0033):
+>   los correos diarios los despacha SOLO el cron `daily-booking-reminders` de pg_cron (08:00 UTC) vía
+>   `send-booking-reminders`. Quedan `sync-ical-channels` y `misterplan-correo`.
+>   **11-sep-2026**: quedaban 2 tasks (`daily-booking-emails`, `sync-ical-channels`). `daily-ses-submit`
 >   se retiró: el parte de viajeros lo dispara pg_cron dentro de la base (`tjm_disparar_ses`), que
 >   no depende de Trigger.dev ni de copiar claves a mano.
 > - Descubierto: el backend Supabase de TJM ya estaba casi todo desplegado

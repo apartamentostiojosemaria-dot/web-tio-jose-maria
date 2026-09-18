@@ -1,0 +1,14 @@
+-- 0033 — Un solo despachador de correos.
+--
+-- Hasta hoy los correos diarios salían por dos sitios: la tarea
+-- `daily-booking-emails` de Trigger.dev (09:00 Madrid, leyendo la vista
+-- `bookings_email_queue`, con la regla «7 días justos» y los correos de
+-- llegada y salida) y el cron `daily-booking-reminders` de pg_cron (10:00,
+-- send-booking-reminders). Idempotentes entre sí, pero con reglas distintas.
+--
+-- Decisión del 18-sep-2026 (Jesús): los correos de llegada y salida se
+-- quitan (Mari Carmen lo explica al dar las llaves; la ficha del huésped lo
+-- tendrá por escrito), el de 7 días sale entre 7 y 2 días antes, y la
+-- confirmación de respaldo la lleva también send-booking-reminders. La tarea
+-- de Trigger.dev se retira del repo y la vista deja de tener quien la lea.
+DROP VIEW IF EXISTS public.bookings_email_queue;
