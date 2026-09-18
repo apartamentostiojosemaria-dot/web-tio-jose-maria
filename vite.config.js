@@ -8,7 +8,10 @@ export default defineConfig({
         react(),
         tailwindcss(),
         VitePWA({
-            registerType: 'autoUpdate',
+            // 'prompt': la versión nueva no entra sola; sale la barra «Actualizar»
+            // (src/components/shared/AvisoActualizacion.jsx). Así nadie se queda
+            // con una pantalla vieja sin saberlo.
+            registerType: 'prompt',
             includeAssets: ['assets/logo.jpg', 'assets/pwa-192.png', 'assets/pwa-512.png'],
             manifest: {
                 lang: 'es',
@@ -46,6 +49,9 @@ export default defineConfig({
                 // Avisos push del panel: los manejadores viven en public/push-sw.js y
                 // el service worker generado los importa (migración 0041).
                 importScripts: ['push-sw.js'],
+                // Al pulsar «Actualizar» el service worker nuevo toma el mando y la
+                // página se recarga con él (sin esto, se activa pero no controla).
+                clientsClaim: true,
                 // Admin panel (recharts, qrcode.react, ~30 manager screens) and the
                 // authenticated client area are never visited by an anonymous public
                 // visitor — precaching them bloats the SW install for everyone who only

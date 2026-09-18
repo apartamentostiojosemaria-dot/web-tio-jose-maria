@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import App from './App';
+import AvisoActualizacion from './components/shared/AvisoActualizacion';
 
 // Fuentes self-hosted (vía @fontsource). Evitan peticiones a Google Fonts → sin
 // transferencia de la IP del visitante a Google (RGPD/LSSI). Nombres de familia
@@ -32,6 +33,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <HelmetProvider>
             <BrowserRouter>
                 <App />
+                <AvisoActualizacion />
             </BrowserRouter>
         </HelmetProvider>
     </React.StrictMode>
