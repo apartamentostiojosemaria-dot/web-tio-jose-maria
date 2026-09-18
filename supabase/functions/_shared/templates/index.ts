@@ -45,6 +45,10 @@ const formatDate = (s: string) => {
 const formatPrice = (n: number) => new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
 const firstName = (full: string) => (full.trim().split(/\s+/)[0] || full).trim();
 const precheckinUrl = (b: BookingPayload) => `${SITE_URL}/precheckin?code=${b.booking_code}`;
+// La ficha del huésped: su reserva, la policía, la casa, la factura. Todo apunta ahí.
+const guiaUrl = (b: BookingPayload) => `${SITE_URL}/guia/${b.booking_code}`;
+const enlaceGuia = (b: BookingPayload, texto = "tu guía de la casa") =>
+    `<a href="${guiaUrl(b)}" style="color:#556B2F;font-weight:700;text-decoration:underline;">${texto}</a>`;
 
 const MAPS_URL = "https://maps.app.goo.gl/EPzh8j2HivLfqUeN8";
 const PHONE_HUMAN = "676 34 46 75";
@@ -144,7 +148,7 @@ const bookingSummary = (b: BookingPayload) => `
 const LLEGADA = `<p><strong>Cómo llegar:</strong> Calle Baja 1, Hinojares. Se aparca gratis justo enfrente. Con este enlace el móvil te lleva a la puerta:<br><a href="${MAPS_URL}" style="display:inline-block;margin-top:6px;color:#556B2F;font-weight:700;text-decoration:underline;">Abrir en Google Maps</a></p>
 <p><strong>Entrada:</strong> a partir de las 16:00. Las llaves te las damos en mano. Si vas a llegar después de las 21:00, avísanos por WhatsApp y te decimos cómo lo hacemos.</p>`;
 
-type TemplateKey = "confirmation" | "reminder_7d" | "reminder_24h" | "review_request" | "reactivation" | "operator_new_booking" | "booking_changed" | "booking_cancelled";
+type TemplateKey = "confirmation" | "reminder_7d" | "reminder_24h" | "review_request" | "reactivation" | "operator_new_booking" | "booking_changed" | "booking_cancelled" | "guide_link";
 
 interface RenderedEmail { subject: string; html: string; from: string; }
 
@@ -170,6 +174,7 @@ const renderConfirmation = (b: BookingPayload): RenderedEmail => ({
         <p><strong>Salida:</strong> antes de las 12:00.</p>
         ${CASA}
         ${precheckinBlock(b, "Por ley tenemos que comunicar a la policía los datos de cada persona que se aloja. Con este enlace los rellenáis vosotros mismos antes de llegar (nombre, documento y poco más).")}
+        <p>Todo esto, y lo de la casa, lo tienes siempre en ${enlaceGuia(b)}: guárdala en el móvil.</p>
         <p>Si alguien tiene alergia o necesitáis algo en especial, decídnoslo y lo preparamos.</p>
         ${SIGNATURE}`
             : `<p>Tienes reservado el apartamento <strong>${b.apartment_name}</strong> del ${diaMes(b.check_in)} al ${diaMes(b.check_out)}. Gracias por reservar con nosotros.</p>
@@ -177,10 +182,10 @@ const renderConfirmation = (b: BookingPayload): RenderedEmail => ({
         ${bookingSummary(b)}
         ${politicaCancelacion(b)}
         <p>La entrada es a partir de las 16:00 y la salida antes de las 12:00. Las llaves te las damos en mano cuando llegues.</p>
-        <p>Unos días antes de venir te vuelvo a escribir con cómo llegar y lo que hay en la casa. Si mientras tanto necesitas algo, llámanos o escríbenos.</p>
+        <p>Tu reserva, cómo llegar y lo de la casa lo tienes siempre en ${enlaceGuia(b)}. Unos días antes de venir te vuelvo a escribir. Si mientras tanto necesitas algo, llámanos o escríbenos.</p>
         ${SIGNATURE}`,
-        b.precheckin_abierto ? "Rellenar los datos" : "Ver mi reserva",
-        b.precheckin_abierto ? precheckinUrl(b) : `${SITE_URL}/reservar/confirmada?code=${b.booking_code}`
+        b.precheckin_abierto ? "Rellenar los datos" : "Tu guía de la casa",
+        b.precheckin_abierto ? precheckinUrl(b) : guiaUrl(b)
     ),
 });
 
@@ -198,6 +203,7 @@ const renderReminder7d = (b: BookingPayload): RenderedEmail => ({
         ${CASA}
         ${precheckinBlock(b, "Ya se puede rellenar el formulario con los datos de cada persona que viene (nombre, documento y poco más). Nos lo pide la ley y lo necesitamos antes de que lleguéis.")}
         ${bookingSummary(b)}
+        <p>Todo esto, y lo de la casa, lo tienes siempre en ${enlaceGuia(b)}: guárdala en el móvil.</p>
         <p>Si alguien tiene alergia o necesitáis algo en especial, decídnoslo y lo preparamos.</p>
         ${SIGNATURE}`,
         "Rellenar los datos",
@@ -269,6 +275,23 @@ const renderReactivation = (b: BookingPayload): RenderedEmail => ({
     ),
 });
 
+// El enlace a la ficha, otra vez. La manda la función enlace-guia cuando el
+// huésped escribe su correo en /guia («he perdido el enlace»). Solo llega al
+// correo de la reserva: nunca al que se escribe en pantalla.
+const renderGuideLink = (b: BookingPayload): RenderedEmail => ({
+    from: EMAIL_FROM,
+    subject: `Tu guía de la casa — ${b.apartment_name}, ${diaMes(b.check_in)}`,
+    html: shell(
+        `Hola ${firstName(b.guest_name)}, aquí tienes el enlace`,
+        `<p>Nos has pedido el enlace de tu guía de la casa para la reserva en <strong>${b.apartment_name}</strong> del ${diaMes(b.check_in)} al ${diaMes(b.check_out)}. Aquí lo tienes otra vez.</p>
+        ${bookingSummary(b)}
+        <p>Guárdalo en el móvil: ahí está tu reserva, cómo llegar, los datos para la policía y lo de la casa.</p>
+        ${SIGNATURE}`,
+        "Tu guía de la casa",
+        guiaUrl(b)
+    ),
+});
+
 // Bloque destacado en rojo cuando el cliente tiene historial relevante en su ficha CRM.
 const customerAlertsBlock = (b: BookingPayload): string => {
     const warnings = b.customer_warnings || [];
@@ -333,8 +356,8 @@ const renderBookingChanged = (b: BookingPayload): RenderedEmail => {
             ${bookingSummary(b)}
             <p>El total de arriba es el precio de la reserva tal y como queda ahora. Si algo no es como lo habíamos hablado, contéstame a este correo o escríbeme por WhatsApp y lo arreglamos.</p>
             ${SIGNATURE}`,
-            "Ver mi reserva",
-            `${SITE_URL}/reservar/confirmada?code=${b.booking_code}`
+            "Tu guía de la casa",
+            guiaUrl(b)
         ),
     };
 };
@@ -371,6 +394,7 @@ export const render = (key: TemplateKey, b: BookingPayload): RenderedEmail => {
         case "operator_new_booking":    return renderOperatorNewBooking(b);
         case "booking_changed":         return renderBookingChanged(b);
         case "booking_cancelled":       return renderBookingCancelled(b);
+        case "guide_link":              return renderGuideLink(b);
     }
 };
 
@@ -383,6 +407,7 @@ export const TEMPLATE_TO_FLAG: Record<TemplateKey, string> = {
     operator_new_booking:   "operator_notified_at",       // anotamos pero no bloqueamos reenvíos
     booking_changed:        "change_email_sent_at",       // se anota la última vez; NO bloquea reenvíos
     booking_cancelled:      "cancellation_email_sent_at",
+    guide_link:             "",                            // no se apunta: se puede pedir las veces que haga falta
 };
 
 /** Plantillas que se pueden mandar más de una vez por reserva. */

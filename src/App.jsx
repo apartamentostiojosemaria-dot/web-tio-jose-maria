@@ -155,6 +155,7 @@ export default function App() {
                         <Route path="/privacidad" element={<PrivacyPolicy />} />
                         <Route path="/aviso-legal" element={<LegalNotice />} />
                         <Route path="/baja" element={<UnsubscribePage />} />
+                        <Route path="/guia" element={<GuidebookPage />} />
                         <Route path="/guia/:code" element={<GuidebookPage />} />
                         <Route path="/rutas" element={<MapPage />} />
                         <Route path="/eventos" element={<EventsPage />} />

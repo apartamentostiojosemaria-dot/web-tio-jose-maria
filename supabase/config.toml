@@ -21,6 +21,9 @@ verify_jwt = false
 [functions.send-guide]
 verify_jwt = false
 
+[functions.enlace-guia]
+verify_jwt = false   # «he perdido el enlace»: anon, con rate limit por IP
+
 [functions.send-booking-email]
 verify_jwt = false
 
