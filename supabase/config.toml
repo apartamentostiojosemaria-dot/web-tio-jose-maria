@@ -24,6 +24,9 @@ verify_jwt = false
 [functions.enlace-guia]
 verify_jwt = false   # «he perdido el enlace»: anon, con rate limit por IP
 
+[functions.documento-admision]
+verify_jwt = false   # PDF del documento de admisión, por código de reserva viva
+
 [functions.send-booking-email]
 verify_jwt = false
 

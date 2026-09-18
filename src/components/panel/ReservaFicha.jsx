@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
     Phone, MessageCircle, Euro, Shield, FileText, CalendarDays, XCircle,
-    Users, Home, Check, NotebookPen, QrCode, UserX } from 'lucide-react';
+    Users, Home, Check, NotebookPen, QrCode, UserX, Clock } from 'lucide-react';
 import {
     Boton, Tarjeta, Aviso, Cargando, Vacio, Chip, claseInput,
     formatoEuro, cobradoDe, pendienteDe, canalSiImporta, nombreCanal,
@@ -135,6 +135,9 @@ const ReservaFicha = ({ ir, params = {} }) => {
                     {canalSiImporta(reserva) && <Chip tono="azul">Vino por {nombreCanal(reserva)}</Chip>}
                     {cancelada && <Chip tono="rojo" icono={XCircle}>Cancelada</Chip>}
                     {noSePresento && <Chip tono="rojo" icono={UserX}>No se presentaron</Chip>}
+                    {reserva.hora_llegada_prevista && !reserva.checkin_at && (
+                        <Chip tono="verde" icono={Clock}>Llegan sobre las {String(reserva.hora_llegada_prevista).slice(0, 5)}</Chip>
+                    )}
                 </div>
 
                 <p className="text-lg text-text-primary mt-3 leading-relaxed">
@@ -249,6 +252,10 @@ const ReservaFicha = ({ ir, params = {} }) => {
                     </div>
                 </div>
 
+                {reserva.factura_pedida_at && !factura && (
+                    <Aviso tono="atencion" titulo={`Ha pedido factura a nombre de ${reserva.factura_datos?.nombre || 'el huésped'}.`}
+                        texto={`NIF ${reserva.factura_datos?.nif || '—'} · ${reserva.factura_datos?.direccion || ''}. Al hacerla salen ya estos datos.`} />
+                )}
                 <Boton ancho tamano="grande" variante="secundario" icono={FileText} onClick={() => setHoja('factura')}>
                     Factura
                 </Boton>

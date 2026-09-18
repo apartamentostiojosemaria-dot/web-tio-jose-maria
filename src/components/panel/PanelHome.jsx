@@ -168,6 +168,8 @@ const PanelHome = ({ ir, perfil, secciones = [] }) => {
 
 // ============================================================
 
+// La hora avisada solo importa el día que llegan (no el día que se van).
+const hoyDe = (r) => r.check_in;
 const ListaDelDia = ({ titulo, icono: Icono, horario, reservas, vacio, ir }) => (
     <Tarjeta>
         <div className="flex items-center gap-2 mb-1">
@@ -194,6 +196,7 @@ const ListaDelDia = ({ titulo, icono: Icono, horario, reservas, vacio, ir }) => 
                                     <span className="block text-base text-gray-600">
                                         {r.apartamento} · {r.pax_count || 1} {r.pax_count === 1 ? 'persona' : 'personas'}
                                         {canalSiImporta(r) ? ` · ${canalSiImporta(r)}` : ''}
+                                        {r.hora_llegada_prevista && r.check_in === hoyDe(r) ? ` · llegan sobre las ${String(r.hora_llegada_prevista).slice(0, 5)}` : ''}
                                     </span>
                                 </span>
                                 <ChevronRight size={20} className="text-gray-400 shrink-0" aria-hidden="true" />

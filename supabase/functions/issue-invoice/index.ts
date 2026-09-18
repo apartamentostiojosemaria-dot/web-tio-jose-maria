@@ -42,7 +42,7 @@ const json = (status: number, body: unknown) =>
 
 const BOOKING_SELECT = `id, booking_code, guest_name, guest_email, guest_phone, guest_address,
     check_in, check_out, nights, pax_count, total_price, status, source,
-    payment_intent_id, payment_amount_paid, apartment_id, apartments(name)`;
+    payment_intent_id, payment_amount_paid, apartment_id, factura_datos, apartments(name)`;
 
 // ---------------------------------------------------------------------------
 // Autorización: o eres la propia infraestructura, o eres del equipo

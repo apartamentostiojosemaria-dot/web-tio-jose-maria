@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
     MapPin, Shield, Phone, Wifi, Home, MessageCircle, FileText, Star,
-    AlertTriangle, Loader2, Copy, Check, Smartphone, Mail, ChevronRight,
+    AlertTriangle, Loader2, Copy, Check, Smartphone, Mail, ChevronRight, Clock, Download,
 } from 'lucide-react';
 import PageHead from '../components/seo/PageHead';
 import { supabase } from '../lib/supabase';
@@ -37,6 +37,12 @@ const TEL_HUMANO = '676 34 46 75';
 const EMAIL = 'apartamentostiojosemaria@gmail.com';
 
 const wa = (texto) => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(texto)}`;
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// PDF del documento de admisión (art. 24 Decreto 194/2010): lo sirve una función
+// pública por código de reserva viva. La apikey va en la URL porque es un enlace
+// que se abre en el navegador (no una llamada fetch) y la clave anon es pública.
+const urlAdmision = (codigo) => `${SUPABASE_URL}/functions/v1/documento-admision?code=${codigo}&apikey=${ANON_KEY}`;
 
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
@@ -70,6 +76,13 @@ const GuidebookPage = () => {
     const [cargando, setCargando] = useState(!!codigo);
     const [fallo, setFallo] = useState(null);
 
+    const cargar = async () => {
+        const { data, error } = await supabase.rpc('tjm_ficha_huesped', { p_booking_code: codigo });
+        if (error) setFallo('No hemos podido abrir tu guía. Prueba otra vez en un momento.');
+        else setFicha(data);
+        setCargando(false);
+    };
+
     useEffect(() => {
         if (!codigo) return;
         let cortado = false;
@@ -101,7 +114,7 @@ const GuidebookPage = () => {
             ) : ficha?.ventana !== 'abierta' ? (
                 <Cerrada {...textoVentana(ficha?.ventana, codigo)} />
             ) : (
-                <Ficha ficha={ficha} />
+                <Ficha ficha={ficha} recargar={cargar} />
             )}
         </div>
     );
@@ -130,7 +143,7 @@ const Pie = () => (
 
 // ---------------------------------------------------------------- la ficha
 
-const Ficha = ({ ficha }) => {
+const Ficha = ({ ficha, recargar }) => {
     const { reserva: r, policia, cancelacion, factura, casa, momento } = ficha;
     const nombre = nombrePila(r.nombre);
     const antes = momento === 'antes';
@@ -162,6 +175,8 @@ const Ficha = ({ ficha }) => {
                             {' '}<Link to="/condiciones" className="underline">Condiciones</Link>.
                         </p>
                     )}
+                    <a href={urlAdmision(r.codigo)} target="_blank" rel="noopener noreferrer" className={btnSec}><Download size={18} aria-hidden="true" /> Documento de admisión (PDF)</a>
+                    <p className="mt-1 text-xs text-gray-500 text-center">El justificante oficial de tu estancia, por si te lo piden.</p>
                 </Bloque>
 
                 {/* ---------- 2. Antes de venir ---------- */}
@@ -176,8 +191,8 @@ const Ficha = ({ ficha }) => {
                                 </div>
                                 <div className="mt-4">
                                     <p className="text-[15px] leading-relaxed"><b>Llaves:</b> {casa?.entrar || 'Os las damos en mano al llegar.'}</p>
-                                    <a href={wa(`Hola, soy ${r.nombre} (${r.codigo}). Llegamos el ${diaMes(r.entrada)} sobre las `)} target="_blank" rel="noopener noreferrer" className={btnSec}><MessageCircle size={18} aria-hidden="true" /> Avisar de la hora por WhatsApp</a>
                                 </div>
+                                <HoraLlegada codigo={r.codigo} hora={r.hora_llegada} nombre={r.nombre} entrada={r.entrada} recargar={recargar} />
                             </>
                         )}
                     </Bloque>
@@ -209,14 +224,7 @@ const Ficha = ({ ficha }) => {
                     <Bloque titulo="Al irte">
                         {!despues && casa?.salir && <Parrafos texto={casa.salir} />}
                         <div className={despues ? '' : 'mt-4'}>
-                            <p className="text-[15px] leading-relaxed"><b>Factura.</b>{' '}
-                                {factura.hay
-                                    ? <>Ya está hecha (nº {factura.numero}){factura.mandada_el ? `, y os la mandamos al correo el ${diaMes(String(factura.mandada_el).slice(0, 10))}` : ''}. Si no la encontráis, pedídnosla y os la reenviamos.</>
-                                    : r.es_canal
-                                        ? <>Si la necesitáis, pedídnosla y os la hacemos.</>
-                                        : <>Si la necesitáis con vuestros datos, pedídnosla aquí y os la mandamos al correo.</>}
-                            </p>
-                            <a href={wa(`Hola, soy ${r.nombre} (${r.codigo}). ${factura.hay ? 'Me podéis reenviar la factura, por favor.' : 'Necesito la factura de la estancia, por favor. Datos:'}`)} target="_blank" rel="noopener noreferrer" className={btnSec}><FileText size={18} aria-hidden="true" /> {factura.hay ? 'Pedir que me la reenvíen' : 'Pedir la factura'}</a>
+                            <Factura codigo={r.codigo} nombre={r.nombre} factura={factura} recargar={recargar} />
                         </div>
                         {despues && (
                             <div className="mt-5 pt-5 border-t border-gray-100">
@@ -241,6 +249,108 @@ const Ficha = ({ ficha }) => {
 };
 
 const nombreCanal = (c) => ({ booking: 'Booking', airbnb: 'Airbnb', holidu: 'Holidu', escapada: 'Escapada Rural', casasrurales: 'CasasRurales.net' })[String(c || '').toLowerCase()] || c;
+
+// ---------------------------------------------------------------- hora de llegada
+
+// «¿A qué hora llegáis?»: lo que Mari Carmen pregunta por WhatsApp. Se guarda
+// en la reserva y le sale en el panel. Medias horas desde las 12:00.
+const HORAS = Array.from({ length: 24 }, (_, i) => { const h = 12 + Math.floor(i / 2); const m = i % 2 ? '30' : '00'; return `${String(h).padStart(2, '0')}:${m}`; });
+
+const HoraLlegada = ({ codigo, hora, recargar }) => {
+    const [valor, setValor] = useState(hora || '');
+    const [estado, setEstado] = useState(null);   // null | 'guardando' | 'ok' | 'error'
+    const [editando, setEditando] = useState(!hora);
+    useEffect(() => { setValor(hora || ''); setEditando(!hora); }, [hora]);
+
+    const guardar = async () => {
+        if (!valor) return;
+        setEstado('guardando');
+        const { data, error } = await supabase.rpc('tjm_ficha_avisar_llegada', { p_booking_code: codigo, p_hora: valor });
+        if (error || !data?.ok) { setEstado('error'); return; }
+        setEstado('ok'); setEditando(false);
+        await recargar?.();
+    };
+
+    return (
+        <div className="mt-4 rounded-xl bg-rural-50 border border-rural-200 px-4 py-3">
+            <p className="text-[15px] leading-relaxed font-bold flex items-center gap-2"><Clock size={18} className="text-rural-700" aria-hidden="true" /> ¿A qué hora llegáis?</p>
+            {!editando ? (
+                <p className="mt-1 text-[15px] leading-relaxed">Nos habéis dicho que <b>sobre las {hora}</b>. Os esperamos a esa hora.{' '}
+                    <button type="button" onClick={() => setEditando(true)} className="underline text-rural-700 font-semibold">Cambiar</button></p>
+            ) : (
+                <>
+                    <p className="mt-1 text-sm text-gray-700">Así os esperamos con las llaves. Si cambia, se cambia aquí.</p>
+                    <select value={valor} onChange={(e) => setValor(e.target.value)} aria-label="Hora de llegada" className="mt-2 w-full min-h-[48px] rounded-xl border-2 border-gray-200 bg-white px-3 text-[16px] focus:border-rural-600 focus:outline-none">
+                        <option value="">Elige una hora</option>
+                        {HORAS.map((h) => <option key={h} value={h}>{h === '12:00' ? 'Antes de las 16:00 (preguntadnos)' : `Sobre las ${h}`}</option>)}
+                    </select>
+                    <button type="button" onClick={guardar} disabled={!valor || estado === 'guardando'} className={`${btnPri} mt-2`}>
+                        {estado === 'guardando' ? <Loader2 size={18} className="animate-spin" aria-hidden="true" /> : <Clock size={18} aria-hidden="true" />} Avisar de la hora
+                    </button>
+                    {estado === 'error' && <p className="mt-2 text-sm text-red-700">No se ha guardado. Prueba otra vez o dínoslo por WhatsApp.</p>}
+                </>
+            )}
+        </div>
+    );
+};
+
+// ---------------------------------------------------------------- factura
+
+const Factura = ({ codigo, nombre, factura, recargar }) => {
+    const [abierto, setAbierto] = useState(false);
+    const [f, setF] = useState({ nombre: nombre || '', nif: '', direccion: '', email: '' });
+    const [estado, setEstado] = useState(null);
+    const cambia = (k) => (e) => setF({ ...f, [k]: e.target.value });
+
+    const pedir = async (e) => {
+        e.preventDefault();
+        setEstado('guardando');
+        const { data, error } = await supabase.rpc('tjm_ficha_pedir_factura', {
+            p_booking_code: codigo, p_nombre: f.nombre, p_nif: f.nif, p_direccion: f.direccion, p_email: f.email || null,
+        });
+        if (error || !data?.ok) { setEstado(data?.error === 'datos_incompletos' ? 'incompleto' : 'error'); return; }
+        setEstado('ok'); setAbierto(false);
+        await recargar?.();
+    };
+
+    if (factura.hay) {
+        return (
+            <>
+                <p className="text-[15px] leading-relaxed"><b>Factura.</b> Ya está hecha (nº {factura.numero}){factura.mandada_el ? `, y os la mandamos al correo el ${diaMes(String(factura.mandada_el).slice(0, 10))}` : ''}. Si no la encontráis, pedidnos que os la reenviemos.</p>
+                <a href={wa(`Hola, soy ${nombre} (${codigo}). ¿Me podéis reenviar la factura, por favor?`)} target="_blank" rel="noopener noreferrer" className={btnSec}><FileText size={18} aria-hidden="true" /> Pedir que me la reenvíen</a>
+            </>
+        );
+    }
+    if (factura.pedida_el) {
+        return (
+            <p className="text-[15px] leading-relaxed flex gap-2"><Check size={20} className="text-rural-700 shrink-0 mt-0.5" aria-hidden="true" />
+                <span><b>Factura pedida</b> el {diaMes(String(factura.pedida_el).slice(0, 10))} a nombre de {factura.pedida_a}. Os la mandamos al correo en cuanto la hagamos.</span></p>
+        );
+    }
+    return (
+        <>
+            <p className="text-[15px] leading-relaxed"><b>Factura.</b> Si la necesitáis con vuestros datos, pedidla aquí y os la mandamos al correo.</p>
+            {!abierto ? (
+                <button type="button" onClick={() => setAbierto(true)} className={btnSec}><FileText size={18} aria-hidden="true" /> Pedir la factura</button>
+            ) : (
+                <form onSubmit={pedir} className="mt-3 space-y-2">
+                    {[['nombre', 'Nombre o empresa', 'text'], ['nif', 'NIF / CIF', 'text'], ['direccion', 'Dirección completa', 'text'], ['email', 'Correo donde mandarla (si es otro)', 'email']].map(([k, ph, t]) => (
+                        <label key={k} className="block">
+                            <span className="sr-only">{ph}</span>
+                            <input type={t} value={f[k]} onChange={cambia(k)} placeholder={ph} required={k !== 'email'}
+                                className="w-full min-h-[48px] rounded-xl border-2 border-gray-200 px-3 text-[16px] focus:border-rural-600 focus:outline-none" />
+                        </label>
+                    ))}
+                    {estado === 'incompleto' && <p className="text-sm text-red-700">Faltan datos: nombre, NIF y dirección completa.</p>}
+                    {estado === 'error' && <p className="text-sm text-red-700">No se ha podido pedir. Prueba otra vez o dínoslo por WhatsApp.</p>}
+                    <button type="submit" disabled={estado === 'guardando'} className={`${btnPri} mt-1`}>
+                        {estado === 'guardando' ? <Loader2 size={18} className="animate-spin" aria-hidden="true" /> : <FileText size={18} aria-hidden="true" />} Pedir la factura con estos datos
+                    </button>
+                </form>
+            )}
+        </>
+    );
+};
 
 // ---------------------------------------------------------------- policía
 

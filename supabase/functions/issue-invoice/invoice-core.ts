@@ -218,10 +218,13 @@ async function siguienteNumero(sb: SupabaseClient, serie: string): Promise<numbe
 export async function resolveReceptor(
     sb: SupabaseClient, booking: BookingRow, override: Receptor = {},
 ): Promise<Receptor> {
-    let nif = override.nif ?? null;
-    let nombre = override.nombre ?? null;
-    let direccion = override.direccion ?? null;
-    const email = override.email ?? booking.guest_email ?? null;
+    // Lo que el huésped pidió desde su ficha (/guia → «Pedir la factura»)
+    // manda sobre lo deducido; lo que pase el panel a mano, sobre todo.
+    const pedido = ((booking as unknown as { factura_datos?: Record<string, string | null> }).factura_datos) || {};
+    let nif = override.nif ?? pedido.nif ?? null;
+    let nombre = override.nombre ?? pedido.nombre ?? null;
+    let direccion = override.direccion ?? pedido.direccion ?? null;
+    const email = override.email ?? pedido.email ?? booking.guest_email ?? null;
 
     // Si el huésped rellenó el precheckin, ya tenemos su documento y dirección
     if (!nif || !direccion) {
