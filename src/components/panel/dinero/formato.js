@@ -124,22 +124,6 @@ export const enlaceWhatsApp = (tel, texto) => {
     return `https://wa.me/${numero}${texto ? `?text=${encodeURIComponent(texto)}` : ''}`;
 };
 
-/** El recordatorio de los datos de la policía, ya escrito. */
-export const textoRecordatorioPolicia = (reserva, web = 'https://tiojosemaria.com') => {
-    const nombre = (reserva?.guest_name || '').split(' ')[0];
-    const enlace = reserva?.booking_code ? `${web}/precheckin?code=${reserva.booking_code}` : `${web}/precheckin`;
-    return [
-        `Hola${nombre ? ` ${nombre}` : ''}, somos los Apartamentos Tío José María.`,
-        '',
-        `Para preparar tu llegada del ${diaYMes(reserva?.check_in)} nos faltan los datos del documento de identidad de quienes venís: nos los pide la policía y hay que mandarlos antes de que entréis.`,
-        '',
-        'Se rellenan aquí en dos minutos:',
-        enlace,
-        '',
-        'Muchas gracias.',
-    ].join('\n');
-};
-
 /** El aviso de que falta dinero, ya escrito. */
 export const textoRecordatorioCobro = (reserva, falta, formatoEuro) => {
     const nombre = (reserva?.guest_name || '').split(' ')[0];

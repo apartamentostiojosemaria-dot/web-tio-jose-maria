@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
     Phone, MessageCircle, Euro, Shield, FileText, CalendarDays, XCircle,
-    Users, Home, Check, NotebookPen, QrCode, UserX, Clock } from 'lucide-react';
+    Users, Home, Check, NotebookPen, QrCode, UserX, Clock, LogOut } from 'lucide-react';
 import {
     Boton, Tarjeta, Aviso, Cargando, Vacio, Chip, claseInput,
     formatoEuro, cobradoDe, pendienteDe, canalSiImporta, nombreCanal,
@@ -16,7 +16,6 @@ import {
     cargarApartamentos, guardarNotas,
 } from './dinero/datos';
 import HojaCobro from './dinero/HojaCobro';
-import HojaParte from './dinero/HojaParte';
 import HojaFactura from './dinero/HojaFactura';
 import HojaCambiar from './dinero/HojaCambiar';
 import HojaCancelar from './dinero/HojaCancelar';
@@ -50,7 +49,7 @@ const ReservaFicha = ({ ir, params = {} }) => {
     const [parte, setParte] = useState(null);
     const [factura, setFactura] = useState(null);       // la VIVA
     const [anuladas, setAnuladas] = useState([]);       // anuladas por rectificativa (Jesús)
-    const [hoja, setHoja] = useState(null);   // cobro | parte | factura | cambiar | cancelar
+    const [hoja, setHoja] = useState(null);   // cobro | factura | cambiar | cancelar | noshow
 
     const refrescar = useCallback(async () => {
         const [r, c, p, f] = await Promise.all([
@@ -102,6 +101,15 @@ const ReservaFicha = ({ ir, params = {} }) => {
     // nadie ha hecho la entrada; el resto del tiempo el botón no está.
     const hoy = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Madrid' });
     const puedeSerNoShow = reserva.status === 'confirmed' && String(reserva.check_in) <= hoy && !reserva.checkin_at;
+    // El check-in y los datos de la policía son la MISMA cosa (Jesús, 18-sep):
+    // un solo botón que cambia con el momento. Antes del día: «Datos de la
+    // policía» (QR, recordárselo, quién ha rellenado). El día de llegada:
+    // «Hacer el check-in». Dentro: «Entraron a las X» y el botón para apuntar
+    // que se van. Después: solo la hora a la que se fueron.
+    const entraron = !!reserva.checkin_at;
+    const seFueron = !!reserva.checkout_at;
+    const esElDia = String(reserva.check_in) <= hoy;
+    const horaDe = (t) => new Intl.DateTimeFormat('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' }).format(new Date(t));
 
     const deBooking = (reserva.channel || '').toLowerCase() === 'booking';
     const comision = Number(reserva.commission_amount) || 0;
@@ -235,22 +243,40 @@ const ReservaFicha = ({ ir, params = {} }) => {
 
             {/* ---------- Los botones grandes ---------- */}
             <section className="space-y-3">
-                <Boton ancho tamano="grande" icono={QrCode} onClick={() => ir('checkin', { reservaId: reserva.id })} disabled={cancelada}>
-                    Hacer el check-in
-                </Boton>
+                <div>
+                    {seFueron ? (
+                        <div className="flex flex-wrap justify-center gap-2">
+                            <Chip tono="verde" icono={Check}>Entraron a las {horaDe(reserva.checkin_at)}</Chip>
+                            <Chip tono="neutro" icono={LogOut}>Se fueron a las {horaDe(reserva.checkout_at)}</Chip>
+                        </div>
+                    ) : entraron ? (
+                        <>
+                            <div className="flex justify-center mb-2">
+                                <Chip tono="verde" icono={Check}>Entraron a las {horaDe(reserva.checkin_at)}</Chip>
+                            </div>
+                            <Boton ancho tamano="grande" variante="secundario" icono={LogOut} onClick={() => ir('checkin', { reservaId: reserva.id })}>
+                                Se han ido
+                            </Boton>
+                        </>
+                    ) : esElDia ? (
+                        <Boton ancho tamano="grande" icono={QrCode} onClick={() => ir('checkin', { reservaId: reserva.id })} disabled={cancelada || noSePresento}>
+                            Hacer el check-in
+                        </Boton>
+                    ) : (
+                        <Boton ancho tamano="grande" variante="secundario" icono={Shield} onClick={() => ir('checkin', { reservaId: reserva.id })} disabled={cancelada}>
+                            Datos de la policía
+                        </Boton>
+                    )}
+                    {!cancelada && !noSePresento && (
+                        <div className="mt-2 flex justify-center">
+                            <SemaforoPolicia parte={parte} />
+                        </div>
+                    )}
+                </div>
 
                 <Boton ancho tamano="grande" icono={Euro} onClick={() => setHoja('cobro')} disabled={cancelada}>
                     Cobrar
                 </Boton>
-
-                <div>
-                    <Boton ancho tamano="grande" variante="secundario" icono={Shield} onClick={() => setHoja('parte')}>
-                        Datos de la policía
-                    </Boton>
-                    <div className="mt-2 flex justify-center">
-                        <SemaforoPolicia parte={parte} />
-                    </div>
-                </div>
 
                 {reserva.factura_pedida_at && !factura && (
                     <Aviso tono="atencion" titulo={`Ha pedido factura a nombre de ${reserva.factura_datos?.nombre || 'el huésped'}.`}
@@ -286,11 +312,6 @@ const ReservaFicha = ({ ir, params = {} }) => {
                 abierta={hoja === 'cobro'} reserva={reserva} pendiente={pendiente}
                 onCerrar={() => setHoja(null)}
                 onCobrado={() => refrescar()}
-            />
-            <HojaParte
-                abierta={hoja === 'parte'} reserva={reserva} parte={parte}
-                onCerrar={() => setHoja(null)}
-                onVerDatos={() => { setHoja(null); ir('parte', { reservaId: reserva.id }); }}
             />
             <HojaFactura
                 abierta={hoja === 'factura'} reserva={reserva} factura={factura} anuladas={anuladas}
