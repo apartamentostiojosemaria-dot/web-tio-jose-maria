@@ -238,13 +238,14 @@ const renderReviewRequest = (b: BookingPayload): RenderedEmail => ({
 // ninguno en la base (discount_codes vacía); si Jesús decide uno, se añade aquí.
 const renderReactivation = (b: BookingPayload): RenderedEmail => ({
     from: EMAIL_FROM,
-    subject: `Cuando queráis volver a Hinojares`,
+    subject: `${firstName(b.guest_name)}, un mes ya desde que estuvisteis en ${b.apartment_name}`,
     html: shell(
         `Hola ${firstName(b.guest_name)}`,
-        `<p>Hace un mes que estuvisteis en casa. Solo quería deciros que, cuando os apetezca volver, aquí estamos.</p>
-        <p>Si es en otra época del año, escribidnos y os contamos qué hay por aquí en esas fechas. Y reservando con nosotros directamente os atendemos igual que esta vez.</p>
+        `<p>Hace un mes que os fuisteis de <strong>${b.apartment_name}</strong>, donde estuvisteis del ${diaMes(b.check_in)} al ${diaMes(b.check_out)}. Preparando el apartamento para los siguientes me he acordado de vosotros, y por eso os escribo.</p>
+        <p>Espero que os llevarais buen recuerdo de Hinojares. Cada época tiene aquí lo suyo, y a quien ya conoce la casa le gusta verla en otra estación.</p>
+        <p>Si os apetece volver, en la web veis los días libres y reserváis en un momento.</p>
         ${SIGNATURE}`,
-        "Ver fechas libres",
+        "Ver los días libres",
         `${SITE_URL}/reservar`
     ),
 });
