@@ -15,6 +15,37 @@ const addDays = (date, n) => {
 
 const formatPrice = (p) => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(Number(p));
 
+// Política de cancelación (condiciones, punto 8): gratis hasta 7 días antes de la
+// llegada. Se enseña con la FECHA calculada antes del botón de pagar, que es lo
+// que exige «detallada y publicitada con carácter previo» (estudio 18-sep-2026).
+const DIAS_CANCELACION_GRATIS = 7;
+const limiteCancelacionGratis = (checkIn) => {
+    if (!checkIn) return null;
+    const d = new Date(`${checkIn}T00:00:00`);
+    d.setDate(d.getDate() - DIAS_CANCELACION_GRATIS);
+    return d;
+};
+const fechaLarga = (d) => d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+const PoliticaCancelacion = ({ checkIn }) => {
+    const limite = limiteCancelacionGratis(checkIn);
+    if (!limite) return null;
+    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    const aunGratis = limite >= hoy;
+    return (
+        <div className="p-4 bg-white rounded-xl border border-gray-100 text-sm text-gray-700 leading-relaxed">
+            <p className="font-bold text-text-primary mb-1">Cancelación</p>
+            {aunGratis ? (
+                <p><strong>Gratis hasta el {fechaLarga(limite)}</strong> (7 días antes de la llegada): te devolvemos el 100 %.
+                    Después, no se devuelve el importe pero puedes cambiar de fechas una vez, sin coste, dentro de los 12 meses siguientes.</p>
+            ) : (
+                <p>Como llegas en menos de 7 días, <strong>esta reserva ya no se puede cancelar gratis</strong>. Si al final no puedes venir,
+                    podrás cambiar de fechas una vez, sin coste, dentro de los 12 meses siguientes.</p>
+            )}
+            <p className="mt-1 text-xs text-gray-500">No presentarse sin avisar supone perder el importe. Detalle en las condiciones de reserva.</p>
+        </div>
+    );
+};
+
 const ReservarPage = () => {
     const [step, setStep] = useState('search');      // search | choose | guest | done
     const [checkIn, setCheckIn] = useState('');
@@ -392,6 +423,8 @@ const GuestForm = ({ selected, checkIn, checkOut, guests, form, setForm, holding
             </label>
         </div>
 
+        <div className="mt-4"><PoliticaCancelacion checkIn={checkIn} /></div>
+
         {error && <p className="mt-4 text-sm text-amber-900 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">{error}</p>}
 
         <button type="submit" disabled={holding || !form.accept}
@@ -401,7 +434,7 @@ const GuestForm = ({ selected, checkIn, checkOut, guests, form, setForm, holding
 
         <p className="mt-4 text-xs text-gray-500 text-center max-w-md mx-auto">
             Tu apartamento queda reservado durante 15 minutos mientras completas el pago. Pago 100% seguro con tarjeta,
-            procesado por Stripe. Cancelación gratuita hasta 7 días antes de la llegada.
+            procesado por Stripe.
         </p>
     </form>
 );

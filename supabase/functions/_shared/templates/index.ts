@@ -56,6 +56,23 @@ const diaMes = (s: string) => {
     return `${Number(d)} de ${MESES[Number(m) - 1]}`;
 };
 
+// Política de cancelación (condiciones, punto 8): gratis hasta 7 días antes.
+// La confirmación la dice con la FECHA, que es lo que pide «detallada y
+// publicitada» y lo que evita discusiones (estudio 18-sep-2026).
+const DIAS_CANCELACION_GRATIS = 7;
+const limiteCancelacionGratis = (checkIn: string) => {
+    const d = new Date(checkIn + "T00:00:00Z");
+    d.setUTCDate(d.getUTCDate() - DIAS_CANCELACION_GRATIS);
+    return d.toISOString().slice(0, 10);
+};
+const politicaCancelacion = (b: BookingPayload) => {
+    const limite = limiteCancelacionGratis(b.check_in);
+    const hoy = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+    return limite >= hoy
+        ? `<p><strong>Cancelación:</strong> gratis hasta el ${diaMes(limite)} (te devolvemos el 100 %). Después no se devuelve el importe, pero puedes cambiar de fechas una vez, sin coste, dentro de los 12 meses siguientes.</p>`
+        : `<p><strong>Cancelación:</strong> como llegas en menos de 7 días, esta reserva ya no se puede cancelar gratis. Si al final no puedes venir, podrás cambiar de fechas una vez, sin coste, dentro de los 12 meses siguientes.</p>`;
+};
+
 // El recuadro de los datos de la policía. Una frase de por qué, una de cómo,
 // y el enlace. Se abre 7 días antes de la llegada (migración 0018).
 const precheckinBlock = (b: BookingPayload, intro: string) => `
@@ -148,6 +165,7 @@ const renderConfirmation = (b: BookingPayload): RenderedEmail => ({
             ? `<p>Tienes reservado el apartamento <strong>${b.apartment_name}</strong> del ${diaMes(b.check_in)} al ${diaMes(b.check_out)}. Gracias por reservar con nosotros. Como ya queda poco, te dejo aquí todo lo que hace falta saber.</p>
         ${apartmentPhoto(b)}
         ${bookingSummary(b)}
+        ${politicaCancelacion(b)}
         ${LLEGADA}
         <p><strong>Salida:</strong> antes de las 12:00.</p>
         ${CASA}
@@ -157,6 +175,7 @@ const renderConfirmation = (b: BookingPayload): RenderedEmail => ({
             : `<p>Tienes reservado el apartamento <strong>${b.apartment_name}</strong> del ${diaMes(b.check_in)} al ${diaMes(b.check_out)}. Gracias por reservar con nosotros.</p>
         ${apartmentPhoto(b)}
         ${bookingSummary(b)}
+        ${politicaCancelacion(b)}
         <p>La entrada es a partir de las 16:00 y la salida antes de las 12:00. Las llaves te las damos en mano cuando llegues.</p>
         <p>Unos días antes de venir te vuelvo a escribir con cómo llegar y lo que hay en la casa. Si mientras tanto necesitas algo, llámanos o escríbenos.</p>
         ${SIGNATURE}`,
@@ -327,7 +346,7 @@ const renderBookingCancelled = (b: BookingPayload): RenderedEmail => {
     if (devolver > 0) {
         dinero = `<p><strong>Te devolvemos ${formatPrice(devolver)}.</strong> Si pagaste con tarjeta en la web, te llega sola a la misma tarjeta en unos días. Si fue por transferencia o Bizum, te lo ingresamos nosotros; si en una semana no lo ves, escríbenos.</p>`;
     } else if (pagado > 0) {
-        dinero = `<p>Según las condiciones de cancelación (gratis hasta 7 días antes de la llegada), lo pagado (${formatPrice(pagado)}) no se devuelve. Si crees que hay un error, escríbenos y lo miramos.</p>`;
+        dinero = `<p>Según las condiciones de cancelación (gratis hasta 7 días antes de la llegada), lo pagado (${formatPrice(pagado)}) no se devuelve. <strong>Pero podéis cambiar de fechas una vez, sin coste, dentro de los 12 meses siguientes</strong>: escribidnos y lo miramos. Si creéis que hay un error, decídnoslo también.</p>`;
     }
     return {
         from: EMAIL_FROM,

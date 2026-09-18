@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
     Phone, MessageCircle, Euro, Shield, FileText, CalendarDays, XCircle,
-    Users, Home, Check, NotebookPen, QrCode } from 'lucide-react';
+    Users, Home, Check, NotebookPen, QrCode, UserX } from 'lucide-react';
 import {
     Boton, Tarjeta, Aviso, Cargando, Vacio, Chip, claseInput,
     formatoEuro, cobradoDe, pendienteDe, canalSiImporta, nombreCanal,
@@ -20,6 +20,7 @@ import HojaParte from './dinero/HojaParte';
 import HojaFactura from './dinero/HojaFactura';
 import HojaCambiar from './dinero/HojaCambiar';
 import HojaCancelar from './dinero/HojaCancelar';
+import HojaNoShow from './dinero/HojaNoShow';
 
 // ============================================================
 // ReservaFicha — la ficha de una reserva (sección 4.4 del plan)
@@ -96,6 +97,11 @@ const ReservaFicha = ({ ir, params = {} }) => {
     const cobrado = cobradoDe(reserva);
     const pendiente = pendienteDe(reserva);
     const cancelada = reserva.status === 'cancelled';
+    const noSePresento = reserva.status === 'no_show';
+    // «No se han presentado» solo tiene sentido desde el día de llegada y si
+    // nadie ha hecho la entrada; el resto del tiempo el botón no está.
+    const hoy = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Madrid' });
+    const puedeSerNoShow = reserva.status === 'confirmed' && String(reserva.check_in) <= hoy && !reserva.checkin_at;
 
     const deBooking = (reserva.channel || '').toLowerCase() === 'booking';
     const comision = Number(reserva.commission_amount) || 0;
@@ -128,6 +134,7 @@ const ReservaFicha = ({ ir, params = {} }) => {
                     <Chip icono={Users}>{personas} {personas === 1 ? 'persona' : 'personas'}</Chip>
                     {canalSiImporta(reserva) && <Chip tono="azul">Vino por {nombreCanal(reserva)}</Chip>}
                     {cancelada && <Chip tono="rojo" icono={XCircle}>Cancelada</Chip>}
+                    {noSePresento && <Chip tono="rojo" icono={UserX}>No se presentaron</Chip>}
                 </div>
 
                 <p className="text-lg text-text-primary mt-3 leading-relaxed">
@@ -251,7 +258,7 @@ const ReservaFicha = ({ ir, params = {} }) => {
             <NotasInternas reserva={reserva} onGuardado={(txt) => setReserva({ ...reserva, internal_notes: txt })} />
 
             {/* ---------- A la vista, pero sin gritar ---------- */}
-            {!cancelada && (
+            {!cancelada && !noSePresento && (
                 <section className="pt-2 space-y-2">
                     <Boton ancho variante="suave" icono={CalendarDays} onClick={() => setHoja('cambiar')}>
                         Cambiar fechas o apartamento
@@ -259,6 +266,11 @@ const ReservaFicha = ({ ir, params = {} }) => {
                     <Boton ancho variante="peligro" icono={XCircle} onClick={() => setHoja('cancelar')}>
                         Cancelar reserva
                     </Boton>
+                    {puedeSerNoShow && (
+                        <Boton ancho variante="suave" icono={UserX} onClick={() => setHoja('noshow')}>
+                            No se han presentado
+                        </Boton>
+                    )}
                 </section>
             )}
 
@@ -287,6 +299,11 @@ const ReservaFicha = ({ ir, params = {} }) => {
                 abierta={hoja === 'cancelar'} reserva={reserva}
                 onCerrar={() => setHoja(null)}
                 onCancelada={refrescar}
+            />
+            <HojaNoShow
+                abierta={hoja === 'noshow'} reserva={reserva}
+                onCerrar={() => setHoja(null)}
+                onMarcada={refrescar}
             />
         </div>
     );

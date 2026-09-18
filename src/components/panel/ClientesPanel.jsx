@@ -432,6 +432,7 @@ const FichaCliente = ({ cliente, perfil, ir, onCerrar, onGuardado }) => {
 
 const EstadoReserva = ({ reserva, hoy }) => {
     if (reserva.status === 'cancelled') return <Chip tono="rojo">Anulada</Chip>;
+    if (reserva.status === 'no_show') return <Chip tono="rojo">No se presentaron</Chip>;
     if (String(reserva.check_out) <= hoy) return <Chip tono="neutro">Ya estuvo</Chip>;
     if (String(reserva.check_in) <= hoy) return <Chip tono="verde">Está aquí ahora</Chip>;
     return <Chip tono="verde">Viene el {fechaCorta(reserva.check_in)}</Chip>;

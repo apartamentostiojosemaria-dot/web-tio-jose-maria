@@ -48,6 +48,9 @@ const MOTIVOS = {
     capacidad: 'En ese apartamento no caben tantas personas.',
     ocupado: 'Esas fechas ya están ocupadas en ese apartamento. Prueba con otras.',
     error_emision: 'No se ha podido hacer la factura. Avisa a Jesús.',
+    estado_no_permite_no_show: 'Esta reserva no está confirmada: no se puede marcar como no presentada.',
+    todavia_no_ha_llegado_el_dia: 'Todavía no ha llegado el día de entrada. Espera a ese día.',
+    ya_hicieron_la_entrada: 'Esta reserva ya tiene la entrada hecha: sí que vinieron.',
 };
 
 function traduce(error) {
@@ -195,6 +198,11 @@ export async function moverReserva({ bookingId, apartamentoId, entrada, salida }
 /** Cancelar. Devuelve { a_devolver, gratuita, cobrado }. */
 export async function cancelarReserva({ bookingId, motivo }) {
     return porFuncion('cancel_booking', { p_booking_id: bookingId, p_reason: motivo || null });
+}
+
+/** No se presentaron. Solo desde el día de llegada y sin entrada hecha. El dinero se queda. */
+export async function marcarNoShow({ bookingId, nota }) {
+    return porFuncion('marcar_no_show', { p_booking_id: bookingId, p_nota: nota || null });
 }
 
 /** El precio de una reserva movida no se cambia solo: lo decide quien gestiona. */

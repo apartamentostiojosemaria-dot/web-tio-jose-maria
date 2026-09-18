@@ -109,7 +109,7 @@ const ReservasPanel = ({ ir }) => {
             // Quien se va HOY sigue estando dentro hasta las 12:00, así que
             // cuenta como "ahora mismo": es lo mismo que dice la pantalla de
             // inicio ("Se van hoy"). A "Pasadas" solo se pasa al día siguiente.
-            if (r.status === 'cancelled') g.canceladas.push(r);
+            if (r.status === 'cancelled' || r.status === 'no_show') g.canceladas.push(r);
             else if (r.check_out < hoy) g.pasadas.push(r);
             else if (r.check_in <= hoy) g.ahora.push(r);
             else g.proximas.push(r);
@@ -255,7 +255,7 @@ const Grupo = ({ titulo, pie, reservas, hoy, ir, vacio }) => {
 };
 
 const Linea = ({ r, hoy, ir }) => {
-    const cancelada = r.status === 'cancelled';
+    const cancelada = r.status === 'cancelled' || r.status === 'no_show';
     const falta = pendienteDe(r);
     const cobrado = cobradoDe(r);
     const deFuera = canalSiImporta(r);
@@ -282,13 +282,13 @@ const Linea = ({ r, hoy, ir }) => {
                         <span className="block text-sm text-gray-500">por {deFuera}</span>
                     )}
                     <span className="sm:hidden block mt-2">
-                        <Etiqueta cancelada={cancelada} falta={falta} cobrado={cobrado} />
+                        <Etiqueta cancelada={cancelada} noShow={r.status === 'no_show'} falta={falta} cobrado={cobrado} />
                     </span>
                 </span>
 
                 <span className="shrink-0 flex items-center gap-2">
                     <span className="hidden sm:block">
-                        <Etiqueta cancelada={cancelada} falta={falta} cobrado={cobrado} />
+                        <Etiqueta cancelada={cancelada} noShow={r.status === 'no_show'} falta={falta} cobrado={cobrado} />
                     </span>
                     <ChevronRight size={20} className="text-gray-400" aria-hidden="true" />
                 </span>
@@ -298,11 +298,11 @@ const Linea = ({ r, hoy, ir }) => {
 };
 
 /** El dinero en corto, que es lo único que ella mira de un vistazo. */
-const Etiqueta = ({ cancelada, falta, cobrado }) => {
+const Etiqueta = ({ cancelada, noShow, falta, cobrado }) => {
     if (cancelada) {
         return (
             <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-100 px-3 py-1.5 text-sm font-semibold text-gray-600">
-                Cancelada
+                {noShow ? 'No se presentaron' : 'Cancelada'}
             </span>
         );
     }
