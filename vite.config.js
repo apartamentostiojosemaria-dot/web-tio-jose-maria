@@ -43,6 +43,9 @@ export default defineConfig({
             },
             workbox: {
                 globPatterns: ['**/*.{js,css,html,ico,png,jpg,svg,woff2}'],
+                // Avisos push del panel: los manejadores viven en public/push-sw.js y
+                // el service worker generado los importa (migración 0041).
+                importScripts: ['push-sw.js'],
                 // Admin panel (recharts, qrcode.react, ~30 manager screens) and the
                 // authenticated client area are never visited by an anonymous public
                 // visitor — precaching them bloats the SW install for everyone who only

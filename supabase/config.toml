@@ -27,6 +27,9 @@ verify_jwt = false   # «he perdido el enlace»: anon, con rate limit por IP
 [functions.documento-admision]
 verify_jwt = false   # PDF del documento de admisión, por código de reserva viva
 
+[functions.push-enviar]
+verify_jwt = false   # la llama la base con la llave del cron; comprueba el Bearer ella misma
+
 [functions.send-booking-email]
 verify_jwt = false
 

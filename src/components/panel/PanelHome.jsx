@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
+import AvisosMovil from './AvisosMovil';
 import { ArrowDownRight, ArrowUpRight, Shield, Euro, Brush, ChevronRight, Check } from 'lucide-react';
 import {
     Tarjeta, Aviso, Cargando, formatoEuro,
@@ -130,6 +131,9 @@ const PanelHome = ({ ir, perfil, secciones = [] }) => {
                     />
                 </div>
             )}
+
+            {/* ---------- Que te avise el móvil (solo hasta que esté activado) ---------- */}
+            <AvisosMovil />
 
             {/* ---------- Avisos: solo si hay algo ---------- */}
             {avisos.length > 0 && (
