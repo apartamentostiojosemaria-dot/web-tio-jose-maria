@@ -98,13 +98,14 @@ ${lista ? `<ul style="padding-left:20px">${lista}</ul>` : ""}
         const res = await fetch("https://api.resend.com/emails", {
             method: "POST",
             headers: { "content-type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
-            body: JSON.stringify({ from: REMITENTE, to: [BUZON_NEGOCIO], subject: aviso.titulo, html }),
+            body: JSON.stringify({ from: REMITENTE, to: BUZON_NEGOCIO, subject: aviso.titulo, html }),
         });
-        salida.correo = res.ok ? "ok" : `error ${res.status}: ${(await res.text()).slice(0, 300)}`;
+        const cuerpo = (await res.text()).slice(0, 300);
+        salida.correo = res.ok ? `ok ${cuerpo}` : `error ${res.status}: ${cuerpo}`;
     } catch (e) {
         salida.correo = `error: ${e instanceof Error ? e.message : String(e)}`;
     }
-    if (salida.push !== "ok" || salida.correo !== "ok") console.error("aviso:", JSON.stringify(salida));
+    if (salida.push !== "ok" || !salida.correo.startsWith("ok")) console.error("aviso:", JSON.stringify(salida));
     return salida;
 }
 
@@ -542,7 +543,7 @@ async function comprobarComunicacion(
         });
         return { estado: "error", mensaje: `El Ministerio ha RECHAZADO la ${tipo}: ${r.errores.join(" · ")}` };
     }
-    return { estado: "mandado", mensaje: `El lote de la ${tipo} sigue en proceso. Vuelve a comprobarlo mas tarde.` };
+    return { estado: "mandado", mensaje: `El lote de la ${tipo} sigue en proceso${r.descEstado ? ` (${r.descEstado})` : ""}. Vuelve a comprobarlo mas tarde.` };
 }
 
 async function accionComprobar(grupo: Grupo): Promise<Salida> {
@@ -592,7 +593,7 @@ async function comprobarParte(grupo: Grupo): Promise<Salida> {
         });
         return { estado: "error", mensaje: `Rechazado: ${motivo}` };
     }
-    return { estado: "mandado", mensaje: "El lote sigue en proceso. Vuelve a comprobarlo más tarde." };
+    return { estado: "mandado", mensaje: `El lote sigue en proceso${r.descEstado ? ` (${r.descEstado})` : ""}. Vuelve a comprobarlo más tarde.` };
 }
 
 /**
@@ -942,7 +943,7 @@ Deno.serve(async (req) => {
             titulo: "Prueba de avisos del parte de viajeros",
             texto: "Si lees esto, los avisos de rechazo o de datos que faltan llegan bien. No hay que hacer nada.",
         });
-        return json(200, { ok: r.push === "ok" && r.correo === "ok", ...r });
+        return json(200, { ok: r.push === "ok" && r.correo.startsWith("ok"), ...r });
     }
 
     // ---- Barrido de reservas y anulaciones (cron `tjm-ses-reservas`) ------

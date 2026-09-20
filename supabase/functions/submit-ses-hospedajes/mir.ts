@@ -626,6 +626,8 @@ export interface ResultadoLote {
     codigosComunicacion: string[];
     errores: string[];
     crudo: string;
+    /** `descEstado` del lote, para decir en qué está cuando sigue en proceso. */
+    descEstado?: string;
 }
 
 /**
@@ -650,9 +652,15 @@ export async function consultarLote(lote: string): Promise<ResultadoLote> {
             ...todasLasEtiquetas(r.crudo, "descripcion"),
         ].filter((d) => d && !/^ok$/i.test(d));
         // Sin ningún código no se puede afirmar que esté aceptado: se deja en
-        // null (no se sabe) antes que mentir.
-        const aceptado = codigos.length > 0 ? true : (errores.length > 0 ? false : null);
-        return { consultado: true, aceptado, codigosComunicacion: codigos, errores, crudo: r.crudo };
+        // null (no se sabe) antes que mentir. Salvo que el propio lote diga
+        // que está tramitado sin errores (`codigoEstado` 1): una ANULACIÓN no
+        // devuelve códigos de comunicación —no crea ninguna— y sin esto se
+        // quedaba «en proceso» para siempre (TJM-50D815, 20-sep-2026).
+        const estadoLote = etiqueta(r.crudo, "codigoEstado");
+        const descEstado = etiqueta(r.crudo, "descEstado") ?? "";
+        const tramitadoSinErrores = estadoLote === "1" || /sin errores/i.test(descEstado);
+        const aceptado = errores.length > 0 ? false : (codigos.length > 0 || tramitadoSinErrores ? true : null);
+        return { consultado: true, aceptado, codigosComunicacion: codigos, errores, crudo: r.crudo, descEstado };
     } catch (e) {
         return {
             consultado: false, aceptado: null, codigosComunicacion: [],
