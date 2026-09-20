@@ -77,5 +77,11 @@ Deno.serve(async (req) => {
             }
         }
     }
+    // Registro (migración 0043): el panel enseña qué avisos salieron y a cuántos móviles.
+    await admin.from("envios").insert({
+        canal: "push", tipo: "aviso", asunto: titulo, destinatario: `${enviados} móvil(es)`,
+        estado: (subs?.length ?? 0) > 0 && enviados === 0 ? "fallido" : "entregado",
+        detalle: `${enviados} entregados · ${caidos} dados de baja · ${subs?.length ?? 0} apuntados` + (texto ? ` — ${texto.slice(0, 160)}` : ""),
+    });
     return json(200, { ok: true, enviados, caidos, total: subs?.length ?? 0 });
 });

@@ -102,6 +102,12 @@ ${lista ? `<ul style="padding-left:20px">${lista}</ul>` : ""}
         });
         const cuerpo = (await res.text()).slice(0, 300);
         salida.correo = res.ok ? `ok ${cuerpo}` : `error ${res.status}: ${cuerpo}`;
+        if (!res.ok) {
+            await sb.from("envios").insert({
+                canal: "correo", tipo: "aviso", destinatario: BUZON_NEGOCIO, asunto: aviso.titulo,
+                estado: "error_api", detalle: `${res.status}: ${cuerpo}`,
+            });
+        }
     } catch (e) {
         salida.correo = `error: ${e instanceof Error ? e.message : String(e)}`;
     }

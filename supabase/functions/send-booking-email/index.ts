@@ -280,8 +280,21 @@ Deno.serve(async (req) => {
         const r = await sendResend({ from, to: recipient, subject, html });
         resendId = r.id;
     } catch (e) {
-        return json(502, { error: "resend_error", detail: e instanceof Error ? e.message : String(e) });
+        const detail = e instanceof Error ? e.message : String(e);
+        // Un fallo de la API no pasa por el webhook: se apunta aquí (migración 0043).
+        await supabase.from("envios").insert({
+            canal: "correo", tipo: template, destinatario: recipient, asunto: subject,
+            booking_id: booking.id, booking_code: booking.booking_code, estado: "error_api", detalle: detail.slice(0, 500),
+        });
+        return json(502, { error: "resend_error", detail });
     }
+    // La fila del envío, con la reserva enganchada; el webhook de Resend la
+    // irá actualizando (entregado, rebotado…). Si el webhook llega antes, el
+    // upsert respeta lo que ya haya.
+    await supabase.from("envios").upsert({
+        canal: "correo", proveedor_id: resendId ?? null, tipo: template, destinatario: recipient, asunto: subject,
+        booking_id: booking.id, booking_code: booking.booking_code, estado: "enviado",
+    }, { onConflict: "proveedor_id", ignoreDuplicates: true });
 
     // Marcar flag como enviado (idempotencia). Si la confirmación salió con
     // todo (llegada a ≤ 7 días: cómo llegar, casa y policía), el de los 7 días

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import AvisosMovil from './AvisosMovil';
-import { ArrowDownRight, ArrowUpRight, Shield, Euro, Brush, ChevronRight, Check } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, Shield, Euro, Brush, ChevronRight, Check, MailWarning } from 'lucide-react';
 import {
     Tarjeta, Aviso, Cargando, formatoEuro,
-    hoyISO, aISO, aFecha, fechaEnPalabrasRelativa, saludo,
+    hoyISO, aISO, aFecha, fechaEnPalabrasRelativa, fechaCorta, saludo,
     pendienteDe, canalSiImporta,
     HORA_ENTRADA, HORA_SALIDA, sumarDias, sinPruebas,
 } from './ui';
@@ -38,6 +38,9 @@ const PanelHome = ({ ir, perfil, secciones = [] }) => {
     const [llegan, setLlegan] = useState([]);
     const [seVan, setSeVan] = useState([]);
     const [avisos, setAvisos] = useState([]);
+    // «El sistema»: correos que no llegan, dominio caído, partes rechazados
+    // (migración 0043). Solo se enseña cuando hay algo mal.
+    const [sistema, setSistema] = useState([]);
 
     useEffect(() => {
         let cortado = false;
@@ -70,6 +73,8 @@ const PanelHome = ({ ir, perfil, secciones = [] }) => {
             ]);
 
             if (cortado) return;
+
+            supabase.rpc('tjm_salud').then(({ data }) => { if (!cortado && data) setSistema(avisosDelSistema(data)); });
 
             const nombreApto = {};
             (apart.data || []).forEach((a) => { nombreApto[a.id] = a.name; });
@@ -135,6 +140,17 @@ const PanelHome = ({ ir, perfil, secciones = [] }) => {
             {/* ---------- Que te avise el móvil (solo hasta que esté activado) ---------- */}
             <AvisosMovil />
 
+            {/* ---------- El sistema: solo si algo no funciona ---------- */}
+            {sistema.length > 0 && (
+                <section aria-labelledby="sis-t" className="space-y-3">
+                    <h3 id="sis-t" className="text-base font-bold text-text-primary">El sistema</h3>
+                    {sistema.map((a) => (
+                        <Aviso key={a.clave} tono={a.tono} titulo={a.titulo} texto={a.texto} icono={a.icono}
+                            accion={a.seccion ? { texto: a.accion, onClick: () => ir(a.seccion) } : undefined} />
+                    ))}
+                </section>
+            )}
+
             {/* ---------- Avisos: solo si hay algo ---------- */}
             {avisos.length > 0 && (
                 <section aria-labelledby="pend-t" className="space-y-3">
@@ -171,6 +187,45 @@ const PanelHome = ({ ir, perfil, secciones = [] }) => {
 };
 
 // ============================================================
+
+// Lo que devuelve tjm_salud(), en frases. Sin jerga: qué pasa y qué hacer.
+function avisosDelSistema(s) {
+    const lista = [];
+    const correo = s.correo;
+    const fallidos = Number(s.envios?.fallidos_24h) || 0;
+    const ultimos = s.envios?.ultimos_fallidos || [];
+
+    if (correo && correo.ok === false) {
+        const desde = correo.comprobado_at ? fechaCorta(correo.comprobado_at.slice(0, 10)) : 'hoy';
+        lista.push({
+            clave: 'correo-caido', tono: 'urgente', icono: MailWarning,
+            titulo: 'Los correos del sistema no están saliendo',
+            texto: `Se detectó ${desde}. Jesús ya tiene el aviso. Hasta que se arregle, a quien llegue estos días escríbele tú por WhatsApp: cómo llegar, la casa y los datos de la policía.`,
+        });
+    } else if (fallidos > 0) {
+        const quien = ultimos.slice(0, 3).map((e) => `${e.asunto || 'correo'}${e.guest_name ? ` (${e.guest_name})` : ''}`).join(' · ');
+        lista.push({
+            clave: 'correos-fallidos', tono: 'atencion', icono: MailWarning,
+            titulo: fallidos === 1 ? 'Un correo no ha llegado hoy' : `${fallidos} correos no han llegado hoy`,
+            texto: `${quien}. Puede ser una dirección mal escrita: mira el correo del huésped en su reserva y, si está mal, corrígelo y escríbele por WhatsApp.`,
+            seccion: 'reservas', accion: 'Ver reservas',
+        });
+    }
+
+    const rech = Number(s.partes?.rechazados) || 0;
+    const faltan = Number(s.partes?.faltan_datos) || 0;
+    if (rech + faltan > 0) {
+        lista.push({
+            clave: 'partes', tono: 'atencion', icono: Shield,
+            titulo: rech > 0 ? 'La policía ha rechazado un parte' : 'Un parte no puede salir: faltan datos',
+            texto: rech > 0
+                ? `${rech === 1 ? 'Hay una reserva' : `Hay ${rech} reservas`} con el parte rechazado. En «Datos de la policía» está el motivo.`
+                : `${faltan === 1 ? 'Una reserva' : `${faltan} reservas`} ya han entrado y falta algún dato de los huéspedes.`,
+            seccion: 'parte', accion: 'Ver datos de la policía',
+        });
+    }
+    return lista;
+}
 
 // La hora avisada solo importa el día que llegan (no el día que se van).
 const hoyDe = (r) => r.check_in;

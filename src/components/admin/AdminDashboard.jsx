@@ -5,7 +5,7 @@ import {
     LayoutDashboard, Home, Map, FileText, Settings, LogOut, Calendar, Star, Eye, Users,
     BarChart3, QrCode, CalendarCheck, Route, MessageSquare, PartyPopper, MapPin, Menu, X,
     BookOpen, ClipboardList,
-    Shield, Brush, KeyRound, Euro, Link2, Bot, Tag, Wrench, Inbox, ShoppingBag, Sun,
+    Shield, Brush, KeyRound, Euro, Link2, Bot, Tag, Wrench, Inbox, ShoppingBag, Sun, MailCheck,
 } from 'lucide-react';
 
 // Operaciones core (carga inmediata, son los más usados)
@@ -23,6 +23,7 @@ const GuestGuidesManager    = lazy(() => import('./GuestGuidesManager'));
 const GuestUserManager      = lazy(() => import('./GuestUserManager'));
 const InformesManager       = lazy(() => import('./InformesManager'));
 const IneManager            = lazy(() => import('./IneManager'));
+const EnviosManager         = lazy(() => import('./EnviosManager'));
 const QRCodeManager         = lazy(() => import('./QRCodeManager'));
 const RoutesManager         = lazy(() => import('./RoutesManager'));
 const ReviewsManager        = lazy(() => import('./ReviewsManager'));
@@ -57,6 +58,7 @@ const NAV_GROUPS = [
             { id: 'reservas',      label: 'Lista de reservas',      icon: CalendarCheck, badgeKey: 'pendingBookings' },
             { id: 'cleaning',      label: 'Limpiezas',              icon: Brush },
             { id: 'travelers',     label: 'Parte de viajeros',      icon: Shield },
+            { id: 'envios',        label: 'Correos y avisos',       icon: MailCheck },
             { id: 'disponibilidad',label: 'Bloquear fechas',        icon: Calendar },
         ],
     },
@@ -208,6 +210,7 @@ const AdminDashboard = () => {
                     {activeTab === 'bot_logs'       && <BotLogsManager />}
                     {activeTab === 'analitica'      && <InformesManager />}
                     {activeTab === 'ine'            && <IneManager />}
+                    {activeTab === 'envios'         && <EnviosManager />}
                     {activeTab === 'documentos'     && <DocumentsManager />}
                     {activeTab === 'qrcodes'        && <QRCodeManager />}
                     {activeTab === 'configuracion'  && <WebConfigManager />}
