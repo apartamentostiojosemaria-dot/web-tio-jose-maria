@@ -111,6 +111,10 @@ const ReservaFicha = ({ ir, params = {} }) => {
     const esElDia = String(reserva.check_in) <= hoy;
     const horaDe = (t) => new Intl.DateTimeFormat('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' }).format(new Date(t));
 
+    // Falta hacerla si no hay una válida, no se ha dicho «no hace falta» y la
+    // reserva sigue viva. Con una anulada y sin sustituta, también falta.
+    const faltaFactura = !factura && !reserva.invoice_not_needed && !cancelada && !noSePresento;
+
     const deBooking = (reserva.channel || '').toLowerCase() === 'booking';
     const comision = Number(reserva.commission_amount) || 0;
     const netoBooking = Math.max(0, total - comision);
@@ -224,14 +228,24 @@ const ReservaFicha = ({ ir, params = {} }) => {
                     </ul>
                 )}
 
+                {pendiente <= 0 && !cancelada && !noSePresento && (
+                    <div className="mt-3">
+                        <Chip tono="neutro" icono={Euro} onClick={() => setHoja('cobro')}>Apuntar otro cobro</Chip>
+                    </div>
+                )}
+
                 <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-2 flex-wrap">
                     <span className="text-base font-bold text-text-primary">Factura:</span>
+                    {/* Lo resuelto se enseña como dato y se pulsa para verlo; el
+                        botón grande de abajo solo sale cuando falta hacerla. */}
                     {factura ? (
-                        <Chip tono="verde" icono={Check}>Hecha el {diaMesYAno(factura.fecha_emision)}</Chip>
+                        <Chip tono="verde" icono={Check} onClick={() => setHoja('factura')} aria-label="Ver la factura">
+                            Hecha el {diaMesYAno(factura.fecha_emision)} · ver
+                        </Chip>
                     ) : anuladas.length > 0 ? (
-                        <Chip tono="rojo" icono={XCircle}>Anulada{cancelada || reserva.invoice_not_needed ? '' : ' · falta hacer otra'}</Chip>
+                        <Chip tono="rojo" icono={XCircle} onClick={() => setHoja('factura')}>Anulada{cancelada || reserva.invoice_not_needed ? '' : ' · falta hacer otra'}</Chip>
                     ) : reserva.invoice_not_needed ? (
-                        <Chip tono="neutro">No hace falta</Chip>
+                        <Chip tono="neutro" onClick={() => setHoja('factura')}>No hace falta · cambiar</Chip>
                     ) : (
                         <Chip tono="ambar">Sin hacer</Chip>
                     )}
@@ -274,24 +288,34 @@ const ReservaFicha = ({ ir, params = {} }) => {
                     )}
                 </div>
 
-                <Boton ancho tamano="grande" icono={Euro} onClick={() => setHoja('cobro')} disabled={cancelada}>
-                    Cobrar
-                </Boton>
+                {/* Regla (Jesús, 20-sep): un botón grande solo cuando hay algo
+                    que hacer. Cobrado del todo → no hay «Cobrar»; factura hecha
+                    → no hay «Factura» (se ve arriba, en su chip). Cancelada o
+                    no presentada → ninguno de los dos. */}
+                {pendiente > 0 && !cancelada && !noSePresento && (
+                    <Boton ancho tamano="grande" icono={Euro} onClick={() => setHoja('cobro')}>
+                        Cobrar {formatoEuro(pendiente)}
+                    </Boton>
+                )}
 
                 {reserva.factura_pedida_at && !factura && (
                     <Aviso tono="atencion" titulo={`Ha pedido factura a nombre de ${reserva.factura_datos?.nombre || 'el huésped'}.`}
                         texto={`NIF ${reserva.factura_datos?.nif || '—'} · ${reserva.factura_datos?.direccion || ''}. Al hacerla salen ya estos datos.`} />
                 )}
-                <Boton ancho tamano="grande" variante="secundario" icono={FileText} onClick={() => setHoja('factura')}>
-                    Factura
-                </Boton>
+                {faltaFactura && (
+                    <Boton ancho tamano="grande" variante={pendiente > 0 ? 'secundario' : 'principal'} icono={FileText} onClick={() => setHoja('factura')}>
+                        Hacer la factura
+                    </Boton>
+                )}
             </section>
 
             {/* ---------- Apuntes suyos ---------- */}
             <NotasInternas reserva={reserva} onGuardado={(txt) => setReserva({ ...reserva, internal_notes: txt })} />
 
             {/* ---------- A la vista, pero sin gritar ---------- */}
-            {!cancelada && !noSePresento && (
+            {/* Cambiar o cancelar solo mientras la estancia no ha terminado:
+                una reserva que ya se fue no se cambia ni se cancela. */}
+            {!cancelada && !noSePresento && !seFueron && String(reserva.check_out) >= hoy && (
                 <section className="pt-2 space-y-2">
                     <Boton ancho variante="suave" icono={CalendarDays} onClick={() => setHoja('cambiar')}>
                         Cambiar fechas o apartamento
