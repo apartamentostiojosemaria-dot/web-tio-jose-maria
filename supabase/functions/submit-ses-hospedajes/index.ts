@@ -15,6 +15,7 @@
 //   { accion: "ya-lo-he-mandado", booking_id }
 //   { accion: "comprobar", booking_id }     → pregunta cómo quedó el lote
 //   { accion: "acuses" }                    → pregunta por TODOS los lotes en espera
+//   { accion: "prueba-aviso" }              → manda un aviso de prueba (móvil + buzón)
 //   { accion: "estado",    booking_id }     → detalle técnico (panel de Jesús)
 //   { accion: "libro", desde, hasta }       → libro-registro por fechas
 //
@@ -76,14 +77,16 @@ const escHtml = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").re
 
 async function avisar(aviso: { titulo: string; texto: string; detalle?: string[]; url?: string }) {
     const url = aviso.url ?? PANEL_URL;
+    const salida = { push: "no", correo: "no" };
     // Un aviso que falla no puede tumbar la comunicación al Ministerio.
     try {
         const ruta = url.replace(/^https?:\/\/[^/]+/, "") || "/panel";
-        await sb.rpc("tjm_notificar_push", { p_titulo: aviso.titulo, p_texto: aviso.texto, p_url: ruta });
+        const { error } = await sb.rpc("tjm_notificar_push", { p_titulo: aviso.titulo, p_texto: aviso.texto, p_url: ruta });
+        salida.push = error ? `error: ${error.message}` : "ok";
     } catch (e) {
-        console.error("aviso push:", e instanceof Error ? e.message : String(e));
+        salida.push = `error: ${e instanceof Error ? e.message : String(e)}`;
     }
-    if (!RESEND_API_KEY) return;
+    if (!RESEND_API_KEY) { salida.correo = "sin RESEND_API_KEY"; return salida; }
     try {
         const lista = (aviso.detalle ?? []).map((d) => `<li>${escHtml(d)}</li>`).join("");
         const html = `<div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;color:#2C3319;line-height:1.5">
@@ -97,10 +100,12 @@ ${lista ? `<ul style="padding-left:20px">${lista}</ul>` : ""}
             headers: { "content-type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
             body: JSON.stringify({ from: REMITENTE, to: [BUZON_NEGOCIO], subject: aviso.titulo, html }),
         });
-        if (!res.ok) console.error("aviso correo:", res.status, (await res.text()).slice(0, 300));
+        salida.correo = res.ok ? "ok" : `error ${res.status}: ${(await res.text()).slice(0, 300)}`;
     } catch (e) {
-        console.error("aviso correo:", e instanceof Error ? e.message : String(e));
+        salida.correo = `error: ${e instanceof Error ? e.message : String(e)}`;
     }
+    if (salida.push !== "ok" || salida.correo !== "ok") console.error("aviso:", JSON.stringify(salida));
+    return salida;
 }
 
 // ---------------------------------------------------------------------------
@@ -930,6 +935,15 @@ Deno.serve(async (req) => {
 
     // ---- Acuses de todo lo que está en espera (cron `tjm-parte-acuses`) ---
     if (accion === "acuses") return json(200, await pasadaDeAcuses());
+
+    // ---- ¿Llegan los avisos? Manda uno de prueba al móvil y al buzón -------
+    if (accion === "prueba-aviso") {
+        const r = await avisar({
+            titulo: "Prueba de avisos del parte de viajeros",
+            texto: "Si lees esto, los avisos de rechazo o de datos que faltan llegan bien. No hay que hacer nada.",
+        });
+        return json(200, { ok: r.push === "ok" && r.correo === "ok", ...r });
+    }
 
     // ---- Barrido de reservas y anulaciones (cron `tjm-ses-reservas`) ------
     if (accion === "barrido-reservas") return json(200, await barridoReservas());

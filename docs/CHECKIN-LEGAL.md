@@ -530,7 +530,7 @@ Revisado el 10-sep-2026 sobre: tablas `traveler_records`, `guest_bookings` y `ap
 | b) Denominación | `ESTABLECIMIENTO.nombre` | ✅ |
 | c) Dirección completa | `ESTABLECIMIENTO.direccion` | ✅ |
 | d) Código postal | `ESTABLECIMIENTO.codigoPostal` | ✅ |
-| e) Localidad y provincia | `municipio` + `codigoMunicipio` (INE 23044) | ✅ |
+| e) Localidad y provincia | `municipio` + `codigoMunicipio` (INE **23042**; hasta el 20-sep-2026 decía 23044, que es Huelma) | ✅ |
 
 ### Grupo 3 — Viajeros
 

@@ -290,7 +290,7 @@ estado.
 | Nacionalidad | `nacionalidad` | sí, ISO-3 | `nacionalidad` |
 | Fecha de nacimiento | `fecha_nacimiento` | sí | `fechaNacimiento` |
 | Domicilio (vía) | `direccion_via` | sí | `direccion/direccion` |
-| Domicilio (localidad) | `direccion_municipio` | sí | `direccion/nombreMunicipio` |
+| Domicilio (localidad) | `direccion_municipio` + `direccion_municipio_ine` | sí (en España se elige de la lista del INE) | `direccion/codigoMunicipio` si el país es ESP (obligatorio: el MIR rechazó el nombre el 19-sep-2026); fuera, `direccion/nombreMunicipio` |
 | Domicilio (CP) | `direccion_cp` | sí | `direccion/codigoPostal` |
 | Domicilio (país) | `direccion_pais` | sí, ISO-3 | `direccion/pais` |
 | Teléfono fijo | `telefono_fijo` | sí | `telefono2` |
@@ -336,3 +336,18 @@ documentos reales, no OCR genérico.
 Un parte **rechazado** por el Ministerio se guarda como `error` y se le quita
 la fecha de envío, para que el semáforo no diga «mandado» de algo que no está
 mandado.
+
+## Acuses y avisos (desde el 20-sep-2026, migración 0042)
+
+- **El Ministerio contesta «recibido» al encolar, no al aceptar.** Lo que vale es la consulta del
+  lote. La hace sola la acción `acuses` (cron `tjm-parte-acuses`, 09:15 UTC) y también la tanda de
+  las 08:00 antes de mandar nada. Mira partes, reservas y anulaciones en `enviado_pendiente_acuse`.
+- **Un rechazo no se queda en la base**: el parte vuelve a «pendiente» (sale en la tanda siguiente,
+  ya con los datos arreglados) y se avisa al móvil (push) y al buzón del negocio. Lo mismo cuando
+  ya han entrado y faltan datos. `{ accion: "prueba-aviso" }` manda uno de prueba.
+- **Código INE del municipio**: `ine_municipios` (8.132, relación oficial 1-ene-2026, CSV en
+  `supabase/data/`). `tjm_ine_municipio(nombre, cp)` casa texto libre con la lista y NUNCA adivina:
+  si no hay una única respuesta, el parte no sale y se elige a mano desde el panel de Jesús.
+- **Una persona = una ficha por reserva** (índice único por documento, o nombre+apellido+nacimiento
+  sin documento). Rellenar el formulario dos veces corrige la ficha, no la duplica: el 19-sep el MIR
+  rechazó un parte por «datos repetidos de personas».
