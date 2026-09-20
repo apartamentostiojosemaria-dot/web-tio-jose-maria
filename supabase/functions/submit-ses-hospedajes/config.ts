@@ -13,7 +13,10 @@ export const ESTABLECIMIENTO = {
     direccion: "Calle Baja 1, 23486 Hinojares, Jaén, España",
     municipio: "Hinojares",
     provincia: "Jaén",
-    codigoMunicipio: "23044",          // INE: Hinojares, provincia 23 (Jaén)
+    // INE: provincia 23 (Jaén) + municipio 042. Hasta el 20-sep-2026 decía
+    // 23044, que es HUELMA; no llegó a viajar porque el alta va por código de
+    // establecimiento. Fuente: diccionario26.xlsx del INE (tabla ine_municipios).
+    codigoMunicipio: "23042",
     codigoPostal: "23486",
     registroTuristico: "A/JA/00060",
     email: "apartamentostiojosemaria@gmail.com",

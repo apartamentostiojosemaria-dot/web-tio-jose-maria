@@ -14,6 +14,7 @@
 //   { accion: "documento", booking_id }     → hoja de registro en PDF
 //   { accion: "ya-lo-he-mandado", booking_id }
 //   { accion: "comprobar", booking_id }     → pregunta cómo quedó el lote
+//   { accion: "acuses" }                    → pregunta por TODOS los lotes en espera
 //   { accion: "estado",    booking_id }     → detalle técnico (panel de Jesús)
 //   { accion: "libro", desde, hasta }       → libro-registro por fechas
 //
@@ -58,6 +59,49 @@ const json = (status: number, body: unknown) =>
 
 const ahora = () => new Date().toISOString();
 const hoy = () => new Date().toISOString().slice(0, 10);
+
+// ---------------------------------------------------------------------------
+// Avisos: lo que el Ministerio rechaza o lo que falta para mandar NO se queda
+// en un estado de la base que nadie mira. Va al móvil (push, migración 0041)
+// y al buzón del negocio (Resend, el mismo remitente que los correos de la
+// reserva). El 19-sep-2026 un rechazo se supo por el correo del MIR, un día
+// después y de rebote; esto existe para que no vuelva a pasar.
+// ---------------------------------------------------------------------------
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const BUZON_NEGOCIO = Deno.env.get("OPERATOR_NOTIFY_EMAIL") || "apartamentostiojosemaria@gmail.com";
+const REMITENTE = "Tío José María <hola@tiojosemaria.com>";
+const PANEL_URL = "https://tiojosemaria.com/panel";
+
+const escHtml = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+async function avisar(aviso: { titulo: string; texto: string; detalle?: string[]; url?: string }) {
+    const url = aviso.url ?? PANEL_URL;
+    // Un aviso que falla no puede tumbar la comunicación al Ministerio.
+    try {
+        const ruta = url.replace(/^https?:\/\/[^/]+/, "") || "/panel";
+        await sb.rpc("tjm_notificar_push", { p_titulo: aviso.titulo, p_texto: aviso.texto, p_url: ruta });
+    } catch (e) {
+        console.error("aviso push:", e instanceof Error ? e.message : String(e));
+    }
+    if (!RESEND_API_KEY) return;
+    try {
+        const lista = (aviso.detalle ?? []).map((d) => `<li>${escHtml(d)}</li>`).join("");
+        const html = `<div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;color:#2C3319;line-height:1.5">
+<h2 style="font-weight:700;font-size:20px;margin:0 0 12px">${escHtml(aviso.titulo)}</h2>
+<p>${escHtml(aviso.texto)}</p>
+${lista ? `<ul style="padding-left:20px">${lista}</ul>` : ""}
+<p><a href="${url}" style="color:#556B2F;font-weight:700">Abrir el panel</a></p>
+<p style="font-size:12px;color:#8C8468">Aviso automático del sistema de Apartamentos Rurales Tío José María.</p></div>`;
+        const res = await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: { "content-type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
+            body: JSON.stringify({ from: REMITENTE, to: [BUZON_NEGOCIO], subject: aviso.titulo, html }),
+        });
+        if (!res.ok) console.error("aviso correo:", res.status, (await res.text()).slice(0, 300));
+    } catch (e) {
+        console.error("aviso correo:", e instanceof Error ? e.message : String(e));
+    }
+}
 
 // ---------------------------------------------------------------------------
 // Autorización
@@ -114,7 +158,7 @@ const CAMPOS_RESERVA = `id, booking_code, contract_reference, check_in, check_ou
 
 const CAMPOS_VIAJERO = `id, booking_id, is_titular, nombre, apellido_primero, apellido_segundo,
     sexo, tipo_documento, numero_documento, soporte_documento, nacionalidad, fecha_nacimiento,
-    direccion_via, direccion_municipio, direccion_cp, direccion_pais,
+    direccion_via, direccion_municipio, direccion_municipio_ine, direccion_cp, direccion_pais,
     telefono_fijo, telefono_movil, email, parentesco, parentesco_menor_id, firma_base64,
     submitted_at, updated_at, mir_reference, mir_response_status, mir_response_payload`;
 
@@ -506,6 +550,16 @@ async function accionComprobar(grupo: Grupo): Promise<Salida> {
         if (r) return r;
     }
 
+    return await comprobarParte(grupo);
+}
+
+/**
+ * Pregunta al Ministerio cómo quedó el lote del PARTE. Un rechazo deja la
+ * reserva sin `submitted_at` (vuelve a la tanda) y AVISA: el 19-sep-2026 el
+ * primer rechazo real se quedó en «esperando validación» y se supo por el
+ * correo del MIR, al día siguiente.
+ */
+async function comprobarParte(grupo: Grupo): Promise<Salida> {
     const lote = grupo.filas[0]?.mir_reference;
     if (!lote) return { estado: "sin_datos", mensaje: "Esta reserva no tiene ningún lote que comprobar." };
 
@@ -521,13 +575,84 @@ async function accionComprobar(grupo: Grupo): Promise<Salida> {
         return { estado: "mandado", mensaje: "El Ministerio lo ha aceptado.", detalle: { comunicaciones: r.codigosComunicacion } };
     }
     if (r.aceptado === false) {
+        const motivo = r.errores.join(" · ");
         await anotar(grupo, {
             estado: ESTADO.RECHAZADO, enviado: false,
-            payload: { mensaje: r.errores.join(" · "), resultado: "rechazado", lote, acuse: r.crudo },
+            payload: { mensaje: motivo, resultado: "rechazado", lote, acuse: r.crudo },
         });
-        return { estado: "error", mensaje: `Rechazado: ${r.errores.join(" · ")}` };
+        await avisar({
+            titulo: `La policía ha rechazado el parte de ${grupo.reserva.booking_code}`,
+            texto: `El Ministerio no ha aceptado el parte de viajeros de ${grupo.reserva.guest_name || grupo.reserva.booking_code} (entrada ${grupo.reserva.check_in}). Motivo: ${motivo}. Si el motivo habla de datos del huésped, hay que corregirlos en el panel; el sistema lo vuelve a mandar en la tanda siguiente.`,
+            detalle: [`Lote ${lote}`],
+        });
+        return { estado: "error", mensaje: `Rechazado: ${motivo}` };
     }
     return { estado: "mandado", mensaje: "El lote sigue en proceso. Vuelve a comprobarlo más tarde." };
+}
+
+/**
+ * Pasada de acuses (cron `tjm-parte-acuses`, y al empezar cada tanda): todo
+ * lo que está «enviado, esperando validación» —partes, reservas y
+ * anulaciones— se pregunta al Ministerio. Sin esto un rechazo es invisible.
+ */
+async function pasadaDeAcuses(): Promise<Record<string, unknown>> {
+    const detalles: Array<{ reserva: string; tipo: string; estado: string; mensaje: string }> = [];
+    let aceptados = 0, rechazados = 0, enProceso = 0, fallos = 0;
+    const cuenta = (r: Salida) => {
+        if (r.estado === "error" && /^Rechazado/.test(r.mensaje)) rechazados++;
+        else if (r.estado === "error") fallos++;
+        else if (/acepta/i.test(r.mensaje)) aceptados++;
+        else enProceso++;
+    };
+
+    if (!hayCredenciales()) return { credenciales: false, comprobados: 0, aceptados, rechazados, enProceso, fallos, detalles };
+
+    // Partes de viajeros
+    const { data: filas } = await sb
+        .from("traveler_records").select("booking_id")
+        .eq("mir_response_status", ESTADO.EN_CURSO).not("mir_reference", "is", null);
+    const ids = [...new Set(((filas || []) as Array<{ booking_id: number }>).map((f) => f.booking_id))];
+    for (const id of ids) {
+        const grupo = await cargarGrupo(id);
+        if (!grupo) continue;
+        try {
+            const r = await comprobarParte(grupo);
+            cuenta(r);
+            detalles.push({ reserva: grupo.reserva.booking_code, tipo: "parte", estado: r.estado, mensaje: r.mensaje });
+        } catch (e) {
+            fallos++;
+            detalles.push({ reserva: grupo.reserva.booking_code, tipo: "parte", estado: "error", mensaje: e instanceof Error ? e.message : String(e) });
+        }
+    }
+
+    // Reservas y anulaciones
+    type ComEnEspera = { booking_id: number; tipo: string; guest_bookings: { booking_code: string; guest_name: string | null; check_in: string } };
+    const { data: coms } = await sb
+        .from("ses_comunicaciones").select("booking_id, tipo, guest_bookings!inner(booking_code, guest_name, check_in)")
+        .eq("estado", ESTADO_SES.EN_CURSO).not("lote", "is", null);
+    for (const c of (coms || []) as unknown as ComEnEspera[]) {
+        const tipo = c.tipo as "reserva" | "anulacion";
+        try {
+            const r = await comprobarComunicacion(c.booking_id, tipo);
+            if (!r) continue;
+            if (r.estado === "error" && /RECHAZADO/.test(r.mensaje)) {
+                rechazados++;
+                await avisar({
+                    titulo: `La policía ha rechazado la ${tipo} de ${c.guest_bookings.booking_code}`,
+                    texto: `${r.mensaje} (${c.guest_bookings.guest_name || ""}, entrada ${c.guest_bookings.check_in}). El motivo completo está en el panel de Jesús.`,
+                });
+            } else cuenta(r);
+            detalles.push({ reserva: c.guest_bookings.booking_code, tipo, estado: r.estado, mensaje: r.mensaje });
+        } catch (e) {
+            fallos++;
+            detalles.push({ reserva: c.guest_bookings.booking_code, tipo, estado: "error", mensaje: e instanceof Error ? e.message : String(e) });
+        }
+    }
+
+    return {
+        credenciales: true, comprobados: ids.length + (coms || []).length,
+        aceptados, rechazados, enProceso, fallos, detalles: detalles.slice(0, 30),
+    };
 }
 
 // ---------------------------------------------------------------------------
@@ -755,6 +880,10 @@ Deno.serve(async (req) => {
 
     // ---- Tanda del PARTE (cron `tjm-parte-viajeros`) ----------------------
     if (accion === "tanda") {
+        // Primero se pregunta por lo que quedó en espera: un rechazo devuelve
+        // la reserva a «pendiente» y sale hoy con los datos arreglados.
+        const acuses = await pasadaDeAcuses();
+
         const ids = await reservasPendientes();
         const detalles: Array<{ reserva: string; estado: string; mensaje: string }> = [];
         let mandados = 0, preparados = 0, fallos = 0;
@@ -767,6 +896,21 @@ Deno.serve(async (req) => {
                 if (r.estado === "mandado") mandados++;
                 else if (r.estado === "preparado") preparados++;
                 else fallos++;
+                // Ya han entrado y el parte no puede salir: alguien tiene que
+                // saberlo hoy, no el día que mire el panel.
+                if (r.estado === "faltan") {
+                    const pegas = (r.detalle?.pegas as Array<{ viajero: string; falta: string }> | undefined) ?? [];
+                    await avisar({
+                        titulo: `Faltan datos para el parte de ${grupo.reserva.booking_code}`,
+                        texto: `El parte de viajeros de ${grupo.reserva.guest_name || grupo.reserva.booking_code} (entrada ${grupo.reserva.check_in}) no puede mandarse a la policía hasta completar esto:`,
+                        detalle: pegas.map((p) => `${p.viajero}: falta ${p.falta}`),
+                    });
+                } else if (r.estado === "error") {
+                    await avisar({
+                        titulo: `No ha salido el parte de ${grupo.reserva.booking_code}`,
+                        texto: `${r.mensaje} (${grupo.reserva.guest_name || ""}, entrada ${grupo.reserva.check_in}).`,
+                    });
+                }
                 detalles.push({ reserva: grupo.reserva.booking_code, estado: r.estado, mensaje: r.mensaje });
             } catch (e) {
                 fallos++;
@@ -780,8 +924,12 @@ Deno.serve(async (req) => {
             credenciales: hayCredenciales(),
             faltan_secretos: secretosQueFaltan(),
             detalles: detalles.slice(0, 30),
+            acuses,
         });
     }
+
+    // ---- Acuses de todo lo que está en espera (cron `tjm-parte-acuses`) ---
+    if (accion === "acuses") return json(200, await pasadaDeAcuses());
 
     // ---- Barrido de reservas y anulaciones (cron `tjm-ses-reservas`) ------
     if (accion === "barrido-reservas") return json(200, await barridoReservas());

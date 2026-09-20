@@ -25,6 +25,13 @@ export interface ViajeroParte {
     fechaNacimiento: string;
     direccion: string;
     municipio: string;
+    /**
+     * Código INE del municipio (5 cifras), sólo con domicilio en España. El
+     * MIR lo exige cuando el país es ESP: el 19-sep-2026 rechazó el primer
+     * parte con españoles por mandar sólo el nombre. Lo pone la base
+     * (migración 0042) a partir del nombre + CP, o el huésped al elegirlo.
+     */
+    codigoMunicipio: string | null;
     codigoPostal: string;
     /** ISO 3166-1 alfa-3. */
     pais: string;
@@ -286,6 +293,7 @@ export interface FilaViajero {
     fecha_nacimiento: string;
     direccion_via: string;
     direccion_municipio: string;
+    direccion_municipio_ine: string | null;
     direccion_cp: string;
     direccion_pais: string;
     telefono_fijo: string | null;
@@ -338,6 +346,7 @@ export function aViajero(f: FilaViajero, fechaEntrada: string): ViajeroParte {
         fechaNacimiento: String(f.fecha_nacimiento || "").slice(0, 10),
         direccion: (f.direccion_via || "").trim(),
         municipio: (f.direccion_municipio || "").trim(),
+        codigoMunicipio: (f.direccion_municipio_ine || "").trim() || null,
         codigoPostal: (f.direccion_cp || "").trim(),
         pais: codigoPais(f.direccion_pais),
         telefonoFijo: (f.telefono_fijo || "").trim() || null,
@@ -437,6 +446,14 @@ export function pegasDelParte(viajeros: ViajeroParte[]): Pega[] {
         if (!v.nacionalidad) pegas.push({ viajero: quien(v), falta: "la nacionalidad" });
         if (!v.direccion || !v.municipio || !v.pais) {
             pegas.push({ viajero: quien(v), falta: "la dirección de su casa" });
+        } else if (v.pais === "ESP" && !v.codigoMunicipio) {
+            // Sin código INE el Ministerio lo rechaza (19-sep-2026). La base
+            // no ha sabido casar el nombre con la lista: lo elige una persona
+            // desde el panel.
+            pegas.push({
+                viajero: quien(v),
+                falta: `el municipio de su domicilio en la lista del INE (ha escrito «${v.municipio}»${v.codigoPostal ? `, CP ${v.codigoPostal}` : ""})`,
+            });
         }
         // El soporte del documento es obligatorio con NIF y con NIE; el
         // segundo apellido, SÓLO con NIF. Exigírselo también a un NIE es más

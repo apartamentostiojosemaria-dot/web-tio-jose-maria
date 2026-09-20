@@ -136,6 +136,10 @@ const emptyTraveler = (isTitular = false) => ({
     fecha_nacimiento: '',
     direccion_via: '',
     direccion_municipio: '',
+    // Código INE del municipio (solo España). Lo pone la lista al elegir; si
+    // el huésped no elige, la base lo deduce del nombre + CP. Al Ministerio
+    // hay que mandarle el código, no el nombre (rechazo del 19-sep-2026).
+    direccion_municipio_ine: '',
     direccion_cp: '',
     direccion_pais: 'ESP',
     telefono_fijo: '',
@@ -822,10 +826,12 @@ const PasoViajero = ({ idx, traveler: t, total, fechaEntrada, paises, mostrarPeg
                         maxLength={200} value={t.direccion_via}
                         onChange={(e) => cambiar(idx, 'direccion_via', e.target.value)} />
                 </Campo>
-                <Campo etiqueta="Pueblo o ciudad" id={`dm${idx}`} error={pegas.direccion_municipio}>
-                    <input id={`dm${idx}`} className={cInput} type="text" autoComplete="address-level2"
-                        value={t.direccion_municipio}
-                        onChange={(e) => cambiar(idx, 'direccion_municipio', e.target.value)} />
+                <Campo etiqueta="Pueblo o ciudad" id={`dm${idx}`} error={pegas.direccion_municipio}
+                    ayuda={t.direccion_pais === 'ESP' ? 'Empieza a escribir y elígelo de la lista.' : undefined}>
+                    <CampoMunicipio id={`dm${idx}`} valor={t.direccion_municipio} cp={t.direccion_cp}
+                        esEspana={t.direccion_pais === 'ESP'} elegido={!!t.direccion_municipio_ine}
+                        onEscribir={(v) => { cambiar(idx, 'direccion_municipio', v); cambiar(idx, 'direccion_municipio_ine', ''); }}
+                        onElegir={(m) => { cambiar(idx, 'direccion_municipio', m.nombre); cambiar(idx, 'direccion_municipio_ine', m.codigo); }} />
                 </Campo>
                 <Campo etiqueta="Código postal" id={`dc${idx}`}>
                     <input id={`dc${idx}`} className={cInput} type="text" inputMode="numeric"
@@ -1207,6 +1213,55 @@ const Campo = ({ etiqueta, ayuda, error, id, children }) => (
         )}
     </div>
 );
+
+// El municipio español se elige de la relación del INE (tjm_municipios_buscar,
+// migración 0042): así la ficha lleva el código que exige el Ministerio y no
+// hay que adivinarlo después. Fuera de España es un texto libre.
+const CampoMunicipio = ({ id, valor, cp, esEspana, elegido, onEscribir, onElegir }) => {
+    const [opciones, setOpciones] = useState([]);
+    const [abierto, setAbierto] = useState(false);
+    const ultimaBusqueda = useRef(0);
+
+    useEffect(() => {
+        if (!esEspana || elegido || !abierto || valor.trim().length < 2) { setOpciones([]); return; }
+        const marca = ++ultimaBusqueda.current;
+        const timer = setTimeout(async () => {
+            const { data } = await supabase.rpc('tjm_municipios_buscar', { p_q: valor, p_cp: cp || null });
+            if (marca === ultimaBusqueda.current) setOpciones(data || []);
+        }, 250);
+        return () => clearTimeout(timer);
+    }, [valor, cp, esEspana, elegido, abierto]);
+
+    return (
+        <div className="relative">
+            <input id={id} className={cInput} type="text" autoComplete="address-level2"
+                value={valor}
+                onChange={(e) => { setAbierto(true); onEscribir(e.target.value); }}
+                onFocus={() => setAbierto(true)}
+                onBlur={() => setTimeout(() => setAbierto(false), 150)}
+                aria-autocomplete={esEspana ? 'list' : undefined}
+                aria-expanded={esEspana && abierto && opciones.length > 0} />
+            {esEspana && elegido && (
+                <Check size={18} aria-hidden="true" className="absolute right-4 top-1/2 -translate-y-1/2 text-rural-600" />
+            )}
+            {esEspana && abierto && opciones.length > 0 && (
+                <ul role="listbox" className="absolute z-20 left-0 right-0 mt-1 bg-white border-2 border-gray-200 rounded-2xl shadow-lg overflow-hidden">
+                    {opciones.map((m) => (
+                        <li key={m.codigo} role="option" aria-selected="false">
+                            <button type="button"
+                                className="w-full text-left px-4 py-3 text-base hover:bg-rural-100 focus:bg-rural-100 outline-none"
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => { onElegir(m); setAbierto(false); setOpciones([]); }}>
+                                <span className="font-semibold text-text-primary">{m.nombre}</span>
+                                <span className="text-gray-500"> · {m.provincia}</span>
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </div>
+    );
+};
 
 const SelectPais = ({ id, paises, value, onChange }) => (
     <select id={id} className={cInput} value={value} onChange={(e) => onChange(e.target.value)}>

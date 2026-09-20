@@ -74,6 +74,7 @@ const TravelersManager = () => {
             .from('traveler_records')
             .select(`id, booking_id, nombre, apellido_primero, tipo_documento, numero_documento,
                      nacionalidad, is_titular, fecha_nacimiento, firma_base64,
+                     direccion_municipio, direccion_municipio_ine, direccion_cp, direccion_pais,
                      submitted_at, mir_reference, mir_response_status, mir_response_payload, created_at,
                      guest_bookings(booking_code, check_in, check_out, status, pax_count, channel, apartments(name))`)
             .order('created_at', { ascending: false })
@@ -401,6 +402,9 @@ const TravelersManager = () => {
                                                             <td className="py-1.5 pr-3 font-mono text-xs">{v.numero_documento || '—'}</td>
                                                             <td className="py-1.5 pr-3 text-xs text-gray-500">{v.tipo_documento} · {v.nacionalidad}</td>
                                                             <td className="py-1.5 pr-3 text-xs text-gray-500 tabular-nums">{v.fecha_nacimiento}</td>
+                                                            <td className="py-1.5 pr-3 text-xs">
+                                                                <Municipio viajero={v} onCambiado={cargar} />
+                                                            </td>
                                                             <td className="py-1.5 text-xs">
                                                                 {v.firma_base64
                                                                     ? <span className="text-green-700 font-semibold">firmado</span>
@@ -450,6 +454,56 @@ const TravelersManager = () => {
                         );
                     })}
                 </div>
+            )}
+        </div>
+    );
+};
+
+// Municipio del domicilio. Con domicilio en España el Ministerio exige el
+// código INE (rechazo del 19-sep-2026); si la base no ha sabido casar lo que
+// escribió el huésped con la lista, aquí se elige a mano (tjm_fijar_municipio_viajero).
+const Municipio = ({ viajero: v, onCambiado }) => {
+    const [q, setQ] = useState('');
+    const [opciones, setOpciones] = useState([]);
+    const [guardando, setGuardando] = useState(false);
+    const esEspana = (v.direccion_pais || '').toUpperCase() === 'ESP';
+
+    useEffect(() => {
+        if (q.trim().length < 2) { setOpciones([]); return; }
+        const t = setTimeout(async () => {
+            const { data } = await supabase.rpc('tjm_municipios_buscar', { p_q: q, p_cp: v.direccion_cp || null });
+            setOpciones(data || []);
+        }, 250);
+        return () => clearTimeout(t);
+    }, [q, v.direccion_cp]);
+
+    const fijar = async (m) => {
+        setGuardando(true);
+        const { error } = await supabase.rpc('tjm_fijar_municipio_viajero', { p_traveler_id: v.id, p_codigo: m.codigo });
+        setGuardando(false);
+        if (!error) { setQ(''); setOpciones([]); onCambiado?.(); }
+    };
+
+    if (!esEspana) return <span className="text-gray-500">{v.direccion_municipio || '—'}</span>;
+    if (v.direccion_municipio_ine) {
+        return <span className="text-gray-600">{v.direccion_municipio} <span className="font-mono text-gray-400">{v.direccion_municipio_ine}</span></span>;
+    }
+    return (
+        <div className="relative">
+            <span className="text-amber-800 font-semibold">«{v.direccion_municipio || '—'}» no está en el INE</span>
+            <input type="text" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Elegir municipio…"
+                className="block mt-1 w-44 px-2 py-1 text-xs border border-amber-300 rounded-md outline-none focus:border-rural-600" />
+            {opciones.length > 0 && (
+                <ul className="absolute z-10 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+                    {opciones.map((m) => (
+                        <li key={m.codigo}>
+                            <button type="button" disabled={guardando} onClick={() => fijar(m)}
+                                className="w-full text-left px-2 py-1.5 hover:bg-rural-100 disabled:opacity-50">
+                                {m.nombre} <span className="text-gray-400">· {m.provincia}</span>
+                            </button>
+                        </li>
+                    ))}
+                </ul>
             )}
         </div>
     );

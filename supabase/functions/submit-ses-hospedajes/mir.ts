@@ -110,11 +110,16 @@ function direccionXml(v: ViajeroParte): string {
     return [
         "<direccion>",
         `<direccion>${esc(corta(v.direccion, 100))}</direccion>`,
-        // `codigoMunicipio` es el código INE y sólo vale para municipios
-        // españoles. No se le pide al huésped —sería una casilla más en un
-        // formulario que tiene que hacerse en tres minutos—, así que va el
-        // nombre, que el esquema admite.
-        opt("nombreMunicipio", corta(v.municipio, 100)),
+        // Domicilio en España: `codigoMunicipio` (INE, 5 cifras) y NO el
+        // nombre. El esquema admite `nombreMunicipio` para todos, pero la
+        // validación del Ministerio lo rechaza si el país es ESP
+        // («Código de municipio obligatorio si el país es España»,
+        // 19-sep-2026, lote 233e973c…). Fuera de España va el nombre.
+        // El código lo pone la base (migración 0042); si falta, el parte ni
+        // sale: `pegasDelParte` lo para antes.
+        esEspana && v.codigoMunicipio
+            ? `<codigoMunicipio>${esc(v.codigoMunicipio)}</codigoMunicipio>`
+            : opt("nombreMunicipio", corta(v.municipio, 100)),
         `<codigoPostal>${esc(corta(v.codigoPostal, 20))}</codigoPostal>`,
         `<pais>${esc(v.pais || (esEspana ? "ESP" : ""))}</pais>`,
         "</direccion>",
