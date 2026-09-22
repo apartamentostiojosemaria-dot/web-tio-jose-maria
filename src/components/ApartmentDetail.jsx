@@ -337,7 +337,7 @@ const ApartmentDetail = () => {
                         <div className="space-y-6">
                             <h2 className="text-2xl font-serif font-bold text-rural-800 uppercase tracking-widest text-xs">Equipamiento y Servicios</h2>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                {(apartment.amenities && apartment.amenities.length > 0 ? apartment.amenities : ['tv', 'wifi', 'heating', 'ac', 'fireplace', 'kitchen', 'fridge', 'microwave', 'bath', 'hairdryer', 'no_pets']).map((id, i) => {
+                                {(apartment.amenities && apartment.amenities.length > 0 ? apartment.amenities : ['tv', 'wifi', 'heating', 'ac', 'kitchen', 'fridge', 'microwave', 'bath', 'hairdryer', 'no_pets']).map((id, i) => {
                                     const item = AMENITIES_ICONS[id];
                                     if (!item) return null;
                                     const Icon = item.icon;
