@@ -21,10 +21,12 @@ gh auth switch -u apartamentostiojosemaria-dot
 git push origin main
 ```
 
-**Un push NO despliega** (comprobado el 17-sep-2026: push a las 18:35, producción
-seguía en la build del 15-sep hasta que Jesús disparó el despliegue a las 19:08).
-Hay que disparar el despliegue a mano en EasyPanel (VPS 148.230.126.72 →
-servicio de la web → Deploy, o su webhook). Comprobación de que ha llegado:
+**Desde el 23-sep-2026 el push a `main` SÍ despliega**: `.github/workflows/deploy.yml`
+llama al webhook de EasyPanel (secreto `EASYPANEL_DEPLOY_WEBHOOK` del repo; copia en
+`.env.local`) y espera hasta 25 min a que la web sirva la build nueva. Si no cambia, el
+run sale en rojo y GitHub avisa. Antes un push no desplegaba (17-sep y 20→23-sep).
+Desplegar sin push: Actions → Deploy → Run workflow, o EasyPanel (VPS 148.230.126.72 →
+servicio de la web → Deploy). Comprobación a mano de que ha llegado:
 
 ```bash
 curl -sI https://tiojosemaria.com/ | grep -i last-modified   # fecha de la build

@@ -1,0 +1,49 @@
+# Deploy to EasyPanel on every push to main, then check production really changed.
+# A push alone never deployed (17-sep and 20→23-sep: production stuck on an old
+# build while main moved on). If the check fails, the run goes red and GitHub
+# emails the repo owner — nothing stays unpublished silently.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-web
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Build date before
+        id: before
+        run: |
+          lm=$(curl -sI https://tiojosemaria.com/ | grep -i '^last-modified:' | cut -d' ' -f2- | tr -d '\r')
+          echo "Production build before: $lm"
+          echo "epoch=$(date -d "$lm" +%s)" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger EasyPanel
+        env:
+          WEBHOOK: ${{ secrets.EASYPANEL_DEPLOY_WEBHOOK }}
+        run: |
+          code=$(curl -s -o /tmp/resp -w '%{http_code}' -X POST "$WEBHOOK")
+          echo "EasyPanel answered $code"; cat /tmp/resp; echo
+          test "$code" -ge 200 -a "$code" -lt 300
+
+      - name: Wait until production serves the new build
+        run: |
+          for i in $(seq 1 50); do
+            sleep 30
+            lm=$(curl -sI https://tiojosemaria.com/ | grep -i '^last-modified:' | cut -d' ' -f2- | tr -d '\r')
+            now=$(date -d "$lm" +%s 2>/dev/null || echo 0)
+            if [ "$now" -gt "${{ steps.before.outputs.epoch }}" ]; then
+              echo "New build live: $lm"
+              exit 0
+            fi
+            echo "Still old build ($lm), waiting… ($i/50)"
+          done
+          echo "::error::Production did not change after 25 min: check EasyPanel logs"
+          exit 1
