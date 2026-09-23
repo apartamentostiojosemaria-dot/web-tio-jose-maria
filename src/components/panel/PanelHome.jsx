@@ -322,8 +322,11 @@ async function construirAvisos(proximas, vencidas, limpiezasAtrasadas, hoy, dent
                         ? `Llega hoy a ${r.apartamento}.`
                         : `Llega el ${r.check_in.slice(8, 10)} a ${r.apartamento}.`,
                     accion: 'Recordárselo',
-                    seccion: 'reserva',
-                    params: { reservaId: r.id, abrir: 'parte' },
+                    // A «Datos de la policía»: ahí está el botón que le manda el
+                    // enlace por WhatsApp o correo. La ficha de la reserva no lo
+                    // tiene y «abrir: parte» ya no abría nada (23-sep).
+                    seccion: 'parte',
+                    params: {},
                 });
             });
         }
