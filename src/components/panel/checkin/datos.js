@@ -122,6 +122,15 @@ const NOMBRES_DOCUMENTO = {
 
 export const nombreDocumento = (tipo) => NOMBRES_DOCUMENTO[tipo] || 'Documento';
 
+/**
+ * ¿Ha firmado? La función `tjm_checkin_personas` NO devuelve la firma (quien
+ * recibe no la necesita ver), solo `tiene_firma`; la lectura directa de la
+ * tabla sí trae `firma_base64`. Hay que mirar las dos: mirando solo
+ * `firma_base64`, todo el que había firmado salía «Le falta firmar»
+ * (Emilia y Vicente, 23-sep).
+ */
+export const haFirmado = (p) => p?.tiene_firma === true || !!p?.firma_base64;
+
 export const nombreCompleto = (p) =>
     [p?.nombre, p?.apellido_primero, p?.apellido_segundo].filter(Boolean).join(' ').trim();
 

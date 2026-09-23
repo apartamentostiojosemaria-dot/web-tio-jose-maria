@@ -1,7 +1,7 @@
 import React from 'react';
 import { Check, PenLine, ShieldQuestion, Baby } from 'lucide-react';
 import { Boton, Chip } from '../ui';
-import { edadEn, nombreCompleto, nombreDocumento, EDAD_FIRMA, EDAD_DOCUMENTO } from './datos';
+import { edadEn, nombreCompleto, nombreDocumento, haFirmado, EDAD_FIRMA, EDAD_DOCUMENTO } from './datos';
 
 // ============================================================
 // Persona — una tarjeta por cada uno de los que se alojan
@@ -20,7 +20,7 @@ const Persona = ({ persona: p, fechaEntrada, comprobado, onCoincide, onNoCoincid
     const edad = edadEn(p.fecha_nacimiento, fechaEntrada);
     const menorDe14 = edad !== null && edad < EDAD_FIRMA;
     const menorDeEdad = edad !== null && edad < EDAD_DOCUMENTO;
-    const tieneFirma = !!p.firma_base64;
+    const tieneFirma = haFirmado(p);
     const nombre = nombreCompleto(p) || 'Sin nombre';
 
     return (

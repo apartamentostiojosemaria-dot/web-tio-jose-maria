@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
     Phone, MessageCircle, Euro, Shield, FileText, CalendarDays, XCircle,
-    Users, Home, Check, NotebookPen, QrCode, UserX, Clock, LogOut } from 'lucide-react';
+    Users, Home, Check, NotebookPen, QrCode, UserX, Clock, LogOut, UserRound } from 'lucide-react';
 import {
     Boton, Tarjeta, Aviso, Cargando, Vacio, Chip, claseInput,
     formatoEuro, cobradoDe, pendienteDe, canalSiImporta, nombreCanal,
@@ -20,6 +20,7 @@ import HojaFactura from './dinero/HojaFactura';
 import HojaCambiar from './dinero/HojaCambiar';
 import HojaCancelar from './dinero/HojaCancelar';
 import HojaNoShow from './dinero/HojaNoShow';
+import { claveDeCliente } from './clienteClave';
 
 // ============================================================
 // ReservaFicha — la ficha de una reserva (sección 4.4 del plan)
@@ -173,6 +174,16 @@ const ReservaFicha = ({ ir, params = {} }) => {
                         <span className="w-full text-base text-gray-600 mt-1">{tel}</span>
                     </div>
                 )}
+
+                {/* Su ficha de cliente: correo, teléfono guardado, apuntes y las
+                    otras veces que ha venido. Misma clave que la lista de
+                    Clientes, así que abre a la misma persona. */}
+                <div className="mt-3">
+                    <Chip tono="neutro" icono={UserRound}
+                        onClick={() => ir('clientes', { clave: claveDeCliente(reserva) })}>
+                        Ver su ficha de cliente
+                    </Chip>
+                </div>
             </section>
 
             {cancelada && (

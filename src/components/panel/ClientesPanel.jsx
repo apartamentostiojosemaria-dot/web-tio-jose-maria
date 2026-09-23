@@ -8,6 +8,7 @@ import {
     Boton, Tarjeta, Campo, Chip, Aviso, Cargando, Vacio, claseInput, Confirmar,
     hoyISO, fechaCorta, fechaEnPalabras, canalSiImporta,
 } from './ui';
+import { sinAcentos, soloDigitos, correoReal, correoClave, claveDeCliente } from './clienteClave';
 
 // ============================================================
 // ClientesPanel — Clientes (sección 4.5 bis del plan)
@@ -33,18 +34,9 @@ const TOPE_RESERVAS = 3000;   // de sobra: hoy hay 5 reservas en total
 const ULTIMOS_EN_PORTADA = 8;
 const ESTADOS_BUENOS = ['confirmed', 'completed'];
 
-// ---------- Comparar sin acentos y con el teléfono escrito de cualquier forma ----------
-
-const sinAcentos = (t) =>
-    String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
-
-const soloDigitos = (t) => String(t || '').replace(/\D/g, '');
-
-/** Los 9 últimos dígitos: así "+34 676 34 46 75", "0034676344675" y "676344675" son el mismo. */
-const claveTelefono = (t) => {
-    const d = soloDigitos(t);
-    return d.length > 9 ? d.slice(-9) : d;
-};
+// ---------- Teléfonos ----------
+// (comparar sin acentos y la clave del cliente viven en clienteClave.js:
+// la ficha de la reserva tiene que llegar al mismo cliente)
 
 /** Para el enlace de llamar. */
 const paraLlamar = (t) => String(t || '').replace(/[^\d+]/g, '');
@@ -113,19 +105,18 @@ const construirClientes = ({ fichas, reservas, apartamentos, hoy }) => {
 
     // 1) Las fichas guardadas mandan sobre lo que pusiera la reserva.
     (fichas || []).forEach((f) => {
-        const email = String(f.email || '').trim().toLowerCase();
-        if (!email) return;
-        const g = dame(email);
-        g.email = email;
+        const clave = correoClave(f.email);
+        if (!clave) return;
+        const g = dame(clave);
+        g.email = correoReal(f.email);
         if (f.canonical_name) g.nombre = f.canonical_name;
         if (f.phone) g.telefono = f.phone;
     });
 
     // 2) Las reservas: rellenan lo que falte y aportan el historial.
     (reservas || []).forEach((r) => {
-        const email = String(r.guest_email || '').trim().toLowerCase();
-        const tel = claveTelefono(r.guest_phone);
-        const clave = email || (tel ? `tel:${tel}` : `nombre:${sinAcentos(r.guest_name)}`);
+        const email = correoReal(r.guest_email);
+        const clave = claveDeCliente(r);
         if (clave === 'nombre:') return;
         const g = dame(clave);
         if (email && !g.email) g.email = email;
@@ -154,12 +145,13 @@ const construirClientes = ({ fichas, reservas, apartamentos, hoy }) => {
 // Pantalla
 // ============================================================
 
-const ClientesPanel = ({ ir, perfil }) => {
+const ClientesPanel = ({ ir, perfil, params = {} }) => {
     const [cargando, setCargando] = useState(true);
     const [fallo, setFallo] = useState('');
     const [clientes, setClientes] = useState([]);
     const [busqueda, setBusqueda] = useState('');
-    const [abierto, setAbierto] = useState(null);   // clave del cliente abierto
+    // Clave del cliente abierto. Desde la ficha de una reserva se llega ya abierto.
+    const [abierto, setAbierto] = useState(params.clave || null);
     const hoy = hoyISO();
 
     const cargar = useCallback(async () => {

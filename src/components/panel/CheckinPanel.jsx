@@ -10,7 +10,7 @@ import CodigoQR from './checkin/CodigoQR';
 import Persona from './checkin/Persona';
 import {
     cargarCheckin, escucharCheckin, marcarCoincide, leerComprobadoLocal,
-    apuntarEntrada, apuntarSalida, enlacePrecheckin, edadEn, EDAD_FIRMA,
+    apuntarEntrada, apuntarSalida, enlacePrecheckin, edadEn, haFirmado, EDAD_FIRMA,
 } from './checkin/datos';
 
 // El formulario del huesped, tal cual, para «Rellenarlo yo». Se carga solo
@@ -190,7 +190,7 @@ const CheckinPanel = ({ ir, volver, params = {} }) => {
     const estanTodos = faltan === 0 && rellenos > 0;
     const cuantosComprobados = personas.filter((p) => comprobado[p.id]).length;
     const todosComprobados = personas.length > 0 && cuantosComprobados === personas.length;
-    const sinFirma = personas.filter((p) => !p.firma_base64 && necesitaFirmar(p, reserva.check_in));
+    const sinFirma = personas.filter((p) => !haFirmado(p) && necesitaFirmar(p, reserva.check_in));
     const yaEntraron = !!reserva.checkin_at;
     // El check-in se termina el día que entran. Antes de ese día el botón
     // está frenado: si se toca sin querer queda apuntada una hora de entrada
