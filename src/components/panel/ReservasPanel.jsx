@@ -185,7 +185,10 @@ const ReservasPanel = ({ ir }) => {
                         vacio={buscando ? null : 'Ahora mismo no hay nadie dentro ni llega nadie.'} />
                     <Grupo titulo="Próximas" pie="Todavía no han llegado" reservas={proximas} hoy={hoy} ir={ir}
                         vacio={buscando ? null : 'No hay ninguna reserva por venir.'} />
+                    {/* Las pasadas, plegadas salvo al buscar: desplegadas hacían
+                        la pantalla de cinco móviles de alto (auditoría 23-sep). */}
                     <Grupo titulo="Pasadas" pie="Ya se fueron" reservas={pasadas} hoy={hoy} ir={ir}
+                        plegado={!buscando}
                         vacio={buscando ? null : 'Todavía no se ha ido nadie.'} />
 
                     {/* ---------- Canceladas: ahí están, pero fuera del camino ---------- */}
@@ -231,9 +234,30 @@ const ReservasPanel = ({ ir }) => {
 
 // ============================================================
 
-const Grupo = ({ titulo, pie, reservas, hoy, ir, vacio }) => {
+const Grupo = ({ titulo, pie, reservas, hoy, ir, vacio, plegado = false }) => {
+    const [abierto, setAbierto] = useState(!plegado);
+    useEffect(() => { setAbierto(!plegado); }, [plegado]);
     if (reservas.length === 0 && !vacio) return null;
     const id = `grupo-${sinAcentos(titulo).replace(/\s+/g, '-')}`;
+    if (!abierto && reservas.length > 0) {
+        return (
+            <section aria-labelledby={id}>
+                <button
+                    type="button"
+                    onClick={() => setAbierto(true)}
+                    aria-expanded="false"
+                    className="w-full text-left bg-white rounded-3xl border border-gray-200 shadow-sm px-5 py-4 min-h-[64px] flex items-center gap-3 hover:bg-rural-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-rural-600/30"
+                >
+                    <span className="flex-1 min-w-0">
+                        <span id={id} className="block text-lg font-bold text-text-primary">{titulo}</span>
+                        <span className="block text-sm text-gray-600">{reservas.length} · {pie}</span>
+                    </span>
+                    <span className="text-sm font-semibold text-rural-700">Ver</span>
+                    <ChevronRight size={20} className="text-gray-400 rotate-90" aria-hidden="true" />
+                </button>
+            </section>
+        );
+    }
     return (
         <section aria-labelledby={id}>
             <div className="flex items-baseline gap-2 mb-2 px-1">

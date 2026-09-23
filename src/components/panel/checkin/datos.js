@@ -66,20 +66,66 @@ const primerNombre = (nombre) => String(nombre || '').trim().split(/\s+/)[0] || 
  * El enlace NO va al final de la línea: algunas apps se comen el salto y lo
  * dejan pegado a la palabra siguiente, y entonces no abre.
  */
-export function textoRecordatorio({ guest_name, booking_code }, { enLaPuerta = false } = {}) {
-    const nombre = primerNombre(guest_name);
-    const saludo = nombre ? `Hola ${nombre}` : 'Hola';
-    const motivo = enLaPuerta
-        ? 'Para daros la llave necesitamos los datos de cada persona que se aloja. Nos los pide la ley y se rellena en dos minutos desde el móvil:'
-        : 'Antes de que lleguéis necesitamos los datos de cada persona que se aloja (nombre, documento y poco más). Nos los pide la ley y se rellena en un par de minutos desde el móvil:';
+// El recado en el idioma del huésped (`guest_bookings.idioma`, que viene de
+// su ficha: 0050). El castellano, tal cual estaba. Sus padres ven siempre el
+// castellano en el panel; al huésped le llega el suyo, y el enlace abre el
+// formulario ya en su idioma (?lang=).
+const RECADO = {
+    es: {
+        hola: (n) => (n ? `Hola ${n}` : 'Hola'),
+        somos: 'somos los Apartamentos Tío José María.',
+        puerta: 'Para daros la llave necesitamos los datos de cada persona que se aloja. Nos los pide la ley y se rellena en dos minutos desde el móvil:',
+        antes: 'Antes de que lleguéis necesitamos los datos de cada persona que se aloja (nombre, documento y poco más). Nos los pide la ley y se rellena en un par de minutos desde el móvil:',
+        graciasPuerta: '¡Gracias!',
+        gracias: '¡Gracias y hasta pronto!',
+        asunto: 'Los datos que nos piden antes de tu llegada',
+    },
+    en: {
+        hola: (n) => (n ? `Hello ${n}` : 'Hello'),
+        somos: 'this is Apartamentos Tío José María.',
+        puerta: 'Before we give you the keys we need the details of everyone staying. It is required by Spanish law and takes two minutes on your phone:',
+        antes: 'Before you arrive we need the details of everyone staying (name, ID document and little else). It is required by Spanish law and takes a couple of minutes on your phone:',
+        graciasPuerta: 'Thank you!',
+        gracias: 'Thank you, see you soon!',
+        asunto: 'The details we need before you arrive',
+    },
+    de: {
+        hola: (n) => (n ? `Hallo ${n}` : 'Hallo'),
+        somos: 'hier sind die Apartamentos Tío José María.',
+        puerta: 'Bevor wir Ihnen die Schlüssel geben, brauchen wir die Daten jeder Person, die bei uns übernachtet. Das ist in Spanien gesetzlich vorgeschrieben und dauert zwei Minuten am Handy:',
+        antes: 'Vor Ihrer Ankunft brauchen wir die Daten jeder Person, die bei uns übernachtet (Name, Ausweis und wenig mehr). Das ist in Spanien gesetzlich vorgeschrieben und dauert zwei Minuten am Handy:',
+        graciasPuerta: 'Vielen Dank!',
+        gracias: 'Vielen Dank und bis bald!',
+        asunto: 'Die Angaben, die wir vor Ihrer Ankunft brauchen',
+    },
+    fr: {
+        hola: (n) => (n ? `Bonjour ${n}` : 'Bonjour'),
+        somos: 'ici les Apartamentos Tío José María.',
+        puerta: 'Avant de vous remettre les clés, nous avons besoin des informations de chaque personne hébergée. C’est obligatoire en Espagne et cela prend deux minutes depuis votre téléphone :',
+        antes: 'Avant votre arrivée, nous avons besoin des informations de chaque personne hébergée (nom, pièce d’identité et peu de choses de plus). C’est obligatoire en Espagne et cela prend deux minutes depuis votre téléphone :',
+        graciasPuerta: 'Merci !',
+        gracias: 'Merci et à bientôt !',
+        asunto: 'Les informations demandées avant votre arrivée',
+    },
+};
+
+const idiomaDe = (idioma) => (RECADO[idioma] ? idioma : 'es');
+
+/** El asunto del correo de recordatorio, en su idioma. */
+export const asuntoRecordatorio = (idioma) => RECADO[idiomaDe(idioma)].asunto;
+
+export function textoRecordatorio({ guest_name, booking_code, idioma }, { enLaPuerta = false } = {}) {
+    const lang = idiomaDe(idioma);
+    const t = RECADO[lang];
+    const enlace = enlacePrecheckin(booking_code, { absoluto: true }) + (lang === 'es' ? '' : `&lang=${lang}`);
     return [
-        `${saludo}, somos los Apartamentos Tío José María.`,
+        `${t.hola(primerNombre(guest_name))}, ${t.somos}`,
         '',
-        motivo,
+        enLaPuerta ? t.puerta : t.antes,
         '',
-        enlacePrecheckin(booking_code, { absoluto: true }),
+        enlace,
         '',
-        enLaPuerta ? '¡Gracias!' : '¡Gracias y hasta pronto!',
+        enLaPuerta ? t.graciasPuerta : t.gracias,
     ].join('\n');
 }
 

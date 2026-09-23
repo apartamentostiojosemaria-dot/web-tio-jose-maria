@@ -197,6 +197,9 @@ const ReservaFicha = ({ ir, params = {} }) => {
                     <Chip icono={Home}>{apartamento}</Chip>
                     <Chip icono={Users}>{personas} {personas === 1 ? 'persona' : 'personas'}</Chip>
                     {canalSiImporta(reserva) && <Chip tono="azul">Vino por {nombreCanal(reserva)}</Chip>}
+                    {reserva.idioma && reserva.idioma !== 'es' && (
+                        <Chip tono="azul">Habla {{ en: 'inglés', de: 'alemán', fr: 'francés' }[reserva.idioma] || reserva.idioma}</Chip>
+                    )}
                     {cancelada && <Chip tono="rojo" icono={XCircle}>Cancelada</Chip>}
                     {noSePresento && <Chip tono="rojo" icono={UserX}>No se presentaron</Chip>}
                     {reserva.hora_llegada_prevista && !reserva.checkin_at && (
@@ -231,7 +234,9 @@ const ReservaFicha = ({ ir, params = {} }) => {
                     Clientes, así que abre a la misma persona. */}
                 <div className="mt-3">
                     <Chip tono="neutro" icono={UserRound}
-                        onClick={() => ir('clientes', { clave: claveDeCliente(reserva) })}>
+                        onClick={() => ir('clientes', reserva.customer_id
+                            ? { clienteId: reserva.customer_id }
+                            : { clave: claveDeCliente(reserva) })}>
                         Ver su ficha de cliente
                     </Chip>
                 </div>

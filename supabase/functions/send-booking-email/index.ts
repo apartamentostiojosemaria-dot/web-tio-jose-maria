@@ -126,7 +126,7 @@ Deno.serve(async (req) => {
         .from("guest_bookings")
         .select(`id, booking_code, guest_name, guest_email, check_in, check_out,
                  total_price, apartment_id, status, paid_amount, channel, internal_notes,
-                 pax_count, ${flag},
+                 pax_count, idioma, ${flag},
                  apartments(name, slug, images)`)
         .eq("booking_code", code)
         .single();
@@ -232,6 +232,8 @@ Deno.serve(async (req) => {
 
     const payload = {
         precheckin_nombres,
+        // Idioma del huésped (NULL = castellano); las plantillas operator_* lo ignoran.
+        idioma: (booking as { idioma?: string | null }).idioma ?? null,
         booking_code: booking.booking_code,
         guest_name: booking.guest_name,
         guest_email: booking.guest_email,

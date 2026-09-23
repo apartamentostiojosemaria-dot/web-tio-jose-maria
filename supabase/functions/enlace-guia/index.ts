@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
 
     const { data: reservas } = await admin
         .from("guest_bookings")
-        .select("booking_code, guest_name, guest_email, check_in, check_out, total_price, apartments(name, slug, images)")
+        .select("booking_code, guest_name, guest_email, check_in, check_out, total_price, idioma, apartments(name, slug, images)")
         .ilike("guest_email", email)
         .in("status", ["confirmed", "completed"])
         .gte("check_out", limite.toISOString().slice(0, 10))
@@ -80,6 +80,7 @@ Deno.serve(async (req) => {
             check_in: b.check_in,
             check_out: b.check_out,
             total_price: Number(b.total_price),
+            idioma: (b as { idioma?: string | null }).idioma ?? null,
         });
         await fetch("https://api.resend.com/emails", {
             method: "POST",

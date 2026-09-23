@@ -8,7 +8,7 @@ import {
     Boton, Tarjeta, Campo, Chip, Aviso, Cargando, Vacio, claseInput, Confirmar,
     hoyISO, fechaCorta, fechaEnPalabras, canalSiImporta,
 } from './ui';
-import { sinAcentos, soloDigitos, correoReal, correoClave, claveDeCliente } from './clienteClave';
+import { sinAcentos, soloDigitos, correoReal, claveDeCliente } from './clienteClave';
 
 // ============================================================
 // ClientesPanel — Clientes (sección 4.5 bis del plan)
@@ -29,6 +29,8 @@ import { sinAcentos, soloDigitos, correoReal, correoClave, claveDeCliente } from
 // La lista y la ficha usan la MISMA cuenta, calculada aquí abajo: así no
 // puede haber dos cifras distintas para lo mismo.
 // ============================================================
+
+const NOMBRE_IDIOMA = { es: 'castellano', en: 'inglés', de: 'alemán', fr: 'francés' };
 
 const TOPE_RESERVAS = 3000;   // de sobra: hoy hay 5 reservas en total
 const ULTIMOS_EN_PORTADA = 8;
@@ -84,9 +86,10 @@ const coincide = (cliente, texto) => {
 // ---------- Juntar clientes y reservas en una sola lista ----------
 
 /**
- * Une lo de `customers` (nombre corregido y teléfono) con lo de las reservas.
- * La clave es el correo; si una reserva no trae correo, se agrupa por
- * teléfono, y si tampoco hay teléfono, por el nombre.
+ * Cada cliente es SU FICHA (`customers`), y sus reservas son las que apuntan a
+ * ella (`customer_id`, migración 0050): lo que se corrige en la ficha llega a
+ * todas. Una reserva sin ficha (no debería quedar ninguna) se agrupa como
+ * antes: por correo, si no por teléfono, si no por nombre.
  */
 const construirClientes = ({ fichas, reservas, apartamentos, hoy }) => {
     const nombreApto = {};
@@ -96,7 +99,7 @@ const construirClientes = ({ fichas, reservas, apartamentos, hoy }) => {
     const dame = (clave) => {
         if (!grupos.has(clave)) {
             grupos.set(clave, {
-                clave, email: '', nombre: '', telefono: '',
+                clave, id: null, email: '', emailFicha: '', idioma: '', nombre: '', telefono: '',
                 reservas: [], veces: 0, ultima: null, ultimoMovimiento: '',
             });
         }
@@ -105,10 +108,12 @@ const construirClientes = ({ fichas, reservas, apartamentos, hoy }) => {
 
     // 1) Las fichas guardadas mandan sobre lo que pusiera la reserva.
     (fichas || []).forEach((f) => {
-        const clave = correoClave(f.email);
-        if (!clave) return;
-        const g = dame(clave);
-        g.email = correoReal(f.email);
+        if (!f.id) return;
+        const g = dame(`id:${f.id}`);
+        g.id = f.id;
+        g.email = correoReal(f.email);      // el que se enseña (sin rellenos)
+        g.emailFicha = f.email || '';        // la clave de la ficha (apuntes)
+        g.idioma = f.preferred_language || '';
         if (f.canonical_name) g.nombre = f.canonical_name;
         if (f.phone) g.telefono = f.phone;
     });
@@ -116,7 +121,7 @@ const construirClientes = ({ fichas, reservas, apartamentos, hoy }) => {
     // 2) Las reservas: rellenan lo que falte y aportan el historial.
     (reservas || []).forEach((r) => {
         const email = correoReal(r.guest_email);
-        const clave = claveDeCliente(r);
+        const clave = r.customer_id ? `id:${r.customer_id}` : claveDeCliente(r);
         if (clave === 'nombre:') return;
         const g = dame(clave);
         if (email && !g.email) g.email = email;
@@ -132,12 +137,25 @@ const construirClientes = ({ fichas, reservas, apartamentos, hoy }) => {
         );
         g.veces = pasadas.length;
         g.ultima = pasadas.length ? pasadas[0].check_out : null;
+        // La próxima vez que viene (o que está dentro ahora).
+        const futuras = g.reservas
+            .filter((r) => ESTADOS_BUENOS.includes(r.status) && String(r.check_out) > hoy)
+            .sort((a, b) => String(a.check_in).localeCompare(String(b.check_in)));
+        g.proxima = futuras.length ? futuras[0].check_in : null;
         g.ultimoMovimiento = g.reservas.length ? g.reservas[0].check_in : '';
         if (!g.nombre) g.nombre = g.email || 'Sin nombre';
         return g;
     });
 
-    lista.sort((a, b) => String(b.ultimoMovimiento).localeCompare(String(a.ultimoMovimiento)));
+    // Primero los que vienen pronto (el más cercano arriba) y después los que
+    // estuvieron hace menos. Antes mandaba la fecha más lejana: la primera de
+    // «Los últimos clientes» era una reserva de agosto de 2027 (23-sep).
+    lista.sort((a, b) => {
+        if (a.proxima && b.proxima) return String(a.proxima).localeCompare(String(b.proxima));
+        if (a.proxima) return -1;
+        if (b.proxima) return 1;
+        return String(b.ultima || b.ultimoMovimiento).localeCompare(String(a.ultima || a.ultimoMovimiento));
+    });
     return lista;
 };
 
@@ -151,16 +169,16 @@ const ClientesPanel = ({ ir, perfil, params = {} }) => {
     const [clientes, setClientes] = useState([]);
     const [busqueda, setBusqueda] = useState('');
     // Clave del cliente abierto. Desde la ficha de una reserva se llega ya abierto.
-    const [abierto, setAbierto] = useState(params.clave || null);
+    const [abierto, setAbierto] = useState(params.clienteId ? `id:${params.clienteId}` : (params.clave || null));
     const hoy = hoyISO();
 
     const cargar = useCallback(async () => {
         setCargando(true);
         setFallo('');
         const [fichas, reservas, apartamentos] = await Promise.all([
-            supabase.from('customers').select('email, canonical_name, phone'),
+            supabase.from('customers').select('id, email, canonical_name, phone, preferred_language'),
             supabase.from('guest_bookings')
-                .select('id, guest_name, guest_email, guest_phone, apartment_id, check_in, check_out, status, total_price, channel, source, pax_count')
+                .select('id, customer_id, guest_name, guest_email, guest_phone, apartment_id, check_in, check_out, status, total_price, channel, source, pax_count')
                 .order('check_in', { ascending: false })
                 .limit(TOPE_RESERVAS),
             supabase.from('apartments').select('id, name'),
@@ -244,7 +262,7 @@ const ClientesPanel = ({ ir, perfil, params = {} }) => {
                 <h2 id="lista-t" className="text-base font-bold text-text-primary">
                     {buscando
                         ? `${encontrados.length} ${encontrados.length === 1 ? 'cliente' : 'clientes'}`
-                        : 'Los últimos clientes'}
+                        : 'Los que vienen pronto y los de hace poco'}
                 </h2>
 
                 {aEnsenar.length === 0 ? (
@@ -272,10 +290,23 @@ const ClientesPanel = ({ ir, perfil, params = {} }) => {
 
 // ---------- Una línea de la lista ----------
 
+const diaYMes = (iso) => {
+    const [a, m, d] = String(iso || '').slice(0, 10).split('-').map(Number);
+    if (!a) return '';
+    return new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ...(a !== new Date().getFullYear() ? { year: 'numeric' } : {}) })
+        .format(new Date(a, m - 1, d));
+};
+
 const resumenVisitas = (c) => {
-    if (c.veces === 0) return 'Todavía no ha venido';
-    if (c.veces === 1) return `Ha venido una vez, en ${mesYAno(c.ultima)}`;
-    return `Ha venido ${c.veces} veces, la última en ${mesYAno(c.ultima)}`;
+    // Lo que sirve primero: cuándo viene. Luego, si ya estuvo.
+    const viene = c.proxima ? `Viene el ${diaYMes(c.proxima)}` : '';
+    let estuvo = '';
+    if (c.veces === 1) estuvo = `estuvo en ${mesYAno(c.ultima)}`;
+    else if (c.veces > 1) estuvo = `ha venido ${c.veces} veces, la última en ${mesYAno(c.ultima)}`;
+    if (viene && estuvo) return `${viene} · ${estuvo}`;
+    if (viene) return `${viene} · es la primera vez`;
+    if (estuvo) return estuvo.charAt(0).toUpperCase() + estuvo.slice(1);
+    return 'Todavía no ha venido';
 };
 
 const LineaCliente = ({ cliente, onAbrir }) => (
@@ -304,16 +335,17 @@ const FichaCliente = ({ cliente, perfil, ir, onCerrar, onGuardado }) => {
     const hoy = hoyISO();
 
     const cargarApuntes = useCallback(async () => {
-        if (!cliente.email) { setApuntes([]); setCargandoApuntes(false); return; }
+        const clave = cliente.emailFicha || cliente.email;
+        if (!clave) { setApuntes([]); setCargandoApuntes(false); return; }
         setCargandoApuntes(true);
         const { data } = await supabase
             .from('customer_notes')
             .select('id, body, created_at, author')
-            .eq('customer_email', cliente.email)
+            .eq('customer_email', clave)
             .order('created_at', { ascending: false });
         setApuntes(data || []);
         setCargandoApuntes(false);
-    }, [cliente.email]);
+    }, [cliente.emailFicha, cliente.email]);
 
     useEffect(() => { cargarApuntes(); }, [cargarApuntes]);
 
@@ -333,6 +365,11 @@ const FichaCliente = ({ cliente, perfil, ir, onCerrar, onGuardado }) => {
                     {cliente.nombre}
                 </h2>
                 <p className="text-base text-gray-600 mt-1">{resumenVisitas(cliente)}.</p>
+                {cliente.idioma && cliente.idioma !== 'es' && (
+                    <div className="mt-2">
+                        <Chip tono="azul">Habla {NOMBRE_IDIOMA[cliente.idioma] || cliente.idioma} · le escribimos en su idioma</Chip>
+                    </div>
+                )}
             </section>
 
             {/* ---------- Llamar / WhatsApp ---------- */}
@@ -380,7 +417,7 @@ const FichaCliente = ({ cliente, perfil, ir, onCerrar, onGuardado }) => {
                 />
             ) : (
                 <Boton variante="secundario" icono={Pencil} ancho onClick={() => setEditando(true)}>
-                    Corregir el nombre o el teléfono
+                    Corregir sus datos
                 </Boton>
             )}
 
@@ -435,50 +472,48 @@ const EstadoReserva = ({ reserva, hoy }) => {
 const FormularioCorregir = ({ cliente, onCancelar, onHecho }) => {
     const [nombre, setNombre] = useState(cliente.nombre === cliente.email ? '' : cliente.nombre);
     const [telefono, setTelefono] = useState(cliente.telefono || '');
-    const [correo, setCorreo] = useState('');
+    const [correo, setCorreo] = useState(cliente.email || '');
+    const [idioma, setIdioma] = useState(cliente.idioma || 'es');
     const [guardando, setGuardando] = useState(false);
     const [error, setError] = useState('');
 
-    const faltaCorreo = !cliente.email;
-
+    // Todo va a la FICHA y la base lo copia a todas sus reservas (0050). Ya
+    // no hace falta correo para guardar: sin él, la ficha lleva uno de
+    // relleno propio que no se enseña.
     const guardar = async () => {
         setError('');
         if (!nombre.trim()) { setError('Ponle un nombre, aunque sea solo el de pila.'); return; }
-        const email = faltaCorreo
-            ? String(correo || '').trim().toLowerCase()
-            : cliente.email;
-        if (faltaCorreo && (!email || !email.includes('@'))) {
-            setError('Hace falta un correo suyo para poder guardar sus datos. Si no lo tienes, pídeselo cuando llame.');
+        const email = String(correo || '').trim().toLowerCase();
+        if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+            setError('Ese correo no está bien escrito. Míralo otra vez o déjalo vacío.');
+            return;
+        }
+        if (!cliente.id) {
+            setError('Este cliente todavía no tiene ficha. Recarga la página y vuelve a probar.');
             return;
         }
         setGuardando(true);
-
-        const { error: fallo } = await supabase.from('customers').upsert({
-            email,
-            canonical_name: nombre.trim(),
-            phone: telefono.trim() || null,
-            updated_at: new Date().toISOString(),
-        }, { onConflict: 'email' });
-
+        const { error: fallo } = await supabase.rpc('tjm_guardar_cliente', {
+            p_id: cliente.id,
+            p_nombre: nombre.trim(),
+            p_telefono: telefono.trim() || null,
+            p_correo: email || null,
+            // Solo si lo ha cambiado ella: si no, se sigue deduciendo del teléfono.
+            p_idioma: idioma !== (cliente.idioma || 'es') ? idioma : null,
+        });
+        setGuardando(false);
         if (fallo) {
-            setGuardando(false);
             setError('No he podido guardarlo. Inténtalo otra vez dentro de un momento.');
             return;
         }
-
-        // Si el cliente no tenía correo, sus reservas tampoco lo tenían: se lo
-        // ponemos ahora para que quede uno solo y no salga dos veces en la lista.
-        if (faltaCorreo && cliente.reservas.length > 0) {
-            const ids = cliente.reservas.map((r) => r.id);
-            await supabase.from('guest_bookings').update({ guest_email: email }).in('id', ids);
-        }
-
-        setGuardando(false);
         await onHecho();
     };
 
     return (
         <Tarjeta titulo="Corregir sus datos">
+            <p className="text-sm text-gray-600 -mt-1 mb-4">
+                Lo que cambies aquí se cambia también en todas sus reservas.
+            </p>
             <Campo etiqueta="Cómo se llama" htmlFor="c-nombre" obligatorio>
                 <input id="c-nombre" type="text" value={nombre} autoComplete="name"
                     onChange={(e) => setNombre(e.target.value)} className={claseInput} />
@@ -490,18 +525,25 @@ const FormularioCorregir = ({ cliente, onCancelar, onHecho }) => {
                     onChange={(e) => setTelefono(e.target.value)} className={claseInput} />
             </Campo>
 
-            {faltaCorreo ? (
-                <Campo etiqueta="Correo" htmlFor="c-mail" obligatorio
-                    ayuda="Este cliente no tiene correo apuntado. Sin él no puedo guardarle apuntes ni mandarle la confirmación.">
-                    <input id="c-mail" type="email" inputMode="email" value={correo} autoComplete="email"
-                        onChange={(e) => setCorreo(e.target.value)} className={claseInput} />
-                </Campo>
-            ) : (
-                <p className="text-sm text-gray-600 -mt-2 mb-5 break-all">
-                    Su correo es <span className="font-semibold">{cliente.email}</span>. Ese no se cambia aquí:
-                    si está mal, díselo a Jesús.
-                </p>
-            )}
+            <Campo etiqueta="Correo" htmlFor="c-mail"
+                ayuda="Si no lo tienes, déjalo vacío. Con correo le llegan la confirmación y el enlace para sus datos.">
+                <input id="c-mail" type="email" inputMode="email" value={correo} autoComplete="email"
+                    onChange={(e) => setCorreo(e.target.value)} className={claseInput} />
+            </Campo>
+
+            <div className="mb-5">
+                <p className="block text-base font-bold text-text-primary mb-2">En qué idioma le escribimos</p>
+                <div className="flex flex-wrap gap-2">
+                    {Object.entries(NOMBRE_IDIOMA).map(([clave, nombreIdioma]) => (
+                        <Chip key={clave} tono={idioma === clave ? 'verde' : 'neutro'}
+                            onClick={() => setIdioma(clave)} aria-pressed={idioma === clave}
+                            className={idioma === clave ? 'ring-2 ring-rural-600' : undefined}>
+                            {idioma === clave ? '✓ ' : ''}{nombreIdioma.charAt(0).toUpperCase() + nombreIdioma.slice(1)}
+                        </Chip>
+                    ))}
+                </div>
+                <p className="text-sm text-gray-600 mt-2">Sale solo por el prefijo de su teléfono; cámbialo si no acierta.</p>
+            </div>
 
             {error && <Aviso tono="urgente" titulo={error} className="mb-4" />}
 
@@ -526,12 +568,14 @@ const Apuntes = ({ cliente, perfil, apuntes, cargando, onCambio }) => {
 
     const quien = perfil?.full_name || perfil?.email || 'panel';
 
-    if (!cliente.email) {
+    // Los apuntes cuelgan de la ficha (su correo, aunque sea de relleno):
+    // ya no hace falta que el cliente tenga correo de verdad.
+    const claveFicha = cliente.emailFicha || cliente.email;
+    if (!claveFicha) {
         return (
             <Tarjeta titulo="Apuntes">
                 <p className="text-base text-gray-600">
-                    Para guardarle apuntes hace falta un correo suyo. Pulsa arriba en
-                    «Corregir el nombre o el teléfono» y ponle uno.
+                    Este cliente todavía no tiene ficha. Recarga la página y vuelve a probar.
                 </p>
             </Tarjeta>
         );
@@ -542,7 +586,7 @@ const Apuntes = ({ cliente, perfil, apuntes, cargando, onCambio }) => {
         setGuardando(true);
         setError('');
         const { error: fallo } = await supabase.from('customer_notes').insert({
-            customer_email: cliente.email,
+            customer_email: claveFicha,
             author: quien,
             body: nuevo.trim(),
         });

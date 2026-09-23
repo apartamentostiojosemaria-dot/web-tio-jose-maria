@@ -2,9 +2,9 @@ import React, { useState, useCallback, useEffect, useRef, lazy, Suspense } from 
 import { supabase } from '../../lib/supabase';
 import {
     Sun, CalendarDays, PlusCircle, BookMarked, Users, Euro, Tag, Brush, Shield,
-    LogOut, ChevronLeft, LayoutGrid,
+    LogOut, ChevronLeft, LayoutGrid, Menu,
 } from 'lucide-react';
-import { Cargando } from './ui';
+import { Cargando, Hoja } from './ui';
 
 // ============================================================
 // PanelApp — el armazón del panel sencillo (/panel)
@@ -63,8 +63,11 @@ const OCULTAS = [
     { id: 'checkin', etiqueta: 'Hacer el check-in' },
 ];
 
-/** Las cuatro de todos los días, las que van en la barra de abajo del móvil. */
-const EN_LA_BARRA = ['inicio', 'calendario', 'reservas', 'dinero'];
+/**
+ * La barra de abajo del móvil: lo de todos los días, con «Apuntar» en el
+ * centro. El resto (Clientes, Dinero, Precios, Limpiezas, Policía) va en «Más».
+ */
+const EN_LA_BARRA = ['inicio', 'calendario', 'nueva-reserva', 'reservas'];
 
 const TODAS = [...SECCIONES, ...OCULTAS];
 const buscarSeccion = (id) => TODAS.find((s) => s.id === id) || SECCIONES[0];
@@ -98,6 +101,7 @@ const direccionDe = ({ seccion, params }) => {
 const PanelApp = ({ perfil }) => {
     const [vista, setVista] = useState(leerDeLaDireccion);
     const [saliendo, setSaliendo] = useState(false);
+    const [menuMas, setMenuMas] = useState(false);
     // Una pantalla a medias (apuntar reserva) pone aquí qué se pierde si se va.
     const salidaProtegida = useRef(null);
     const protegerSalida = useCallback((aviso) => { salidaProtegida.current = aviso || null; }, []);
@@ -243,16 +247,9 @@ const PanelApp = ({ perfil }) => {
                                 Hola, <span className="font-bold text-text-primary">{nombre}</span>
                             </p>
                         )}
-                        {esAdmin && (
-                            <a href="/admin" aria-label="Vista completa"
-                                className="md:hidden shrink-0 inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-xl text-rural-700 hover:bg-rural-50">
-                                <LayoutGrid size={20} aria-hidden="true" />
-                            </a>
-                        )}
-                        <button type="button" onClick={salir} disabled={saliendo}
-                            className="md:hidden shrink-0 inline-flex items-center gap-1.5 min-h-[44px] px-3 rounded-xl text-sm font-bold text-red-700 hover:bg-red-50">
-                            <LogOut size={18} aria-hidden="true" /> Salir
-                        </button>
+                        {/* En el móvil, «Salir» y «Vista completa» viven en «Más»:
+                            arriba a la derecha caían bajo el pulgar y un toque sin
+                            querer obligaba a pedir el código otra vez (23-sep). */}
                     </div>
                 </header>
 
@@ -276,10 +273,29 @@ const PanelApp = ({ perfil }) => {
             {/* ---------- Barra de abajo (solo móvil) ---------- */}
             <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 pb-[env(safe-area-inset-bottom)]"
                 aria-label="Lo de cada día">
-                <ul className="flex">
+                <ul className="flex items-end">
                     {EN_LA_BARRA.map((id) => {
                         const s = buscarSeccion(id);
                         const activa = vista.seccion === s.id;
+                        // «Apuntar» en el centro y destacado: es lo que hace
+                        // cuando suena el teléfono, y no estaba en la barra.
+                        if (id === 'nueva-reserva') {
+                            return (
+                                <li key={s.id} className="flex-1 flex justify-center">
+                                    <button
+                                        type="button"
+                                        onClick={() => ir(s.id)}
+                                        aria-current={activa ? 'page' : undefined}
+                                        className="-mt-5 mb-1 flex flex-col items-center gap-1 focus:outline-none"
+                                    >
+                                        <span className="w-14 h-14 rounded-full bg-rural-600 text-white shadow-lg flex items-center justify-center ring-4 ring-white">
+                                            <s.icono size={28} aria-hidden="true" />
+                                        </span>
+                                        <span className="text-xs leading-none font-bold text-rural-700">Apuntar</span>
+                                    </button>
+                                </li>
+                            );
+                        }
                         return (
                             <li key={s.id} className="flex-1">
                                 <button
@@ -298,8 +314,54 @@ const PanelApp = ({ perfil }) => {
                             </li>
                         );
                     })}
+                    <li className="flex-1">
+                        <button
+                            type="button"
+                            onClick={() => setMenuMas(true)}
+                            aria-expanded={menuMas}
+                            className={`w-full min-h-[64px] flex flex-col items-center justify-center gap-1 px-1 py-2 ${
+                                !EN_LA_BARRA.includes(vista.seccion) && vista.seccion !== 'inicio' ? 'text-rural-700' : 'text-gray-500'
+                            }`}
+                        >
+                            <Menu size={24} aria-hidden="true" />
+                            <span className="text-xs leading-none font-semibold">Más</span>
+                        </button>
+                    </li>
                 </ul>
             </nav>
+
+            {/* ---------- «Más»: el resto de secciones, y salir ---------- */}
+            <Hoja abierta={menuMas} titulo="Todo lo demás" onCerrar={() => setMenuMas(false)}>
+                <ul className="grid grid-cols-2 gap-3">
+                    {SECCIONES.filter((s) => !EN_LA_BARRA.includes(s.id)).map((s) => (
+                        <li key={s.id}>
+                            <button
+                                type="button"
+                                onClick={() => { setMenuMas(false); ir(s.id); }}
+                                className="w-full bg-white rounded-3xl border border-gray-200 shadow-sm p-4 min-h-[104px] text-left flex flex-col gap-2 hover:shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-rural-600/30"
+                            >
+                                <span className="w-10 h-10 rounded-2xl bg-rural-50 text-rural-700 flex items-center justify-center">
+                                    <s.icono size={22} aria-hidden="true" />
+                                </span>
+                                <span className="font-bold text-base text-text-primary leading-tight">{s.etiqueta}</span>
+                                <span className="text-sm text-gray-600 leading-snug">{s.resumen}</span>
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+                <div className="mt-6 pt-4 border-t border-gray-100 space-y-2">
+                    {esAdmin && (
+                        <a href="/admin"
+                            className="w-full flex items-center gap-3 px-4 min-h-[52px] rounded-2xl text-base font-bold text-rural-700 hover:bg-rural-50">
+                            <LayoutGrid size={20} aria-hidden="true" /> Vista completa
+                        </a>
+                    )}
+                    <button type="button" onClick={salir} disabled={saliendo}
+                        className="w-full flex items-center gap-3 px-4 min-h-[52px] rounded-2xl text-base font-bold text-red-700 hover:bg-red-50">
+                        <LogOut size={20} aria-hidden="true" /> Salir del panel
+                    </button>
+                </div>
+            </Hoja>
         </div>
     );
 };

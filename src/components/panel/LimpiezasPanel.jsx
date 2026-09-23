@@ -106,7 +106,9 @@ const LimpiezasPanel = () => {
             supabase.from('guest_bookings')
                 .select('id, apartment_id, guest_name, check_in, check_out, status, pax_count')
                 .in('status', ESTADOS_VIVOS)
-                .or(`and(check_in.gte.${desde},check_in.lte.${hasta}),and(check_out.gte.${desde},check_out.lte.${hasta})`),
+                // Entradas sin tope por delante: hace falta saber quién es el
+                // siguiente aunque llegue dentro de dos meses.
+                .or(`check_in.gte.${desde},and(check_out.gte.${desde},check_out.lte.${hasta})`),
         ]);
 
         if (t.error || a.error || r.error) {
@@ -136,6 +138,11 @@ const LimpiezasPanel = () => {
         apartamento: nombreApto[t.apartment_id] || 'Apartamento',
         sale: reservas.find((r) => r.apartment_id === t.apartment_id && r.check_out === t.scheduled_date) || null,
         entra: reservas.find((r) => r.apartment_id === t.apartment_id && r.check_in === t.scheduled_date) || null,
+        // Quién entra DESPUÉS en ese apartamento: dice si la limpieza corre
+        // prisa o puede esperar (auditoría 23-sep).
+        siguiente: reservas
+            .filter((r) => r.apartment_id === t.apartment_id && r.check_in > t.scheduled_date)
+            .sort((a, b) => a.check_in.localeCompare(b.check_in))[0] || null,
     })), [tareas, reservas, nombreApto]);
 
     const atrasadas = conGente
@@ -327,6 +334,13 @@ const TarjetaLimpieza = ({ tarea, hoy, atrasada = false, onCambio }) => {
                 {!tarea.sale && !tarea.entra && (
                     <p className="text-base text-gray-600">
                         Esta limpieza no es de ninguna reserva: la apuntaste tú.
+                    </p>
+                )}
+                {!tarea.entra && (
+                    <p className="text-base text-gray-600">
+                        {tarea.siguiente
+                            ? <>El siguiente entra <span className="font-bold text-text-primary">{fechaEnPalabrasRelativa(tarea.siguiente.check_in).toLowerCase()}</span> ({tarea.siguiente.guest_name}).</>
+                            : 'Después no hay nadie reservado de momento.'}
                     </p>
                 )}
             </div>

@@ -9,7 +9,7 @@ import {
     hoyISO, aFecha, aISO, fechaEnPalabras, fechaCorta,
 } from './ui';
 import {
-    telefonoParaWhatsapp, textoRecordatorio, apuntarRecordatorio, recordatorioEnPalabras,
+    telefonoParaWhatsapp, textoRecordatorio, asuntoRecordatorio, apuntarRecordatorio, recordatorioEnPalabras,
 } from './checkin/datos';
 import { correoReal } from './clienteClave';
 
@@ -168,7 +168,7 @@ const ParteViajerosPanel = ({ ir, params = {} }) => {
         if (lista.length > 0) {
             const { data: reservas } = await supabase
                 .from('guest_bookings')
-                .select('id, guest_phone, guest_email, recordatorio_parte_at, recordatorio_parte_via')
+                .select('id, guest_phone, guest_email, idioma, recordatorio_parte_at, recordatorio_parte_via')
                 .in('id', lista.map((f) => f.booking_id));
             const mapa = {};
             (reservas || []).forEach((r) => { mapa[r.id] = r; });
@@ -343,7 +343,11 @@ const ParteViajerosPanel = ({ ir, params = {} }) => {
                         {...{ ir, hoy, contactos, ocupado, preparados, destacada, refDestacada, mandarParte, confirmarMandado, verDocumento }} />
                     <Grupo titulo="Llegan en los próximos días" filas={grupos.pronto} vacio="Nadie llega esta quincena."
                         {...{ ir, hoy, contactos, ocupado, preparados, destacada, refDestacada, mandarParte, confirmarMandado, verDocumento }} />
+                    {/* Lo de dentro de meses, plegado: todavía no hay nada que
+                        hacer y alargaba la pantalla (auditoría 23-sep). Si se
+                        llega aquí desde un aviso de una de ellas, se abre. */}
                     <Grupo titulo="Más adelante" filas={grupos.luego} vacio={null}
+                        plegado={!grupos.luego.some((f) => f.booking_id === destacada)}
                         {...{ ir, hoy, contactos, ocupado, preparados, destacada, refDestacada, mandarParte, confirmarMandado, verDocumento }} />
                 </>
             )}
@@ -351,8 +355,29 @@ const ParteViajerosPanel = ({ ir, params = {} }) => {
     );
 };
 
-const Grupo = ({ titulo, filas, vacio, ...resto }) => {
+const Grupo = ({ titulo, filas, vacio, plegado = false, ...resto }) => {
+    const [abierto, setAbierto] = useState(!plegado);
     if (!filas || (filas.length === 0 && !vacio)) return null;
+    if (!abierto && filas.length > 0) {
+        return (
+            <section className="mb-8">
+                <button
+                    type="button"
+                    onClick={() => setAbierto(true)}
+                    aria-expanded="false"
+                    className="w-full text-left bg-white rounded-3xl border border-gray-200 shadow-sm px-5 py-4 min-h-[64px] flex items-center gap-3 hover:bg-rural-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-rural-600/30"
+                >
+                    <span className="flex-1 min-w-0">
+                        <span className="block text-lg font-bold text-text-primary">{titulo}</span>
+                        <span className="block text-sm text-gray-600">
+                            {filas.length} {filas.length === 1 ? 'reserva' : 'reservas'} · todavía no toca pedirles nada
+                        </span>
+                    </span>
+                    <span className="text-sm font-semibold text-rural-700">Ver</span>
+                </button>
+            </section>
+        );
+    }
     return (
         <section className="mb-8">
             <h2 className="text-sm uppercase tracking-[0.15em] font-bold text-gray-500 mb-3">{titulo}</h2>
@@ -376,6 +401,8 @@ const FilaReserva = ({
     const tel = telefonoParaWhatsapp(contacto.guest_phone);
     // Un correo de relleno no es un buzón: sin él, no se ofrece «Por correo».
     const correo = correoReal(contacto.guest_email);
+    // El recado sale en su idioma (el de su ficha); el panel sigue en castellano.
+    const conIdioma = { ...fila, idioma: contacto.idioma };
     const [recordado, setRecordado] = useState({
         at: contacto.recordatorio_parte_at, via: contacto.recordatorio_parte_via,
     });
@@ -395,14 +422,14 @@ const FilaReserva = ({
     const hayQueMandarloAMano = fila.estado_envio === 'error' || String(fila.check_in) < hoy;
 
     const abrirWhatsapp = () => {
-        window.open(`https://wa.me/${tel}?text=${encodeURIComponent(textoRecordatorio(fila))}`,
+        window.open(`https://wa.me/${tel}?text=${encodeURIComponent(textoRecordatorio(conIdioma))}`,
             '_blank', 'noopener');
         apuntar('whatsapp');
     };
     const abrirCorreo = () => {
-        const asunto = 'Los datos que nos piden antes de tu llegada';
+        const asunto = asuntoRecordatorio(contacto.idioma);
         window.location.href =
-            `mailto:${encodeURIComponent(correo)}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(textoRecordatorio(fila))}`;
+            `mailto:${encodeURIComponent(correo)}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(textoRecordatorio(conIdioma))}`;
         apuntar('correo');
     };
 
@@ -515,6 +542,11 @@ const FilaReserva = ({
             {!s.mandado && s.listo && !esperandoConfirmar && !hayQueMandarloAMano && (
                 <p className="mt-3 text-sm text-gray-500">
                     Están todos. El parte se manda solo el día que entran: no tienes que hacer nada.
+                </p>
+            )}
+            {!s.listo && !s.noTocaAun && contacto.idioma && contacto.idioma !== 'es' && (
+                <p className="mt-2 text-sm text-gray-600">
+                    El recordatorio le llega en {{ en: 'inglés', de: 'alemán', fr: 'francés' }[contacto.idioma]}: dice lo mismo que en castellano.
                 </p>
             )}
             {!s.listo && recordado.at && (

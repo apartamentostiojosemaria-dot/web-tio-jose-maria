@@ -113,13 +113,16 @@ const PanelHome = ({ ir, perfil, secciones = [] }) => {
                 {nombre && <p className="text-base text-gray-600 mt-1">{saludo()}, {nombre}.</p>}
             </section>
 
-            {/* ---------- Llegan y se van ---------- */}
+            {/* ---------- Llegan y se van: UNA tarjeta ----------
+                Antes eran dos tarjetas más el aviso del móvil, y «Cosas por
+                hacer» empezaba en el píxel 731 de 753 del móvil: lo urgente no
+                se veía sin bajar (auditoría 23-sep). */}
             {llegan.length === 0 && seVan.length === 0 ? (
                 <Tarjeta>
                     <p className="text-lg text-text-primary">Hoy no llega ni se va nadie.</p>
                 </Tarjeta>
             ) : (
-                <div className="space-y-4">
+                <Tarjeta>
                     <ListaDelDia
                         titulo="Llegan hoy"
                         icono={ArrowDownRight}
@@ -128,6 +131,7 @@ const PanelHome = ({ ir, perfil, secciones = [] }) => {
                         vacio="Hoy no llega nadie."
                         ir={ir}
                     />
+                    <div className="border-t border-gray-100 my-3 -mx-5" />
                     <ListaDelDia
                         titulo="Se van hoy"
                         icono={ArrowUpRight}
@@ -136,11 +140,19 @@ const PanelHome = ({ ir, perfil, secciones = [] }) => {
                         vacio="Hoy no se va nadie."
                         ir={ir}
                     />
-                </div>
+                </Tarjeta>
             )}
 
-            {/* ---------- Que te avise el móvil (solo hasta que esté activado) ---------- */}
-            <AvisosMovil />
+            {/* ---------- Lo que hay que hacer, justo debajo ---------- */}
+            {avisos.length > 0 && (
+                <section aria-labelledby="pend-t" className="space-y-3">
+                    <h3 id="pend-t" className="text-base font-bold text-text-primary">Cosas por hacer</h3>
+                    {avisos.map((a) => (
+                        <Aviso key={a.clave} tono={a.tono} titulo={a.titulo} texto={a.texto}
+                            icono={a.icono} accion={{ texto: a.accion, onClick: () => ir(a.seccion, a.params) }} />
+                    ))}
+                </section>
+            )}
 
             {/* ---------- El sistema: solo si algo no funciona ---------- */}
             {sistema.length > 0 && (
@@ -153,19 +165,14 @@ const PanelHome = ({ ir, perfil, secciones = [] }) => {
                 </section>
             )}
 
-            {/* ---------- Avisos: solo si hay algo ---------- */}
-            {avisos.length > 0 && (
-                <section aria-labelledby="pend-t" className="space-y-3">
-                    <h3 id="pend-t" className="text-base font-bold text-text-primary">Cosas por hacer</h3>
-                    {avisos.map((a) => (
-                        <Aviso key={a.clave} tono={a.tono} titulo={a.titulo} texto={a.texto}
-                            icono={a.icono} accion={{ texto: a.accion, onClick: () => ir(a.seccion, a.params) }} />
-                    ))}
-                </section>
-            )}
+            {/* ---------- Que te avise el móvil (solo hasta que esté activado) ----------
+                Es un ajuste de una vez: va detrás de lo del día. */}
+            <AvisosMovil />
 
-            {/* ---------- Todo lo demás, a la vista ---------- */}
-            <section aria-labelledby="ir-t" className="pt-2">
+            {/* ---------- Todo lo demás, a la vista ----------
+                Solo en el móvil: en el ordenador ya está el menú de la
+                izquierda y esto lo repetía (524 px). */}
+            <section aria-labelledby="ir-t" className="pt-2 md:hidden">
                 <h3 id="ir-t" className="text-base font-bold text-text-primary mb-3">¿Qué quieres hacer?</h3>
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                     {tarjetas.map((s) => (
@@ -232,7 +239,7 @@ function avisosDelSistema(s) {
 // La hora avisada solo importa el día que llegan (no el día que se van).
 const hoyDe = (r) => r.check_in;
 const ListaDelDia = ({ titulo, icono: Icono, horario, reservas, vacio, ir }) => (
-    <Tarjeta>
+    <div>
         <div className="flex items-center gap-2 mb-1">
             <Icono size={20} className="text-rural-600" aria-hidden="true" />
             <h3 className="font-bold text-lg text-text-primary">{titulo}</h3>
@@ -267,7 +274,7 @@ const ListaDelDia = ({ titulo, icono: Icono, horario, reservas, vacio, ir }) => 
                 </ul>
             </>
         )}
-    </Tarjeta>
+    </div>
 );
 
 // ============================================================
