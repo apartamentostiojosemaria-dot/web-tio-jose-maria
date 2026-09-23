@@ -336,6 +336,38 @@ export const pendienteDe = (r) => {
     return Math.max(0, (Number(r.total_price) || 0) - cobradoDe(r));
 };
 
+// ---------- Quién paga lo que falta ----------
+// (auditoría 23-sep) «Pendiente de cobrar 2.688,50 €» sumaba lo que pagan
+// Booking y Airbnb con lo que debe una persona: 2.033,50 € no se le cobran a
+// nadie. Estas tres dicen, en un solo sitio, quién paga, cuánto y cuándo.
+
+/** Lo cobra el portal al huésped y te lo abona: a la persona no se le pide nada. */
+export const loPagaElPortal = (r) => {
+    if (!r) return false;
+    const canal = (r.channel || '').toLowerCase();
+    const metodo = (r.payment_method || '').toLowerCase();
+    return r.payment_type === 'PLATF'
+        || ['booking', 'ota', 'airbnb'].includes(metodo)
+        || ['airbnb', 'holidu'].includes(canal);
+};
+
+/** Lo que te llega del portal: lo que falta menos su comisión. */
+export const netoDelPortal = (r) =>
+    Math.max(0, Math.round((pendienteDe(r) - (Number(r?.commission_amount) || 0)) * 100) / 100);
+
+/** Desde qué día paga el portal (AAAA-MM-DD). Booking: su tarjeta; Airbnb y Holidu: el día después de entrar. */
+export const cuandoPagaElPortal = (r) => {
+    if (!r) return null;
+    if (r.vcc_chargeable_from) return String(r.vcc_chargeable_from).slice(0, 10);
+    if (!r.check_in) return null;
+    const [a, m, d] = String(r.check_in).slice(0, 10).split('-').map(Number);
+    const f = new Date(Date.UTC(a, m - 1, d + 1));
+    return f.toISOString().slice(0, 10);
+};
+
+/** El portal paga con una tarjeta que cobras TÚ (Booking); los demás te lo ingresan solos. */
+export const seCobraConTarjetaDelPortal = (r) => !!r?.vcc_chargeable_from;
+
 /**
  * Nombre de por donde ha venido la reserva, dicho como lo diria ella.
  * Las claves son EXACTAMENTE las de guest_bookings_channel_check

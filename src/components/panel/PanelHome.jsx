@@ -5,7 +5,8 @@ import { ArrowDownRight, ArrowUpRight, Shield, Euro, Brush, ChevronRight, Check,
 import {
     Tarjeta, Aviso, Cargando, formatoEuro,
     hoyISO, aISO, aFecha, fechaEnPalabrasRelativa, fechaCorta, saludo,
-    pendienteDe, canalSiImporta,
+    pendienteDe, canalSiImporta, loPagaElPortal, netoDelPortal, cuandoPagaElPortal,
+    seCobraConTarjetaDelPortal,
     HORA_ENTRADA, HORA_SALIDA, sumarDias, sinPruebas,
 } from './ui';
 import { recordatorioEnPalabras } from './checkin/datos';
@@ -339,6 +340,24 @@ async function construirAvisos(proximas, vencidas, limpiezasAtrasadas, hoy, dent
         const falta = pendienteDe(r);
         if (falta <= 0) return;
         const de = canalSiImporta(r);
+        // Lo que paga el portal no es una deuda del huésped: solo avisa cuando
+        // ya se puede cobrar la tarjeta de Booking. Airbnb y Holidu lo
+        // ingresan solos: nada que hacer (auditoría 23-sep).
+        if (loPagaElPortal(r)) {
+            const desde = cuandoPagaElPortal(r);
+            if (!seCobraConTarjetaDelPortal(r) || !desde || desde > hoy) return;
+            avisos.push({
+                clave: `cobro-${r.id}`,
+                tono: 'atencion',
+                icono: Euro,
+                titulo: `Ya se puede cobrar la tarjeta de Booking de ${r.guest_name || 'un huésped'}`,
+                texto: `${formatoEuro(netoDelPortal(r))} · llega el ${r.check_in.slice(8, 10)} a ${r.apartamento}.`,
+                accion: 'Cobrar la tarjeta',
+                seccion: 'reserva',
+                params: { reservaId: r.id, abrir: 'cobro' },
+            });
+            return;
+        }
         avisos.push({
             clave: `cobro-${r.id}`,
             tono: 'atencion',
@@ -377,6 +396,21 @@ async function construirAvisos(proximas, vencidas, limpiezasAtrasadas, hoy, dent
         const falta = pendienteDe(r);
         if (falta <= 0) return;
         const de = canalSiImporta(r);
+        // Ya se fue y el portal sigue sin pagar: lo que toca es mirar si ha
+        // llegado el ingreso y apuntarlo, no cobrarle al huésped.
+        if (loPagaElPortal(r)) {
+            avisos.push({
+                clave: `deuda-${r.id}`,
+                tono: 'atencion',
+                icono: Euro,
+                titulo: `¿Ha pagado ${de || 'el portal'} lo de ${r.guest_name || 'este huésped'}?`,
+                texto: `Tendrían que haberte pagado ${formatoEuro(netoDelPortal(r))}. Se fue el ${diaYMes(r.check_out)} de ${r.apartamento}. Si ya ha llegado, apúntalo.`,
+                accion: 'Apuntar el pago',
+                seccion: 'reserva',
+                params: { reservaId: r.id, abrir: 'cobro' },
+            });
+            return;
+        }
         avisos.push({
             clave: `deuda-${r.id}`,
             tono: 'atencion',

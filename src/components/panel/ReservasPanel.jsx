@@ -3,7 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { Search, PlusCircle, ChevronRight, BookMarked, X } from 'lucide-react';
 import {
     Boton, Aviso, Cargando, Vacio, Campo, claseInput,
-    aFecha, hoyISO, formatoEuro, cobradoDe, pendienteDe, canalSiImporta, sinPruebas,
+    aFecha, hoyISO, formatoEuro, cobradoDe, pendienteDe, canalSiImporta, sinPruebas, loPagaElPortal,
 } from './ui';
 
 // ============================================================
@@ -72,7 +72,7 @@ const ReservasPanel = ({ ir }) => {
             const [apart, res] = await Promise.all([
                 supabase.from('apartments').select('id, name'),
                 sinPruebas(supabase.from('guest_bookings')
-                    .select('id, guest_name, guest_phone, apartment_id, check_in, check_out, checkin_at, status, payment_status, total_price, paid_amount, pending_amount, channel, source, pax_count'))
+                    .select('id, guest_name, guest_phone, apartment_id, check_in, check_out, checkin_at, status, payment_status, total_price, paid_amount, pending_amount, channel, source, pax_count, payment_type, payment_method'))
                     .neq('status', 'hold')
                     .order('check_in', { ascending: false })
                     .limit(CUANTAS_TRAEMOS),
@@ -288,13 +288,13 @@ const Linea = ({ r, hoy, ir }) => {
                         <span className="block text-sm font-semibold text-rural-700">Llega hoy · todavía no ha entrado</span>
                     )}
                     <span className="sm:hidden block mt-2">
-                        <Etiqueta cancelada={cancelada} noShow={r.status === 'no_show'} falta={falta} cobrado={cobrado} />
+                        <Etiqueta cancelada={cancelada} noShow={r.status === 'no_show'} falta={falta} cobrado={cobrado} portal={loPagaElPortal(r) ? deFuera : ''} />
                     </span>
                 </span>
 
                 <span className="shrink-0 flex items-center gap-2">
                     <span className="hidden sm:block">
-                        <Etiqueta cancelada={cancelada} noShow={r.status === 'no_show'} falta={falta} cobrado={cobrado} />
+                        <Etiqueta cancelada={cancelada} noShow={r.status === 'no_show'} falta={falta} cobrado={cobrado} portal={loPagaElPortal(r) ? deFuera : ''} />
                     </span>
                     <ChevronRight size={20} className="text-gray-400" aria-hidden="true" />
                 </span>
@@ -304,11 +304,19 @@ const Linea = ({ r, hoy, ir }) => {
 };
 
 /** El dinero en corto, que es lo único que ella mira de un vistazo. */
-const Etiqueta = ({ cancelada, noShow, falta, cobrado }) => {
+const Etiqueta = ({ cancelada, noShow, falta, cobrado, portal }) => {
     if (cancelada) {
         return (
             <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-100 px-3 py-1.5 text-sm font-semibold text-gray-600">
                 {noShow ? 'No se presentaron' : 'Cancelada'}
+            </span>
+        );
+    }
+    // Lo que paga el portal no es una deuda: azul, no ámbar (auditoría 23-sep).
+    if (falta > 0 && portal) {
+        return (
+            <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-bold text-blue-900">
+                Lo paga {portal}
             </span>
         );
     }

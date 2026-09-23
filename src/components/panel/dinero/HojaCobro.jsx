@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Check, Link2, Copy, MessageCircle } from 'lucide-react';
-import { Hoja, Boton, Campo, claseInput, Aviso, formatoEuro, hoyISO } from '../ui';
+import { Hoja, Boton, Campo, claseInput, Aviso, formatoEuro, hoyISO, loPagaElPortal, nombreCanal } from '../ui';
 import { Opciones } from './ui';
 import { FORMAS_DE_PAGO, enlaceWhatsApp, textoRecordatorioCobro } from './formato';
 import { apuntarCobro, pedirEnlaceDePago, MOTIVOS_SIN_ENLACE } from './datos';
@@ -36,7 +36,7 @@ export default function HojaCobro({ abierta, reserva, pendiente, onCerrar, onCob
     useEffect(() => {
         if (!abierta) return;
         setImporte(falta > 0 ? String(falta).replace('.', ',') : '');
-        setForma(reserva?.channel === 'booking' ? 'booking' : reserva?.channel === 'holidu' ? 'ota' : 'transferencia');
+        setForma(reserva?.channel === 'booking' ? 'booking' : ['holidu', 'airbnb'].includes(reserva?.channel) ? 'ota' : 'transferencia');
         setFecha(hoyISO());
         setError(null);
         setEnlace(null);
@@ -85,6 +85,7 @@ export default function HojaCobro({ abierta, reserva, pendiente, onCerrar, onCob
     );
 
     const idFormas = React.useId();
+    const delPortal = loPagaElPortal(reserva);
 
     return (
         <Hoja
@@ -95,7 +96,9 @@ export default function HojaCobro({ abierta, reserva, pendiente, onCerrar, onCob
         >
             {falta > 0 && (
                 <p className="text-base text-gray-700">
-                    Falta por cobrar <strong className="text-amber-700">{formatoEuro(falta)}</strong>.
+                    {delPortal
+                        ? <>Esto lo paga <strong>{nombreCanal(reserva) || 'el portal'}</strong>, no el huésped. Apunta lo que te ha llegado.</>
+                        : <>Falta por cobrar <strong className="text-amber-700">{formatoEuro(falta)}</strong>.</>}
                 </p>
             )}
 
@@ -127,51 +130,54 @@ export default function HojaCobro({ abierta, reserva, pendiente, onCerrar, onCob
                 Apuntar el cobro
             </Boton>
 
-            {/* ---------- Enlace para pagar ---------- */}
-            <div className="border-t border-gray-100 pt-5">
-                <p className="text-base font-bold text-text-primary mb-1">¿Prefieres que lo pague con tarjeta?</p>
-                <p className="text-sm text-gray-600 mb-3">Le mandas un enlace y paga desde el móvil.</p>
+            {/* ---------- Enlace para pagar ----------
+                Solo si paga el huésped: lo del portal no se le pide a él. */}
+            {!delPortal && (
+                <div className="border-t border-gray-100 pt-5">
+                    <p className="text-base font-bold text-text-primary mb-1">¿Prefieres que lo pague con tarjeta?</p>
+                    <p className="text-sm text-gray-600 mb-3">Le mandas un enlace y paga desde el móvil.</p>
 
-                {!enlace ? (
-                    <Boton ancho variante="secundario" icono={Link2} onClick={pedirEnlace} cargando={pidiendoEnlace}>
-                        Mandarle un enlace para pagar
-                    </Boton>
-                ) : (
-                    <div className="space-y-3">
-                        {/* El enlace de Stripe son 700 caracteres de galimatias: en el
-                            movil ocupaba un tercio de la pantalla en letra de 14 px y
-                            empujaba los dos botones utiles fuera de la vista. Se dice
-                            que esta listo y se dan los botones; el enlace viaja en el
-                            portapapeles o en el WhatsApp, que es donde hace falta. */}
-                        <p className="text-base font-semibold text-rural-800 bg-rural-50 rounded-2xl p-3 border border-rural-200">
-                            Enlace listo. Mándaselo y, en cuanto pague, el cobro se apunta solo.
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                            <Boton variante="secundario" icono={Copy} onClick={copiar}>
-                                {copiado ? 'Copiado' : 'Copiar el enlace'}
-                            </Boton>
+                    {!enlace ? (
+                        <Boton ancho variante="secundario" icono={Link2} onClick={pedirEnlace} cargando={pidiendoEnlace}>
+                            Mandarle un enlace para pagar
+                        </Boton>
+                    ) : (
+                        <div className="space-y-3">
+                            {/* El enlace de Stripe son 700 caracteres de galimatias: en el
+                                movil ocupaba un tercio de la pantalla en letra de 14 px y
+                                empujaba los dos botones utiles fuera de la vista. Se dice
+                                que esta listo y se dan los botones; el enlace viaja en el
+                                portapapeles o en el WhatsApp, que es donde hace falta. */}
+                            <p className="text-base font-semibold text-rural-800 bg-rural-50 rounded-2xl p-3 border border-rural-200">
+                                Enlace listo. Mándaselo y, en cuanto pague, el cobro se apunta solo.
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                                <Boton variante="secundario" icono={Copy} onClick={copiar}>
+                                    {copiado ? 'Copiado' : 'Copiar el enlace'}
+                                </Boton>
+                                {waCobro && (
+                                    <Boton variante="secundario" icono={MessageCircle}
+                                        onClick={() => window.open(waCobro, '_blank', 'noopener')}>
+                                        Mandarlo por WhatsApp
+                                    </Boton>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {avisoEnlace && (
+                        <div className="mt-3 space-y-3">
+                            <Aviso tono="atencion" titulo={avisoEnlace} />
                             {waCobro && (
-                                <Boton variante="secundario" icono={MessageCircle}
+                                <Boton ancho variante="secundario" icono={MessageCircle}
                                     onClick={() => window.open(waCobro, '_blank', 'noopener')}>
-                                    Mandarlo por WhatsApp
+                                    Recordárselo por WhatsApp
                                 </Boton>
                             )}
                         </div>
-                    </div>
-                )}
-
-                {avisoEnlace && (
-                    <div className="mt-3 space-y-3">
-                        <Aviso tono="atencion" titulo={avisoEnlace} />
-                        {waCobro && (
-                            <Boton ancho variante="secundario" icono={MessageCircle}
-                                onClick={() => window.open(waCobro, '_blank', 'noopener')}>
-                                Recordárselo por WhatsApp
-                            </Boton>
-                        )}
-                    </div>
-                )}
-            </div>
+                    )}
+                </div>
+            )}
         </Hoja>
     );
 }

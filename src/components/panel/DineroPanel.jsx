@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Euro, ChevronRight, FileText } from 'lucide-react';
+import { Euro, ChevronRight, ChevronDown, FileText } from 'lucide-react';
 import {
     Boton, Tarjeta, Aviso, Cargando, Chip,
     formatoEuro, pendienteDe, canalSiImporta, nombreCanal, fechaCorta, hoyISO,
+    loPagaElPortal, netoDelPortal, cuandoPagaElPortal, seCobraConTarjetaDelPortal,
 } from './ui';
 import { CifraGrande } from './dinero/ui';
 import {
@@ -17,17 +18,21 @@ import HojaCobro from './dinero/HojaCobro';
 // ============================================================
 // Lo que Jesús pidió: que su madre vea claro qué se ha cobrado y qué falta.
 //
-// Arriba, las dos cifras grandes. Debajo, dos listas:
-//   · Pendiente de cobrar — lo que llega antes, primero, con su botón de cobrar.
-//   · Cobrado — los apuntes del mes que se esté mirando.
-// Y al final, pequeño, "Sin factura": reservas ya cobradas a las que no se
-// les ha hecho factura ni se ha marcado que no hace falta, para que la
-// lista no engañe.
+// Arriba, tres cifras (auditoría 23-sep: una sola «Pendiente de cobrar»
+// mezclaba lo que debe una persona con lo que pagan Booking y Airbnb; de
+// 2.688,50 € solo 655 € eran de alguien):
+//   · Te tienen que pagar los huéspedes — con su botón de cobrar.
+//   · Te pagarán los portales — lo ingresan ellos; plegado, con su fecha.
+//   · Cobrado — solo lo que YA ha llegado. Lo apuntado con fecha futura va
+//     aparte, «Por llegar».
+// Y al final, plegado, "Sin factura": reservas ya cobradas a las que no se
+// les ha hecho factura ni se ha marcado que no hace falta.
 //
 // Las canceladas NUNCA aparecen pidiendo dinero.
 // ============================================================
 
 const suma = (lista, de) => Math.round(lista.reduce((t, x) => t + (Number(de(x)) || 0), 0) * 100) / 100;
+const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
 
 const DineroPanel = ({ ir }) => {
     const [cargando, setCargando] = useState(true);
@@ -61,46 +66,71 @@ const DineroPanel = ({ ir }) => {
     if (cargando) return <Cargando texto="Echando cuentas…" />;
     if (error) return <Aviso tono="urgente" titulo={error} />;
 
-    const totalPendiente = suma(pendientes, pendienteDe);
-    const totalCobrado = suma(cobrosDelMes, (c) => c.amount);
+    const hoy = hoyISO();
+    const deHuespedes = pendientes.filter((r) => !loPagaElPortal(r));
+    const dePortales = pendientes.filter((r) => loPagaElPortal(r));
+    const totalHuespedes = suma(deHuespedes, pendienteDe);
+    const totalPortales = suma(dePortales, netoDelPortal);
+    const llegados = cobrosDelMes.filter((c) => String(c.paid_on) <= hoy);
+    const porLlegar = cobrosDelMes.filter((c) => String(c.paid_on) > hoy);
+    const totalCobrado = suma(llegados, (c) => c.amount);
     const esteMes = mes === mesDeHoy();
 
     return (
         <div className="space-y-6">
-            {/* ---------- Las dos cifras ---------- */}
-            <section className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* ---------- Las tres cifras ---------- */}
+            <section className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <CifraGrande
-                    etiqueta="Pendiente de cobrar" importe={totalPendiente} tono="pendiente"
-                    nota={pendientes.length === 0
-                        ? 'No falta cobrar nada.'
-                        : `De ${pendientes.length} ${pendientes.length === 1 ? 'reserva' : 'reservas'}.`}
+                    etiqueta="Te tienen que pagar los huéspedes" importe={totalHuespedes} tono="pendiente"
+                    nota={deHuespedes.length === 0 ? 'Nadie te debe nada.' : `De ${plural(deHuespedes.length, 'reserva', 'reservas')}.`}
+                />
+                <CifraGrande
+                    etiqueta="Te pagarán los portales" importe={totalPortales} tono="neutro"
+                    nota={dePortales.length === 0
+                        ? 'Ninguno te debe nada.'
+                        : `Booking, Airbnb… · ${plural(dePortales.length, 'reserva', 'reservas')}. Al huésped no se le cobra.`}
                 />
                 <CifraGrande
                     etiqueta={esteMes ? 'Cobrado este mes' : `Cobrado en ${mesEnPalabras(mes)}`}
                     importe={totalCobrado} tono="cobrado"
-                    nota={cobrosDelMes.length === 0
-                        ? 'Todavía no hay ningún cobro apuntado.'
-                        : `${cobrosDelMes.length} ${cobrosDelMes.length === 1 ? 'cobro' : 'cobros'}.`}
+                    nota={llegados.length === 0
+                        ? 'Todavía no ha llegado ningún pago.'
+                        : `${plural(llegados.length, 'pago', 'pagos')} que ya han llegado.`}
                 />
             </section>
 
-            {/* ---------- Pendiente de cobrar ---------- */}
+            {/* ---------- Lo que deben los huéspedes ---------- */}
             <section aria-labelledby="pend-t">
                 <h2 id="pend-t" className="font-serif text-2xl font-bold text-text-primary mb-1">
-                    Pendiente de cobrar
+                    Te tienen que pagar los huéspedes
                 </h2>
                 <p className="text-base text-gray-600 mb-3">Lo que llega antes, primero.</p>
 
-                {pendientes.length === 0 ? (
-                    <Tarjeta><p className="text-lg text-text-primary">No falta cobrar nada. Todo al día.</p></Tarjeta>
+                {deHuespedes.length === 0 ? (
+                    <Tarjeta><p className="text-lg text-text-primary">Ningún huésped te debe nada. Todo al día.</p></Tarjeta>
                 ) : (
                     <ul className="space-y-3">
-                        {pendientes.map((r) => (
+                        {deHuespedes.map((r) => (
                             <FilaPendiente key={r.id} reserva={r} ir={ir} onCobrar={() => setCobrando(r)} />
                         ))}
                     </ul>
                 )}
             </section>
+
+            {/* ---------- Lo que pagan los portales (plegado) ---------- */}
+            {dePortales.length > 0 && (
+                <Plegable
+                    titulo="Te pagarán los portales"
+                    resumen={`${plural(dePortales.length, 'reserva', 'reservas')} · ${formatoEuro(totalPortales)}`}
+                    explicacion="Lo cobran ellos al huésped y te lo pagan. Solo la tarjeta de Booking la cobras tú, desde su fecha."
+                >
+                    <ul className="divide-y divide-gray-100">
+                        {dePortales.map((r) => (
+                            <FilaPortal key={r.id} reserva={r} hoy={hoy} ir={ir} onCobrar={() => setCobrando(r)} />
+                        ))}
+                    </ul>
+                </Plegable>
+            )}
 
             {/* ---------- Cobrado ---------- */}
             <section aria-labelledby="cob-t">
@@ -109,7 +139,7 @@ const DineroPanel = ({ ir }) => {
                         <h2 id="cob-t" className="font-serif text-2xl font-bold text-text-primary">
                             {esteMes ? 'Cobrado este mes' : `Cobrado en ${mesEnPalabras(mes)}`}
                         </h2>
-                        <p className="text-base text-gray-600">Cada vez que te han pagado algo.</p>
+                        <p className="text-base text-gray-600">Cada pago que ya te ha llegado.</p>
                     </div>
                     <label className="shrink-0">
                         <span className="sr-only">Mirar otro mes</span>
@@ -126,76 +156,57 @@ const DineroPanel = ({ ir }) => {
                     </label>
                 </div>
 
-                {cobrosDelMes.length === 0 ? (
+                {llegados.length === 0 ? (
                     <Tarjeta>
                         <p className="text-lg text-text-primary">
-                            {esteMes ? 'Este mes todavía no te ha pagado nadie.' : 'Ese mes no hubo cobros.'}
+                            {esteMes ? 'Este mes todavía no te ha llegado ningún pago.' : 'Ese mes no hubo cobros.'}
                         </p>
                     </Tarjeta>
                 ) : (
-                    <Tarjeta className="p-0 overflow-hidden">
-                        <ul className="divide-y divide-gray-100">
-                            {cobrosDelMes.map((c) => (
-                                <li key={c.id}>
-                                    <button
-                                        type="button"
-                                        onClick={() => ir('reserva', { reservaId: c.booking_id })}
-                                        className="w-full text-left px-5 py-4 min-h-[72px] flex items-center gap-3 hover:bg-rural-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-rural-600/30"
-                                    >
-                                        <span className="flex-1 min-w-0">
-                                            <span className="block font-bold text-lg text-text-primary truncate">
-                                                {c.guest_bookings?.guest_name || 'Sin nombre'}
-                                            </span>
-                                            <span className="block text-base text-gray-600">
-                                                {diaMesYAno(c.paid_on)} · {nombreForma(c.method)}
-                                            </span>
-                                        </span>
-                                        <span className={`font-serif font-bold tabular-nums text-2xl shrink-0 ${Number(c.amount) < 0 ? 'text-red-700' : 'text-rural-700'}`}>
-                                            {formatoEuro(c.amount)}
-                                        </span>
-                                        <ChevronRight size={20} className="text-gray-400 shrink-0" aria-hidden="true" />
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    </Tarjeta>
+                    <ListaCobros cobros={llegados} ir={ir} />
+                )}
+
+                {porLlegar.length > 0 && (
+                    <div className="mt-4">
+                        <p className="text-base font-bold text-text-primary">Por llegar</p>
+                        <p className="text-sm text-gray-600 mb-2">
+                            Apuntados para un día que todavía no ha llegado. No se cuentan como cobrados.
+                        </p>
+                        <ListaCobros cobros={porLlegar} ir={ir} porLlegar />
+                    </div>
                 )}
             </section>
 
-            {/* ---------- Sin factura ---------- */}
+            {/* ---------- Sin factura (plegado) ---------- */}
             {sinFactura.length > 0 && (
-                <section aria-labelledby="sinf-t" className="pt-2">
-                    <h2 id="sinf-t" className="text-lg font-bold text-text-primary flex items-center gap-2">
-                        <FileText size={20} className="text-gray-500" aria-hidden="true" />
-                        Sin factura
-                    </h2>
-                    <p className="text-sm text-gray-600 mb-3">
-                        Ya te han pagado y todavía no les has hecho la factura. Si alguna no la necesita, márcalo en su ficha.
-                    </p>
-                    <Tarjeta className="p-0 overflow-hidden">
-                        <ul className="divide-y divide-gray-100">
-                            {sinFactura.map((r) => (
-                                <li key={r.id}>
-                                    <button
-                                        type="button"
-                                        onClick={() => ir('reserva', { reservaId: r.id, abrir: 'factura' })}
-                                        className="w-full text-left px-5 py-3 min-h-[60px] flex items-center gap-3 hover:bg-rural-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-rural-600/30"
-                                    >
-                                        <span className="flex-1 min-w-0">
-                                            <span className="block font-semibold text-base text-text-primary truncate">
-                                                {r.guest_name || 'Sin nombre'}
-                                            </span>
-                                            <span className="block text-sm text-gray-600">
-                                                {fechaCorta(r.check_in)} · {formatoEuro(r.paid_amount)} cobrados
-                                            </span>
+                <Plegable
+                    icono={FileText}
+                    titulo="Sin factura"
+                    resumen={`Faltan ${plural(sinFactura.length, 'factura', 'facturas')}`}
+                    explicacion="Ya te han pagado y todavía no les has hecho la factura. Si alguna no la necesita, márcalo en su ficha."
+                >
+                    <ul className="divide-y divide-gray-100">
+                        {sinFactura.map((r) => (
+                            <li key={r.id}>
+                                <button
+                                    type="button"
+                                    onClick={() => ir('reserva', { reservaId: r.id, abrir: 'factura' })}
+                                    className="w-full text-left px-5 py-3 min-h-[60px] flex items-center gap-3 hover:bg-rural-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-rural-600/30"
+                                >
+                                    <span className="flex-1 min-w-0">
+                                        <span className="block font-semibold text-base text-text-primary truncate">
+                                            {r.guest_name || 'Sin nombre'}
                                         </span>
-                                        <ChevronRight size={20} className="text-gray-400 shrink-0" aria-hidden="true" />
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    </Tarjeta>
-                </section>
+                                        <span className="block text-sm text-gray-600">
+                                            {fechaCorta(r.check_in)} · {formatoEuro(r.paid_amount)} cobrados
+                                        </span>
+                                    </span>
+                                    <ChevronRight size={20} className="text-gray-400 shrink-0" aria-hidden="true" />
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </Plegable>
             )}
 
             {/* ---------- Hoja de cobro, la misma que en la ficha ---------- */}
@@ -212,11 +223,91 @@ const DineroPanel = ({ ir }) => {
 
 // ============================================================
 
+/** Una lista que se ve cerrada, con su resumen, y se abre al tocarla. */
+const Plegable = ({ titulo, resumen, explicacion, icono: Icono, children }) => (
+    <details className="group bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+        <summary className="list-none cursor-pointer px-5 py-4 min-h-[64px] flex items-center gap-3 hover:bg-rural-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-rural-600/30">
+            {Icono && <Icono size={20} className="text-gray-500 shrink-0" aria-hidden="true" />}
+            <span className="flex-1 min-w-0">
+                <span className="block font-bold text-lg text-text-primary">{titulo}</span>
+                <span className="block text-base text-gray-600">{resumen}</span>
+            </span>
+            <span className="text-sm font-semibold text-rural-700 shrink-0 group-open:hidden">Ver</span>
+            <ChevronDown size={22} className="text-gray-400 shrink-0 transition-transform group-open:rotate-180" aria-hidden="true" />
+        </summary>
+        {explicacion && <p className="px-5 pb-3 text-sm text-gray-600">{explicacion}</p>}
+        <div className="border-t border-gray-100">{children}</div>
+    </details>
+);
+
+const ListaCobros = ({ cobros, ir, porLlegar = false }) => (
+    <Tarjeta className="p-0 overflow-hidden">
+        <ul className="divide-y divide-gray-100">
+            {cobros.map((c) => (
+                <li key={c.id}>
+                    <button
+                        type="button"
+                        onClick={() => ir('reserva', { reservaId: c.booking_id })}
+                        className="w-full text-left px-5 py-4 min-h-[72px] flex items-center gap-3 hover:bg-rural-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-rural-600/30"
+                    >
+                        <span className="flex-1 min-w-0">
+                            <span className="block font-bold text-lg text-text-primary truncate">
+                                {c.guest_bookings?.guest_name || 'Sin nombre'}
+                            </span>
+                            <span className="block text-base text-gray-600">
+                                {diaMesYAno(c.paid_on)} · {nombreForma(c.method)}
+                            </span>
+                        </span>
+                        <span className={`font-serif font-bold tabular-nums text-2xl shrink-0 ${
+                            porLlegar ? 'text-gray-500' : Number(c.amount) < 0 ? 'text-red-700' : 'text-rural-700'}`}>
+                            {formatoEuro(c.amount)}
+                        </span>
+                        <ChevronRight size={20} className="text-gray-400 shrink-0" aria-hidden="true" />
+                    </button>
+                </li>
+            ))}
+        </ul>
+    </Tarjeta>
+);
+
+/** Una reserva que paga el portal: cuánto, desde cuándo y, si ya toca, el botón. */
+const FilaPortal = ({ reserva, hoy, ir, onCobrar }) => {
+    const desde = cuandoPagaElPortal(reserva);
+    const yaToca = !!desde && desde <= hoy;
+    const conTarjeta = seCobraConTarjetaDelPortal(reserva);
+    const portal = nombreCanal(reserva) || 'El portal';
+    const neto = netoDelPortal(reserva);
+    let cuando = '';
+    if (desde && conTarjeta) cuando = yaToca ? ' · ya puedes cobrar su tarjeta' : ` · su tarjeta, desde el ${diaMesYAno(desde)}`;
+    else if (desde) cuando = ` · te lo ingresa hacia el ${diaMesYAno(desde)}`;
+
+    return (
+        <li className="px-5 py-4">
+            <button type="button" onClick={() => ir('reserva', { reservaId: reserva.id })}
+                className="w-full text-left rounded-2xl focus:outline-none focus-visible:ring-4 focus-visible:ring-rural-600/30">
+                <span className="flex items-start justify-between gap-3">
+                    <span className="min-w-0">
+                        <span className="block font-bold text-lg text-text-primary truncate">{reserva.guest_name || 'Sin nombre'}</span>
+                        <span className="block text-base text-gray-600">{reserva.apartamento} · llega el {diaMesYAno(reserva.check_in)}</span>
+                        <span className="block text-sm text-gray-600 mt-0.5">{portal} te paga {formatoEuro(neto)}{cuando}</span>
+                    </span>
+                    <span className="font-serif font-bold tabular-nums text-xl text-blue-900 shrink-0">{formatoEuro(neto)}</span>
+                </span>
+            </button>
+            {yaToca && (
+                <div className="mt-3">
+                    <Boton ancho variante="secundario" icono={Euro} onClick={onCobrar}>
+                        {conTarjeta ? `Cobrar la tarjeta de ${portal}` : `Ya te ha pagado ${portal}: apuntarlo`}
+                    </Boton>
+                </div>
+            )}
+        </li>
+    );
+};
+
+/** Lo que debe un huésped, con su botón de cobrar. */
 const FilaPendiente = ({ reserva, ir, onCobrar }) => {
     const falta = pendienteDe(reserva);
-    const deBooking = (reserva.channel || '').toLowerCase() === 'booking';
-    const comision = Number(reserva.commission_amount) || 0;
-    const neto = Math.max(0, (Number(reserva.total_price) || 0) - comision);
 
     return (
         <li>
@@ -247,14 +338,7 @@ const FilaPendiente = ({ reserva, ir, onCobrar }) => {
                 {canalSiImporta(reserva) && (
                     <div className="mt-3 flex flex-wrap gap-2">
                         <Chip tono="azul">Vino por {nombreCanal(reserva)}</Chip>
-                        {deBooking && <Chip tono="neutro">Booking te paga {formatoEuro(neto)}</Chip>}
                     </div>
-                )}
-
-                {deBooking && reserva.vcc_chargeable_from && (
-                    <p className="text-sm text-gray-600 mt-2">
-                        Booking paga a partir del {diaMesYAno(reserva.vcc_chargeable_from)}.
-                    </p>
                 )}
 
                 <div className="mt-4">

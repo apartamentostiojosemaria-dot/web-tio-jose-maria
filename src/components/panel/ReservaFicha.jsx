@@ -5,8 +5,9 @@ import {
 import {
     Boton, Tarjeta, Aviso, Cargando, Vacio, Chip, claseInput,
     formatoEuro, cobradoDe, pendienteDe, canalSiImporta, nombreCanal,
+    loPagaElPortal, netoDelPortal, cuandoPagaElPortal, seCobraConTarjetaDelPortal,
 } from './ui';
-import { LineaDinero, LoQuePagaBooking, SemaforoPolicia } from './dinero/ui';
+import { LineaDinero, LoQuePagaElPortal, SemaforoPolicia } from './dinero/ui';
 import {
     rangoEnPalabras, cobroEnPalabras, diaMesYAno, nombreForma,
     enlaceLlamar, enlaceWhatsApp,
@@ -21,6 +22,7 @@ import HojaCambiar from './dinero/HojaCambiar';
 import HojaCancelar from './dinero/HojaCancelar';
 import HojaNoShow from './dinero/HojaNoShow';
 import { claveDeCliente } from './clienteClave';
+import { recordatorioEnPalabras } from './checkin/datos';
 
 // ============================================================
 // ReservaFicha — la ficha de una reserva (sección 4.4 del plan)
@@ -120,9 +122,13 @@ const ReservaFicha = ({ ir, params = {} }) => {
     // reserva sigue viva. Con una anulada y sin sustituta, también falta.
     const faltaFactura = !factura && !reserva.invoice_not_needed && !cancelada && !noSePresento;
 
-    const deBooking = (reserva.channel || '').toLowerCase() === 'booking';
+    // Lo que paga el portal no se le cobra al huésped (auditoría 23-sep:
+    // salía «Cobrar 229,50 €» en reservas de Booking).
+    const delPortal = loPagaElPortal(reserva);
     const comision = Number(reserva.commission_amount) || 0;
-    const netoBooking = Math.max(0, total - comision);
+    const desdePortal = cuandoPagaElPortal(reserva);
+    const conTarjeta = seCobraConTarjetaDelPortal(reserva);
+    const yaPagaElPortal = !!desdePortal && desdePortal <= hoy;
 
     // Debajo de "Cobrado" se dice CÓMO y CUÁNDO. Con un solo cobro es la
     // frase del plan ("transferencia, 8 de septiembre"); con varios hay que
@@ -137,6 +143,47 @@ const ReservaFicha = ({ ir, params = {} }) => {
     const tel = reserva.guest_phone;
     const wa = enlaceWhatsApp(tel);
     const llamar = enlaceLlamar(tel);
+
+    // El día que llegan y mientras están dentro, lo primero es la entrada:
+    // antes quedaba a pantalla y media, debajo del dinero (auditoría 23-sep).
+    const arribaLaPolicia = esElDia && !seFueron && !cancelada && !noSePresento;
+    const bloquePolicia = (
+        <div>
+            {seFueron ? (
+                <div className="flex flex-wrap justify-center gap-2">
+                    <Chip tono="verde" icono={Check}>Entraron a las {horaDe(reserva.checkin_at)}</Chip>
+                    <Chip tono="neutro" icono={LogOut}>Se fueron a las {horaDe(reserva.checkout_at)}</Chip>
+                </div>
+            ) : entraron ? (
+                <>
+                    <div className="flex justify-center mb-2">
+                        <Chip tono="verde" icono={Check}>Entraron a las {horaDe(reserva.checkin_at)}</Chip>
+                    </div>
+                    <Boton ancho tamano="grande" variante="secundario" icono={LogOut} onClick={() => ir('checkin', { reservaId: reserva.id })}>
+                        Se han ido
+                    </Boton>
+                </>
+            ) : esElDia ? (
+                <Boton ancho tamano="grande" icono={parte?.completo ? Check : QrCode} onClick={() => ir('checkin', { reservaId: reserva.id })} disabled={cancelada || noSePresento}>
+                    {parte?.completo ? 'Terminar el check-in' : 'Hacer el check-in'}
+                </Boton>
+            ) : (
+                <Boton ancho tamano="grande" variante="secundario" icono={Shield} onClick={() => ir('checkin', { reservaId: reserva.id })} disabled={cancelada}>
+                    Datos de la policía
+                </Boton>
+            )}
+            {!cancelada && !noSePresento && (
+                <div className="mt-2 flex justify-center">
+                    <SemaforoPolicia parte={parte} />
+                </div>
+            )}
+            {!cancelada && !noSePresento && !entraron && parte?.faltan && reserva.recordatorio_parte_at && (
+                <p className="mt-2 text-center text-sm font-semibold text-rural-700">
+                    {recordatorioEnPalabras(reserva.recordatorio_parte_at, reserva.recordatorio_parte_via)}.
+                </p>
+            )}
+        </div>
+    );
 
     return (
         <div className="space-y-6">
@@ -190,6 +237,8 @@ const ReservaFicha = ({ ir, params = {} }) => {
                 </div>
             </section>
 
+            {arribaLaPolicia && <section>{bloquePolicia}</section>}
+
             {cancelada && (
                 <Aviso tono="info" titulo="Esta reserva está cancelada."
                     texto="Las fechas están libres y no se le pide dinero." />
@@ -208,16 +257,20 @@ const ReservaFicha = ({ ir, params = {} }) => {
                 />
                 <LineaDinero
                     etiqueta="Pendiente" importe={pendiente} destacada
-                    tono={pendiente > 0 ? 'pendiente' : 'cobrado'}
-                    detalle={pendiente > 0 ? null : 'No falta nada por cobrar'}
+                    tono={pendiente > 0 ? (delPortal ? 'neutro' : 'pendiente') : 'cobrado'}
+                    detalle={pendiente <= 0
+                        ? 'No falta nada por cobrar'
+                        : delPortal ? `Lo paga ${nombreCanal(reserva) || 'el portal'}, no el huésped` : null}
                 />
 
-                {deBooking && (
+                {delPortal && pendiente > 0 && !cancelada && (
                     <div className="mt-4">
-                        <LoQuePagaBooking
-                            neto={netoBooking}
+                        <LoQuePagaElPortal
+                            portal={nombreCanal(reserva) || 'el portal'}
+                            neto={netoDelPortal(reserva)}
                             comision={comision}
-                            desde={reserva.vcc_chargeable_from ? diaMesYAno(reserva.vcc_chargeable_from) : null}
+                            desde={desdePortal ? diaMesYAno(desdePortal) : null}
+                            conTarjeta={conTarjeta}
                         />
                     </div>
                 )}
@@ -272,45 +325,30 @@ const ReservaFicha = ({ ir, params = {} }) => {
 
             {/* ---------- Los botones grandes ---------- */}
             <section className="space-y-3">
-                <div>
-                    {seFueron ? (
-                        <div className="flex flex-wrap justify-center gap-2">
-                            <Chip tono="verde" icono={Check}>Entraron a las {horaDe(reserva.checkin_at)}</Chip>
-                            <Chip tono="neutro" icono={LogOut}>Se fueron a las {horaDe(reserva.checkout_at)}</Chip>
-                        </div>
-                    ) : entraron ? (
-                        <>
-                            <div className="flex justify-center mb-2">
-                                <Chip tono="verde" icono={Check}>Entraron a las {horaDe(reserva.checkin_at)}</Chip>
-                            </div>
-                            <Boton ancho tamano="grande" variante="secundario" icono={LogOut} onClick={() => ir('checkin', { reservaId: reserva.id })}>
-                                Se han ido
-                            </Boton>
-                        </>
-                    ) : esElDia ? (
-                        <Boton ancho tamano="grande" icono={parte?.completo ? Check : QrCode} onClick={() => ir('checkin', { reservaId: reserva.id })} disabled={cancelada || noSePresento}>
-                            {parte?.completo ? 'Terminar el check-in' : 'Hacer el check-in'}
-                        </Boton>
-                    ) : (
-                        <Boton ancho tamano="grande" variante="secundario" icono={Shield} onClick={() => ir('checkin', { reservaId: reserva.id })} disabled={cancelada}>
-                            Datos de la policía
-                        </Boton>
-                    )}
-                    {!cancelada && !noSePresento && (
-                        <div className="mt-2 flex justify-center">
-                            <SemaforoPolicia parte={parte} />
-                        </div>
-                    )}
-                </div>
+                {!arribaLaPolicia && bloquePolicia}
 
                 {/* Regla (Jesús, 20-sep): un botón grande solo cuando hay algo
                     que hacer. Cobrado del todo → no hay «Cobrar»; factura hecha
                     → no hay «Factura» (se ve arriba, en su chip). Cancelada o
                     no presentada → ninguno de los dos. */}
-                {pendiente > 0 && !cancelada && !noSePresento && (
+                {pendiente > 0 && !cancelada && !noSePresento && !delPortal && (
                     <Boton ancho tamano="grande" icono={Euro} onClick={() => setHoja('cobro')}>
                         Cobrar {formatoEuro(pendiente)}
                     </Boton>
+                )}
+                {/* Del portal: nada que cobrar al huésped. Booking deja cobrar su
+                    tarjeta desde su fecha; Airbnb y Holidu lo ingresan solos, y
+                    solo queda apuntar que ha llegado. */}
+                {pendiente > 0 && !cancelada && !noSePresento && delPortal && yaPagaElPortal && (
+                    conTarjeta ? (
+                        <Boton ancho tamano="grande" icono={Euro} onClick={() => setHoja('cobro')}>
+                            Cobrar la tarjeta de {nombreCanal(reserva) || 'Booking'}
+                        </Boton>
+                    ) : (
+                        <Boton ancho variante="secundario" icono={Euro} onClick={() => setHoja('cobro')}>
+                            Ya te ha pagado {nombreCanal(reserva) || 'el portal'}: apuntarlo
+                        </Boton>
+                    )
                 )}
 
                 {reserva.factura_pedida_at && !factura && (

@@ -66,16 +66,24 @@ export function LineaDinero({ etiqueta, importe, detalle, tono = 'neutro', desta
     );
 }
 
-/** La línea de "Te pagará Booking", que no es ni total ni cobrado. */
-export function LoQuePagaBooking({ neto, comision, desde }) {
+/**
+ * Lo que paga el portal (Booking, Airbnb, Holidu), que no es ni total ni
+ * cobrado: a la persona no se le pide nada.
+ */
+export function LoQuePagaElPortal({ portal, neto, comision, desde, conTarjeta }) {
     return (
         <div className="rounded-2xl bg-blue-50 border border-blue-200 p-4">
             <p className="text-base font-bold text-blue-900 leading-snug">
-                Te pagará Booking: <Dinero importe={neto} className="text-blue-900" />
+                Te pagará {portal}: <Dinero importe={neto} className="text-blue-900" />
             </p>
             <p className="text-sm text-blue-900/80 mt-1 leading-snug">
-                Ya descontada su comisión{comision > 0 ? ` de ${formatoEuro(comision)}` : ''}.
-                {desde ? ` Booking paga a partir del ${desde}.` : ''}
+                Al huésped no se le cobra nada.
+                {comision > 0 ? ` Ya descontada su comisión de ${formatoEuro(comision)}.` : ''}
+                {desde
+                    ? (conTarjeta
+                        ? ` Su tarjeta se puede cobrar a partir del ${desde}.`
+                        : ` Te lo ingresa hacia el ${desde}.`)
+                    : ''}
             </p>
         </div>
     );
