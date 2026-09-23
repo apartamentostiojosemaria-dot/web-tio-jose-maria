@@ -13,7 +13,6 @@ const CATEGORY_OPTIONS = [
     { value: 'llegada', label: 'Llegada', icon: MapPin },
     { value: 'apartamento', label: 'Apartamento', icon: Key },
     { value: 'wifi', label: 'WiFi', icon: Wifi },
-    { value: 'chimenea', label: 'Chimenea', icon: Flame },
     { value: 'cocina', label: 'Cocina', icon: UtensilsCrossed },
     { value: 'calefaccion', label: 'Calefaccion', icon: ThermometerSun },
     { value: 'limpieza', label: 'Limpieza', icon: Shirt },

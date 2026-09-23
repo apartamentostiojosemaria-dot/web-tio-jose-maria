@@ -8,7 +8,10 @@ import {
     Boton, Aviso, Cargando, Vacio, Chip,
     hoyISO, aFecha, aISO, fechaEnPalabras, fechaCorta,
 } from './ui';
-import { telefonoParaWhatsapp, textoRecordatorio } from './checkin/datos';
+import {
+    telefonoParaWhatsapp, textoRecordatorio, apuntarRecordatorio, recordatorioEnPalabras,
+} from './checkin/datos';
+import { correoReal } from './clienteClave';
 
 // ============================================================
 // ParteViajerosPanel — «Datos de la policía»
@@ -165,7 +168,7 @@ const ParteViajerosPanel = ({ ir, params = {} }) => {
         if (lista.length > 0) {
             const { data: reservas } = await supabase
                 .from('guest_bookings')
-                .select('id, guest_phone, guest_email')
+                .select('id, guest_phone, guest_email, recordatorio_parte_at, recordatorio_parte_via')
                 .in('id', lista.map((f) => f.booking_id));
             const mapa = {};
             (reservas || []).forEach((r) => { mapa[r.id] = r; });
@@ -336,7 +339,7 @@ const ParteViajerosPanel = ({ ir, params = {} }) => {
                 />
             ) : (
                 <>
-                    <Grupo titulo="Están aquí ahora" filas={grupos.dentro} vacio="Ahora mismo no hay nadie alojado."
+                    <Grupo titulo="Hoy y los que ya están" filas={grupos.dentro} vacio="Ahora mismo no hay nadie alojado."
                         {...{ ir, hoy, contactos, ocupado, preparados, destacada, refDestacada, mandarParte, confirmarMandado, verDocumento }} />
                     <Grupo titulo="Llegan en los próximos días" filas={grupos.pronto} vacio="Nadie llega esta quincena."
                         {...{ ir, hoy, contactos, ocupado, preparados, destacada, refDestacada, mandarParte, confirmarMandado, verDocumento }} />
@@ -371,19 +374,36 @@ const FilaReserva = ({
     const s = semaforoDe(fila, hoy);
     const contacto = contactos[fila.booking_id] || {};
     const tel = telefonoParaWhatsapp(contacto.guest_phone);
-    const correo = contacto.guest_email;
+    // Un correo de relleno no es un buzón: sin él, no se ofrece «Por correo».
+    const correo = correoReal(contacto.guest_email);
+    const [recordado, setRecordado] = useState({
+        at: contacto.recordatorio_parte_at, via: contacto.recordatorio_parte_via,
+    });
+    useEffect(() => {
+        setRecordado({ at: contacto.recordatorio_parte_at, via: contacto.recordatorio_parte_via });
+    }, [contacto.recordatorio_parte_at, contacto.recordatorio_parte_via]);
+    const apuntar = async (via) => {
+        const at = await apuntarRecordatorio(fila.booking_id, via);
+        if (at) setRecordado({ at, via });
+    };
     const enMarcha = ocupado === fila.booking_id;
     const esDestacada = destacada === fila.booking_id;
     const esperandoConfirmar = !!preparados[fila.booking_id];
+    // El parte se manda SOLO cada mañana (cron tjm-parte-viajeros). El botón
+    // sale únicamente si algo ha fallado o ya han entrado y sigue sin irse:
+    // antes salía a los dos días de llegar y parecía tarea suya (23-sep).
+    const hayQueMandarloAMano = fila.estado_envio === 'error' || String(fila.check_in) < hoy;
 
     const abrirWhatsapp = () => {
         window.open(`https://wa.me/${tel}?text=${encodeURIComponent(textoRecordatorio(fila))}`,
             '_blank', 'noopener');
+        apuntar('whatsapp');
     };
     const abrirCorreo = () => {
         const asunto = 'Los datos que nos piden antes de tu llegada';
         window.location.href =
             `mailto:${encodeURIComponent(correo)}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(textoRecordatorio(fila))}`;
+        apuntar('correo');
     };
 
     return (
@@ -402,8 +422,9 @@ const FilaReserva = ({
                         {fila.apartment_name} · {s.total} {s.total === 1 ? 'persona' : 'personas'}
                     </p>
                     <p className="text-base text-gray-600">
-                        {fila.check_in <= hoy ? 'Está dentro desde el' : 'Llega el'}{' '}
-                        {fechaEnPalabras(fila.check_in)}
+                        {fila.check_in === hoy
+                            ? 'Llega hoy'
+                            : <>{fila.check_in < hoy ? 'Está dentro desde el' : 'Llega el'}{' '}{fechaEnPalabras(fila.check_in)}</>}
                     </p>
                 </div>
             </div>
@@ -477,7 +498,7 @@ const FilaReserva = ({
                     <Boton variante="suave" icono={FileDown} onClick={() => verDocumento(fila)} cargando={enMarcha} ancho>
                         Ver el papel
                     </Boton>
-                ) : s.listo || s.rellenos > 0 ? (
+                ) : (s.listo || s.rellenos > 0) && hayQueMandarloAMano ? (
                     <Boton icono={Send} onClick={() => mandarParte(fila)} cargando={enMarcha} ancho>
                         Mandar el parte
                     </Boton>
@@ -491,9 +512,14 @@ const FilaReserva = ({
                 </p>
             )}
 
-            {!s.mandado && s.listo && !esperandoConfirmar && (
+            {!s.mandado && s.listo && !esperandoConfirmar && !hayQueMandarloAMano && (
                 <p className="mt-3 text-sm text-gray-500">
-                    Están todos. Ya se puede mandar el parte.
+                    Están todos. El parte se manda solo el día que entran: no tienes que hacer nada.
+                </p>
+            )}
+            {!s.listo && recordado.at && (
+                <p className="mt-3 text-sm font-semibold text-rural-700">
+                    {recordatorioEnPalabras(recordado.at, recordado.via)}.
                 </p>
             )}
         </div>

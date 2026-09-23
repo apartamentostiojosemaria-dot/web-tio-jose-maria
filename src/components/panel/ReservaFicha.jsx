@@ -101,7 +101,11 @@ const ReservaFicha = ({ ir, params = {} }) => {
     // «No se han presentado» solo tiene sentido desde el día de llegada y si
     // nadie ha hecho la entrada; el resto del tiempo el botón no está.
     const hoy = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Madrid' });
-    const puedeSerNoShow = reserva.status === 'confirmed' && String(reserva.check_in) <= hoy && !reserva.checkin_at;
+    // El mismo día de llegada, solo cuando ya ha pasado la hora de entrada
+    // (16:00 a 20:00): a mediodía nadie «no se ha presentado» (23-sep).
+    const horaMadrid = Number(new Intl.DateTimeFormat('es-ES', { hour: '2-digit', hour12: false, timeZone: 'Europe/Madrid' }).format(new Date()));
+    const yaPasoLaHora = String(reserva.check_in) < hoy || (String(reserva.check_in) === hoy && horaMadrid >= 20);
+    const puedeSerNoShow = reserva.status === 'confirmed' && yaPasoLaHora && !reserva.checkin_at;
     // El check-in y los datos de la policía son la MISMA cosa (Jesús, 18-sep):
     // un solo botón que cambia con el momento. Antes del día: «Datos de la
     // policía» (QR, recordárselo, quién ha rellenado). El día de llegada:

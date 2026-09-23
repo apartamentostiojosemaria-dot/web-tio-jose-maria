@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Progreso } from './nueva-reserva/piezas';
 import Paso1Cuando from './nueva-reserva/Paso1Cuando';
 import Paso2Quien from './nueva-reserva/Paso2Quien';
@@ -61,7 +61,7 @@ const VALORES_INICIALES = {
     notas: '',
 };
 
-const NuevaReservaPanel = ({ ir, volver, params = {} }) => {
+const NuevaReservaPanel = ({ ir, volver, params = {}, protegerSalida }) => {
     const [paso, setPaso] = useState(1);
     const [valores, setValores] = useState(() => ({
         ...VALORES_INICIALES,
@@ -77,6 +77,20 @@ const NuevaReservaPanel = ({ ir, volver, params = {} }) => {
     // El apartamento elegido (con su nombre y sus plazas) lo deja el paso 1
     // dentro de `valores`; aquí solo se lee, no se vuelve a pedir a la base.
     const apartamento = valores.apartamento;
+
+    // A medias = ha pasado del paso 1 o ha escrito quién es, y aún no está
+    // guardada. Entonces, salir de aquí (menú, «Atrás» del móvil, cerrar la
+    // pestaña) pregunta antes: con el teléfono en la oreja es fácil tocar
+    // otra cosa y perderlo todo (23-sep).
+    const aMedias = !resultado && (paso > 1 || !!(valores.nombre || valores.telefono || valores.email));
+    useEffect(() => {
+        protegerSalida?.(aMedias ? 'Tienes una reserva a medio apuntar. Si sales ahora, se pierde lo que has escrito. ¿Salir de todas formas?' : null);
+        if (!aMedias) return undefined;
+        const alCerrar = (e) => { e.preventDefault(); e.returnValue = ''; };
+        window.addEventListener('beforeunload', alCerrar);
+        return () => window.removeEventListener('beforeunload', alCerrar);
+    }, [aMedias, protegerSalida]);
+    useEffect(() => () => protegerSalida?.(null), [protegerSalida]);
 
     const cambiar = useCallback((cambios) => {
         setValores((v) => ({ ...v, ...cambios }));

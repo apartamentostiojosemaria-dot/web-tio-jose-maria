@@ -83,6 +83,38 @@ export function textoRecordatorio({ guest_name, booking_code }, { enLaPuerta = f
     ].join('\n');
 }
 
+/**
+ * Apunta que se le ha recordado (al pulsar el botón: es lo único que podemos
+ * saber). Si falla, no se corta nada: el mensaje ya se ha abierto.
+ */
+export async function apuntarRecordatorio(reservaId, via) {
+    const { data, error } = await supabase.rpc('tjm_apuntar_recordatorio', {
+        p_booking_id: Number(reservaId), p_via: via,
+    });
+    if (error) {
+        // eslint-disable-next-line no-console
+        console.warn('No se pudo apuntar el recordatorio:', error.message);
+        return null;
+    }
+    return data;
+}
+
+/** «Se lo recordaste hoy a las 12:05 por WhatsApp» · «… el 21 de septiembre …». */
+export function recordatorioEnPalabras(cuando, via) {
+    if (!cuando) return '';
+    const f = new Date(cuando);
+    const tz = { timeZone: 'Europe/Madrid' };
+    const dia = f.toLocaleDateString('en-CA', tz);
+    const hoy = new Date().toLocaleDateString('en-CA', tz);
+    const ayer = new Date(Date.now() - 86400000).toLocaleDateString('en-CA', tz);
+    const hora = new Intl.DateTimeFormat('es-ES', { hour: '2-digit', minute: '2-digit', ...tz }).format(f);
+    const cuandoTxt = dia === hoy ? 'hoy'
+        : dia === ayer ? 'ayer'
+        : `el ${new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', ...tz }).format(f)}`;
+    const porTxt = via === 'correo' ? 'por correo' : 'por WhatsApp';
+    return `Se lo recordaste ${cuandoTxt} a las ${hora} ${porTxt}`;
+}
+
 export function abrirWhatsapp(telefono, texto) {
     const tel = telefonoParaWhatsapp(telefono);
     if (!tel) return false;

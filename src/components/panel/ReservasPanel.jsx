@@ -72,7 +72,7 @@ const ReservasPanel = ({ ir }) => {
             const [apart, res] = await Promise.all([
                 supabase.from('apartments').select('id, name'),
                 sinPruebas(supabase.from('guest_bookings')
-                    .select('id, guest_name, guest_phone, apartment_id, check_in, check_out, status, payment_status, total_price, paid_amount, pending_amount, channel, source, pax_count'))
+                    .select('id, guest_name, guest_phone, apartment_id, check_in, check_out, checkin_at, status, payment_status, total_price, paid_amount, pending_amount, channel, source, pax_count'))
                     .neq('status', 'hold')
                     .order('check_in', { ascending: false })
                     .limit(CUANTAS_TRAEMOS),
@@ -181,8 +181,8 @@ const ReservasPanel = ({ ir }) => {
                         vacíos): la pantalla no cambia de forma y ella no tiene que
                         buscar dónde ha ido a parar nada. Solo al buscar se esconden
                         los que no traen resultados, para no llenar de huecos. */}
-                    <Grupo titulo="Ahora mismo" pie="Están dentro" reservas={ahora} hoy={hoy} ir={ir}
-                        vacio={buscando ? null : 'Ahora mismo no hay nadie dentro.'} />
+                    <Grupo titulo="Ahora mismo" pie="Dentro o llegan hoy" reservas={ahora} hoy={hoy} ir={ir}
+                        vacio={buscando ? null : 'Ahora mismo no hay nadie dentro ni llega nadie.'} />
                     <Grupo titulo="Próximas" pie="Todavía no han llegado" reservas={proximas} hoy={hoy} ir={ir}
                         vacio={buscando ? null : 'No hay ninguna reserva por venir.'} />
                     <Grupo titulo="Pasadas" pie="Ya se fueron" reservas={pasadas} hoy={hoy} ir={ir}
@@ -280,6 +280,12 @@ const Linea = ({ r, hoy, ir }) => {
                     </span>
                     {deFuera && (
                         <span className="block text-sm text-gray-500">por {deFuera}</span>
+                    )}
+                    {/* Llegar hoy no es estar dentro: hasta que se hace el
+                        check-in, se dice que llegan (23-sep: Michael salía
+                        «dentro» a mediodía sin haber llegado). */}
+                    {!cancelada && r.check_in === hoy && !r.checkin_at && (
+                        <span className="block text-sm font-semibold text-rural-700">Llega hoy · todavía no ha entrado</span>
                     )}
                     <span className="sm:hidden block mt-2">
                         <Etiqueta cancelada={cancelada} noShow={r.status === 'no_show'} falta={falta} cobrado={cobrado} />

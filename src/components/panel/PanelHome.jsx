@@ -8,6 +8,7 @@ import {
     pendienteDe, canalSiImporta,
     HORA_ENTRADA, HORA_SALIDA, sumarDias, sinPruebas,
 } from './ui';
+import { recordatorioEnPalabras } from './checkin/datos';
 
 // ============================================================
 // PanelHome — la primera pantalla (sección 4.1 del plan)
@@ -318,10 +319,11 @@ async function construirAvisos(proximas, vencidas, limpiezasAtrasadas, hoy, dent
                     tono: r.check_in === hoy ? 'urgente' : 'atencion',
                     icono: Shield,
                     titulo: `Faltan los datos de la policía de ${r.guest_name || 'este huésped'}`,
-                    texto: r.check_in === hoy
+                    texto: (r.check_in === hoy
                         ? `Llega hoy a ${r.apartamento}.`
-                        : `Llega el ${r.check_in.slice(8, 10)} a ${r.apartamento}.`,
-                    accion: 'Recordárselo',
+                        : `Llega el ${r.check_in.slice(8, 10)} a ${r.apartamento}.`)
+                        + (r.recordatorio_parte_at ? ` ${recordatorioEnPalabras(r.recordatorio_parte_at, r.recordatorio_parte_via)}.` : ''),
+                    accion: r.recordatorio_parte_at ? 'Recordárselo otra vez' : 'Recordárselo',
                     // A «Datos de la policía»: ahí está el botón que le manda el
                     // enlace por WhatsApp o correo. La ficha de la reserva no lo
                     // tiene y «abrir: parte» ya no abría nada (23-sep).

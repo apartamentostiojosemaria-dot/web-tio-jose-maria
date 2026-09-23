@@ -57,7 +57,7 @@ const AddonsManager = () => {
             <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
                 <div>
                     <h1 className="font-serif text-3xl font-bold text-text-primary">Extras y servicios opcionales</h1>
-                    <p className="text-sm text-gray-600 mt-1">Cosas que el huésped puede añadir al hacer el precheckin: cesta de bienvenida, late check-out, desayuno, cuna, leña...</p>
+                    <p className="text-sm text-gray-600 mt-1">Cosas que el huésped puede añadir al hacer el precheckin: cesta de bienvenida, salida tardía, desayuno, cuna...</p>
                 </div>
                 <div className="flex gap-2">
                     <button onClick={() => setEditing(emptyAddon())}

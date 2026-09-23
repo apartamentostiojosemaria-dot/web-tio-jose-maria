@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
 import { supabase } from '../../lib/supabase';
 import {
     Sun, CalendarDays, PlusCircle, BookMarked, Users, Euro, Tag, Brush, Shield,
@@ -26,6 +26,9 @@ import { Cargando } from './ui';
 //   volver()               → vuelve a la pantalla anterior
 //   perfil                 → fila de `profiles` de quien ha entrado
 //   params                 → lo que le pasó quien la abrió (objeto, nunca null)
+//   protegerSalida(aviso)  → con un texto, pregunta antes de salir de la
+//                            pantalla (también con el «Atrás» del móvil);
+//                            con null, deja salir sin preguntar.
 // Secciones registradas abajo en SECCIONES (visibles) y OCULTAS (fichas).
 // ============================================================
 
@@ -66,27 +69,88 @@ const EN_LA_BARRA = ['inicio', 'calendario', 'reservas', 'dinero'];
 const TODAS = [...SECCIONES, ...OCULTAS];
 const buscarSeccion = (id) => TODAS.find((s) => s.id === id) || SECCIONES[0];
 
+// ---------- La pantalla vive en la dirección de la página ----------
+// /panel?s=reserva&p={"reservaId":60}. Así el «Atrás» del móvil vuelve a la
+// pantalla anterior en vez de sacarla del panel, y recargar la deja donde
+// estaba (23-sep: recargar la devolvía a «Hoy»).
+const leerDeLaDireccion = () => {
+    try {
+        const q = new URLSearchParams(window.location.search);
+        const seccion = q.get('s');
+        if (!seccion || !TODAS.some((x) => x.id === seccion)) return { seccion: 'inicio', params: {} };
+        const p = q.get('p');
+        return { seccion, params: p ? JSON.parse(p) : {} };
+    } catch {
+        return { seccion: 'inicio', params: {} };
+    }
+};
+
+const direccionDe = ({ seccion, params }) => {
+    if (seccion === 'inicio') return window.location.pathname;
+    const q = new URLSearchParams({ s: seccion });
+    // `abrir` solo sirve al entrar desde un aviso: no se guarda, o se
+    // reabriría la hoja cada vez que vuelve atrás o recarga.
+    const { abrir, ...resto } = params || {};
+    if (Object.keys(resto).length > 0) q.set('p', JSON.stringify(resto));
+    return `${window.location.pathname}?${q.toString()}`;
+};
+
 const PanelApp = ({ perfil }) => {
-    const [vista, setVista] = useState({ seccion: 'inicio', params: {} });
-    const [historial, setHistorial] = useState([]);
+    const [vista, setVista] = useState(leerDeLaDireccion);
     const [saliendo, setSaliendo] = useState(false);
+    // Una pantalla a medias (apuntar reserva) pone aquí qué se pierde si se va.
+    const salidaProtegida = useRef(null);
+    const protegerSalida = useCallback((aviso) => { salidaProtegida.current = aviso || null; }, []);
+    const puedeIrse = () => {
+        if (!salidaProtegida.current) return true;
+        // eslint-disable-next-line no-alert
+        const si = window.confirm(salidaProtegida.current);
+        if (si) salidaProtegida.current = null;
+        return si;
+    };
+
+    const vistaActual = useRef(vista);
+    useEffect(() => { vistaActual.current = vista; }, [vista]);
+
+    useEffect(() => {
+        window.history.replaceState({ panel: true, vista, profundidad: 0 }, '', direccionDe(vista));
+        const alVolver = (e) => {
+            if (!puedeIrse()) {
+                // Se queda: se deshace el paso atrás del navegador.
+                window.history.pushState({ panel: true, vista: vistaActual.current, profundidad: (e.state?.profundidad ?? 0) + 1 }, '', direccionDe(vistaActual.current));
+                return;
+            }
+            setVista(e.state?.vista || leerDeLaDireccion());
+            window.scrollTo({ top: 0 });
+        };
+        window.addEventListener('popstate', alVolver);
+        return () => window.removeEventListener('popstate', alVolver);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const ir = useCallback((seccion, params = {}) => {
-        setHistorial((h) => [...h.slice(-9), vista]);
-        setVista({ seccion, params: params || {} });
+        if (!puedeIrse()) return;
+        const nueva = { seccion, params: params || {} };
+        const profundidad = (window.history.state?.profundidad ?? 0) + 1;
+        window.history.pushState({ panel: true, vista: nueva, profundidad }, '', direccionDe(nueva));
+        setVista(nueva);
         window.scrollTo({ top: 0 });
-    }, [vista]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const volver = useCallback(() => {
-        setHistorial((h) => {
-            if (h.length === 0) {
-                setVista({ seccion: 'inicio', params: {} });
-                return h;
-            }
-            setVista(h[h.length - 1]);
-            return h.slice(0, -1);
-        });
+        // Si hay pantalla anterior dentro del panel, es el mismo «Atrás» del
+        // navegador; si se entró directo aquí, a «Hoy».
+        if ((window.history.state?.profundidad ?? 0) > 0) {
+            window.history.back();
+            return;
+        }
+        if (!puedeIrse()) return;
+        const inicio = { seccion: 'inicio', params: {} };
+        window.history.replaceState({ panel: true, vista: inicio, profundidad: 0 }, '', direccionDe(inicio));
+        setVista(inicio);
         window.scrollTo({ top: 0 });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -101,7 +165,7 @@ const PanelApp = ({ perfil }) => {
     };
 
     const actual = buscarSeccion(vista.seccion);
-    const props = { ir, volver, perfil, params: vista.params || {} };
+    const props = { ir, volver, perfil, params: vista.params || {}, protegerSalida };
     const nombre = (perfil?.full_name || perfil?.email || '').split(' ')[0];
     // Cambiar de vista: solo quien tiene el panel completo. La madre (staff) no lo ve.
     const esAdmin = perfil?.role === 'admin';
