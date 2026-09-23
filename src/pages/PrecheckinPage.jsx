@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
     ChevronLeft, ChevronRight, Check, Shield, Trash2, Eraser, Save,
@@ -6,19 +6,29 @@ import {
 } from 'lucide-react';
 import PageHead from '../components/seo/PageHead';
 import { supabase } from '../lib/supabase';
+import {
+    IDIOMAS, LOCALES, NOMBRES_IDIOMA, idiomaInicial, traductor,
+} from './precheckin/textos';
 
-// «2026-09-15» → «15 de septiembre de 2026». El huésped no lee fechas ISO.
-const fechaLegible = (iso) => {
+// Idioma de la pantalla: es · en · de · fr. Los textos viven en
+// `precheckin/textos.js`; aquí sólo se elige cuál se pinta. `tx` y no `t`
+// porque en todo el fichero `t` es el viajero.
+const IdiomaCtx = createContext({ lang: 'es', tx: traductor('es') });
+const useIdioma = () => useContext(IdiomaCtx);
+
+// «2026-09-15» → «15 de septiembre de 2026» (o «15 September 2026»…). El
+// huésped no lee fechas ISO.
+const fechaLegible = (iso, lang = 'es') => {
     if (!iso) return '';
     const d = new Date(`${iso}T00:00:00`);
-    return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+    return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString(LOCALES[lang] || 'es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
 };
 
 /** ['Jesús', 'María'] → «Jesús y María» · ['Ana'] → «Ana» */
-const listaNombres = (ns) => {
+const listaNombres = (ns, tx) => {
     const l = (ns || []).filter(Boolean);
-    if (l.length <= 1) return l[0] || 'una persona';
-    return `${l.slice(0, -1).join(', ')} y ${l[l.length - 1]}`;
+    if (l.length <= 1) return l[0] || tx('una_persona');
+    return `${l.slice(0, -1).join(', ')} ${tx('y')} ${l[l.length - 1]}`;
 };
 
 // /precheckin?code=TJM-XXXXXX
@@ -45,18 +55,20 @@ const listaNombres = (ns) => {
 // un documento equivocado en un parte policial. Se descarta a propósito.
 
 // ---------------------------------------------------------------------------
-// Países (ISO 3166-1: alfa-2 → alfa-3). El nombre en castellano lo pone el
-// propio navegador, así que la lista no se queda vieja ni hay que traducirla.
+// Países (ISO 3166-1: alfa-2 → alfa-3). El nombre, en el idioma de la
+// pantalla, lo pone el propio navegador (Intl.DisplayNames), así que la lista
+// no se queda vieja ni hay que traducirla. El código que se guarda es siempre
+// el alfa-3.
 // ---------------------------------------------------------------------------
 const ISO_PAISES = 'AD:AND,AE:ARE,AF:AFG,AG:ATG,AI:AIA,AL:ALB,AM:ARM,AO:AGO,AR:ARG,AS:ASM,AT:AUT,AU:AUS,AW:ABW,AX:ALA,AZ:AZE,BA:BIH,BB:BRB,BD:BGD,BE:BEL,BF:BFA,BG:BGR,BH:BHR,BI:BDI,BJ:BEN,BL:BLM,BM:BMU,BN:BRN,BO:BOL,BQ:BES,BR:BRA,BS:BHS,BT:BTN,BW:BWA,BY:BLR,BZ:BLZ,CA:CAN,CC:CCK,CD:COD,CF:CAF,CG:COG,CH:CHE,CI:CIV,CK:COK,CL:CHL,CM:CMR,CN:CHN,CO:COL,CR:CRI,CU:CUB,CV:CPV,CW:CUW,CX:CXR,CY:CYP,CZ:CZE,DE:DEU,DJ:DJI,DK:DNK,DM:DMA,DO:DOM,DZ:DZA,EC:ECU,EE:EST,EG:EGY,EH:ESH,ER:ERI,ES:ESP,ET:ETH,FI:FIN,FJ:FJI,FK:FLK,FM:FSM,FO:FRO,FR:FRA,GA:GAB,GB:GBR,GD:GRD,GE:GEO,GF:GUF,GG:GGY,GH:GHA,GI:GIB,GL:GRL,GM:GMB,GN:GIN,GP:GLP,GQ:GNQ,GR:GRC,GT:GTM,GU:GUM,GW:GNB,GY:GUY,HK:HKG,HN:HND,HR:HRV,HT:HTI,HU:HUN,ID:IDN,IE:IRL,IL:ISR,IM:IMN,IN:IND,IO:IOT,IQ:IRQ,IR:IRN,IS:ISL,IT:ITA,JE:JEY,JM:JAM,JO:JOR,JP:JPN,KE:KEN,KG:KGZ,KH:KHM,KI:KIR,KM:COM,KN:KNA,KP:PRK,KR:KOR,KW:KWT,KY:CYM,KZ:KAZ,LA:LAO,LB:LBN,LC:LCA,LI:LIE,LK:LKA,LR:LBR,LS:LSO,LT:LTU,LU:LUX,LV:LVA,LY:LBY,MA:MAR,MC:MCO,MD:MDA,ME:MNE,MF:MAF,MG:MDG,MH:MHL,MK:MKD,ML:MLI,MM:MMR,MN:MNG,MO:MAC,MP:MNP,MQ:MTQ,MR:MRT,MS:MSR,MT:MLT,MU:MUS,MV:MDV,MW:MWI,MX:MEX,MY:MYS,MZ:MOZ,NA:NAM,NC:NCL,NE:NER,NF:NFK,NG:NGA,NI:NIC,NL:NLD,NO:NOR,NP:NPL,NR:NRU,NU:NIU,NZ:NZL,OM:OMN,PA:PAN,PE:PER,PF:PYF,PG:PNG,PH:PHL,PK:PAK,PL:POL,PM:SPM,PN:PCN,PR:PRI,PS:PSE,PT:PRT,PW:PLW,PY:PRY,QA:QAT,RE:REU,RO:ROU,RS:SRB,RU:RUS,RW:RWA,SA:SAU,SB:SLB,SC:SYC,SD:SDN,SE:SWE,SG:SGP,SH:SHN,SI:SVN,SJ:SJM,SK:SVK,SL:SLE,SM:SMR,SN:SEN,SO:SOM,SR:SUR,SS:SSD,ST:STP,SV:SLV,SX:SXM,SY:SYR,SZ:SWZ,TC:TCA,TD:TCD,TG:TGO,TH:THA,TJ:TJK,TK:TKL,TL:TLS,TM:TKM,TN:TUN,TO:TON,TR:TUR,TT:TTO,TV:TUV,TW:TWN,TZ:TZA,UA:UKR,UG:UGA,US:USA,UY:URY,UZ:UZB,VA:VAT,VC:VCT,VE:VEN,VG:VGB,VI:VIR,VN:VNM,VU:VUT,WF:WLF,WS:WSM,XK:XKK,YE:YEM,YT:MYT,ZA:ZAF,ZM:ZMB,ZW:ZWE';
 
 /** Los que más salen, arriba del todo para no hacer scroll. */
 const PAISES_FRECUENTES = ['ESP', 'FRA', 'GBR', 'DEU', 'PRT', 'NLD', 'BEL', 'ITA'];
 
-function construirPaises() {
+function construirPaises(lang = 'es') {
     let nombreDe = (iso2, iso3) => iso3;
     try {
-        const dn = new Intl.DisplayNames(['es'], { type: 'region' });
+        const dn = new Intl.DisplayNames([lang], { type: 'region' });
         nombreDe = (iso2, iso3) => dn.of(iso2) || iso3;
     } catch { /* navegador viejo: se queda el código */ }
 
@@ -69,18 +81,13 @@ function construirPaises() {
         .filter(Boolean);
     const resto = todos
         .filter((p) => !PAISES_FRECUENTES.includes(p.code))
-        .sort((a, b) => a.name.localeCompare(b.name, 'es'));
+        .sort((a, b) => a.name.localeCompare(b.name, lang));
     return { frecuentes, resto };
 }
 
-const DOC_TYPES = [
-    { code: 'D', name: 'DNI español' },
-    { code: 'P', name: 'Pasaporte' },
-    { code: 'N', name: 'NIE / tarjeta de residencia' },
-    { code: 'E', name: 'Documento de identidad de otro país' },
-    { code: 'C', name: 'Permiso de conducir de la UE' },
-    { code: 'X', name: 'Otro documento oficial' },
-];
+// Códigos del tipo de documento. El nombre que ve el huésped está en
+// `textos.js` como `doc_<código>`.
+const DOC_TYPES = ['D', 'P', 'N', 'E', 'C', 'X'];
 
 // El catálogo entero, redactado desde el punto de vista del ADULTO, que es
 // quien contesta. La base ya lo admite (el CHECK trae los quince códigos más
@@ -88,22 +95,11 @@ const DOC_TYPES = [
 // function ya lo traduce a 'PM' al mandar el parte).
 //
 // Falta uno que era el más frecuente y no estaba: hermano/a.
+//
+// Aquí sólo los códigos, en el orden en que salen; el texto («Su padre o su
+// madre»…) está en `textos.js` como `par_<código>`.
 const PARENTESCOS = [
-    { code: 'PA', name: 'Su padre o su madre' },
-    { code: 'AB', name: 'Su abuelo o su abuela' },
-    { code: 'HR', name: 'Su hermano o su hermana' },
-    { code: 'TI', name: 'Su tío o su tía' },
-    { code: 'TU', name: 'Su tutor o su tutora' },
-    { code: 'SB', name: 'Su sobrino o su sobrina' },
-    { code: 'NI', name: 'Su nieto o su nieta' },
-    { code: 'HJ', name: 'Su hijo o su hija' },
-    { code: 'BA', name: 'Su bisabuelo o su bisabuela' },
-    { code: 'BN', name: 'Su bisnieto o su bisnieta' },
-    { code: 'CY', name: 'Su cónyuge' },
-    { code: 'CD', name: 'Su cuñado o su cuñada' },
-    { code: 'SG', name: 'Su suegro o su suegra' },
-    { code: 'YN', name: 'Su yerno o su nuera' },
-    { code: 'OT', name: 'Otra cosa' },
+    'PA', 'AB', 'HR', 'TI', 'TU', 'SB', 'NI', 'HJ', 'BA', 'BN', 'CY', 'CD', 'SG', 'YN', 'OT',
 ];
 
 // ---------------------------------------------------------------------------
@@ -159,50 +155,56 @@ const claveBorrador = (code) => `tjm-precheckin-${code}`;
 // Cuando el huésped abre el enlace antes de tiempo se le dice el día exacto
 // en que se abre (la llegada menos siete días), no un «no encontramos» que
 // parece que su reserva no existe.
+//
+// Devuelve la clave del texto y la fecha, no la frase: la frase se monta al
+// pintar, para que cambie si el huésped cambia de idioma.
 const seAbreEl = (checkIn) => {
-    const base = 'Este formulario se abre una semana antes de tu llegada';
-    if (!checkIn) return `${base}. Te avisaremos por correo.`;
+    const sinFecha = { clave: 'abre_sin_fecha' };
+    if (!checkIn) return sinFecha;
     // En UTC a propósito: restando en hora local, el paso a ISO se come un día
     // (en Madrid, el 16 a las 00:00 es el 15 a las 22:00Z).
     const d = new Date(`${checkIn}T00:00:00Z`);
-    if (Number.isNaN(d.getTime())) return `${base}. Te avisaremos por correo.`;
+    if (Number.isNaN(d.getTime())) return sinFecha;
     d.setUTCDate(d.getUTCDate() - 7);
-    return `${base}: el ${fechaLegible(d.toISOString().slice(0, 10))}. Te avisaremos por correo.`;
+    return { clave: 'abre_con_fecha', fecha: d.toISOString().slice(0, 10) };
 };
 
-/** Qué le falta a este viajero para poder seguir. */
+/**
+ * Qué le falta a este viajero para poder seguir.
+ * Devuelve CLAVES de `textos.js` (`err_*`), no frases: se traducen al pintar.
+ */
 function pegasDe(t, fechaEntrada) {
     const p = {};
-    if (!t.nombre.trim()) p.nombre = 'Pon el nombre';
-    if (!t.apellido_primero.trim()) p.apellido_primero = 'Pon el primer apellido';
-    if (!t.sexo) p.sexo = 'Elige una opción';
-    if (!t.fecha_nacimiento) p.fecha_nacimiento = 'Pon la fecha de nacimiento';
-    else if (t.fecha_nacimiento > hoyISO()) p.fecha_nacimiento = 'Esa fecha todavía no ha llegado';
-    if (!t.nacionalidad) p.nacionalidad = 'Elige el país';
-    if (!t.direccion_via.trim()) p.direccion_via = 'Pon la calle y el número';
-    if (!t.direccion_municipio.trim()) p.direccion_municipio = 'Pon el pueblo o la ciudad';
-    if (!t.direccion_pais) p.direccion_pais = 'Elige el país';
+    if (!t.nombre.trim()) p.nombre = 'err_nombre';
+    if (!t.apellido_primero.trim()) p.apellido_primero = 'err_apellido1';
+    if (!t.sexo) p.sexo = 'err_sexo';
+    if (!t.fecha_nacimiento) p.fecha_nacimiento = 'err_fecha';
+    else if (t.fecha_nacimiento > hoyISO()) p.fecha_nacimiento = 'err_fecha_futura';
+    if (!t.nacionalidad) p.nacionalidad = 'err_pais';
+    if (!t.direccion_via.trim()) p.direccion_via = 'err_calle';
+    if (!t.direccion_municipio.trim()) p.direccion_municipio = 'err_municipio';
+    if (!t.direccion_pais) p.direccion_pais = 'err_pais';
 
     const edad = edadEn(t.fecha_nacimiento, fechaEntrada);
     // El documento sólo se le pide a los mayores de edad: un niño puede no
     // tener ninguno todavía y sus datos los da quien lo acompaña.
     if ((edad === null || edad >= 18) && !t.numero_documento.trim()) {
-        p.numero_documento = 'Pon el número del documento';
+        p.numero_documento = 'err_documento';
     }
     // Con DNI o NIE, el Ministerio exige tambien el segundo apellido y el
     // numero de soporte: sin ellos rechaza el parte entero.
     const documentoEspanol = t.numero_documento.trim()
         && (t.tipo_documento === 'D' || t.tipo_documento === 'N');
     if (documentoEspanol && !t.soporte_documento.trim()) {
-        p.soporte_documento = 'Con DNI o NIE hace falta este número';
+        p.soporte_documento = 'err_soporte';
     }
     if (documentoEspanol && !t.apellido_segundo.trim()) {
-        p.apellido_segundo = 'Con DNI o NIE hace falta el segundo apellido';
+        p.apellido_segundo = 'err_apellido2';
     }
     // Firma: a partir de los CATORCE. No 16 ni 18. Lo dice el art. 4.2 del
     // RD 933/2021; el 16 que circula viene de una norma de 1959 ya superada.
-    if (edad !== null && edad >= EDAD_FIRMA && !t.firma_base64) p.firma_base64 = 'Falta la firma';
-    if (t.is_titular && !t.telefono_movil.trim()) p.telefono_movil = 'Pon un teléfono de contacto';
+    if (edad !== null && edad >= EDAD_FIRMA && !t.firma_base64) p.firma_base64 = 'err_firma';
+    if (t.is_titular && !t.telefono_movil.trim()) p.telefono_movil = 'err_movil';
     return p;
     // El PARENTESCO ya no se pide aquí. Va en el repaso y se guarda en la
     // ficha del ADULTO, no en la del menor (ver `pegasDeLosMenores`).
@@ -246,7 +248,8 @@ function pegasDeLosMenores(travelers, fechaEntrada) {
         );
         return {
             idx: i,
-            nombre: t.nombre || `Persona ${i + 1}`,
+            // Sin nombre todavía: «Persona N», que se pone al pintar (idioma).
+            nombre: t.nombre || '',
             adultoIdx: conQuien,
             hayAdulto,
             falta: !hayAdulto
@@ -279,16 +282,42 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
     const [params] = useSearchParams();
     const code = String(codigo || params.get('code') || '').toUpperCase();
 
+    // Idioma: `?lang=` manda (lo ponen los enlaces de WhatsApp y correo); si
+    // no, el del navegador si es en/de/fr; si no, castellano. Dentro del panel
+    // siempre castellano y sin selector: esa es la pantalla de casa.
+    const [lang, setLang] = useState(() => (dentroDelPanel ? 'es' : idiomaInicial(params.get('lang'))));
+    const tx = useMemo(() => traductor(lang), [lang]);
+    const idioma = useMemo(() => ({ lang, tx }), [lang, tx]);
+
+    const cambiarIdioma = (nuevo) => {
+        setLang(nuevo);
+        // Se apunta en la dirección para que al recargar siga en el mismo
+        // idioma. Sin pasar por el router, y conservando su `state`.
+        try {
+            const url = new URL(window.location.href);
+            url.searchParams.set('lang', nuevo);
+            window.history.replaceState(window.history.state, '', url);
+        } catch { /* da igual: sólo se pierde al recargar */ }
+    };
+
+    // <html lang="…"> con el idioma elegido mientras esta pantalla está abierta.
+    useEffect(() => {
+        if (dentroDelPanel) return undefined;
+        const antes = document.documentElement.lang;
+        document.documentElement.lang = lang;
+        return () => { document.documentElement.lang = antes; };
+    }, [lang, dentroDelPanel]);
+
     const [booking, setBooking] = useState(null);
     const [cargando, setCargando] = useState(true);
-    const [errorCarga, setErrorCarga] = useState(null);
+    const [errorCarga, setErrorCarga] = useState(null); // { clave, fecha? } de textos.js
 
     const [travelers, setTravelers] = useState([emptyTraveler(true)]);
     const [paso, setPaso] = useState(0);          // 0 = portada · 1..N = viajeros · N+1 = repaso
     const [tocados, setTocados] = useState({});   // campos que ya se han intentado
     const [accept, setAccept] = useState(false);
     const [enviando, setEnviando] = useState(false);
-    const [errorEnvio, setErrorEnvio] = useState(null);
+    const [errorEnvio, setErrorEnvio] = useState(null); // clave de textos.js
     const [hecho, setHecho] = useState(false);
     const [huboBorrador, setHuboBorrador] = useState(false);
     // Fichas que YA están en la base (otro móvil las mandó antes): cuántas y
@@ -297,13 +326,13 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
     const [guardadoAviso, setGuardadoAviso] = useState(false);
     const [pagador, setPagador] = useState({ quien: '', nombre: '' });
 
-    const paises = useMemo(construirPaises, []);
+    const paises = useMemo(() => construirPaises(lang), [lang]);
     const arriba = useRef(null);
 
     // ------------------------------------------------------------- cargar
     useEffect(() => {
         if (!code || !/^TJM-[A-Z0-9]{6}$/.test(code)) {
-            setErrorCarga('El enlace no es válido. Revisa el correo de confirmación o escríbenos.');
+            setErrorCarga({ clave: 'err_enlace' });
             setCargando(false);
             return;
         }
@@ -317,13 +346,13 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
             const ventana = data?.ventana || (data ? 'abierta' : null);
 
             if (!data) {
-                setErrorCarga('No encontramos esa reserva. Revisa el enlace o escríbenos.');
+                setErrorCarga({ clave: 'err_no_encontrada' });
             } else if (ventana === 'cancelada' || data.status === 'cancelled') {
-                setErrorCarga('Esta reserva está cancelada. Si crees que es un error, escríbenos.');
+                setErrorCarga({ clave: 'err_cancelada' });
             } else if (ventana === 'sin_confirmar' || !['confirmed', 'completed'].includes(data.status)) {
-                setErrorCarga('Esta reserva todavía no está confirmada. Termina el pago primero.');
+                setErrorCarga({ clave: 'err_sin_confirmar' });
             } else if (ventana === 'pasada') {
-                setErrorCarga('Esta estancia ya ha terminado. Si necesitas algo, escríbenos.');
+                setErrorCarga({ clave: 'err_pasada' });
             } else if (ventana === 'pronto'
                 || (data.check_in && new Date(data.check_in) - new Date() > 7 * 86400000)) {
                 setErrorCarga(seAbreEl(data.check_in));
@@ -497,10 +526,10 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
             alTerminar?.();
         } catch (err) {
             const msg = err.message || '';
-            if (msg.includes('precheckin_too_early')) setErrorEnvio('Todavía es pronto. Se abre una semana antes de tu llegada.');
-            else if (msg.includes('booking_status_invalid')) setErrorEnvio('La reserva no está confirmada todavía.');
-            else if (msg.includes('booking_already_past')) setErrorEnvio('Esa reserva ya ha terminado.');
-            else setErrorEnvio('No hemos podido guardarlo. Prueba otra vez en un momento o escríbenos.');
+            if (msg.includes('precheckin_too_early')) setErrorEnvio('env_pronto');
+            else if (msg.includes('booking_status_invalid')) setErrorEnvio('env_sin_confirmar');
+            else if (msg.includes('booking_already_past')) setErrorEnvio('env_pasada');
+            else setErrorEnvio('env_fallo');
         } finally {
             setEnviando(false);
         }
@@ -508,11 +537,12 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
 
     // ----------------------------------------------------------- pintado
     return (
+        <IdiomaCtx.Provider value={idioma}>
         <div className={dentroDelPanel ? 'bg-[#FCFBF9] rounded-2xl' : 'min-h-screen bg-[#FCFBF9]'}>
             {!dentroDelPanel && (
                 <PageHead
-                    title="Tus datos antes de llegar — Apartamentos Tío José María"
-                    description="Registro de viajeros obligatorio (Real Decreto 933/2021)."
+                    title={tx('meta_titulo')}
+                    description={tx('meta_descripcion')}
                     path="/precheckin"
                     noindex
                 />
@@ -522,12 +552,12 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
                 <div className="max-w-xl mx-auto flex items-center justify-between gap-3">
                     {dentroDelPanel ? <span /> : (
                     <Link to="/" className="inline-flex items-center gap-1.5 text-rural-700 font-bold text-sm min-h-[44px]">
-                        <ChevronLeft size={18} aria-hidden="true" /> Inicio
+                        <ChevronLeft size={18} aria-hidden="true" /> {tx('inicio')}
                     </Link>
                     )}
                     {booking && !hecho && paso > 0 && (
                         <span className="text-sm font-semibold text-gray-600">
-                            {paso <= total ? `Persona ${paso} de ${total}` : 'Último paso'}
+                            {paso <= total ? tx('persona_de', { n: paso, total }) : tx('ultimo_paso')}
                         </span>
                     )}
                 </div>
@@ -543,12 +573,15 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
 
             <main className={dentroDelPanel ? 'px-1 pb-4 pt-4' : 'px-4 pb-28 pt-6'}>
                 <div className="max-w-xl mx-auto" ref={arriba}>
+                    {!dentroDelPanel && <SelectorIdioma lang={lang} onCambiar={cambiarIdioma} />}
                     {cargando ? (
-                        <p className="text-center text-gray-500 py-20">Cargando tu reserva…</p>
+                        <p className="text-center text-gray-500 py-20">{tx('cargando')}</p>
                     ) : errorCarga ? (
                         <Caja>
-                            <h1 className="font-serif text-2xl font-bold text-text-primary mb-2">Un momento</h1>
-                            <p className="text-base text-gray-700">{errorCarga}</p>
+                            <h1 className="font-serif text-2xl font-bold text-text-primary mb-2">{tx('un_momento')}</h1>
+                            <p className="text-base text-gray-700">
+                                {tx(errorCarga.clave, { fecha: fechaLegible(errorCarga.fecha, lang) })}
+                            </p>
                         </Caja>
                     ) : hecho ? (
                         <Terminado booking={booking} cuantos={total} />
@@ -601,7 +634,7 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
                             className="min-h-[52px] px-4 rounded-2xl font-bold text-rural-700 bg-white border-2 border-rural-200 hover:bg-rural-50"
                         >
                             <ChevronLeft size={20} aria-hidden="true" />
-                            <span className="sr-only">Atrás</span>
+                            <span className="sr-only">{tx('atras')}</span>
                         </button>
 
                         {paso <= total ? (
@@ -612,14 +645,14 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
                                     className="min-h-[52px] px-4 rounded-2xl font-bold text-rural-700 bg-rural-50 hover:bg-rural-100 inline-flex items-center gap-2"
                                 >
                                     <Save size={18} aria-hidden="true" />
-                                    <span className="hidden sm:inline">Guardar</span>
+                                    <span className="hidden sm:inline">{tx('guardar')}</span>
                                 </button>
                                 <button
                                     type="button"
                                     onClick={siguiente}
                                     className="flex-1 min-h-[52px] px-5 rounded-2xl font-bold text-white bg-rural-600 hover:bg-rural-700 inline-flex items-center justify-center gap-2"
                                 >
-                                    {paso === total ? 'Repasar' : 'Siguiente'}
+                                    {paso === total ? tx('repasar') : tx('siguiente')}
                                     <ChevronRight size={20} aria-hidden="true" />
                                 </button>
                             </>
@@ -631,18 +664,19 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
                                 className="flex-1 min-h-[52px] px-5 rounded-2xl font-bold text-white bg-rural-600 hover:bg-rural-700 disabled:opacity-45 inline-flex items-center justify-center gap-2"
                             >
                                 <Check size={20} aria-hidden="true" />
-                                {enviando ? 'Guardando…' : 'Enviar mis datos'}
+                                {enviando ? tx('guardando') : tx('enviar')}
                             </button>
                         )}
                     </div>
                     {guardadoAviso && (
                         <p className="max-w-xl mx-auto mt-2 text-sm text-rural-700 font-semibold text-center">
-                            Guardado en este móvil. Vuelve al mismo enlace cuando quieras y sigues donde lo dejaste.
+                            {tx('guardado_aviso')}
                         </p>
                     )}
                 </div>
             )}
         </div>
+        </IdiomaCtx.Provider>
     );
 };
 
@@ -650,55 +684,87 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
 // Piezas
 // ---------------------------------------------------------------------------
 
+/** ES · EN · DE · FR arriba del todo, con botones que se aciertan con el dedo. */
+const SelectorIdioma = ({ lang, onCambiar }) => {
+    const { tx } = useIdioma();
+    return (
+        <div role="group" aria-label={tx('idioma')} className="-mt-2 mb-4 flex justify-end gap-1.5">
+            {IDIOMAS.map((l) => (
+                <button
+                    key={l}
+                    type="button"
+                    lang={l}
+                    onClick={() => onCambiar(l)}
+                    aria-pressed={lang === l}
+                    aria-label={NOMBRES_IDIOMA[l]}
+                    className={`min-h-[44px] min-w-[44px] px-2 rounded-xl border-2 font-bold text-sm ${
+                        lang === l
+                            ? 'bg-rural-600 border-rural-600 text-white'
+                            : 'bg-white border-gray-200 text-gray-700 hover:bg-rural-50'
+                    }`}
+                >
+                    {l.toUpperCase()}
+                </button>
+            ))}
+        </div>
+    );
+};
+
 const Caja = ({ children, className = '' }) => (
     <div className={`bg-white rounded-3xl border border-gray-200 shadow-sm p-6 ${className}`}>{children}</div>
 );
 
-const Portada = ({ booking, huboBorrador, yaHay, onEmpezar }) => (
+const Portada = ({ booking, huboBorrador, yaHay, onEmpezar }) => {
+    const { lang, tx } = useIdioma();
+    const plazas = booking?.pax_count || 1;
+    const vars = { nombres: listaNombres(yaHay?.nombres, tx), rellenas: yaHay?.rellenas, total: plazas };
+    return (
     <>
         <h1 className="font-serif text-3xl font-bold text-text-primary leading-tight">
-            Tus datos antes de llegar
+            {tx('portada_titulo')}
         </h1>
         <p className="text-base text-gray-700 mt-3 leading-relaxed">
-            El alojamiento está obligado por ley a registrar los datos de todas las personas
-            que duermen aquí, y a nosotros nos toca pedírtelos. Se rellena una vez, en un par
-            de minutos, y así en la entrada sólo nos damos la bienvenida.
+            {tx('portada_intro')}
         </p>
 
         <Caja className="mt-5">
-            <p className="text-sm uppercase tracking-widest font-bold text-gray-500">Tu reserva</p>
+            <p className="text-sm uppercase tracking-widest font-bold text-gray-500">{tx('tu_reserva')}</p>
             <p className="font-serif text-xl font-bold text-text-primary mt-1">
                 {booking?.apartments?.name || booking?.apartment_name}
             </p>
             <p className="text-base text-gray-700">
-                Del {fechaLegible(booking?.check_in)} al {fechaLegible(booking?.check_out)} · {booking?.pax_count || 1}{' '}
-                {(booking?.pax_count || 1) === 1 ? 'persona' : 'personas'}
+                {tx('fechas_reserva', {
+                    entrada: fechaLegible(booking?.check_in, lang),
+                    salida: fechaLegible(booking?.check_out, lang),
+                    personas: tx(plazas === 1 ? 'personas_1' : 'personas_n', { n: plazas }),
+                })}
             </p>
             <p className="font-mono text-sm text-rural-700 font-bold mt-1">{booking?.booking_code}</p>
         </Caja>
 
         {huboBorrador && (
             <p className="mt-4 text-base text-rural-800 bg-rural-50 border border-rural-200 rounded-2xl px-4 py-3">
-                Ya habías empezado. Seguimos donde lo dejaste.
+                {tx('ya_empezado')}
             </p>
         )}
         {!huboBorrador && yaHay?.rellenas > 0 && (
             <p className="mt-4 text-base text-rural-800 bg-rural-50 border border-rural-200 rounded-2xl px-4 py-3">
-                {yaHay.rellenas >= (booking?.pax_count || 1)
-                    ? <>Ya tenemos los datos de {listaNombres(yaHay.nombres)} ({yaHay.rellenas} de {booking?.pax_count || 1}). Si viene alguien más, añade aquí sus datos; si no, no hace falta nada.</>
-                    : <>Ya tenemos los datos de {listaNombres(yaHay.nombres)} ({yaHay.rellenas} de {booking?.pax_count || 1}). {(booking?.pax_count || 1) - yaHay.rellenas === 1 ? 'Falta 1 persona: rellena la tuya.' : `Faltan ${(booking?.pax_count || 1) - yaHay.rellenas} personas: rellena la tuya.`}</>}
+                {yaHay.rellenas >= plazas
+                    ? tx('ya_hay_todas', vars)
+                    : plazas - yaHay.rellenas === 1
+                        ? tx('ya_hay_falta_1', vars)
+                        : tx('ya_hay_faltan', { ...vars, faltan: plazas - yaHay.rellenas })}
             </p>
         )}
 
         <ul className="mt-5 space-y-2 text-base text-gray-700">
             <li className="flex gap-2"><Shield size={18} className="mt-1 shrink-0 text-rural-600" aria-hidden="true" />
-                Sólo se usan para cumplir esa obligación. No se comparten con nadie más.</li>
+                {tx('portada_privacidad')}</li>
             <li className="flex gap-2"><Save size={18} className="mt-1 shrink-0 text-rural-600" aria-hidden="true" />
-                Puedes dejarlo a medias: lo que escribas se queda guardado en este móvil.</li>
-            {(booking?.pax_count || 1) > 1 && (
+                {tx('portada_medias')}</li>
+            {plazas > 1 && (
                 <li className="flex gap-2"><Users size={18} className="mt-1 shrink-0 text-rural-600" aria-hidden="true" />
-                    Puedes rellenar a todos desde este móvil, o que cada uno lo haga desde el suyo
-                    con este mismo enlace.</li>
+                    {tx('portada_varios')}</li>
             )}
         </ul>
 
@@ -707,13 +773,18 @@ const Portada = ({ booking, huboBorrador, yaHay, onEmpezar }) => (
             onClick={onEmpezar}
             className="w-full mt-7 min-h-[56px] rounded-2xl font-bold text-white bg-rural-600 hover:bg-rural-700 text-lg inline-flex items-center justify-center gap-2"
         >
-            Empezar <ChevronRight size={22} aria-hidden="true" />
+            {tx('empezar')} <ChevronRight size={22} aria-hidden="true" />
         </button>
     </>
-);
+    );
+};
 
 const PasoViajero = ({ idx, traveler: t, total, fechaEntrada, paises, mostrarPegas, cambiar, quitar }) => {
-    const pegas = mostrarPegas ? pegasDe(t, fechaEntrada) : {};
+    const { tx } = useIdioma();
+    // pegasDe da claves; aquí se vuelven frases en el idioma de la pantalla.
+    const pegas = Object.fromEntries(
+        Object.entries(mostrarPegas ? pegasDe(t, fechaEntrada) : {}).map(([k, v]) => [k, tx(v)]),
+    );
     const edad = edadEn(t.fecha_nacimiento, fechaEntrada);
     const esMenorDe14 = edad !== null && edad < 14;
     const esMenorDeEdad = edad !== null && edad < 18;
@@ -722,7 +793,7 @@ const PasoViajero = ({ idx, traveler: t, total, fechaEntrada, paises, mostrarPeg
         <div>
             <div className="flex items-start justify-between gap-3">
                 <h1 className="font-serif text-2xl font-bold text-text-primary leading-tight">
-                    {idx === 0 ? 'Tus datos' : `Persona ${idx + 1} de ${total}`}
+                    {idx === 0 ? tx('tus_datos') : tx('persona_de', { n: idx + 1, total })}
                 </h1>
                 {idx > 0 && (
                     <button
@@ -730,45 +801,44 @@ const PasoViajero = ({ idx, traveler: t, total, fechaEntrada, paises, mostrarPeg
                         onClick={() => quitar(idx)}
                         className="min-h-[44px] px-3 rounded-xl text-red-700 hover:bg-red-50 inline-flex items-center gap-1.5 text-sm font-bold"
                     >
-                        <Trash2 size={16} aria-hidden="true" /> Quitar
+                        <Trash2 size={16} aria-hidden="true" /> {tx('quitar')}
                     </button>
                 )}
             </div>
             <p className="text-base text-gray-600 mt-1">
                 {idx === 0 && t.is_titular
-                    ? 'Empezamos por quien reserva.'
+                    ? tx('sub_titular')
                     : idx === 0
-                        ? 'Los tuyos. Los de quien reservó ya los tenemos.'
-                        : 'Los datos de cada persona que duerme aquí, también los niños.'}
+                        ? tx('sub_segundo_movil')
+                        : tx('sub_acompanante')}
             </p>
             {idx > 0 && (
                 <p className="text-sm text-gray-600 mt-2 leading-snug">
-                    Si prefiere rellenarlo ella misma desde su móvil con el mismo enlace, toca
-                    «Quitar»: su ficha no se pierde, la hace ella.
+                    {tx('quitar_ayuda')}
                 </p>
             )}
 
             <Caja className="mt-5">
-                <Campo etiqueta="Nombre" id={`n${idx}`} error={pegas.nombre}>
+                <Campo etiqueta={tx('nombre')} id={`n${idx}`} error={pegas.nombre}>
                     <input id={`n${idx}`} className={cInput} type="text" autoComplete="given-name"
                         autoCapitalize="words" value={t.nombre}
                         onChange={(e) => cambiar(idx, 'nombre', e.target.value)} />
                 </Campo>
-                <Campo etiqueta="Primer apellido" id={`a1${idx}`} error={pegas.apellido_primero}>
+                <Campo etiqueta={tx('apellido1')} id={`a1${idx}`} error={pegas.apellido_primero}>
                     <input id={`a1${idx}`} className={cInput} type="text" autoComplete="family-name"
                         autoCapitalize="words" value={t.apellido_primero}
                         onChange={(e) => cambiar(idx, 'apellido_primero', e.target.value)} />
                 </Campo>
-                <Campo etiqueta="Segundo apellido" ayuda="Si no tienes, déjalo en blanco."
+                <Campo etiqueta={tx('apellido2')} ayuda={tx('apellido2_ayuda')}
                     id={`a2${idx}`} error={pegas.apellido_segundo}>
                     <input id={`a2${idx}`} className={cInput} type="text" autoCapitalize="words"
                         value={t.apellido_segundo}
                         onChange={(e) => cambiar(idx, 'apellido_segundo', e.target.value)} />
                 </Campo>
 
-                <Campo etiqueta="Sexo" error={pegas.sexo}>
+                <Campo etiqueta={tx('sexo')} error={pegas.sexo}>
                     <div className="flex gap-2">
-                        {[['H', 'Hombre'], ['M', 'Mujer'], ['X', 'Prefiero no decirlo']].map(([v, l]) => (
+                        {['H', 'M', 'X'].map((v) => (
                             <button key={v} type="button" onClick={() => cambiar(idx, 'sexo', v)}
                                 aria-pressed={t.sexo === v}
                                 className={`flex-1 min-h-[52px] px-2 rounded-2xl border-2 font-bold text-sm ${
@@ -776,13 +846,13 @@ const PasoViajero = ({ idx, traveler: t, total, fechaEntrada, paises, mostrarPeg
                                         ? 'bg-rural-600 border-rural-600 text-white'
                                         : 'bg-white border-gray-200 text-gray-700'
                                 }`}>
-                                {l}
+                                {tx(`sexo_${v}`)}
                             </button>
                         ))}
                     </div>
                 </Campo>
 
-                <Campo etiqueta="Fecha de nacimiento" id={`fn${idx}`} error={pegas.fecha_nacimiento}>
+                <Campo etiqueta={tx('fecha_nac')} id={`fn${idx}`} error={pegas.fecha_nacimiento}>
                     <input id={`fn${idx}`} className={cInput} type="date" max={hoyISO()}
                         autoComplete="bday" value={t.fecha_nacimiento}
                         onChange={(e) => cambiar(idx, 'fecha_nacimiento', e.target.value)} />
@@ -790,21 +860,21 @@ const PasoViajero = ({ idx, traveler: t, total, fechaEntrada, paises, mostrarPeg
             </Caja>
 
             <Caja className="mt-4">
-                <Campo etiqueta="Tipo de documento" id={`td${idx}`}>
+                <Campo etiqueta={tx('tipo_doc')} id={`td${idx}`}>
                     <select id={`td${idx}`} className={cInput} value={t.tipo_documento}
                         onChange={(e) => cambiar(idx, 'tipo_documento', e.target.value)}>
-                        {DOC_TYPES.map((d) => <option key={d.code} value={d.code}>{d.name}</option>)}
+                        {DOC_TYPES.map((c) => <option key={c} value={c}>{tx(`doc_${c}`)}</option>)}
                     </select>
                 </Campo>
-                <Campo etiqueta="Número del documento" id={`nd${idx}`} error={pegas.numero_documento}>
+                <Campo etiqueta={tx('num_doc')} id={`nd${idx}`} error={pegas.numero_documento}>
                     <input id={`nd${idx}`} className={`${cInput} font-mono tracking-wide`} type="text"
                         inputMode="text" autoCapitalize="characters" autoCorrect="off" spellCheck={false}
                         maxLength={20} value={t.numero_documento}
                         onChange={(e) => cambiar(idx, 'numero_documento', e.target.value.toUpperCase().replace(/\s/g, ''))} />
                 </Campo>
                 <Campo
-                    etiqueta="Número de soporte"
-                    ayuda="En el DNI español está detrás, arriba a la derecha, y empieza por letras. En el NIE, en el mismo sitio. Con otros documentos, déjalo en blanco."
+                    etiqueta={tx('soporte')}
+                    ayuda={tx('soporte_ayuda')}
                     id={`sd${idx}`}
                     error={pegas.soporte_documento}
                 >
@@ -813,32 +883,32 @@ const PasoViajero = ({ idx, traveler: t, total, fechaEntrada, paises, mostrarPeg
                         value={t.soporte_documento}
                         onChange={(e) => cambiar(idx, 'soporte_documento', e.target.value.toUpperCase().replace(/\s/g, ''))} />
                 </Campo>
-                <Campo etiqueta="Nacionalidad" id={`na${idx}`} error={pegas.nacionalidad}>
+                <Campo etiqueta={tx('nacionalidad')} id={`na${idx}`} error={pegas.nacionalidad}>
                     <SelectPais id={`na${idx}`} paises={paises} value={t.nacionalidad}
                         onChange={(v) => cambiar(idx, 'nacionalidad', v)} />
                 </Campo>
             </Caja>
 
             <Caja className="mt-4">
-                <p className="font-bold text-lg text-text-primary mb-3">Dónde vives habitualmente</p>
-                <Campo etiqueta="Calle y número" id={`dv${idx}`} error={pegas.direccion_via}>
+                <p className="font-bold text-lg text-text-primary mb-3">{tx('donde_vives')}</p>
+                <Campo etiqueta={tx('calle')} id={`dv${idx}`} error={pegas.direccion_via}>
                     <input id={`dv${idx}`} className={cInput} type="text" autoComplete="street-address"
                         maxLength={200} value={t.direccion_via}
                         onChange={(e) => cambiar(idx, 'direccion_via', e.target.value)} />
                 </Campo>
-                <Campo etiqueta="Pueblo o ciudad" id={`dm${idx}`} error={pegas.direccion_municipio}
-                    ayuda={t.direccion_pais === 'ESP' ? 'Empieza a escribir y elígelo de la lista.' : undefined}>
+                <Campo etiqueta={tx('municipio')} id={`dm${idx}`} error={pegas.direccion_municipio}
+                    ayuda={t.direccion_pais === 'ESP' ? tx('municipio_ayuda') : undefined}>
                     <CampoMunicipio id={`dm${idx}`} valor={t.direccion_municipio} cp={t.direccion_cp}
                         esEspana={t.direccion_pais === 'ESP'} elegido={!!t.direccion_municipio_ine}
                         onEscribir={(v) => { cambiar(idx, 'direccion_municipio', v); cambiar(idx, 'direccion_municipio_ine', ''); }}
                         onElegir={(m) => { cambiar(idx, 'direccion_municipio', m.nombre); cambiar(idx, 'direccion_municipio_ine', m.codigo); }} />
                 </Campo>
-                <Campo etiqueta="Código postal" id={`dc${idx}`}>
+                <Campo etiqueta={tx('cp')} id={`dc${idx}`}>
                     <input id={`dc${idx}`} className={cInput} type="text" inputMode="numeric"
                         autoComplete="postal-code" maxLength={10} value={t.direccion_cp}
                         onChange={(e) => cambiar(idx, 'direccion_cp', e.target.value)} />
                 </Campo>
-                <Campo etiqueta="País" id={`dp${idx}`} error={pegas.direccion_pais}>
+                <Campo etiqueta={tx('pais')} id={`dp${idx}`} error={pegas.direccion_pais}>
                     <SelectPais id={`dp${idx}`} paises={paises} value={t.direccion_pais}
                         onChange={(v) => cambiar(idx, 'direccion_pais', v)} />
                 </Campo>
@@ -846,13 +916,13 @@ const PasoViajero = ({ idx, traveler: t, total, fechaEntrada, paises, mostrarPeg
 
             {!esMenorDe14 && (
                 <Caja className="mt-4">
-                    <p className="font-bold text-lg text-text-primary mb-3">Cómo localizarte</p>
-                    <Campo etiqueta="Teléfono móvil" id={`tm${idx}`} error={pegas.telefono_movil}>
+                    <p className="font-bold text-lg text-text-primary mb-3">{tx('localizarte')}</p>
+                    <Campo etiqueta={tx('movil')} id={`tm${idx}`} error={pegas.telefono_movil}>
                         <input id={`tm${idx}`} className={cInput} type="tel" inputMode="tel"
                             autoComplete="tel" value={t.telefono_movil}
                             onChange={(e) => cambiar(idx, 'telefono_movil', e.target.value)} />
                     </Campo>
-                    <Campo etiqueta="Correo electrónico" id={`em${idx}`}>
+                    <Campo etiqueta={tx('email')} id={`em${idx}`}>
                         <input id={`em${idx}`} className={cInput} type="email" inputMode="email"
                             autoComplete="email" autoCapitalize="off" autoCorrect="off" spellCheck={false}
                             value={t.email}
@@ -863,20 +933,19 @@ const PasoViajero = ({ idx, traveler: t, total, fechaEntrada, paises, mostrarPeg
 
             {esMenorDeEdad && (
                 <p className="mt-4 text-base text-gray-600 bg-white border border-gray-200 rounded-2xl px-4 py-3">
-                    Al ser menor de edad no hace falta su documento. Al final te preguntamos
-                    con quién viene.
+                    {tx('aviso_menor')}
                 </p>
             )}
 
             {esMenorDe14 ? (
                 <p className="mt-4 text-base text-gray-600 bg-white border border-gray-200 rounded-2xl px-4 py-3">
-                    Al ser menor de 14 años no tiene que firmar: sus datos los das tú.
+                    {tx('aviso_menor14')}
                 </p>
             ) : (
                 <Caja className="mt-4">
                     <Campo
-                        etiqueta="Tu firma"
-                        ayuda="Firma con el dedo dentro del recuadro. La ley pide la firma de todos los mayores de 14 años."
+                        etiqueta={tx('firma')}
+                        ayuda={tx('firma_ayuda')}
                         error={pegas.firma_base64}
                     >
                         <Firma valor={t.firma_base64} onChange={(v) => cambiar(idx, 'firma_base64', v)} />
@@ -895,12 +964,13 @@ const Repaso = ({
         .map((t, i) => ({ i, pegas: pegasDe(t, fechaEntrada) }))
         .filter((x) => Object.keys(x.pegas).length > 0);
     const menores = pegasDeLosMenores(travelers, fechaEntrada);
+    const { tx } = useIdioma();
 
     return (
         <div>
-            <h1 className="font-serif text-2xl font-bold text-text-primary">Un último repaso</h1>
+            <h1 className="font-serif text-2xl font-bold text-text-primary">{tx('repaso_titulo')}</h1>
             <p className="text-base text-gray-600 mt-1">
-                Comprueba que están todas las personas que van a dormir aquí.
+                {tx('repaso_sub')}
             </p>
 
             <ul className="mt-5 space-y-3">
@@ -912,26 +982,26 @@ const Repaso = ({
                             <div className={`bg-white rounded-2xl border p-4 flex items-start gap-3 ${mal ? 'border-amber-300' : 'border-gray-200'}`}>
                                 <div className="flex-1 min-w-0">
                                     <p className="font-bold text-base text-text-primary break-words">
-                                        {[t.nombre, t.apellido_primero, t.apellido_segundo].filter(Boolean).join(' ') || 'Sin nombre'}
+                                        {[t.nombre, t.apellido_primero, t.apellido_segundo].filter(Boolean).join(' ') || tx('sin_nombre')}
                                     </p>
                                     <p className="text-sm text-gray-600">
-                                        {i === 0 ? 'Quien reserva' : 'Acompañante'}
-                                        {edad !== null ? ` · ${edad} años` : ''}
+                                        {i === 0 ? tx('quien_reserva') : tx('acompanante')}
+                                        {edad !== null ? ` · ${tx('anos', { n: edad })}` : ''}
                                         {t.numero_documento ? ` · ${t.numero_documento}` : ''}
                                     </p>
                                     {mal && (
                                         <p className="text-sm font-semibold text-amber-800 mt-1 flex items-center gap-1.5">
-                                            <AlertCircle size={15} aria-hidden="true" /> Le faltan cosas
+                                            <AlertCircle size={15} aria-hidden="true" /> {tx('faltan_cosas')}
                                         </p>
                                     )}
                                 </div>
                                 <button type="button" onClick={() => onEditar(i)}
                                     className="min-h-[44px] px-3 rounded-xl text-rural-700 bg-rural-50 font-bold text-sm inline-flex items-center gap-1.5">
-                                    <Pencil size={15} aria-hidden="true" /> Cambiar
+                                    <Pencil size={15} aria-hidden="true" /> {tx('cambiar')}
                                 </button>
                                 {i > 0 && (
                                     <button type="button" onClick={() => onQuitar(i)}
-                                        aria-label={`Quitar a ${t.nombre || 'esta persona'}`}
+                                        aria-label={tx('quitar_a', { nombre: t.nombre || tx('esta_persona') })}
                                         className="min-h-[44px] px-2 rounded-xl text-red-700 hover:bg-red-50">
                                         <Trash2 size={16} aria-hidden="true" />
                                     </button>
@@ -945,20 +1015,18 @@ const Repaso = ({
             {travelers.length < maximo && (
                 <button type="button" onClick={onAnadir}
                     className="w-full mt-4 min-h-[52px] rounded-2xl border-2 border-dashed border-rural-300 text-rural-700 font-bold inline-flex items-center justify-center gap-2">
-                    <UserPlus size={19} aria-hidden="true" /> Añadir otra persona
+                    <UserPlus size={19} aria-hidden="true" /> {tx('anadir')}
                 </button>
             )}
             {travelers.length >= maximo && (
                 <p className="mt-4 text-sm text-gray-500">
-                    Tu reserva es para {maximo} {maximo === 1 ? 'persona' : 'personas'}. Si vais a ser más,
-                    escríbenos antes de llegar.
+                    {tx('reserva_para', { personas: tx(maximo === 1 ? 'personas_1' : 'personas_n', { n: maximo }) })}
                 </p>
             )}
 
             {incompletos.length > 0 && (
                 <p className="mt-5 text-base text-amber-900 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3">
-                    Hay {incompletos.length} {incompletos.length === 1 ? 'persona' : 'personas'} a las que
-                    les falta algo. Toca «Cambiar» para terminarlas.
+                    {tx(incompletos.length === 1 ? 'incompletos_1' : 'incompletos_n', { n: incompletos.length })}
                 </p>
             )}
 
@@ -979,17 +1047,16 @@ const Repaso = ({
                 <input type="checkbox" checked={accept} onChange={(e) => setAccept(e.target.checked)}
                     className="mt-1 h-6 w-6 accent-rural-600 shrink-0" />
                 <span className="text-base text-gray-700 leading-relaxed">
-                    Los datos son ciertos y sé que el alojamiento tiene que comunicarlos a las autoridades,
-                    como manda el Real Decreto 933/2021. He leído la{' '}
+                    {tx('acepto_antes')}
                     <Link to="/privacidad" target="_blank" className="underline text-rural-700 font-semibold">
-                        política de privacidad
-                    </Link>.
+                        {tx('acepto_enlace')}
+                    </Link>{tx('acepto_despues')}
                 </span>
             </label>
 
             {error && (
                 <p className="mt-4 text-base text-amber-900 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3">
-                    {error}
+                    {tx(error)}
                 </p>
             )}
         </div>
@@ -1019,29 +1086,30 @@ const BloqueMenores = ({ menores, travelers, fechaEntrada, cambiar }) => {
         });
         cambiar(adultoIdx, 'acompana_a', menorIdx);
     };
+    const { tx } = useIdioma();
+    const nombreDe = (i) => travelers[i]?.nombre || tx('persona_n', { n: i + 1 });
 
     return (
         <div className="mt-5">
             <Caja>
-                <p className="font-bold text-lg text-text-primary">Quién viene con los peques</p>
+                <p className="font-bold text-lg text-text-primary">{tx('menores_titulo')}</p>
                 <p className="text-sm text-gray-600 mt-1 leading-snug">
-                    Cuando viaja un menor, la ley nos pide saber qué es de él la persona
-                    adulta que lo acompaña.
+                    {tx('menores_sub')}
                 </p>
 
                 {menores.map((m) => (
                     <div key={m.idx} className="mt-5 pt-4 border-t border-gray-100 first:border-0 first:pt-0 first:mt-4">
                         <p className="font-bold text-base text-text-primary mb-2">
-                            {m.nombre}
+                            {m.nombre || nombreDe(m.idx)}
                         </p>
 
                         {!m.hayAdulto ? (
                             <p className="text-base text-amber-900 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3">
-                                Tiene que ir con una persona mayor de edad. Añádela arriba.
+                                {tx('menor_sin_adulto')}
                             </p>
                         ) : (
                             <>
-                                <p className="text-sm text-gray-600 mb-2">¿Con quién viene?</p>
+                                <p className="text-sm text-gray-600 mb-2">{tx('con_quien')}</p>
                                 <div className="flex flex-wrap gap-2">
                                     {adultos.map(({ t, i }) => {
                                         const elegido = Number(t.acompana_a) === m.idx;
@@ -1057,7 +1125,7 @@ const BloqueMenores = ({ menores, travelers, fechaEntrada, cambiar }) => {
                                                         : 'bg-white border-gray-200 text-gray-700'
                                                 }`}
                                             >
-                                                {elegido ? '✓ ' : ''}{t.nombre || `Persona ${i + 1}`}
+                                                {elegido ? '✓ ' : ''}{nombreDe(i)}
                                             </button>
                                         );
                                     })}
@@ -1069,8 +1137,10 @@ const BloqueMenores = ({ menores, travelers, fechaEntrada, cambiar }) => {
                                             htmlFor={`rel${m.idx}`}
                                             className="block text-base font-bold text-text-primary mb-1"
                                         >
-                                            {travelers[m.adultoIdx].nombre || 'Esa persona'} es
-                                            de {m.nombre}…
+                                            {tx('rel_etiqueta', {
+                                                adulto: travelers[m.adultoIdx].nombre || tx('esa_persona'),
+                                                menor: m.nombre || nombreDe(m.idx),
+                                            })}
                                         </label>
                                         <select
                                             id={`rel${m.idx}`}
@@ -1078,9 +1148,9 @@ const BloqueMenores = ({ menores, travelers, fechaEntrada, cambiar }) => {
                                             value={travelers[m.adultoIdx].parentesco || ''}
                                             onChange={(e) => cambiar(m.adultoIdx, 'parentesco', e.target.value)}
                                         >
-                                            <option value="">Elige una opción…</option>
-                                            {PARENTESCOS.map((p) => (
-                                                <option key={p.code} value={p.code}>{p.name}</option>
+                                            <option value="">{tx('elige_opcion')}</option>
+                                            {PARENTESCOS.map((c) => (
+                                                <option key={c} value={c}>{tx(`par_${c}`)}</option>
                                             ))}
                                         </select>
                                     </div>
@@ -1090,8 +1160,8 @@ const BloqueMenores = ({ menores, travelers, fechaEntrada, cambiar }) => {
                                     <p className="mt-3 text-sm font-semibold text-amber-800 flex items-center gap-1.5">
                                         <AlertCircle size={15} aria-hidden="true" />
                                         {m.falta === 'sin_asignar'
-                                            ? 'Dinos con quién viene.'
-                                            : 'Dinos qué es esa persona de él.'}
+                                            ? tx('falta_asignar')
+                                            : tx('falta_relacion')}
                                     </p>
                                 )}
                             </>
@@ -1116,14 +1186,14 @@ const BloqueMenores = ({ menores, travelers, fechaEntrada, cambiar }) => {
 const BloquePagador = ({ pagador, setPagador, travelers }) => {
     const quienReserva = [travelers[0]?.nombre, travelers[0]?.apellido_primero]
         .filter(Boolean).join(' ').trim();
+    const { tx } = useIdioma();
 
     return (
         <div className="mt-5">
             <Caja>
-                <p className="font-bold text-lg text-text-primary">¿Quién ha pagado?</p>
+                <p className="font-bold text-lg text-text-primary">{tx('pagador_titulo')}</p>
                 <p className="text-sm text-gray-600 mt-1 leading-snug">
-                    Nos lo piden junto con el resto de datos. Basta con el nombre de quien
-                    hizo el pago.
+                    {tx('pagador_sub')}
                 </p>
 
                 <div className="mt-4 space-y-2">
@@ -1137,7 +1207,7 @@ const BloquePagador = ({ pagador, setPagador, travelers }) => {
                                 : 'bg-white border-gray-200 text-gray-700'
                         }`}
                     >
-                        {pagador.quien === 'yo' ? '✓ ' : ''}Lo he pagado yo
+                        {pagador.quien === 'yo' ? '✓ ' : ''}{tx('pagado_yo')}
                     </button>
                     <button
                         type="button"
@@ -1149,14 +1219,14 @@ const BloquePagador = ({ pagador, setPagador, travelers }) => {
                                 : 'bg-white border-gray-200 text-gray-700'
                         }`}
                     >
-                        {pagador.quien === 'otra' ? '✓ ' : ''}Lo ha pagado otra persona
+                        {pagador.quien === 'otra' ? '✓ ' : ''}{tx('pagado_otra')}
                     </button>
                 </div>
 
                 {pagador.quien === 'otra' && (
                     <div className="mt-4">
                         <label htmlFor="pagador-nombre" className="block text-base font-bold text-text-primary mb-1">
-                            ¿Cómo se llama?
+                            {tx('como_se_llama')}
                         </label>
                         <input
                             id="pagador-nombre"
@@ -1173,25 +1243,27 @@ const BloquePagador = ({ pagador, setPagador, travelers }) => {
     );
 };
 
-const Terminado = ({ booking, cuantos }) => (
+const Terminado = ({ booking, cuantos }) => {
+    const { tx } = useIdioma();
+    return (
     <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-8 text-center">
         <div className="w-16 h-16 mx-auto mb-5 rounded-full bg-rural-600 flex items-center justify-center text-white">
             <Check size={30} aria-hidden="true" />
         </div>
-        <h1 className="font-serif text-2xl font-bold text-text-primary mb-3">Listo, muchas gracias</h1>
+        <h1 className="font-serif text-2xl font-bold text-text-primary mb-3">{tx('listo')}</h1>
         <p className="text-base text-gray-700 leading-relaxed">
-            Tenemos los datos de {cuantos} {cuantos === 1 ? 'persona' : 'personas'} para la reserva{' '}
-            <strong className="font-mono">{booking?.booking_code}</strong>. En la entrada sólo tienes que
-            venir con el documento por si hay que comprobarlo.
+            {tx('terminado_antes', { personas: tx(cuantos === 1 ? 'personas_1' : 'personas_n', { n: cuantos }) })}
+            <strong className="font-mono">{booking?.booking_code}</strong>{tx('terminado_despues')}
         </p>
         <p className="text-sm text-gray-500 mt-4">
-            Si te has equivocado en algo, vuelve a este mismo enlace y mándalo otra vez.
+            {tx('terminado_error')}
         </p>
         <Link to="/" className="inline-block mt-6 px-6 py-3.5 rounded-2xl font-bold text-white bg-rural-600">
-            Volver al inicio
+            {tx('volver')}
         </Link>
     </div>
-);
+    );
+};
 
 // ---------------------------------------------------------------------------
 // Campos
@@ -1263,16 +1335,19 @@ const CampoMunicipio = ({ id, valor, cp, esEspana, elegido, onEscribir, onElegir
     );
 };
 
-const SelectPais = ({ id, paises, value, onChange }) => (
-    <select id={id} className={cInput} value={value} onChange={(e) => onChange(e.target.value)}>
-        <optgroup label="Los más habituales">
-            {paises.frecuentes.map((p) => <option key={p.code} value={p.code}>{p.name}</option>)}
-        </optgroup>
-        <optgroup label="Todos los países">
-            {paises.resto.map((p) => <option key={p.code} value={p.code}>{p.name}</option>)}
-        </optgroup>
-    </select>
-);
+const SelectPais = ({ id, paises, value, onChange }) => {
+    const { tx } = useIdioma();
+    return (
+        <select id={id} className={cInput} value={value} onChange={(e) => onChange(e.target.value)}>
+            <optgroup label={tx('paises_frecuentes')}>
+                {paises.frecuentes.map((p) => <option key={p.code} value={p.code}>{p.name}</option>)}
+            </optgroup>
+            <optgroup label={tx('paises_todos')}>
+                {paises.resto.map((p) => <option key={p.code} value={p.code}>{p.name}</option>)}
+            </optgroup>
+        </select>
+    );
+};
 
 // ---------------------------------------------------------------------------
 // Firma con el dedo
@@ -1282,6 +1357,7 @@ const Firma = ({ valor, onChange }) => {
     const lienzo = useRef(null);
     const pintando = useRef(false);
     const [tieneTrazo, setTieneTrazo] = useState(!!valor);
+    const { tx } = useIdioma();
 
     const preparar = useCallback(() => {
         const c = lienzo.current;
@@ -1376,16 +1452,16 @@ const Firma = ({ valor, onChange }) => {
                 onPointerUp={soltar}
                 onPointerLeave={soltar}
                 onPointerCancel={soltar}
-                aria-label="Recuadro para firmar con el dedo"
+                aria-label={tx('firma_aria')}
                 role="img"
             />
             <div className="mt-2 flex items-center justify-between">
                 <span className="text-sm text-gray-500">
-                    {tieneTrazo ? 'Firma recogida' : 'Firma aquí con el dedo'}
+                    {tieneTrazo ? tx('firma_recogida') : tx('firma_aqui')}
                 </span>
                 <button type="button" onClick={borrar}
                     className="min-h-[44px] px-3 rounded-xl text-rural-700 bg-rural-50 font-bold text-sm inline-flex items-center gap-1.5">
-                    <Eraser size={15} aria-hidden="true" /> Borrar
+                    <Eraser size={15} aria-hidden="true" /> {tx('borrar')}
                 </button>
             </div>
         </div>
