@@ -94,7 +94,7 @@ const ReservasPanel = ({ ir }) => {
     }, []);
 
     // ---------- Filtrar y repartir en grupos ----------
-    const { ahora, proximas, pasadas, canceladas, hayAlgo } = useMemo(() => {
+    const { ahora, proximas, pronto, luego, pasadas, canceladas, hayAlgo } = useMemo(() => {
         const texto = sinAcentos(busqueda).trim();
         const numero = soloNumeros(busqueda);
         const encaja = (r) => {
@@ -119,6 +119,11 @@ const ReservasPanel = ({ ir }) => {
         g.proximas.sort((a, b) => a.check_in.localeCompare(b.check_in));
         g.pasadas.sort((a, b) => b.check_out.localeCompare(a.check_out));
         g.canceladas.sort((a, b) => b.check_in.localeCompare(a.check_in));
+
+        const [a, m, d] = hoy.split('-').map(Number);
+        const limite = new Date(Date.UTC(a, m - 1, d + 14)).toISOString().slice(0, 10);
+        g.pronto = g.proximas.filter((r) => r.check_in <= limite);
+        g.luego = g.proximas.filter((r) => r.check_in > limite);
 
         return { ...g, hayAlgo: g.ahora.length + g.proximas.length + g.pasadas.length + g.canceladas.length > 0 };
     }, [reservas, busqueda, hoy]);
@@ -183,8 +188,12 @@ const ReservasPanel = ({ ir }) => {
                         los que no traen resultados, para no llenar de huecos. */}
                     <Grupo titulo="Ahora mismo" pie="Dentro o llegan hoy" reservas={ahora} hoy={hoy} ir={ir}
                         vacio={buscando ? null : 'Ahora mismo no hay nadie dentro ni llega nadie.'} />
-                    <Grupo titulo="Próximas" pie="Todavía no han llegado" reservas={proximas} hoy={hoy} ir={ir}
-                        vacio={buscando ? null : 'No hay ninguna reserva por venir.'} />
+                    {/* Las próximas dos semanas a la vista; lo de más allá,
+                        plegado salvo al buscar (auditoría 23-sep: 2,6 móviles). */}
+                    <Grupo titulo="Próximas" pie="En las dos próximas semanas" reservas={pronto} hoy={hoy} ir={ir}
+                        vacio={buscando ? null : (proximas.length ? 'Nadie llega en las dos próximas semanas.' : 'No hay ninguna reserva por venir.')} />
+                    <Grupo titulo="Más adelante" pie="Todavía no han llegado" reservas={luego} hoy={hoy} ir={ir}
+                        plegado={!buscando} vacio={null} />
                     {/* Las pasadas, plegadas salvo al buscar: desplegadas hacían
                         la pantalla de cinco móviles de alto (auditoría 23-sep). */}
                     <Grupo titulo="Pasadas" pie="Ya se fueron" reservas={pasadas} hoy={hoy} ir={ir}

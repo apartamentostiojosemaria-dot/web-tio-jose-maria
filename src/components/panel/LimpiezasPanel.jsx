@@ -89,6 +89,7 @@ const LimpiezasPanel = () => {
     const [reservas, setReservas] = useState([]);
     const [verHechas, setVerHechas] = useState(false);
     const [apuntando, setApuntando] = useState(false);
+    const [verMasAdelante, setVerMasAdelante] = useState(false);
     const hoy = hoyISO();
 
     const cargar = useCallback(async () => {
@@ -154,6 +155,9 @@ const LimpiezasPanel = () => {
     // tendría vuelta atrás a la vista: el botón "No estaba hecha" tiene que
     // seguir donde ella lo dejó.
     const proximas = conGente.filter((t) => t.scheduled_date >= hoy);
+    const finDeSemana = sumaDias(hoy, 6);
+    const estaSemana = proximas.filter((t) => t.scheduled_date <= finDeSemana);
+    const masAdelante = proximas.filter((t) => t.scheduled_date > finDeSemana);
 
     const hechas = conGente
         .filter((t) => t.scheduled_date < hoy && HECHAS.includes(t.status)
@@ -195,12 +199,43 @@ const LimpiezasPanel = () => {
                 {proximas.length === 0 ? (
                     <Vacio icono={Brush} mensaje="No hay ninguna limpieza apuntada para hoy ni para los próximos días." />
                 ) : (
-                    proximas.map((t) => (
+                    estaSemana.map((t) => (
                         <TarjetaLimpieza key={t.id} tarea={t} hoy={hoy}
                             onCambio={cargar} />
                     ))
                 )}
+                {proximas.length > 0 && estaSemana.length === 0 && (
+                    <p className="text-base text-gray-600">Esta semana no hay que limpiar nada.</p>
+                )}
             </section>
+
+            {/* ---------- Más adelante, plegado ----------
+                Todas abiertas medían tres pantallas de móvil (23-sep): lo de
+                esta semana a la vista, lo demás a un toque. */}
+            {masAdelante.length > 0 && (
+                verMasAdelante ? (
+                    <section aria-labelledby="mas-t" className="space-y-3">
+                        <h2 id="mas-t" className="text-base font-bold text-text-primary">Más adelante</h2>
+                        {masAdelante.map((t) => (
+                            <TarjetaLimpieza key={t.id} tarea={t} hoy={hoy} onCambio={cargar} />
+                        ))}
+                    </section>
+                ) : (
+                    <button
+                        type="button"
+                        onClick={() => setVerMasAdelante(true)}
+                        className="w-full text-left bg-white rounded-3xl border border-gray-200 shadow-sm px-5 py-4 min-h-[64px] flex items-center gap-3 hover:bg-rural-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-rural-600/30"
+                    >
+                        <span className="flex-1 min-w-0">
+                            <span className="block text-lg font-bold text-text-primary">Más adelante</span>
+                            <span className="block text-sm text-gray-600">
+                                {masAdelante.length} {masAdelante.length === 1 ? 'limpieza' : 'limpiezas'} · la primera, {fechaEnPalabrasRelativa(masAdelante[0].scheduled_date).toLowerCase()}
+                            </span>
+                        </span>
+                        <span className="text-sm font-semibold text-rural-700">Ver</span>
+                    </button>
+                )
+            )}
 
             {/* ---------- Apuntar una limpieza suelta ---------- */}
             {apuntando ? (
