@@ -50,7 +50,11 @@ const PanelHome = ({ ir, perfil, secciones = [] }) => {
         (async () => {
             const dentroDe = (dias) => aISO(sumarDias(hoy, dias));
 
-            const [apart, delDia, proximas, vencidas, limpiezas] = await Promise.all([
+            // Todo a la vez (23-sep): el estado del sistema y el parte salían
+            // DESPUÉS de lo demás y la pantalla esperaba dos viajes en vez de uno.
+            supabase.rpc('tjm_salud').then(({ data }) => { if (!cortado && data) setSistema(avisosDelSistema(data)); });
+
+            const [apart, delDia, proximas, vencidas, limpiezas, parte] = await Promise.all([
                 supabase.from('apartments').select('id, name'),
                 sinPruebas(supabase.from('guest_bookings').select('*'))
                     .in('status', ESTADOS_VIVOS)
@@ -72,11 +76,13 @@ const PanelHome = ({ ir, perfil, secciones = [] }) => {
                     .lt('scheduled_date', hoy)
                     .gte('scheduled_date', dentroDe(-DIAS_DEUDA_VIEJA))
                     .order('scheduled_date', { ascending: true }),
+                // El parte de los que llegan pronto (por fechas, sin esperar a saber cuáles).
+                supabase.from('v_parte_estado').select('*')
+                    .gte('check_in', hoy)
+                    .lte('check_in', dentroDe(DIAS_AVISO_POLICIA)),
             ]);
 
             if (cortado) return;
-
-            supabase.rpc('tjm_salud').then(({ data }) => { if (!cortado && data) setSistema(avisosDelSistema(data)); });
 
             const nombreApto = {};
             (apart.data || []).forEach((a) => { nombreApto[a.id] = a.name; });
@@ -90,7 +96,7 @@ const PanelHome = ({ ir, perfil, secciones = [] }) => {
                 (proximas.data || []).map(conApto),
                 (vencidas.data || []).map(conApto),
                 (limpiezas.data || []).filter((t) => !HECHAS.includes(t.status)).map(conApto),
-                hoy, dentroDe,
+                hoy, dentroDe, parte.error ? null : (parte.data || []),
             ));
             setCargando(false);
         })();
@@ -284,17 +290,13 @@ const ListaDelDia = ({ titulo, icono: Icono, horario, reservas, vacio, ir }) => 
 // resto de la pantalla funciona igual.
 // ============================================================
 
-async function construirAvisos(proximas, vencidas, limpiezasAtrasadas, hoy, dentroDe) {
+async function construirAvisos(proximas, vencidas, limpiezasAtrasadas, hoy, dentroDe, parte) {
     const avisos = [];
     const limitePolicia = dentroDe(DIAS_AVISO_POLICIA);
 
-    // 1) Datos de la policía que faltan
+    // 1) Datos de la policía que faltan (el parte ya viene cargado con lo demás)
     const porLlegarPronto = proximas.filter((r) => r.check_in <= limitePolicia);
     if (porLlegarPronto.length > 0) {
-        const { data: parte } = await supabase
-            .from('v_parte_estado')
-            .select('*')
-            .in('booking_id', porLlegarPronto.map((r) => r.id));
 
         if (parte) {
             const porReserva = {};

@@ -395,16 +395,17 @@ export async function cargarCobrosDelMes({ desde, hasta }) {
  * como que no hace falta. Para que la lista no engañe.
  */
 export async function cargarSinFactura() {
+    // Las facturas vienen en el mismo viaje (antes, un segundo viaje a
+    // `invoices` después de este: la pantalla esperaba los dos).
     const { data, error } = await sinPruebas(supabase.from('guest_bookings')
-        .select('id, guest_name, booking_code, check_in, check_out, total_price, paid_amount, apartment_id, channel, invoice_not_needed, status'))
+        .select('id, guest_name, booking_code, check_in, check_out, total_price, paid_amount, apartment_id, channel, invoice_not_needed, status, invoices!invoices_booking_id_fkey(id, booking_id, tipo, total, rectifica_invoice_id)'))
         .in('status', ESTADOS_QUE_DEBEN)
         .eq('invoice_not_needed', false)
         .gt('paid_amount', 0)
         .order('check_in', { ascending: false })
         .limit(60);
     if (error) return [];
-    const reservas = data || [];
-    if (!reservas.length) return [];
-    const facturas = await cargarFacturasDe(reservas.map((r) => r.id));
-    return reservas.filter((r) => !facturas[r.id]);
+    return (data || [])
+        .filter((r) => !agruparFacturas(r.invoices || []).some((f) => !f.anulada))
+        .map(({ invoices, ...r }) => r);
 }

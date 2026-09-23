@@ -162,6 +162,21 @@ const PanelApp = ({ perfil }) => {
         document.title = `${s.etiqueta} · Apartamentos Tío José María`;
     }, [vista.seccion]);
 
+    // Con la primera pantalla ya pintada, se bajan las demás en segundo plano:
+    // abrir una sección por primera vez ya no espera a descargarla (23-sep).
+    useEffect(() => {
+        const precargar = () => {
+            import('./CalendarioPanel'); import('./ReservasPanel'); import('./ReservaFicha');
+            import('./NuevaReservaPanel'); import('./ClientesPanel'); import('./DineroPanel');
+            import('./PreciosPanel'); import('./LimpiezasPanel'); import('./ParteViajerosPanel');
+            import('./CheckinPanel');
+        };
+        const id = 'requestIdleCallback' in window
+            ? window.requestIdleCallback(precargar, { timeout: 4000 })
+            : window.setTimeout(precargar, 2500);
+        return () => ('cancelIdleCallback' in window ? window.cancelIdleCallback(id) : window.clearTimeout(id));
+    }, []);
+
     const salir = async () => {
         setSaliendo(true);
         await supabase.auth.signOut();
