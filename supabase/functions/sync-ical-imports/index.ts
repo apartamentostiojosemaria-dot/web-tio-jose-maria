@@ -555,7 +555,17 @@ async function syncOne(
         // con `uidsReserva` se cancelaba sola toda reserva de Airbnb en la
         // primera pasada (José Luis, 11-sep-2026, 220 € que desaparecieron del
         // calendario nueve minutos después de traerlos de MisterPlan).
+        // Same guardrail as the blocks below: an empty feed (portal hiccup)
+        // must not cancel every imported booking of the channel at once.
+        const feedVacioReservas = plans.length === 0 &&
+            [...porUid.values()].some((b) => b.status !== "cancelled");
+        if (feedVacioReservas) {
+            out.error_message = (out.error_message ? out.error_message + " · " : "") +
+                `el feed de ${CHANNEL_LABEL[channel]} llegó sin ningún evento: ` +
+                `no se cancela ninguna reserva en esta pasada.`;
+        }
         for (const [uid, b] of porUid) {
+            if (feedVacioReservas) break;
             if (uidsEnFeed.has(uid)) continue;
             if (b.status === "cancelled") continue;
             out.bookings_cancelled++;
