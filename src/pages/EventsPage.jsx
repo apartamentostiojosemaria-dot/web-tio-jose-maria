@@ -114,7 +114,7 @@ const EventsPage = () => {
                     <div className="pb-4">
                         <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="font-serif text-3xl md:text-5xl font-bold text-white mb-3">Eventos y Experiencias</motion.h1>
                         <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="text-white/85 text-base md:text-lg max-w-2xl leading-relaxed">
-                            Descubre la magia de la Sierra de Cazorla a lo largo de las estaciones. Naturaleza, cultura, gastronomia y tradicion te esperan.
+                            Descubre la magia de la Sierra de Cazorla a lo largo de las estaciones. Naturaleza, cultura, gastronomía y tradición te esperan.
                         </motion.p>
                     </div>
                 </div>

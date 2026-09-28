@@ -39,10 +39,13 @@ const InteractiveMap = ({ routes, selectedRoute, onSelectRoute, compact = false 
             scrollWheelZoom: !compact,
         });
 
-        // CartoDB Voyager — clean, colorful, travel-friendly
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        // OpenStreetMap standard tiles. CARTO basemaps started requiring an API key
+        // (Sep 2026) and served "API KEY REQUIRED" tiles; OSM needs no key and is
+        // already allowed by img-src in security-headers.conf.
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            subdomains: 'abc',
             maxZoom: 19,
-            attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
         }).addTo(map);
 
         // Hinojares marker (home)

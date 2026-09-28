@@ -101,7 +101,7 @@ const GASTRONOMY = [
     { name: 'Migas', desc: 'Pan rallado con ajo y aceite, acompanado de chorizo, panceta y pimientos' },
     { name: 'Rin-Ran', desc: 'Ensalada fria de bacalao desalado, patatas, pimientos rojos y cebolla' },
     { name: 'Cordero Segureno (IGP)', desc: 'Carne tierna criada en los pastos de la sierra, la estrella de la comarca' },
-    { name: 'Gachamigas', desc: 'Plato artesanal de harina, tradicion centenaria de la cocina serrana' },
+    { name: 'Gachamigas', desc: 'Plato artesanal de harina, tradición centenaria de la cocina serrana' },
     { name: 'Habas con Jamon', desc: 'Habas frescas de Hinojares guisadas con jamon de la sierra' },
     { name: 'Carne de Caza', desc: 'Jabali, ciervo y perdiz en guisos y estofados tradicionales' },
 ];

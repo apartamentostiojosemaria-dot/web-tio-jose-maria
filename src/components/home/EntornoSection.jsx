@@ -85,10 +85,10 @@ const EntornoSection = ({ places, routes }) => {
                                 Sabor Tradicional
                             </h4>
                             <p className="text-sm opacity-80 text-text-primary">
-                                Prueba el cordero segureno y los platos tipicos de la comarca, un placer para los sentidos.
+                                Prueba el cordero segureño y los platos típicos de la comarca, un placer para los sentidos.
                             </p>
                             <span className="text-xs font-bold mt-3 inline-flex items-center gap-1 group-hover:gap-2 transition-all text-primary">
-                                Ver gastronomia <ArrowRight size={12} />
+                                Ver gastronomía <ArrowRight size={12} />
                             </span>
                         </Link>
                     </div>

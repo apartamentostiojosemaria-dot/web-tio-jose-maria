@@ -70,11 +70,11 @@ export default defineConfig({
                         },
                     },
                     {
-                        // Cache CartoDB Voyager tiles (maps offline!)
-                        urlPattern: /^https:\/\/[abcd]\.basemaps\.cartocdn\.com\/.*/i,
+                        // Cache OpenStreetMap tiles already viewed (maps offline!)
+                        urlPattern: /^https:\/\/[abc]\.tile\.openstreetmap\.org\/.*/i,
                         handler: 'CacheFirst',
                         options: {
-                            cacheName: 'map-tiles',
+                            cacheName: 'map-tiles-osm',
                             expiration: { maxEntries: 500, maxAgeSeconds: 60 * 60 * 24 * 30 },
                         },
                     },

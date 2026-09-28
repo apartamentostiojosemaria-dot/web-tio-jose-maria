@@ -59,6 +59,8 @@ const HeroSection = ({ title, subtitle, config = {} }) => {
                         no se rompa entre líneas — el resto del título sí
                         puede romper si el ancho lo exige. */}
                     {title.replace(/Tío José María/g, 'Tío José María')}
+                    {/* The space keeps "María en" apart when the <br> is hidden (below lg). */}
+                    {' '}
                     <br className="hidden lg:block" />
                     <span className="text-accent">en la Sierra de Cazorla</span>
                 </h1>
