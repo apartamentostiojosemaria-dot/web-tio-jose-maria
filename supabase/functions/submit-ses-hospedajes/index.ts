@@ -28,7 +28,7 @@
 import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import {
     ALTA_MINISTERIO, CUBO_LIBRO_REGISTRO, ESPERA_BARRIDO_MIN, ESTADO, ESTADO_SES,
-    SECRETOS, cargarLlaveDeCron, cargarSecretos, hayCredenciales, secretosQueFaltan,
+    SECRETOS, ZONA, cargarLlaveDeCron, cargarSecretos, hayCredenciales, secretosQueFaltan,
 } from "./config.ts";
 import {
     consultarLote, mandarAnulacion, mandarParte, mandarReserva,
@@ -690,6 +690,17 @@ async function accionReserva(grupo: Grupo): Promise<Salida> {
         await anotarComunicacion(r.id, "reserva", {
             estado: ESTADO_SES.REINTENTAR, mensaje, intentos, reintentar: false,
         });
+        // This only fixes itself when someone types the surname, so it must reach a
+        // person: the first time and then once a day (the sweep runs hourly; 9 h
+        // Madrid). Booking 64 sat here 459 hours without anyone knowing (2-oct-2026).
+        const horaMadrid = Number(new Intl.DateTimeFormat("es-ES", { hour: "numeric", hour12: false, timeZone: ZONA }).format(new Date()));
+        if (intentos === 1 || horaMadrid === 9) {
+            await avisar({
+                titulo: `Falta el apellido del titular de ${r.booking_code}`,
+                texto: `La reserva de ${r.guest_name || r.booking_code} (entrada ${r.check_in}) no se puede comunicar al Ministerio: el titular solo tiene una palabra en el nombre. El plazo legal es de 24 h desde la reserva. Pon el nombre completo en el panel y el sistema la manda en la tanda siguiente.`,
+                detalle: [`Intentos: ${intentos}`],
+            });
+        }
         return { estado: "faltan", mensaje };
     }
 
