@@ -422,6 +422,35 @@ export function enderezaParentescos(viajeros: ViajeroParte[]): ViajeroParte[] {
     return viajeros;
 }
 
+/**
+ * El MIR exige teléfono o correo a CADA viajero, también a los niños (lote
+ * 49e6e6da rechazado el 8-oct-2026: «Datos de contacto obligatorios»). Un
+ * menor no suele tener ni lo uno ni lo otro y sus datos los da el adulto que
+ * le acompaña (art. 4 RD 933/2021): hereda el contacto de quien se declara su
+ * pariente; si no, el del titular del grupo; si no, el de la reserva. Sólo en
+ * memoria, como `enderezaParentescos`. Los adultos no heredan: su contacto es
+ * suyo y, si falta, lo señala `pegasDelParte`.
+ */
+export function heredaContactoMenores(viajeros: ViajeroParte[], contrato: ContratoParte): ViajeroParte[] {
+    const tieneContacto = (v: ViajeroParte) => Boolean(v.telefonoMovil || v.telefonoFijo || v.correo);
+    const adultos = viajeros.filter((v) => !esMenorDeEdad(v.edad) && tieneContacto(v));
+
+    for (const menor of viajeros.filter((v) => esMenorDeEdad(v.edad) && !tieneContacto(v))) {
+        const fuente = adultos.find((a) => a.parentescoMenorId === menor.id)
+            ?? adultos.find((a) => a.esTitular)
+            ?? adultos[0];
+        if (fuente) {
+            menor.telefonoMovil = fuente.telefonoMovil;
+            menor.telefonoFijo = fuente.telefonoFijo;
+            menor.correo = fuente.correo;
+        } else {
+            menor.telefonoMovil = contrato.titularContrato.telefono;
+            menor.correo = contrato.titularContrato.correo;
+        }
+    }
+    return viajeros;
+}
+
 // ---------------------------------------------------------------------------
 // Validación: qué le falta a un parte para poder mandarse
 // ---------------------------------------------------------------------------
@@ -466,8 +495,9 @@ export function pegasDelParte(viajeros: ViajeroParte[]): Pega[] {
         if (v.numeroDocumento && v.tipoDocumento === "NIF" && !v.apellido2) {
             pegas.push({ viajero: quien(v), falta: "el segundo apellido" });
         }
-        // El MIR exige una de las tres etiquetas telefono/telefono2/correo.
-        if (v.edad >= 18 && !v.telefonoMovil && !v.telefonoFijo && !v.correo) {
+        // El MIR exige una de las tres etiquetas telefono/telefono2/correo a
+        // todos; a los menores ya se lo ha dado `heredaContactoMenores`.
+        if (!v.telefonoMovil && !v.telefonoFijo && !v.correo) {
             pegas.push({ viajero: quien(v), falta: "un teléfono o un correo" });
         }
         if (debeFirmar(v.edad) && !v.firmaBase64) {

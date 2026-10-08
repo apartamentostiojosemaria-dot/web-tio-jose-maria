@@ -36,7 +36,7 @@ import {
 } from "./mir.ts";
 import { renderHojaRegistro } from "./hoja-registro.ts";
 import {
-    aContrato, aViajero, enderezaParentescos, pegasDelParte,
+    aContrato, aViajero, enderezaParentescos, heredaContactoMenores, pegasDelParte,
     type ContratoParte, type FilaReserva, type FilaViajero, type ViajeroParte,
 } from "./parte-modelo.ts";
 import { aBase64 } from "./zip.ts";
@@ -206,7 +206,9 @@ async function cargarGrupo(bookingId: number): Promise<Grupo | null> {
     // `enderezaParentescos` es la tercera red por si alguna fila entró por otra
     // puerta con el parentesco en la ficha del menor. No toca la base.
     const viajeros = enderezaParentescos(lista.map((f) => aViajero(f, r.check_in)));
-    return { reserva: r, filas: lista, contrato: aContrato(r, viajeros.length), viajeros };
+    const contrato = aContrato(r, viajeros.length);
+    heredaContactoMenores(viajeros, contrato);
+    return { reserva: r, filas: lista, contrato, viajeros };
 }
 
 /** Reservas con viajeros que todavía no se han comunicado y ya han entrado. */
