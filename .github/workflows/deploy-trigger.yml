@@ -1,0 +1,37 @@
+# Deploy tjm-jobs (Trigger.dev) on every push to main that touches it.
+# Before 9-oct-2026 deploys were manual `npm run deploy` from a laptop.
+name: Deploy Trigger.dev
+
+on:
+  push:
+    branches: [main]
+    paths: ["tjm-jobs/**", ".github/workflows/deploy-trigger.yml"]
+  workflow_dispatch:
+
+concurrency:
+  group: trigger-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: tjm-jobs
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: tjm-jobs/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - name: Deploy to prod
+        env:
+          TRIGGER_ACCESS_TOKEN: ${{ secrets.TRIGGER_ACCESS_TOKEN }}
+        run: |
+          test -n "$TRIGGER_ACCESS_TOKEN" || { echo "::error::Falta el secreto TRIGGER_ACCESS_TOKEN"; exit 1; }
+          v=$(node -p "require('./package.json').devDependencies['trigger.dev']")
+          npx --yes "trigger.dev@$v" deploy --env prod

@@ -97,7 +97,14 @@ export async function importarCorreosMisterPlan(opts: Opciones = {}): Promise<Re
     if (aErr) throw new Error(`apartments: ${aErr.message}`);
     const aptPorSlug = new Map((apts || []).map((a: { id: number; slug: string; name: string }) => [a.slug, a]));
 
-    const client = new ImapFlow({ host: "imap.gmail.com", port: 993, secure: true, auth: { user, pass }, logger: false });
+    // Explicit timeouts: imapflow's default socketTimeout is 5 min, longer than the task's
+    // maxDuration (120 s). On 24-sep a stalled IMAP socket let the run hang until Trigger.dev
+    // killed it (MAX_DURATION_EXCEEDED). Now a stall fails fast and the retry (or the next
+    // 10-min pass) picks the mail up; idempotent by Message-ID.
+    const client = new ImapFlow({
+        host: "imap.gmail.com", port: 993, secure: true, auth: { user, pass }, logger: false,
+        connectionTimeout: 20_000, greetingTimeout: 15_000, socketTimeout: 45_000,
+    });
     await client.connect();
     try {
         // Carpeta «Todos» de Gmail (nombre según idioma): la que tiene special-use \All.
