@@ -70,6 +70,31 @@ function semaforoDe(fila, hoy) {
     const faltan = Number(fila.faltan_cuantos ?? Math.max(total - rellenos, 0));
     const yaMandado = fila.estado_envio === 'enviado';
     const conProblema = fila.estado_envio === 'error';
+    // Migración 0058: el parte puede estar relleno y aun así no poder salir
+    // (falta un dato que el Ministerio exige). Antes salía VERDE «Listo»
+    // (TJM-22DC48, 10-oct-2026, con el plazo venciendo ese día).
+    const faltaUnDato = fila.estado_envio === 'faltan_datos';
+    const esperandoRespuesta = fila.estado_envio === 'esperando';
+
+    if (faltaUnDato) {
+        return {
+            tono: 'rojo', color: 'bg-red-500', etiqueta: 'Falta un dato',
+            // The municipality code is chosen by Jesús, not by the guest.
+            texto: fila.motivo && !/INE/.test(fila.motivo)
+                ? `No se puede mandar: ${fila.motivo}. Pídeselo al huésped.`
+                : `No se puede mandar${fila.motivo ? `: ${fila.motivo}` : ''}. Avisa a Jesús.`,
+            mandado: false, listo: false, noTocaAun: false, faltan, rellenos, total,
+        };
+    }
+    if (esperandoRespuesta) {
+        return {
+            tono: 'verde', color: 'bg-rural-600', etiqueta: 'Mandado',
+            texto: fila.ultimo_envio
+                ? `Mandado el ${fechaCorta(String(fila.ultimo_envio).slice(0, 10))}. Falta que el Ministerio lo confirme.`
+                : 'Mandado. Falta que el Ministerio lo confirme.',
+            mandado: true, listo: true, noTocaAun: false, faltan: 0, rellenos, total,
+        };
+    }
 
     // ¿Todavía no toca? Se les pide 7 días antes de que lleguen.
     const diasParaLlegar = Math.round(

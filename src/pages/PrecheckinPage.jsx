@@ -136,6 +136,10 @@ const emptyTraveler = (isTitular = false) => ({
     // el huésped no elige, la base lo deduce del nombre + CP. Al Ministerio
     // hay que mandarle el código, no el nombre (rechazo del 19-sep-2026).
     direccion_municipio_ine: '',
+    // «Mi pueblo no aparece»: el huésped no encuentra su municipio en la
+    // lista. Se acepta lo escrito y el código lo elige Jesús desde el panel;
+    // sin esta salida el huésped no podía terminar (auditoría 10-oct-2026).
+    municipio_libre: false,
     direccion_cp: '',
     direccion_pais: 'ESP',
     telefono_fijo: '',
@@ -242,7 +246,7 @@ function pegasDe(t, fechaEntrada, todos = [], idx = -1) {
     if (!t.direccion_via.trim()) p.direccion_via = 'err_calle';
     if (!t.direccion_municipio.trim()) p.direccion_municipio = 'err_municipio';
     // En España el Ministerio quiere el código del INE: sólo lo da la lista.
-    else if (t.direccion_pais === 'ESP' && !t.direccion_municipio_ine) {
+    else if (t.direccion_pais === 'ESP' && !t.direccion_municipio_ine && !t.municipio_libre) {
         p.direccion_municipio = 'err_municipio_lista';
     }
     if (!t.direccion_pais) p.direccion_pais = 'err_pais';
@@ -277,7 +281,9 @@ function pegasDe(t, fechaEntrada, todos = [], idx = -1) {
     }
 
     // Lo que choca con los demás de la reserva.
-    const otros = todos.filter((_, j) => j !== idx);
+    // Sólo contra los anteriores: el repetido se marca en la segunda ficha y
+    // la primera, que está bien, puede avanzar.
+    const otros = idx < 0 ? [] : todos.filter((_, j) => j < idx);
     if (t.soporte_documento.trim() && !p.soporte_documento
         && otros.some((o) => o.soporte_documento && normalizaSoporte(o.soporte_documento) === normalizaSoporte(t.soporte_documento))) {
         p.soporte_documento = 'err_soporte_repetido';
@@ -291,20 +297,23 @@ function pegasDe(t, fechaEntrada, todos = [], idx = -1) {
     }
 
     // Contacto: forma correcta si se pone, y todo adulto da al menos uno.
-    if (t.email.trim() && !correoCuadra(t.email)) p.email = 'err_email';
-    if (t.telefono_movil.trim() && !telefonoCuadra(t.telefono_movil)) p.telefono_movil = 'err_telefono';
+    const veContacto = edad === null || edad >= 14;
+    if (veContacto && t.email.trim() && !correoCuadra(t.email)) p.email = 'err_email';
+    if (veContacto && t.telefono_movil.trim() && !telefonoCuadra(t.telefono_movil)) p.telefono_movil = 'err_telefono';
     const conContacto = (t.telefono_movil.trim() && telefonoCuadra(t.telefono_movil))
         || (t.email.trim() && correoCuadra(t.email));
     if (!p.telefono_movil && !p.email && edad !== null && edad >= 18 && !conContacto) {
         p.telefono_movil = 'err_contacto';
     }
-    if (documentoEspanol && !t.apellido_segundo.trim()) {
+    // Segundo apellido: sólo con DNI. Con NIE no lo exige el Ministerio y
+    // deja fuera a residentes extranjeros con un solo apellido.
+    if (t.numero_documento.trim() && t.tipo_documento === 'D' && !t.apellido_segundo.trim()) {
         p.apellido_segundo = 'err_apellido2';
     }
     // Firma: a partir de los CATORCE. No 16 ni 18. Lo dice el art. 4.2 del
     // RD 933/2021; el 16 que circula viene de una norma de 1959 ya superada.
     if (edad !== null && edad >= EDAD_FIRMA && !t.firma_base64) p.firma_base64 = 'err_firma';
-    if (t.is_titular && !t.telefono_movil.trim() && !p.telefono_movil) p.telefono_movil = 'err_movil';
+    if (t.is_titular && !t.telefono_movil.trim() && !t.email.trim() && !p.telefono_movil) p.telefono_movil = 'err_contacto';
     return p;
     // El PARENTESCO ya no se pide aquí. Va en el repaso y se guarda en la
     // ficha del ADULTO, no en la del menor (ver `pegasDeLosMenores`).
@@ -601,10 +610,15 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
                 p_travelers: travelers.map(({ acompana_a, ...t }) => ({
                     ...t,
                     apellido_segundo: t.apellido_segundo || null,
+                    // DNI/NIE sin puntos ni guiones: así se compara y así viaja.
+                    numero_documento: ['D', 'N'].includes(t.tipo_documento)
+                        ? limpioDoc(t.numero_documento) : t.numero_documento.trim(),
                     soporte_documento: t.soporte_documento ? normalizaSoporte(t.soporte_documento) : null,
                     telefono_fijo: t.telefono_fijo || null,
-                    telefono_movil: t.telefono_movil || null,
-                    email: t.email || null,
+                    // Los menores de 14 no ven la caja de contacto: lo que quedara
+                    // escrito ahí no se manda (lo heredan de su adulto al enviar).
+                    telefono_movil: (edadEn(t.fecha_nacimiento, fechaEntrada) ?? 99) < 14 ? null : (t.telefono_movil || null),
+                    email: (edadEn(t.fecha_nacimiento, fechaEntrada) ?? 99) < 14 ? null : (t.email || null),
                     // El parentesco va SOLO en la ficha del adulto que
                     // acompaña a un menor. En la del menor, siempre vacío.
                     parentesco: (acompana_a === null || acompana_a === undefined)
@@ -1002,8 +1016,10 @@ const PasoViajero = ({ idx, traveler: t, travelers, total, fechaEntrada, paises,
                     ayuda={t.direccion_pais === 'ESP' ? tx('municipio_ayuda') : undefined}>
                     <CampoMunicipio id={`dm${idx}`} valor={t.direccion_municipio} cp={t.direccion_cp}
                         esEspana={t.direccion_pais === 'ESP'} elegido={!!t.direccion_municipio_ine}
+                        libre={!!t.municipio_libre}
                         onEscribir={(v) => { cambiar(idx, 'direccion_municipio', v); cambiar(idx, 'direccion_municipio_ine', ''); }}
-                        onElegir={(m) => { cambiar(idx, 'direccion_municipio', m.nombre); cambiar(idx, 'direccion_municipio_ine', m.codigo); }} />
+                        onElegir={(m) => { cambiar(idx, 'direccion_municipio', m.nombre); cambiar(idx, 'direccion_municipio_ine', m.codigo); cambiar(idx, 'municipio_libre', false); }}
+                        onNoAparece={() => cambiar(idx, 'municipio_libre', true)} />
                 </Campo>
                 <Campo etiqueta={tx('cp')} id={`dc${idx}`} error={pegas.direccion_cp}>
                     <input id={`dc${idx}`} className={cInput} type="text" inputMode="numeric"
@@ -1405,7 +1421,8 @@ const Campo = ({ etiqueta, ayuda, error, id, children }) => (
 // El municipio español se elige de la relación del INE (tjm_municipios_buscar,
 // migración 0042): así la ficha lleva el código que exige el Ministerio y no
 // hay que adivinarlo después. Fuera de España es un texto libre.
-const CampoMunicipio = ({ id, valor, cp, esEspana, elegido, onEscribir, onElegir }) => {
+const CampoMunicipio = ({ id, valor, cp, esEspana, elegido, libre, onEscribir, onElegir, onNoAparece }) => {
+    const { tx } = useIdioma();
     const [opciones, setOpciones] = useState([]);
     const [abierto, setAbierto] = useState(false);
     const ultimaBusqueda = useRef(0);
@@ -1414,7 +1431,11 @@ const CampoMunicipio = ({ id, valor, cp, esEspana, elegido, onEscribir, onElegir
         if (!esEspana || elegido || !abierto || valor.trim().length < 2) { setOpciones([]); return; }
         const marca = ++ultimaBusqueda.current;
         const timer = setTimeout(async () => {
-            const { data } = await supabase.rpc('tjm_municipios_buscar', { p_q: valor, p_cp: cp || null });
+            const { data, error } = await supabase.rpc('tjm_municipios_buscar', { p_q: valor, p_cp: cp || null });
+            // The list was denied to guests from 20-sep to 10-oct-2026 and nobody
+            // knew: the error was swallowed. Leave a trace in the console at least.
+            // eslint-disable-next-line no-console
+            if (error) console.error('tjm_municipios_buscar:', error.message);
             if (marca === ultimaBusqueda.current) setOpciones(data || []);
         }, 250);
         return () => clearTimeout(timer);
@@ -1446,6 +1467,16 @@ const CampoMunicipio = ({ id, valor, cp, esEspana, elegido, onEscribir, onElegir
                         </li>
                     ))}
                 </ul>
+            )}
+            {esEspana && !elegido && valor.trim().length >= 3 && (
+                libre ? (
+                    <p className="mt-2 text-sm text-gray-600">{tx('municipio_libre_ok')}</p>
+                ) : (
+                    <button type="button" onClick={onNoAparece}
+                        className="mt-2 min-h-[44px] px-3 rounded-xl text-rural-700 bg-rural-50 font-bold text-sm">
+                        {tx('municipio_no_aparece')}
+                    </button>
+                )
             )}
         </div>
     );

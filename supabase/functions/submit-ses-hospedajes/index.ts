@@ -415,7 +415,20 @@ async function accionMandar(grupo: Grupo, conDocumento = true): Promise<Salida> 
         const resumen = pegas.slice(0, 4).map((p) => `${p.viajero}: falta ${p.falta}`).join(" · ");
         // Un parte ya comunicado no vuelve atrás: se avisa y punto.
         if (!yaComunicado) {
+            const yaEstaba = grupo.filas.every((f) => f.mir_response_status === "faltan_datos");
             await anotar(grupo, { estado: "faltan_datos", payload: { mensaje: resumen, pegas } });
+            // Once they are in, the 24 h clock is running: a stuck report has to
+            // reach a person: the first time, and again on each daily batch run
+            // (the batch is the call without document). Until 10-oct-2026 this
+            // only went to the panel, painted green.
+            const hoyMadrid = new Intl.DateTimeFormat("en-CA", { timeZone: ZONA }).format(new Date());
+            if (String(grupo.reserva.check_in) <= hoyMadrid && (!yaEstaba || !conDocumento)) {
+                await avisar({
+                    titulo: `El parte de ${grupo.reserva.booking_code} no puede salir`,
+                    texto: `Ya han entrado y falta: ${resumen}. El plazo legal es de 24 h desde la entrada.`,
+                    detalle: [`Entrada: ${grupo.reserva.check_in}`],
+                });
+            }
         }
         return { estado: "faltan", mensaje: `No se puede mandar todavía. ${resumen}.`, detalle: { pegas } };
     }
@@ -548,6 +561,19 @@ async function comprobarComunicacion(
             mensaje: `Rechazado: ${r.errores.join(" · ")}`,
             intentos: com.intentos, lote: com.lote,
             acuse: r.crudo, reintentar: false,
+        });
+        // A rejected booking never reached the Ministry: it must not count as
+        // communicated. Otherwise it is never resent and, if later cancelled,
+        // its annulment retries forever with nothing to annul (TJM-69BB85,
+        // 10-oct-2026: Booking's masked e-mail «m***@***.com»).
+        if (tipo === "reserva") {
+            await sb.from("guest_bookings")
+                .update({ reserva_comunicada_at: null, updated_at: ahora() }).eq("id", bookingId);
+        }
+        await avisar({
+            titulo: `El Ministerio ha rechazado la ${tipo} de la reserva ${bookingId}`,
+            texto: `Motivo: ${r.errores.join(" · ")}. Hay que corregir el dato en el panel; el sistema la vuelve a mandar en la pasada siguiente.`,
+            detalle: [`Lote: ${com.lote}`],
         });
         return { estado: "error", mensaje: `El Ministerio ha RECHAZADO la ${tipo}: ${r.errores.join(" · ")}` };
     }
@@ -700,6 +726,26 @@ async function accionReserva(grupo: Grupo): Promise<Salida> {
             await avisar({
                 titulo: `Falta el apellido del titular de ${r.booking_code}`,
                 texto: `La reserva de ${r.guest_name || r.booking_code} (entrada ${r.check_in}) no se puede comunicar al Ministerio: el titular solo tiene una palabra en el nombre. El plazo legal es de 24 h desde la reserva. Pon el nombre completo en el panel y el sistema la manda en la tanda siguiente.`,
+                detalle: [`Intentos: ${intentos}`],
+            });
+        }
+        return { estado: "faltan", mensaje };
+    }
+
+    // The Ministry needs a phone or an e-mail for the holder. Placeholders and
+    // masked addresses are already dropped by `aContrato`: if nothing real is
+    // left, a person has to add it; inventing one is not an option.
+    const tit = grupo.contrato.titularContrato;
+    if (!tit.telefono && !tit.correo) {
+        const mensaje = "Falta un teléfono o un correo de verdad del titular de la reserva.";
+        await anotarComunicacion(r.id, "reserva", {
+            estado: ESTADO_SES.REINTENTAR, mensaje, intentos, reintentar: false,
+        });
+        const horaMadrid = Number(new Intl.DateTimeFormat("es-ES", { hour: "numeric", hour12: false, timeZone: ZONA }).format(new Date()));
+        if (intentos === 1 || horaMadrid === 9) {
+            await avisar({
+                titulo: `Falta el contacto del titular de ${r.booking_code}`,
+                texto: `La reserva de ${r.guest_name || r.booking_code} (entrada ${r.check_in}) no se puede comunicar al Ministerio: no tiene ni teléfono ni correo reales (el de la plataforma viene tapado o es de relleno). Pon uno en el panel y el sistema la manda en la pasada siguiente.`,
                 detalle: [`Intentos: ${intentos}`],
             });
         }

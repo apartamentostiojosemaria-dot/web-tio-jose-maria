@@ -339,9 +339,22 @@ export interface FilaReserva {
  * sale igual; si no, lo señala `pegasDelParte`.
  */
 const PATRON_CORREO_MIR = /^[^@]+@[^.]+\..+$/;
+// Placeholders our importers write when a booking has no e-mail, and the
+// masked addresses some channels hand over («m***@***.com»). They pass the
+// XSD pattern, but they are not the guest's: they must never reach a police
+// report (60, 63, 75, 76 went out with them; 112 was rejected, 10-oct-2026).
+const CORREO_DE_RELLENO = /(\*|@example\.invalid$|@tiojosemaria\.local$|\.invalid$|\.local$)/i;
 export const correoValido = (v: string | null | undefined): string | null => {
     const c = (v || "").replace(/\s+/g, "");
-    return PATRON_CORREO_MIR.test(c) ? c : null;
+    return PATRON_CORREO_MIR.test(c) && !CORREO_DE_RELLENO.test(c) ? c : null;
+};
+
+/** A phone with at least 9 digits and nothing masked. */
+export const telefonoValido = (v: string | null | undefined): string | null => {
+    const t = (v || "").trim();
+    if (!t || t.includes("*")) return null;
+    const cifras = t.replace(/\D/g, "");
+    return cifras.length >= 9 && cifras.length <= 15 ? t : null;
 };
 
 /**
@@ -409,8 +422,8 @@ export function aContrato(r: FilaReserva, cuantosViajeros: number): ContratoPart
     const salidaReal = r.checkout_at ? aFechaHoraLocal(r.checkout_at) : null;
 
     const titular = partirNombre(r.guest_name);
-    titular.correo = (r.guest_email || "").trim() || null;
-    titular.telefono = (r.guest_phone || "").trim() || null;
+    titular.correo = correoValido(r.guest_email);
+    titular.telefono = telefonoValido(r.guest_phone);
 
     return {
         bookingId: r.id,

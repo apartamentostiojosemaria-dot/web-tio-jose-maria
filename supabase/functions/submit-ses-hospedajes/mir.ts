@@ -256,7 +256,7 @@ export function xmlReservaHospedaje(opts: {
         `<apellido1>${esc(corta(t.apellido1, 50))}</apellido1>`,
         opt("apellido2", corta(t.apellido2, 50)),
         opt("telefono", corta(t.telefono, 20)),
-        opt("correo", corta(t.correo, 50)),
+        opt("correo", corta(t.correo, 250)),
         "</persona>",
     ].join("");
 

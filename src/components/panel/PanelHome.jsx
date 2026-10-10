@@ -76,9 +76,10 @@ const PanelHome = ({ ir, perfil, secciones = [] }) => {
                     .lt('scheduled_date', hoy)
                     .gte('scheduled_date', dentroDe(-DIAS_DEUDA_VIEJA))
                     .order('scheduled_date', { ascending: true }),
-                // El parte de los que llegan pronto (por fechas, sin esperar a saber cuáles).
+                // El parte de los que llegan pronto y de los que ya están dentro
+                // (el plazo legal corre desde la entrada: 24 h).
                 supabase.from('v_parte_estado').select('*')
-                    .gte('check_in', hoy)
+                    .gte('check_out', hoy)
                     .lte('check_in', dentroDe(DIAS_AVISO_POLICIA)),
             ]);
 
@@ -343,6 +344,29 @@ async function construirAvisos(proximas, vencidas, limpiezasAtrasadas, hoy, dent
             });
         }
     }
+
+    // 1b) Partes que no pueden salir: falta un dato o el Ministerio los
+    // rechazó. Antes no avisaba nadie y el panel los pintaba en verde
+    // (TJM-22DC48, 10-oct-2026). Cuentan también los que ya están dentro.
+    (parte || []).forEach((p) => {
+        if (!['faltan_datos', 'error'].includes(p.estado_envio)) return;
+        if (avisos.some((a) => a.clave === `policia-${p.booking_id}`)) return;
+        const yaDentro = p.check_in <= hoy;
+        avisos.push({
+            clave: `parte-${p.booking_id}`,
+            tono: yaDentro ? 'urgente' : 'atencion',
+            icono: Shield,
+            titulo: p.estado_envio === 'faltan_datos'
+                ? `El parte de la policía de ${p.guest_name || 'este huésped'} no puede salir`
+                : `El Ministerio no ha aceptado el parte de ${p.guest_name || 'este huésped'}`,
+            texto: p.estado_envio === 'faltan_datos' && p.motivo && !/INE/.test(p.motivo)
+                ? `${p.motivo}. Pídeselo al huésped${yaDentro ? ' hoy: el plazo es de 24 horas desde que entró' : ''}.`
+                : `${p.motivo ? `${p.motivo}. ` : ''}Avisa a Jesús.`,
+            accion: 'Ver el parte',
+            seccion: 'parte',
+            params: { reservaId: p.booking_id },
+        });
+    });
 
     // 2) Reservas con dinero pendiente
     proximas.forEach((r) => {
