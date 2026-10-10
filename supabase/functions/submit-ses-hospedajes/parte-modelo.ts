@@ -331,6 +331,40 @@ export interface FilaReserva {
     } | null;
 }
 
+/**
+ * El XSD del MIR valida el correo con `[^@]+@[^\.]+\..+` y, si no casa,
+ * rechaza el lote ENTERO con 10118 (TJM-006467, 9-oct-2026: una huésped
+ * escribió su número de soporte en el campo del correo). Un correo que no
+ * pasa se trata como si no estuviera: si el viajero tiene teléfono el parte
+ * sale igual; si no, lo señala `pegasDelParte`.
+ */
+const PATRON_CORREO_MIR = /^[^@]+@[^.]+\..+$/;
+export const correoValido = (v: string | null | undefined): string | null => {
+    const c = (v || "").replace(/\s+/g, "");
+    return PATRON_CORREO_MIR.test(c) ? c : null;
+};
+
+/**
+ * Letra de control de un DNI o NIE (algoritmo oficial, módulo 23). Un dígito
+ * mal tecleado en el formulario se detecta aquí, antes de que el Ministerio
+ * lo rechace o, peor, lo acepte con el documento de otra persona.
+ */
+const LETRAS_DNI = "TRWAGMYFPDXBNJZSQVHLCKE";
+export function documentoCuadra(tipo: string, numero: string): boolean {
+    const n = (numero || "").toUpperCase().replace(/[\s-]/g, "");
+    if (tipo === "NIF") {
+        const m = n.match(/^(\d{8})([A-Z])$/);
+        return !!m && LETRAS_DNI[Number(m[1]) % 23] === m[2];
+    }
+    if (tipo === "NIE") {
+        const m = n.match(/^([XYZ])(\d{7})([A-Z])$/);
+        if (!m) return false;
+        const cifras = String("XYZ".indexOf(m[1])) + m[2];
+        return LETRAS_DNI[Number(cifras) % 23] === m[3];
+    }
+    return true;
+}
+
 export function aViajero(f: FilaViajero, fechaEntrada: string): ViajeroParte {
     return {
         id: f.id,
@@ -351,7 +385,7 @@ export function aViajero(f: FilaViajero, fechaEntrada: string): ViajeroParte {
         pais: codigoPais(f.direccion_pais),
         telefonoFijo: (f.telefono_fijo || "").trim() || null,
         telefonoMovil: (f.telefono_movil || "").trim() || null,
-        correo: (f.email || "").trim() || null,
+        correo: correoValido(f.email),
         parentesco: f.parentesco || null,
         parentescoMenorId: f.parentesco_menor_id || null,
         firmaBase64: f.firma_base64 || null,
@@ -470,6 +504,11 @@ export function pegasDelParte(viajeros: ViajeroParte[]): Pega[] {
         // tienen DNI y sus datos los da quien los acompaña.
         if (v.edad >= 18 && !v.numeroDocumento) {
             pegas.push({ viajero: quien(v), falta: "el número del documento" });
+        } else if (v.numeroDocumento && !documentoCuadra(v.tipoDocumento, v.numeroDocumento)) {
+            pegas.push({
+                viajero: quien(v),
+                falta: `un número de documento correcto (la letra no cuadra con «${v.numeroDocumento}»: hay una cifra mal escrita)`,
+            });
         }
         if (!v.fechaNacimiento) pegas.push({ viajero: quien(v), falta: "la fecha de nacimiento" });
         if (!v.nacionalidad) pegas.push({ viajero: quien(v), falta: "la nacionalidad" });
@@ -502,6 +541,21 @@ export function pegasDelParte(viajeros: ViajeroParte[]): Pega[] {
         }
         if (debeFirmar(v.edad) && !v.firmaBase64) {
             pegas.push({ viajero: quien(v), falta: "la firma" });
+        }
+    }
+
+    // La misma persona dos veces: el MIR rechaza el lote («No se admiten datos
+    // repetidos de personas», TJM-F03114, 20-sep-2026). Pasa cuando el grupo
+    // rellena el formulario otra vez con un documento tecleado distinto y el
+    // índice de la base no los ve iguales (TJM-111, 4 y 9-oct-2026).
+    const vistos = new Map<string, number>();
+    for (const v of viajeros) {
+        const clave = [v.nombre, v.apellido1, v.fechaNacimiento]
+            .map((x) => (x || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase().trim())
+            .join("|");
+        vistos.set(clave, (vistos.get(clave) ?? 0) + 1);
+        if (vistos.get(clave) === 2) {
+            pegas.push({ viajero: quien(v), falta: "quitar una de sus fichas: está dos veces en la reserva" });
         }
     }
 
