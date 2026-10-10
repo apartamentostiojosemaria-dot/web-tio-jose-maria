@@ -169,11 +169,69 @@ const seAbreEl = (checkIn) => {
     return { clave: 'abre_con_fecha', fecha: d.toISOString().slice(0, 10) };
 };
 
+// ---------------------------------------------------------------------------
+// Que lo escrito tenga la forma correcta. El Ministerio rechaza el parte
+// ENTERO por un solo dato mal formado (10-oct-2026: un número de soporte
+// escrito en el campo del correo, dos DNI con una cifra cambiada y un
+// municipio escrito a mano). Las mismas reglas las repite la base en
+// `submit_traveler_records` (migración 0057): esto es la ayuda en pantalla;
+// aquello, la puerta.
+// ---------------------------------------------------------------------------
+
+const LETRAS_DNI = 'TRWAGMYFPDXBNJZSQVHLCKE';
+const limpioDoc = (v) => String(v || '').toUpperCase().replace(/[\s.-]/g, '');
+
+/** DNI: 8 cifras + la letra que les toca. NIE: X/Y/Z + 7 cifras + letra. */
+function documentoCuadra(tipo, numero) {
+    const n = limpioDoc(numero);
+    if (tipo === 'D') {
+        const m = n.match(/^(\d{8})([A-Z])$/);
+        return !!m && LETRAS_DNI[Number(m[1]) % 23] === m[2];
+    }
+    if (tipo === 'N') {
+        const m = n.match(/^([XYZ])(\d{7})([A-Z])$/);
+        return !!m && LETRAS_DNI[Number(`${'XYZ'.indexOf(m[1])}${m[2]}`) % 23] === m[3];
+    }
+    return n.length >= 4;
+}
+
+/**
+ * Soporte del DNI: tres letras y seis cifras (CID145306). Se lee mucho la O
+ * como cero (CH0184661): en las tres primeras posiciones un 0 es una O.
+ * El del NIE/TIE es una letra y ocho cifras (E12345678); se admiten las dos
+ * formas, que hay certificados de registro con el formato del DNI.
+ */
+const normalizaSoporte = (v) => {
+    const s = limpioDoc(v);
+    return s.slice(0, 3).replace(/0/g, 'O') + s.slice(3);
+};
+function soporteCuadra(tipo, soporte) {
+    const s = normalizaSoporte(soporte);
+    if (tipo === 'D') return /^[A-Z]{3}\d{6}$/.test(s);
+    if (tipo === 'N') return /^[A-Z]{3}\d{6}$/.test(s) || /^[A-Z]\d{8}$/.test(s);
+    return true;
+}
+
+/** El patrón del XSD del Ministerio para `correo`. */
+const correoCuadra = (v) => /^[^@\s]+@[^.\s@]+\.[^\s@]+$/.test(String(v || '').trim());
+
+/** De 9 a 15 cifras, con o sin prefijo. */
+const telefonoCuadra = (v) => {
+    const cifras = String(v || '').replace(/\D/g, '');
+    return cifras.length >= 9 && cifras.length <= 15;
+};
+
+/** Misma persona = mismo nombre, primer apellido y fecha de nacimiento. */
+const clavePersona = (t) => [t.nombre, t.apellido_primero, t.fecha_nacimiento]
+    .map((x) => String(x || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().trim())
+    .join('|');
+
 /**
  * Qué le falta a este viajero para poder seguir.
  * Devuelve CLAVES de `textos.js` (`err_*`), no frases: se traducen al pintar.
+ * Con `todos` e `idx` mira además lo que choca con los demás viajeros.
  */
-function pegasDe(t, fechaEntrada) {
+function pegasDe(t, fechaEntrada, todos = [], idx = -1) {
     const p = {};
     if (!t.nombre.trim()) p.nombre = 'err_nombre';
     if (!t.apellido_primero.trim()) p.apellido_primero = 'err_apellido1';
@@ -183,13 +241,30 @@ function pegasDe(t, fechaEntrada) {
     if (!t.nacionalidad) p.nacionalidad = 'err_pais';
     if (!t.direccion_via.trim()) p.direccion_via = 'err_calle';
     if (!t.direccion_municipio.trim()) p.direccion_municipio = 'err_municipio';
+    // En España el Ministerio quiere el código del INE: sólo lo da la lista.
+    else if (t.direccion_pais === 'ESP' && !t.direccion_municipio_ine) {
+        p.direccion_municipio = 'err_municipio_lista';
+    }
     if (!t.direccion_pais) p.direccion_pais = 'err_pais';
+    if (t.direccion_pais === 'ESP') {
+        const cp = String(t.direccion_cp || '').trim();
+        if (!/^\d{5}$/.test(cp)) p.direccion_cp = 'err_cp';
+        // Las dos primeras cifras del CP son la provincia, igual que en el
+        // código del INE: si no coinciden, uno de los dos está mal.
+        else if (t.direccion_municipio_ine && cp.slice(0, 2) !== String(t.direccion_municipio_ine).slice(0, 2)) {
+            p.direccion_cp = 'err_cp_provincia';
+        }
+    }
 
     const edad = edadEn(t.fecha_nacimiento, fechaEntrada);
+    if (edad !== null && edad > 110) p.fecha_nacimiento = 'err_fecha_rara';
     // El documento sólo se le pide a los mayores de edad: un niño puede no
     // tener ninguno todavía y sus datos los da quien lo acompaña.
     if ((edad === null || edad >= 18) && !t.numero_documento.trim()) {
         p.numero_documento = 'err_documento';
+    } else if (t.numero_documento.trim() && !documentoCuadra(t.tipo_documento, t.numero_documento)) {
+        p.numero_documento = t.tipo_documento === 'D' ? 'err_dni_letra'
+            : t.tipo_documento === 'N' ? 'err_nie_letra' : 'err_documento';
     }
     // Con DNI o NIE, el Ministerio exige tambien el segundo apellido y el
     // numero de soporte: sin ellos rechaza el parte entero.
@@ -197,6 +272,31 @@ function pegasDe(t, fechaEntrada) {
         && (t.tipo_documento === 'D' || t.tipo_documento === 'N');
     if (documentoEspanol && !t.soporte_documento.trim()) {
         p.soporte_documento = 'err_soporte';
+    } else if (documentoEspanol && !soporteCuadra(t.tipo_documento, t.soporte_documento)) {
+        p.soporte_documento = t.tipo_documento === 'D' ? 'err_soporte_forma' : 'err_soporte_forma_nie';
+    }
+
+    // Lo que choca con los demás de la reserva.
+    const otros = todos.filter((_, j) => j !== idx);
+    if (t.soporte_documento.trim() && !p.soporte_documento
+        && otros.some((o) => o.soporte_documento && normalizaSoporte(o.soporte_documento) === normalizaSoporte(t.soporte_documento))) {
+        p.soporte_documento = 'err_soporte_repetido';
+    }
+    if (t.numero_documento.trim() && !p.numero_documento
+        && otros.some((o) => limpioDoc(o.numero_documento) === limpioDoc(t.numero_documento))) {
+        p.numero_documento = 'err_doc_repetido';
+    }
+    if (t.nombre.trim() && t.fecha_nacimiento && otros.some((o) => clavePersona(o) === clavePersona(t))) {
+        p.nombre = 'err_persona_repetida';
+    }
+
+    // Contacto: forma correcta si se pone, y todo adulto da al menos uno.
+    if (t.email.trim() && !correoCuadra(t.email)) p.email = 'err_email';
+    if (t.telefono_movil.trim() && !telefonoCuadra(t.telefono_movil)) p.telefono_movil = 'err_telefono';
+    const conContacto = (t.telefono_movil.trim() && telefonoCuadra(t.telefono_movil))
+        || (t.email.trim() && correoCuadra(t.email));
+    if (!p.telefono_movil && !p.email && edad !== null && edad >= 18 && !conContacto) {
+        p.telefono_movil = 'err_contacto';
     }
     if (documentoEspanol && !t.apellido_segundo.trim()) {
         p.apellido_segundo = 'err_apellido2';
@@ -204,7 +304,7 @@ function pegasDe(t, fechaEntrada) {
     // Firma: a partir de los CATORCE. No 16 ni 18. Lo dice el art. 4.2 del
     // RD 933/2021; el 16 que circula viene de una norma de 1959 ya superada.
     if (edad !== null && edad >= EDAD_FIRMA && !t.firma_base64) p.firma_base64 = 'err_firma';
-    if (t.is_titular && !t.telefono_movil.trim()) p.telefono_movil = 'err_movil';
+    if (t.is_titular && !t.telefono_movil.trim() && !p.telefono_movil) p.telefono_movil = 'err_movil';
     return p;
     // El PARENTESCO ya no se pide aquí. Va en el repaso y se guarda en la
     // ficha del ADULTO, no en la del menor (ver `pegasDeLosMenores`).
@@ -441,7 +541,7 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
 
     const siguiente = () => {
         const idx = paso - 1;
-        const pegas = pegasDe(travelers[idx], fechaEntrada);
+        const pegas = pegasDe(travelers[idx], fechaEntrada, travelers, idx);
         marcarTocados(idx);
         if (Object.keys(pegas).length > 0) return;
         setPaso(paso + 1);
@@ -488,7 +588,7 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
         .filter((m) => m.falta).length;
     const pagadorPendiente = preguntarPagador
         && (!pagador.quien || (pagador.quien === 'otra' && !pagador.nombre.trim()));
-    const incompletos = travelers.filter((t) => Object.keys(pegasDe(t, fechaEntrada)).length > 0).length;
+    const incompletos = travelers.filter((t, i) => Object.keys(pegasDe(t, fechaEntrada, travelers, i)).length > 0).length;
     const sePuedeEnviar = incompletos === 0 && menoresPendientes === 0 && !pagadorPendiente;
 
     const enviar = async () => {
@@ -501,7 +601,7 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
                 p_travelers: travelers.map(({ acompana_a, ...t }) => ({
                     ...t,
                     apellido_segundo: t.apellido_segundo || null,
-                    soporte_documento: t.soporte_documento || null,
+                    soporte_documento: t.soporte_documento ? normalizaSoporte(t.soporte_documento) : null,
                     telefono_fijo: t.telefono_fijo || null,
                     telefono_movil: t.telefono_movil || null,
                     email: t.email || null,
@@ -529,6 +629,7 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
             if (msg.includes('precheckin_too_early')) setErrorEnvio('env_pronto');
             else if (msg.includes('booking_status_invalid')) setErrorEnvio('env_sin_confirmar');
             else if (msg.includes('booking_already_past')) setErrorEnvio('env_pasada');
+            else if (msg.includes('datos_invalidos')) setErrorEnvio('env_datos');
             else setErrorEnvio('env_fallo');
         } finally {
             setEnviando(false);
@@ -597,6 +698,7 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
                             key={paso}
                             idx={paso - 1}
                             traveler={travelers[paso - 1]}
+                            travelers={travelers}
                             total={total}
                             fechaEntrada={fechaEntrada}
                             paises={paises}
@@ -779,11 +881,11 @@ const Portada = ({ booking, huboBorrador, yaHay, onEmpezar }) => {
     );
 };
 
-const PasoViajero = ({ idx, traveler: t, total, fechaEntrada, paises, mostrarPegas, cambiar, quitar }) => {
+const PasoViajero = ({ idx, traveler: t, travelers, total, fechaEntrada, paises, mostrarPegas, cambiar, quitar }) => {
     const { tx } = useIdioma();
     // pegasDe da claves; aquí se vuelven frases en el idioma de la pantalla.
     const pegas = Object.fromEntries(
-        Object.entries(mostrarPegas ? pegasDe(t, fechaEntrada) : {}).map(([k, v]) => [k, tx(v)]),
+        Object.entries(mostrarPegas ? pegasDe(t, fechaEntrada, travelers, idx) : {}).map(([k, v]) => [k, tx(v)]),
     );
     const edad = edadEn(t.fecha_nacimiento, fechaEntrada);
     const esMenorDe14 = edad !== null && edad < 14;
@@ -903,7 +1005,7 @@ const PasoViajero = ({ idx, traveler: t, total, fechaEntrada, paises, mostrarPeg
                         onEscribir={(v) => { cambiar(idx, 'direccion_municipio', v); cambiar(idx, 'direccion_municipio_ine', ''); }}
                         onElegir={(m) => { cambiar(idx, 'direccion_municipio', m.nombre); cambiar(idx, 'direccion_municipio_ine', m.codigo); }} />
                 </Campo>
-                <Campo etiqueta={tx('cp')} id={`dc${idx}`}>
+                <Campo etiqueta={tx('cp')} id={`dc${idx}`} error={pegas.direccion_cp}>
                     <input id={`dc${idx}`} className={cInput} type="text" inputMode="numeric"
                         autoComplete="postal-code" maxLength={10} value={t.direccion_cp}
                         onChange={(e) => cambiar(idx, 'direccion_cp', e.target.value)} />
@@ -922,12 +1024,26 @@ const PasoViajero = ({ idx, traveler: t, total, fechaEntrada, paises, mostrarPeg
                             autoComplete="tel" value={t.telefono_movil}
                             onChange={(e) => cambiar(idx, 'telefono_movil', e.target.value)} />
                     </Campo>
-                    <Campo etiqueta={tx('email')} id={`em${idx}`}>
+                    <Campo etiqueta={tx('email')} id={`em${idx}`} error={pegas.email}>
                         <input id={`em${idx}`} className={cInput} type="email" inputMode="email"
                             autoComplete="email" autoCapitalize="off" autoCorrect="off" spellCheck={false}
                             value={t.email}
                             onChange={(e) => cambiar(idx, 'email', e.target.value)} />
                     </Campo>
+                    {/* Un acompañante sin teléfono ni correo propios puede dar
+                        el de quien reservó, pero lo decide él: el sistema no
+                        se lo pone solo, que es un dato de un parte policial. */}
+                    {idx > 0 && !t.telefono_movil.trim() && !t.email.trim()
+                        && (travelers?.[0]?.telefono_movil || travelers?.[0]?.email) && (
+                        <button type="button"
+                            onClick={() => {
+                                cambiar(idx, 'telefono_movil', travelers[0].telefono_movil || '');
+                                cambiar(idx, 'email', travelers[0].email || '');
+                            }}
+                            className="min-h-[44px] px-4 rounded-xl text-rural-700 bg-rural-50 font-bold text-sm">
+                            {tx('usar_contacto_titular')}
+                        </button>
+                    )}
                 </Caja>
             )}
 
@@ -961,7 +1077,7 @@ const Repaso = ({
     accept, setAccept, error, cambiar, preguntarPagador, pagador, setPagador,
 }) => {
     const incompletos = travelers
-        .map((t, i) => ({ i, pegas: pegasDe(t, fechaEntrada) }))
+        .map((t, i) => ({ i, pegas: pegasDe(t, fechaEntrada, travelers, i) }))
         .filter((x) => Object.keys(x.pegas).length > 0);
     const menores = pegasDeLosMenores(travelers, fechaEntrada);
     const { tx } = useIdioma();
@@ -976,7 +1092,7 @@ const Repaso = ({
             <ul className="mt-5 space-y-3">
                 {travelers.map((t, i) => {
                     const edad = edadEn(t.fecha_nacimiento, fechaEntrada);
-                    const mal = Object.keys(pegasDe(t, fechaEntrada)).length > 0;
+                    const mal = Object.keys(pegasDe(t, fechaEntrada, travelers, i)).length > 0;
                     return (
                         <li key={i}>
                             <div className={`bg-white rounded-2xl border p-4 flex items-start gap-3 ${mal ? 'border-amber-300' : 'border-gray-200'}`}>
