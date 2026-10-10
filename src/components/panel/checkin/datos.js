@@ -84,6 +84,14 @@ const RECADO = {
         dentro: 'Esperamos que estéis disfrutando de la casa. Para el registro de la policía nos falta algún dato de vuestro grupo: nos lo pide la ley y se completa en un par de minutos desde el móvil:',
         graciasDentro: '¡Gracias y que disfrutéis la estancia!',
         asuntoDentro: 'Nos falta un dato para el registro de la policía',
+        disfrutando: 'Esperamos que estéis disfrutando de la casa.',
+        soloFalta: (l) => `Para el registro de la policía solo nos falta ${l}. Se pone en un momento aquí:`,
+        dato: {
+            contacto: (n) => `el teléfono o el correo de ${n}`,
+            soporte: (n) => `el número de soporte del documento de ${n}`,
+            cp: (n) => `el código postal de ${n}`,
+        },
+        y: 'y',
     },
     en: {
         hola: (n) => (n ? `Hello ${n}` : 'Hello'),
@@ -96,6 +104,14 @@ const RECADO = {
         dentro: 'We hope you are enjoying the house. For the police register we are still missing some details from your group: it is required by Spanish law and takes a couple of minutes on your phone:',
         graciasDentro: 'Thank you, and enjoy your stay!',
         asuntoDentro: 'We are missing a detail for the police register',
+        disfrutando: 'We hope you are enjoying the house.',
+        soloFalta: (l) => `For the police register we only need ${l}. You can add it here in a moment:`,
+        dato: {
+            contacto: (n) => `a phone number or email for ${n}`,
+            soporte: (n) => `the document support number of ${n}`,
+            cp: (n) => `the postcode of ${n}`,
+        },
+        y: 'and',
     },
     de: {
         hola: (n) => (n ? `Hallo ${n}` : 'Hallo'),
@@ -108,6 +124,14 @@ const RECADO = {
         dentro: 'Wir hoffen, Sie genießen das Haus. Für die Meldung an die Polizei fehlen uns noch einige Angaben Ihrer Gruppe: Das ist in Spanien gesetzlich vorgeschrieben und dauert zwei Minuten am Handy:',
         graciasDentro: 'Vielen Dank und einen schönen Aufenthalt!',
         asuntoDentro: 'Uns fehlt eine Angabe für die Meldung an die Polizei',
+        disfrutando: 'Wir hoffen, Sie genießen das Haus.',
+        soloFalta: (l) => `Für die Meldung an die Polizei fehlt uns nur noch ${l}. Das geht hier in einem Moment:`,
+        dato: {
+            contacto: (n) => `eine Telefonnummer oder E-Mail von ${n}`,
+            soporte: (n) => `die Dokumentennummer (Soporte) von ${n}`,
+            cp: (n) => `die Postleitzahl von ${n}`,
+        },
+        y: 'und',
     },
     fr: {
         hola: (n) => (n ? `Bonjour ${n}` : 'Bonjour'),
@@ -120,6 +144,14 @@ const RECADO = {
         dentro: 'Nous espérons que vous profitez de la maison. Pour le registre de la police, il nous manque encore quelques informations de votre groupe : c’est obligatoire en Espagne et cela prend deux minutes depuis votre téléphone :',
         graciasDentro: 'Merci et bon séjour !',
         asuntoDentro: 'Il nous manque une information pour le registre de la police',
+        disfrutando: 'Nous espérons que vous profitez de la maison.',
+        soloFalta: (l) => `Pour le registre de la police, il ne nous manque que ${l}. Cela se fait ici en un instant :`,
+        dato: {
+            contacto: (n) => `un téléphone ou un e-mail de ${n}`,
+            soporte: (n) => `le numéro de support du document de ${n}`,
+            cp: (n) => `le code postal de ${n}`,
+        },
+        y: 'et',
     },
 };
 
@@ -131,10 +163,30 @@ export const asuntoRecordatorio = (idioma, { yaDentro = false } = {}) =>
 
 // `yaDentro`: they have already checked in (10-oct-2026: the reminder still said
 // «antes de que lleguéis» to a group that had been in the house for a day).
-export function textoRecordatorio({ guest_name, booking_code, idioma }, { enLaPuerta = false, yaDentro = false } = {}) {
+// `faltan`: [{ nombre, campo }] from `tjm_precheckin_pendientes` (0060). When the
+// report is only stuck on concrete details, the message names them and the link
+// opens just those fields (`&completar=1`) instead of the whole form.
+export function textoRecordatorio({ guest_name, booking_code, idioma }, { enLaPuerta = false, yaDentro = false, faltan = [] } = {}) {
     const lang = idiomaDe(idioma);
     const t = RECADO[lang];
-    const enlace = enlacePrecheckin(booking_code, { absoluto: true }) + (lang === 'es' ? '' : `&lang=${lang}`);
+    const conocidos = (faltan || []).filter((f) => t.dato[f.campo]);
+    const enlace = enlacePrecheckin(booking_code, { absoluto: true })
+        + (conocidos.length > 0 ? '&completar=1' : '')
+        + (lang === 'es' ? '' : `&lang=${lang}`);
+    if (conocidos.length > 0) {
+        const partes = conocidos.map((f) => t.dato[f.campo](f.nombre));
+        const lista = partes.length === 1 ? partes[0]
+            : `${partes.slice(0, -1).join(', ')} ${t.y} ${partes[partes.length - 1]}`;
+        return [
+            `${t.hola(primerNombre(guest_name))}, ${t.somos}`,
+            '',
+            `${yaDentro ? `${t.disfrutando} ` : ''}${t.soloFalta(lista)}`,
+            '',
+            enlace,
+            '',
+            yaDentro ? t.graciasDentro : t.gracias,
+        ].join('\n');
+    }
     return [
         `${t.hola(primerNombre(guest_name))}, ${t.somos}`,
         '',

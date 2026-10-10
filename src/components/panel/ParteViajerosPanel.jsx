@@ -197,6 +197,14 @@ const ParteViajerosPanel = ({ ir, params = {} }) => {
                 .in('id', lista.map((f) => f.booking_id));
             const mapa = {};
             (reservas || []).forEach((r) => { mapa[r.id] = r; });
+            // Lo que falta en concreto (0060): con eso el recado lo nombra y el
+            // enlace abre solo esas casillas.
+            await Promise.all(lista
+                .filter((f) => f.estado_envio === 'faltan_datos' && mapa[f.booking_id])
+                .map(async (f) => {
+                    const { data: faltan } = await supabase.rpc('tjm_precheckin_pendientes', { p_booking_code: f.booking_code });
+                    mapa[f.booking_id] = { ...mapa[f.booking_id], faltan: faltan || [] };
+                }));
             setContactos(mapa);
         }
     }, [hoy]);
@@ -448,16 +456,17 @@ const FilaReserva = ({
 
     // Ya han entrado: el recado no puede decir «antes de que lleguéis».
     const yaDentro = String(fila.check_in) <= hoy;
+    const faltan = contacto.faltan || [];
 
     const abrirWhatsapp = () => {
-        window.open(`https://wa.me/${tel}?text=${encodeURIComponent(textoRecordatorio(conIdioma, { yaDentro }))}`,
+        window.open(`https://wa.me/${tel}?text=${encodeURIComponent(textoRecordatorio(conIdioma, { yaDentro, faltan }))}`,
             '_blank', 'noopener');
         apuntar('whatsapp');
     };
     const abrirCorreo = () => {
         const asunto = asuntoRecordatorio(contacto.idioma, { yaDentro });
         window.location.href =
-            `mailto:${encodeURIComponent(correo)}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(textoRecordatorio(conIdioma, { yaDentro }))}`;
+            `mailto:${encodeURIComponent(correo)}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(textoRecordatorio(conIdioma, { yaDentro, faltan }))}`;
         apuntar('correo');
     };
 

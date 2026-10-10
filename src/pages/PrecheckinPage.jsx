@@ -650,6 +650,25 @@ const PrecheckinPage = ({ codigo = null, dentroDelPanel = false, alTerminar = nu
         }
     };
 
+    // ------------------------------------------- sólo el dato que falta
+    // `&completar=1`: lo abre el recordatorio del panel cuando el parte está
+    // parado por un dato concreto. Una casilla por dato, nada más de la ficha.
+    if (!dentroDelPanel && params.get('completar') === '1') {
+        return (
+            <IdiomaCtx.Provider value={idioma}>
+                <div className="min-h-screen bg-[#FCFBF9]">
+                    <PageHead title={tx('meta_titulo')} description={tx('meta_descripcion')} path="/precheckin" noindex />
+                    <main className="px-4 pb-16 pt-6">
+                        <div className="max-w-xl mx-auto">
+                            <SelectorIdioma lang={lang} onCambiar={cambiarIdioma} />
+                            <CompletarDatos code={code} />
+                        </div>
+                    </main>
+                </div>
+            </IdiomaCtx.Provider>
+        );
+    }
+
     // ----------------------------------------------------------- pintado
     return (
         <IdiomaCtx.Provider value={idioma}>
@@ -823,6 +842,94 @@ const SelectorIdioma = ({ lang, onCambiar }) => {
                 </button>
             ))}
         </div>
+    );
+};
+
+/**
+ * «Nos falta un dato»: una casilla por cada dato que falta, con el nombre de
+ * la persona. Lo dice y lo guarda la base (`tjm_precheckin_pendientes` y
+ * `tjm_completar_dato`, migración 0060); en cuanto no falta nada, el parte
+ * sale solo. Nada más de la ficha se enseña: el enlace lo abre quien lo tenga.
+ */
+const CompletarDatos = ({ code }) => {
+    const { tx } = useIdioma();
+    const [items, setItems] = useState(null);      // null = cargando
+    const [valores, setValores] = useState({});
+    const [resultado, setResultado] = useState({}); // clave → 'ok' | código de error
+    const [guardando, setGuardando] = useState(null);
+    const [fallo, setFallo] = useState(false);
+
+    useEffect(() => {
+        (async () => {
+            const { data, error } = await supabase.rpc('tjm_precheckin_pendientes', { p_booking_code: code });
+            if (error) {
+                // eslint-disable-next-line no-console
+                console.error('tjm_precheckin_pendientes:', error.message);
+                setFallo(true);
+            }
+            setItems(data || []);
+        })();
+    }, [code]);
+
+    const clave = (it) => `${it.id}:${it.campo}`;
+    const guardar = async (it) => {
+        const k = clave(it);
+        setGuardando(k);
+        const { data, error } = await supabase.rpc('tjm_completar_dato', {
+            p_booking_code: code, p_id: it.id, p_campo: it.campo, p_valor: valores[k] || '',
+        });
+        setGuardando(null);
+        setResultado((r) => ({ ...r, [k]: error ? 'fallo' : data }));
+    };
+
+    if (items === null) return <p className="text-center text-gray-500 py-20">{tx('cargando')}</p>;
+    const pendientes = items.filter((it) => resultado[clave(it)] !== 'ok');
+
+    return (
+        <>
+            <h1 className="font-serif text-3xl font-bold text-text-primary leading-tight">
+                {pendientes.length === 0 ? tx('completar_hecho_titulo') : tx('completar_titulo')}
+            </h1>
+            <p className="text-base text-gray-700 mt-3 leading-relaxed">
+                {fallo ? tx('env_fallo') : pendientes.length === 0 ? tx('completar_hecho') : tx('completar_intro')}
+            </p>
+            {items.map((it) => {
+                const k = clave(it);
+                const r = resultado[k];
+                const id = `c-${k}`;
+                return (
+                    <Caja key={k} className="mt-5">
+                        {r === 'ok' ? (
+                            <p className="text-base font-bold text-rural-700 flex items-center gap-2">
+                                <Check size={20} aria-hidden="true" /> {tx('completar_guardado', { nombre: it.nombre })}
+                            </p>
+                        ) : (
+                            <>
+                                <Campo
+                                    etiqueta={tx(`completar_${it.campo}`, { nombre: it.nombre })}
+                                    ayuda={it.campo === 'soporte' ? tx('soporte_ayuda') : undefined}
+                                    error={r ? tx(`completar_err_${r}`, { nombre: it.nombre }) : undefined}
+                                    id={id}
+                                >
+                                    <input id={id} className={cInput}
+                                        type="text"
+                                        inputMode={it.campo === 'cp' ? 'numeric' : 'text'}
+                                        autoCapitalize={it.campo === 'soporte' ? 'characters' : 'off'}
+                                        autoCorrect="off" spellCheck={false}
+                                        value={valores[k] || ''}
+                                        onChange={(e) => setValores((v) => ({ ...v, [k]: e.target.value }))} />
+                                </Campo>
+                                <button type="button" onClick={() => guardar(it)}
+                                    disabled={guardando === k || !(valores[k] || '').trim()}
+                                    className="w-full mt-2 min-h-[52px] rounded-2xl font-bold text-white bg-rural-600 hover:bg-rural-700 disabled:opacity-50">
+                                    {guardando === k ? tx('guardando') : tx('guardar')}
+                                </button>
+                            </>
+                        )}
+                    </Caja>
+                );
+            })}
+        </>
     );
 };
 
