@@ -79,6 +79,9 @@ const RECADO = {
         graciasPuerta: '¡Gracias!',
         gracias: '¡Gracias y hasta pronto!',
         asunto: 'Los datos que nos piden antes de tu llegada',
+        dentro: 'Esperamos que estéis disfrutando de la casa. Para el registro de la policía nos falta algún dato de vuestro grupo: nos lo pide la ley y se completa en un par de minutos desde el móvil:',
+        graciasDentro: '¡Gracias y que disfrutéis la estancia!',
+        asuntoDentro: 'Nos falta un dato para el registro de la policía',
     },
     en: {
         hola: (n) => (n ? `Hello ${n}` : 'Hello'),
@@ -88,6 +91,9 @@ const RECADO = {
         graciasPuerta: 'Thank you!',
         gracias: 'Thank you, see you soon!',
         asunto: 'The details we need before you arrive',
+        dentro: 'We hope you are enjoying the house. For the police register we are still missing some details from your group: it is required by Spanish law and takes a couple of minutes on your phone:',
+        graciasDentro: 'Thank you, and enjoy your stay!',
+        asuntoDentro: 'We are missing a detail for the police register',
     },
     de: {
         hola: (n) => (n ? `Hallo ${n}` : 'Hallo'),
@@ -97,6 +103,9 @@ const RECADO = {
         graciasPuerta: 'Vielen Dank!',
         gracias: 'Vielen Dank und bis bald!',
         asunto: 'Die Angaben, die wir vor Ihrer Ankunft brauchen',
+        dentro: 'Wir hoffen, Sie genießen das Haus. Für die Meldung an die Polizei fehlen uns noch einige Angaben Ihrer Gruppe: Das ist in Spanien gesetzlich vorgeschrieben und dauert zwei Minuten am Handy:',
+        graciasDentro: 'Vielen Dank und einen schönen Aufenthalt!',
+        asuntoDentro: 'Uns fehlt eine Angabe für die Meldung an die Polizei',
     },
     fr: {
         hola: (n) => (n ? `Bonjour ${n}` : 'Bonjour'),
@@ -106,26 +115,32 @@ const RECADO = {
         graciasPuerta: 'Merci !',
         gracias: 'Merci et à bientôt !',
         asunto: 'Les informations demandées avant votre arrivée',
+        dentro: 'Nous espérons que vous profitez de la maison. Pour le registre de la police, il nous manque encore quelques informations de votre groupe : c’est obligatoire en Espagne et cela prend deux minutes depuis votre téléphone :',
+        graciasDentro: 'Merci et bon séjour !',
+        asuntoDentro: 'Il nous manque une information pour le registre de la police',
     },
 };
 
 const idiomaDe = (idioma) => (RECADO[idioma] ? idioma : 'es');
 
 /** El asunto del correo de recordatorio, en su idioma. */
-export const asuntoRecordatorio = (idioma) => RECADO[idiomaDe(idioma)].asunto;
+export const asuntoRecordatorio = (idioma, { yaDentro = false } = {}) =>
+    RECADO[idiomaDe(idioma)][yaDentro ? 'asuntoDentro' : 'asunto'];
 
-export function textoRecordatorio({ guest_name, booking_code, idioma }, { enLaPuerta = false } = {}) {
+// `yaDentro`: they have already checked in (10-oct-2026: the reminder still said
+// «antes de que lleguéis» to a group that had been in the house for a day).
+export function textoRecordatorio({ guest_name, booking_code, idioma }, { enLaPuerta = false, yaDentro = false } = {}) {
     const lang = idiomaDe(idioma);
     const t = RECADO[lang];
     const enlace = enlacePrecheckin(booking_code, { absoluto: true }) + (lang === 'es' ? '' : `&lang=${lang}`);
     return [
         `${t.hola(primerNombre(guest_name))}, ${t.somos}`,
         '',
-        enLaPuerta ? t.puerta : t.antes,
+        enLaPuerta ? t.puerta : yaDentro ? t.dentro : t.antes,
         '',
         enlace,
         '',
-        enLaPuerta ? t.graciasPuerta : t.gracias,
+        enLaPuerta ? t.graciasPuerta : yaDentro ? t.graciasDentro : t.gracias,
     ].join('\n');
 }
 

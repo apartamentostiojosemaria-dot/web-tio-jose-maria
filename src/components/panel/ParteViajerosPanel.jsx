@@ -446,15 +446,18 @@ const FilaReserva = ({
     // antes salía a los dos días de llegar y parecía tarea suya (23-sep).
     const hayQueMandarloAMano = fila.estado_envio === 'error' || String(fila.check_in) < hoy;
 
+    // Ya han entrado: el recado no puede decir «antes de que lleguéis».
+    const yaDentro = String(fila.check_in) <= hoy;
+
     const abrirWhatsapp = () => {
-        window.open(`https://wa.me/${tel}?text=${encodeURIComponent(textoRecordatorio(conIdioma))}`,
+        window.open(`https://wa.me/${tel}?text=${encodeURIComponent(textoRecordatorio(conIdioma, { yaDentro }))}`,
             '_blank', 'noopener');
         apuntar('whatsapp');
     };
     const abrirCorreo = () => {
-        const asunto = asuntoRecordatorio(contacto.idioma);
+        const asunto = asuntoRecordatorio(contacto.idioma, { yaDentro });
         window.location.href =
-            `mailto:${encodeURIComponent(correo)}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(textoRecordatorio(conIdioma))}`;
+            `mailto:${encodeURIComponent(correo)}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(textoRecordatorio(conIdioma, { yaDentro }))}`;
         apuntar('correo');
     };
 
