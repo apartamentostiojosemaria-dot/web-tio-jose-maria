@@ -70,10 +70,12 @@ const primerNombre = (nombre) => String(nombre || '').trim().split(/\s+/)[0] || 
 // su ficha: 0050). El castellano, tal cual estaba. Sus padres ven siempre el
 // castellano en el panel; al huésped le llega el suyo, y el enlace abre el
 // formulario ya en su idioma (?lang=).
+// The message goes out from Mari Carmen's own WhatsApp: she signs it, not the
+// business (Jesús, 10-oct-2026).
 const RECADO = {
     es: {
         hola: (n) => (n ? `Hola ${n}` : 'Hola'),
-        somos: 'somos los Apartamentos Tío José María.',
+        somos: 'soy Mari Carmen.',
         puerta: 'Para daros la llave necesitamos los datos de cada persona que se aloja. Nos los pide la ley y se rellena en dos minutos desde el móvil:',
         antes: 'Antes de que lleguéis necesitamos los datos de cada persona que se aloja (nombre, documento y poco más). Nos los pide la ley y se rellena en un par de minutos desde el móvil:',
         graciasPuerta: '¡Gracias!',
@@ -85,7 +87,7 @@ const RECADO = {
     },
     en: {
         hola: (n) => (n ? `Hello ${n}` : 'Hello'),
-        somos: 'this is Apartamentos Tío José María.',
+        somos: 'this is Mari Carmen.',
         puerta: 'Before we give you the keys we need the details of everyone staying. It is required by Spanish law and takes two minutes on your phone:',
         antes: 'Before you arrive we need the details of everyone staying (name, ID document and little else). It is required by Spanish law and takes a couple of minutes on your phone:',
         graciasPuerta: 'Thank you!',
@@ -97,7 +99,7 @@ const RECADO = {
     },
     de: {
         hola: (n) => (n ? `Hallo ${n}` : 'Hallo'),
-        somos: 'hier sind die Apartamentos Tío José María.',
+        somos: 'hier ist Mari Carmen.',
         puerta: 'Bevor wir Ihnen die Schlüssel geben, brauchen wir die Daten jeder Person, die bei uns übernachtet. Das ist in Spanien gesetzlich vorgeschrieben und dauert zwei Minuten am Handy:',
         antes: 'Vor Ihrer Ankunft brauchen wir die Daten jeder Person, die bei uns übernachtet (Name, Ausweis und wenig mehr). Das ist in Spanien gesetzlich vorgeschrieben und dauert zwei Minuten am Handy:',
         graciasPuerta: 'Vielen Dank!',
@@ -109,7 +111,7 @@ const RECADO = {
     },
     fr: {
         hola: (n) => (n ? `Bonjour ${n}` : 'Bonjour'),
-        somos: 'ici les Apartamentos Tío José María.',
+        somos: 'c’est Mari Carmen.',
         puerta: 'Avant de vous remettre les clés, nous avons besoin des informations de chaque personne hébergée. C’est obligatoire en Espagne et cela prend deux minutes depuis votre téléphone :',
         antes: 'Avant votre arrivée, nous avons besoin des informations de chaque personne hébergée (nom, pièce d’identité et peu de choses de plus). C’est obligatoire en Espagne et cela prend deux minutes depuis votre téléphone :',
         graciasPuerta: 'Merci !',

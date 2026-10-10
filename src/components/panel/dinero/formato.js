@@ -128,7 +128,7 @@ export const enlaceWhatsApp = (tel, texto) => {
 export const textoRecordatorioCobro = (reserva, falta, formatoEuro) => {
     const nombre = (reserva?.guest_name || '').split(' ')[0];
     return [
-        `Hola${nombre ? ` ${nombre}` : ''}, somos los Apartamentos Tío José María.`,
+        `Hola${nombre ? ` ${nombre}` : ''}, soy Mari Carmen.`,
         '',
         `De tu reserva del ${diaYMes(reserva?.check_in)} quedan pendientes ${formatoEuro(falta)}.`,
         '',
