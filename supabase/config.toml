@@ -82,3 +82,7 @@ verify_jwt = false
 
 [functions.trigger-reel-render]
 verify_jwt = false
+
+[functions.parte-gerente]
+# own token check (GERENTE_TOKEN): the caller is the manager on the agents VPS, not a Supabase user
+verify_jwt = false

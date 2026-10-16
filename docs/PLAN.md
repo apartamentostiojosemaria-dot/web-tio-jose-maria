@@ -12,5 +12,5 @@
 | 1.4 | Estados limpios: reserva pasada → completed; limpieza sin marcar avisa la víspera | prueba 4 del PRD | hecho 16-oct |
 | 1.5 | Tareas recurrentes con responsable, aviso a 7 días y «hecha» en el panel de la familia (crea la siguiente) | prueba 5 del PRD | hecho 16-oct |
 | 1.6 | Vigilante de tareas programadas (que hagan su trabajo, no solo que corran) | prueba 6 del PRD | hecho 16-oct |
-| 2 | Gerente: revisiones deterministas por proceso + gerente diario en el VPS (una semana en sombra) | línea diaria en el parte de Jesús | pendiente |
+| 2 | Gerente: revisiones deterministas por proceso + gerente diario en el VPS (una semana en sombra) | línea diaria en el parte de Jesús | hecho 16-oct (en sombra hasta ~23-oct) |
 | 3 | Crecimiento: tarifa no reembolsable en Booking (la política de 7 días se mantiene, decisión 18-sep), precio en horquilla, SEO semanal, reseñas, repetidores | O1, O3, O6 del PRD | pendiente |

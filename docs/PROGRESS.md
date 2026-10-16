@@ -19,14 +19,16 @@
   `submit-ses-hospedajes`, `request-review` y `send-booking-reminders` desplegadas).
 
 ## En curso
-- Fase 2: el gerente (lee `tjm_revisiones` y los objetivos cada mañana).
+- Fase 2 hecha el 16-oct: `tjm_parte_gerente()` (0064) + función `parte-gerente` (llave GERENTE_TOKEN; GET = parte del
+  negocio con revisiones frescas, POST = aviso a la familia, máx. 3/día). El gerente corre en la oficina de Hermes (VPS)
+  laborables 07:10 y 15:10 y fines de semana 07:10, **en sombra** hasta ~23-oct. Plazos de pg_net corregidos (0066, 0067).
 
 ## Bloqueado (qué y por quién)
 - TJM-8A9D74 (Booking, entra 30-oct): sin teléfono ni correo real del titular → fuera de plazo con el Ministerio. Lo consigue
   la familia en la extranet de Booking o MisterPlan (los avisos ya lo dicen) o sale solo si el huésped rellena su ficha.
 
 ## Siguiente paso
-- Fase 2: revisiones por proceso ampliadas a ventas (ocupación, precio, reseñas) y gerente diario en el VPS, una semana en sombra.
+- Revisar una semana lo que propone el gerente en #p-tjm y pasarlo a activo (proyectos.json `modo`). Fase 3: crecimiento.
 
 ## Entorno
 - Dependencias o variables nuevas desde la última sesión: ninguna.

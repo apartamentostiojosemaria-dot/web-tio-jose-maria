@@ -94,3 +94,10 @@ Secrets salvo los marcados «Vault».
 - **Caducidad de tokens** (EasyPanel, Trigger.dev): pendiente de confirmar.
 - **Volver atrás**: web → revertir el commit y push (o redeploy en EasyPanel); funciones → redeplegar la versión anterior del
   repo; esquema → migración nueva que deshace (no hay `down`). Procedimiento probado: pendiente de confirmar.
+
+## El gerente (fase 2, 16-oct-2026)
+- `parte-gerente` (sin JWT, llave propia `GERENTE_TOKEN` en los secretos de la función y en `/etc/oficina/tjm.token` del VPS
+  de agentes): GET devuelve `tjm_parte_gerente()` tras `tjm_revisar()`; POST `avisar-familia` manda un aviso a los móviles
+  de la familia (máx. 3 en 24 h, rastro en `envios` tipo `aviso-gerente`). Sin nombres ni contactos de huéspedes.
+- Quien la llama: `gerente.py` de la oficina de Hermes (repo del OS, `projects/briefs/hermes-asistente/oficina/`).
+

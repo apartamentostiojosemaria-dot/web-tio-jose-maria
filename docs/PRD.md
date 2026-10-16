@@ -13,7 +13,7 @@
 ## Problema (con cifras, base de datos 16-oct-2026)
 - Ocupación de octubre ~12 % (15 de 124 noches). Booking: 38 reservas, 19 canceladas (50 %). Venta directa ~15 %.
 - Cumplimiento: una reserva (TJM-8A9D74) llevaba 49 intentos sin comunicarse al Ministerio por un dato que nadie pedía.
-- Operativa: 8 de 12 limpiezas sin marcar, 5 de 16 tareas recurrentes vencidas sin aviso, petición de reseña a 2 de ~20 estancias.
+- Operativa: 4 limpiezas del 12-oct sin marcar, 5 de 16 tareas recurrentes vencidas sin aviso. (La petición de reseña sí sale a todos: 7 de 7 en 30 días.)
 
 ## Objetivos (con número y fecha: el agente trabaja hacia esto, no por tareas sueltas)
 | Objetivo | Cómo se mide | Para cuándo | Estado |
