@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import AvisosMovil from './AvisosMovil';
+import TareasCasa from './TareasCasa';
 import { ArrowDownRight, ArrowUpRight, Shield, Euro, Brush, ChevronRight, Check, MailWarning } from 'lucide-react';
 import {
     Tarjeta, Aviso, Cargando, formatoEuro,
@@ -160,6 +161,9 @@ const PanelHome = ({ ir, perfil, secciones = [] }) => {
                     ))}
                 </section>
             )}
+
+            {/* ---------- Caldera, extintores…: lo de la casa que vence (0061) ---------- */}
+            <TareasCasa />
 
             {/* ---------- El sistema: solo si algo no funciona ---------- */}
             {sistema.length > 0 && (

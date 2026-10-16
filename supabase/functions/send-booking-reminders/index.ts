@@ -85,7 +85,8 @@ Deno.serve(async (req) => {
         let q = supabase
             .from("guest_bookings")
             .select("booking_code")
-            .eq("status", "confirmed")
+            // completed since 0061 closes stays the day after check-out (review, reactivation)
+            .in("status", ["confirmed", "completed"])
             .is(rule.flag, null);
         q = rule.desde !== undefined
             ? q.gte(rule.dateCol, addDays(today, rule.desde)).lte(rule.dateCol, target)

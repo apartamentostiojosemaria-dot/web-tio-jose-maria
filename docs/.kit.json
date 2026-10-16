@@ -1,0 +1,54 @@
+{
+  "proyecto": "tio-jose-maria",
+  "os_path": "clients/tio-jose-maria",
+  "instalado": "2026-10-16",
+  "talla": "grande",
+  "no_aplica": [],
+  "roles": {
+    "PROGRESS": [
+      "docs/PROGRESS.md"
+    ],
+    "PRD": [
+      "docs/PRD.md"
+    ],
+    "PLAN": [
+      "docs/PLAN.md"
+    ],
+    "APP_FLOW": [
+      "docs/APP_FLOW.md"
+    ],
+    "DESIGN_SYSTEM": [
+      "docs/DESIGN_SYSTEM.md"
+    ],
+    "TRD": [
+      "docs/TRD.md"
+    ],
+    "DATABASE": [
+      "docs/DATABASE.md"
+    ],
+    "SECURITY": [
+      "docs/SECURITY.md"
+    ],
+    "DECISIONS": [
+      "docs/DECISIONS.md"
+    ]
+  },
+  "creados_por_el_kit": [
+    "docs/PROGRESS.md",
+    "docs/PRD.md",
+    "docs/PLAN.md",
+    "docs/APP_FLOW.md",
+    "docs/DESIGN_SYSTEM.md",
+    "docs/TRD.md",
+    "docs/DATABASE.md",
+    "docs/SECURITY.md",
+    "docs/DECISIONS.md"
+  ],
+  "vigila": [
+    {
+      "codigo": "supabase/migrations/",
+      "doc": "DATABASE"
+    }
+  ],
+  "tope_lineas": 150
+}

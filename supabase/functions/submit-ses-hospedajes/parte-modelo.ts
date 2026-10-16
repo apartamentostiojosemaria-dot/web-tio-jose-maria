@@ -278,6 +278,31 @@ export function partirNombre(completo: string | null | undefined): TitularContra
 // ---------------------------------------------------------------------------
 // Conversión desde las filas de la base
 // ---------------------------------------------------------------------------
+// Ministry character rules (audit 10-oct-2026, M5-M7)
+// ---------------------------------------------------------------------------
+
+/** ISO 3166-1 alpha-3 list, the same one the pre-check-in form offers (M7). */
+const ISO3 = new Set("ABW,AFG,AGO,AIA,ALA,ALB,AND,ARE,ARG,ARM,ASM,ATG,AUS,AUT,AZE,BDI,BEL,BEN,BES,BFA,BGD,BGR,BHR,BHS,BIH,BLM,BLR,BLZ,BMU,BOL,BRA,BRB,BRN,BTN,BWA,CAF,CAN,CCK,CHE,CHL,CHN,CIV,CMR,COD,COG,COK,COL,COM,CPV,CRI,CUB,CUW,CXR,CYM,CYP,CZE,DEU,DJI,DMA,DNK,DOM,DZA,ECU,EGY,ERI,ESH,ESP,EST,ETH,FIN,FJI,FLK,FRA,FRO,FSM,GAB,GBR,GEO,GGY,GHA,GIB,GIN,GLP,GMB,GNB,GNQ,GRC,GRD,GRL,GTM,GUF,GUM,GUY,HKG,HND,HRV,HTI,HUN,IDN,IMN,IND,IOT,IRL,IRN,IRQ,ISL,ISR,ITA,JAM,JEY,JOR,JPN,KAZ,KEN,KGZ,KHM,KIR,KNA,KOR,KWT,LAO,LBN,LBR,LBY,LCA,LIE,LKA,LSO,LTU,LUX,LVA,MAC,MAF,MAR,MCO,MDA,MDG,MDV,MEX,MHL,MKD,MLI,MLT,MMR,MNE,MNG,MNP,MOZ,MRT,MSR,MTQ,MUS,MWI,MYS,MYT,NAM,NCL,NER,NFK,NGA,NIC,NIU,NLD,NOR,NPL,NRU,NZL,OMN,PAK,PAN,PCN,PER,PHL,PLW,PNG,POL,PRI,PRK,PRT,PRY,PSE,PYF,QAT,REU,ROU,RUS,RWA,SAU,SDN,SEN,SGP,SHN,SJM,SLB,SLE,SLV,SMR,SOM,SPM,SRB,SSD,STP,SUR,SVK,SVN,SWE,SWZ,SXM,SYC,SYR,TCA,TCD,TGO,THA,TJK,TKL,TKM,TLS,TON,TTO,TUN,TUR,TUV,TWN,TZA,UGA,UKR,URY,USA,UZB,VAT,VCT,VEN,VGB,VIR,VNM,VUT,WLF,WSM,XKK,YEM,ZAF,ZMB,ZWE".split(","));
+export const paisValido = (c: string | null | undefined): boolean => !!c && ISO3.has(c);
+
+/**
+ * Drops what breaks the whole XML batch (MIR error 10118): control characters,
+ * lone surrogates and emoji. Keeps letters, digits, spaces and normal punctuation.
+ */
+export function limpiaTexto(v: string | null | undefined): string {
+    return String(v ?? "")
+        .replace(/[\u0000-\u001F\u007F-\u009F]/g, " ")
+        .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, "")
+        .replace(/[\uD800-\uDFFF]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+/** Names and surnames: Latin script only (M5). */
+export const soloLatino = (v: string | null | undefined): boolean =>
+    !v || /^[\p{Script=Latin}\s'’.\-ºª]+$/u.test(v);
+
+// ---------------------------------------------------------------------------
 
 export interface FilaViajero {
     id: string;
@@ -382,17 +407,17 @@ export function aViajero(f: FilaViajero, fechaEntrada: string): ViajeroParte {
     return {
         id: f.id,
         esTitular: !!f.is_titular,
-        nombre: (f.nombre || "").trim(),
-        apellido1: (f.apellido_primero || "").trim(),
-        apellido2: (f.apellido_segundo || "").trim() || null,
+        nombre: limpiaTexto(f.nombre),
+        apellido1: limpiaTexto(f.apellido_primero),
+        apellido2: limpiaTexto(f.apellido_segundo) || null,
         sexo: codigoSexo(f.sexo),
         tipoDocumento: codigoDocumento(f.tipo_documento),
         numeroDocumento: (f.numero_documento || "").toUpperCase().trim(),
         soporteDocumento: (f.soporte_documento || "").toUpperCase().trim() || null,
         nacionalidad: codigoPais(f.nacionalidad),
         fechaNacimiento: String(f.fecha_nacimiento || "").slice(0, 10),
-        direccion: (f.direccion_via || "").trim(),
-        municipio: (f.direccion_municipio || "").trim(),
+        direccion: limpiaTexto(f.direccion_via),
+        municipio: limpiaTexto(f.direccion_municipio),
         codigoMunicipio: (f.direccion_municipio_ine || "").trim() || null,
         codigoPostal: (f.direccion_cp || "").trim(),
         pais: codigoPais(f.direccion_pais),
@@ -434,7 +459,9 @@ export function aContrato(r: FilaReserva, cuantosViajeros: number): ContratoPart
         fechaSalida: salidaReal ?? `${String(r.check_out || "").slice(0, 10)}T00:00:00`,
         horaEntradaConocida: Boolean(entradaReal),
         horaSalidaConocida: Boolean(salidaReal),
-        numPersonas: Math.max(Number(r.pax_count) || cuantosViajeros || 1, cuantosViajeros || 1),
+        // M1 (audit 10-oct): the Ministry wants numPersonas to MATCH the people in the
+        // report. With forms, the forms count; before any form (reservation notice), the booking.
+        numPersonas: cuantosViajeros > 0 ? cuantosViajeros : Math.max(Number(r.pax_count) || 1, 1),
         numHabitaciones: Math.max(Number(r.apartments?.num_habitaciones) || 1, 1),
         conexionInternet: r.apartments?.tiene_internet !== false,
         medioPago: medio,
@@ -467,6 +494,29 @@ export function enderezaParentescos(viajeros: ViajeroParte[]): ViajeroParte[] {
         menor.parentesco = null;
     }
     return viajeros;
+}
+
+/**
+ * Completes the holder of the contract from the guest's own form (16-oct-2026).
+ * Bookings imported from Booking come with the phone and e-mail hidden, so the
+ * reservation communication sat in a loop (TJM-8A9D74: 49 tries) until someone
+ * typed a contact by hand. Once the holder fills in the pre-check-in form, what
+ * the guest declared about themselves is real data for the same person: use it.
+ * Only fills what is missing; never overwrites what the booking already had.
+ */
+export function completaTitularDesdeFicha(contrato: ContratoParte, viajeros: ViajeroParte[]): ContratoParte {
+    const tit = contrato.titularContrato;
+    const ficha = viajeros.find((v) => v.esTitular && !esMenorDeEdad(v.edad));
+    if (!ficha) return contrato;
+    if (!tit.completo && ficha.nombre && ficha.apellido1) {
+        tit.nombre = ficha.nombre;
+        tit.apellido1 = ficha.apellido1;
+        tit.apellido2 = ficha.apellido2;
+        tit.completo = true;
+    }
+    if (!tit.telefono) tit.telefono = telefonoValido(ficha.telefonoMovil) ?? telefonoValido(ficha.telefonoFijo);
+    if (!tit.correo) tit.correo = correoValido(ficha.correo);
+    return contrato;
 }
 
 /**
@@ -507,8 +557,18 @@ export interface Pega { viajero: string; falta: string }
 const quien = (v: ViajeroParte) =>
     [v.nombre, v.apellido1].filter(Boolean).join(" ") || "un viajero";
 
-export function pegasDelParte(viajeros: ViajeroParte[]): Pega[] {
+export function pegasDelParte(viajeros: ViajeroParte[], plazasReservadas = 0): Pega[] {
     const pegas: Pega[] = [];
+
+    // M1 + F8: a partial report is not sent. If fewer forms than people booked,
+    // either someone has not filled in theirs or the number of people is wrong.
+    if (plazasReservadas > viajeros.length && viajeros.length > 0) {
+        const faltan = plazasReservadas - viajeros.length;
+        pegas.push({
+            viajero: "La reserva",
+            falta: `${faltan === 1 ? "una ficha" : `${faltan} fichas`}: dice ${plazasReservadas} personas y hay ${viajeros.length}. Que la rellene quien falte o corrige el número de personas en el panel`,
+        });
+    }
 
     for (const v of viajeros) {
         if (!v.nombre) pegas.push({ viajero: quien(v), falta: "el nombre" });
@@ -524,6 +584,19 @@ export function pegasDelParte(viajeros: ViajeroParte[]): Pega[] {
             });
         }
         if (!v.fechaNacimiento) pegas.push({ viajero: quien(v), falta: "la fecha de nacimiento" });
+        // M2: Spaniards aged 14-17 need document and support number too.
+        if (v.nacionalidad === "ESP" && v.edad >= 14 && v.edad < 18 && !v.numeroDocumento) {
+            pegas.push({ viajero: quien(v), falta: "el DNI (con 14 años o más es obligatorio para los españoles)" });
+        }
+        // M5: Latin script only.
+        if (!soloLatino(v.nombre) || !soloLatino(v.apellido1) || !soloLatino(v.apellido2)) {
+            pegas.push({ viajero: quien(v), falta: "el nombre escrito en letras latinas (como en el pasaporte)" });
+        }
+        // M7: country codes from the ISO list.
+        if (v.nacionalidad && !paisValido(v.nacionalidad)) pegas.push({ viajero: quien(v), falta: "una nacionalidad válida" });
+        if (v.pais && !paisValido(v.pais)) pegas.push({ viajero: quien(v), falta: "un país de residencia válido" });
+        // M4: postcode also abroad.
+        if (v.direccion && !v.codigoPostal) pegas.push({ viajero: quien(v), falta: "el código postal de su casa" });
         if (!v.nacionalidad) pegas.push({ viajero: quien(v), falta: "la nacionalidad" });
         if (!v.direccion || !v.municipio || !v.pais) {
             pegas.push({ viajero: quien(v), falta: "la dirección de su casa" });

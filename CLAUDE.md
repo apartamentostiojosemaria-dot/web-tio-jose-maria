@@ -1,3 +1,5 @@
+@AGENTS.md
+
 # Apartamentos Tio Jose Maria
 
 ## What

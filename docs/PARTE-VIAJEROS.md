@@ -351,3 +351,16 @@ mandado.
 - **Una persona = una ficha por reserva** (índice único por documento, o nombre+apellido+nacimiento
   sin documento). Rellenar el formulario dos veces corrige la ficha, no la duplica: el 19-sep el MIR
   rechazó un parte por «datos repetidos de personas».
+
+## Fase 1 del gerente (16-oct-2026, migraciones 0061-0063)
+
+- **Tanda cada hora** (`tjm-parte-viajeros`, :53), no una vez al día (F3). Avisos con insistencia medida: primera vez, 9 y 18 h,
+  y cada 3 h (9-21) cuando falta ≤ 2 días para entrar o ya están dentro (`tocaAvisar`).
+- **El dato que falta se consigue**: si el titular rellena su ficha, su teléfono, correo y apellidos completan la comunicación
+  de reserva (`completaTitularDesdeFicha`); el aviso dice dónde mirarlo (extranet de Booking o MisterPlan, con localizador).
+- **Reglas del Ministerio** (M1, M2, M4-M7): personas del parte = fichas, y no sale un parte con menos fichas que plazas;
+  DNI a españoles de 14-17; CP también fuera de España; solo letras latinas; caracteres de control y emojis fuera; países ISO.
+  Pruebas: `supabase/functions/submit-ses-hospedajes/parte-modelo.test.ts` (7).
+- **No se reenvía un rechazo sin cambios** (F1) y **aviso si ya están dentro sin ninguna ficha** (F4).
+- **Cambios de reserva** (F5): anulación de la versión anterior + alta nueva `<código>-M<n>`, solo antes de la entrada.
+  Probado el marcado (transacción deshecha); el envío real al Ministerio se comprobará con el primer cambio de verdad.

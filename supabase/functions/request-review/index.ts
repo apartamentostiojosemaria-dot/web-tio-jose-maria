@@ -79,7 +79,8 @@ Deno.serve(async (req: Request) => {
   const { data: bookings, error: queryErr } = await admin
     .from("guest_bookings")
     .select("id, guest_name, guest_email, check_in, check_out, apartments(name)")
-    .eq("status", "confirmed")
+    // completed since 0061 closes stays the day after check-out
+    .in("status", ["confirmed", "completed"])
     .eq("check_out", targetDate)
     .is("review_request_sent_at", null);
 
