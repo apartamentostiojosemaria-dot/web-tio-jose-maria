@@ -19,11 +19,8 @@ const UnsubscribePage = () => {
     useEffect(() => {
         (async () => {
             if (!token) { setStatus('error'); setError('Enlace inválido.'); return; }
-            const { data, error } = await supabase
-                .from('customers')
-                .select('email, canonical_name, marketing_consent, review_optout')
-                .eq('unsubscribe_token', token)
-                .maybeSingle();
+            // customers is not readable by anon: the token is checked server-side.
+            const { data, error } = await supabase.rpc('tjm_baja_leer', { p_token: token });
             if (error || !data) {
                 setStatus('error');
                 setError('No hemos podido identificar tu cuenta. El enlace puede estar caducado.');
@@ -38,25 +35,12 @@ const UnsubscribePage = () => {
         if (!customer) return;
         setStatus('loading');
         try {
-            if (purpose === 'marketing') {
-                await supabase.rpc('record_marketing_consent', {
-                    p_email: customer.email,
-                    p_granted: false,
-                    p_source: 'unsubscribe_link',
-                    p_user_agent: navigator.userAgent,
-                    p_legal_version: '1.0',
-                });
-            } else {
-                await supabase.from('customers').update({ review_optout: true, updated_at: new Date().toISOString() }).eq('email', customer.email);
-                await supabase.from('consent_log').insert({
-                    customer_email: customer.email,
-                    purpose: 'review_request',
-                    granted: false,
-                    source: 'unsubscribe_link',
-                    user_agent: navigator.userAgent,
-                    legal_version: '1.0',
-                });
-            }
+            const { data: ok, error: err } = await supabase.rpc('tjm_baja_confirmar', {
+                p_token: token,
+                p_purpose: purpose === 'marketing' ? 'marketing' : 'review',
+                p_user_agent: navigator.userAgent,
+            });
+            if (err || !ok) throw err || new Error('baja no aplicada');
             setStatus('done');
         } catch (e) {
             setStatus('error');

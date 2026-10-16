@@ -17,6 +17,11 @@
   reglas M1-M7, F1, F4, cambios de reserva al Ministerio (F5), estancias y limpiezas que se cierran solas, tareas con responsable
   y «Tareas de la casa» en el panel, `tjm_revisiones` + vigilante de tareas programadas (migr. 0061-0063 aplicadas; función
   `submit-ses-hospedajes`, `request-review` y `send-booking-reminders` desplegadas).
+- Seguridad (revisión del 16-oct, migr. 0068): el enlace de baja de los correos **no identificaba a nadie** (leía
+  `customers` sin sesión y RLS no lo deja) → ahora `tjm_baja_leer` / `tjm_baja_confirmar` por token; probado en local
+  con token real (muestra la cuenta) y falso (error), y la baja en la base con rollback. `record_marketing_consent` ya no
+  deja dar de baja ni firmar como `admin_panel` sin ser admin. `portal_events`, `client_notifications_read` y
+  `materials_library` (restos de otro proyecto) ya no se pueden escribir sin ser admin (antes, `portal_events` lo borraba cualquiera).
 
 ## En curso
 - Fase 2 hecha el 16-oct: `tjm_parte_gerente()` (0064) + función `parte-gerente` (llave GERENTE_TOKEN; GET = parte del
