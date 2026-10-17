@@ -1,0 +1,45 @@
+{
+  "version": "4",
+  "remote": {
+    "https://esm.sh/@supabase/supabase-js@2.45.0": "36ae57c3f2dc3f94fd122a846b40a87114d29bb2f47e910cb46bee5575febf2e"
+  },
+  "workspace": {
+    "packageJson": {
+      "dependencies": [
+        "npm:@fontsource/fraunces@^5.2.9",
+        "npm:@fontsource/lato@^5.2.7",
+        "npm:@fontsource/manrope@^5.2.8",
+        "npm:@fontsource/newsreader@^5.2.10",
+        "npm:@fontsource/playfair-display@^5.2.8",
+        "npm:@google/stitch-sdk@^0.0.3",
+        "npm:@prerenderer/prerenderer@^1.2.5",
+        "npm:@prerenderer/renderer-puppeteer@^1.2.4",
+        "npm:@supabase/supabase-js@^2.97.0",
+        "npm:@tailwindcss/vite@^4.2.1",
+        "npm:@vitejs/plugin-react@^5.1.4",
+        "npm:autoprefixer@^10.4.24",
+        "npm:clsx@^2.1.1",
+        "npm:dompurify@^3.4.5",
+        "npm:framer-motion@^12.34.3",
+        "npm:leaflet@^1.9.4",
+        "npm:lucide-react@0.575",
+        "npm:postcss@^8.5.6",
+        "npm:puppeteer@^25.1.0",
+        "npm:qrcode.react@^4.2.0",
+        "npm:react-dom@^19.2.4",
+        "npm:react-helmet-async@3",
+        "npm:react-is@^19.2.5",
+        "npm:react-leaflet@5",
+        "npm:react-router-dom@^7.13.1",
+        "npm:react@^19.2.4",
+        "npm:recharts@^3.8.1",
+        "npm:shadcn@^4.2.0",
+        "npm:sharp@~0.34.5",
+        "npm:tailwind-merge@^3.5.0",
+        "npm:tailwindcss@^4.2.1",
+        "npm:vite-plugin-pwa@^1.2.0",
+        "npm:vite@^7.3.1"
+      ]
+    }
+  }
+}
