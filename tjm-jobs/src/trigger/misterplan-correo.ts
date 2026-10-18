@@ -23,7 +23,7 @@ export const misterplanCorreo = schedules.task({
         const r = await importarCorreosMisterPlan({
             log: (msg, data) => logger.info(msg, data as Record<string, unknown> | undefined),
         });
-        logger.info("[misterplan-correo] done", { leidos: r.leidos, procesados: r.procesados, acciones: r.acciones, atencion: r.atencion.length });
-        return { leidos: r.leidos, procesados: r.procesados, acciones: r.acciones, atencion: r.atencion };
+        logger.info("[misterplan-correo] done", { leidos: r.leidos, procesados: r.procesados, acciones: r.acciones, atencion: r.atencion.length, cortada: !!r.cortada });
+        return { leidos: r.leidos, procesados: r.procesados, acciones: r.acciones, atencion: r.atencion, cortada: !!r.cortada };
     },
 });

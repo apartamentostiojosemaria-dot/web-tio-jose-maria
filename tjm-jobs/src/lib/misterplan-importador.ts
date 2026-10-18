@@ -35,6 +35,8 @@ export interface Opciones {
     desde?: string;
     /** Tope de correos por pasada. */
     limite?: number;
+    /** Tope de tiempo de TODA la pasada en ms (por defecto 95 s, por debajo de los 120 s de la tarea). */
+    limiteMs?: number;
     log?: (msg: string, data?: unknown) => void;
 }
 
@@ -44,10 +46,15 @@ export interface Resultado {
     acciones: Record<string, number>;
     atencion: Array<{ asunto: string; motivo: string }>;
     detalle: Array<Record<string, unknown>>;
+    /** La pasada se cortó por tiempo: lo que faltó lo recoge la siguiente (idempotente por Message-ID). */
+    cortada?: boolean;
 }
 
 const ARRANQUE_POR_DEFECTO = "2026-09-11"; // día del barrido manual de MisterPlan (§7 ter)
 const REMITENTE = /ruralgest\.net|ruralgest\.com|misterplan/i;
+/** Same senders, as an IMAP server-side search: only their mail is listed (not the whole box). */
+const REMITENTES_IMAP = ["ruralgest", "misterplan"];
+const LIMITE_PASADA_MS = 95_000;
 
 /** Marcas de correo «ya enviado» para reservas de canal: lo que ya manda el canal
  *  (confirmación, llegada, salida) y la promoción no se escriben encima. Los de
@@ -105,6 +112,12 @@ export async function importarCorreosMisterPlan(opts: Opciones = {}): Promise<Re
         host: "imap.gmail.com", port: 993, secure: true, auth: { user, pass }, logger: false,
         connectionTimeout: 20_000, greetingTimeout: 15_000, socketTimeout: 45_000,
     });
+    // The per-operation timeouts above do not cap the WHOLE pass: on 15 and 18-oct-2026 (with them in place)
+    // several slow Gmail steps added up past 120 s. A single clock closes the connection at 95 s; the pass then
+    // ends cleanly (no MAX_DURATION_EXCEEDED) and the next one, 10 min later, picks up what was left.
+    let cortada = false;
+    const reloj = setTimeout(() => { cortada = true; client.close(); }, opts.limiteMs ?? LIMITE_PASADA_MS);
+    try {
     await client.connect();
     try {
         // Carpeta «Todos» de Gmail (nombre según idioma): la que tiene special-use \All.
@@ -112,7 +125,10 @@ export async function importarCorreosMisterPlan(opts: Opciones = {}): Promise<Re
         const todos = carpetas.find((c) => c.specialUse === "\\All")?.path || "INBOX";
         const lock = await client.getMailboxLock(todos);
         try {
-            const uids = await client.search({ since: new Date(desde + "T00:00:00Z") }, { uid: true });
+            const uids = await client.search(
+                { since: new Date(desde + "T00:00:00Z"), or: REMITENTES_IMAP.map((from) => ({ from })) },
+                { uid: true },
+            );
             const candidatos = (uids || []).sort((a, b) => a - b);
             log(`[misterplan-correo] ${candidatos.length} correos desde ${desde} en ${todos}`);
 
@@ -132,6 +148,7 @@ export async function importarCorreosMisterPlan(opts: Opciones = {}): Promise<Re
 
             let n = 0;
             for (const msg of cabeceras) {
+                if (cortada) break;
                 const env_ = msg.envelope;
                 const from = (env_?.from || []).map((f) => `${f.name || ""} <${f.address || ""}>`).join(", ");
                 if (!REMITENTE.test(from)) continue;
@@ -176,6 +193,15 @@ export async function importarCorreosMisterPlan(opts: Opciones = {}): Promise<Re
             }
         } finally { lock.release(); }
     } finally { await client.logout().catch(() => {}); }
+    } catch (e) {
+        if (!cortada) throw e;
+    } finally {
+        clearTimeout(reloj);
+    }
+    if (cortada) {
+        res.cortada = true;
+        log(`[misterplan-correo] cortada por tiempo tras ${res.procesados} procesados: la siguiente pasada recoge el resto`);
+    }
 
     if (!dryRun && res.atencion.length) {
         await avisar(user, pass, res.atencion, log);

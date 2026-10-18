@@ -22,6 +22,10 @@
   con token real (muestra la cuenta) y falso (error), y la baja en la base con rollback. `record_marketing_consent` ya no
   deja dar de baja ni firmar como `admin_panel` sin ser admin. `portal_events`, `client_notifications_read` y
   `materials_library` (restos de otro proyecto) ya no se pueden escribir sin ser admin (antes, `portal_events` lo borraba cualquiera).
+- 18-oct: `misterplan-correo` (Trigger.dev) se pasó de 120 s el 15 y el 18-oct **con** los límites del 9-oct puestos (la
+  versión `20261009.1` es el commit 9c24d6b): eran por operación, no por pasada. Ahora busca en el servidor solo el correo de
+  RuralGest/MisterPlan (41 = los 41 del registro desde el 11-sep) y un reloj corta la pasada a los 95 s sin error (la siguiente
+  recoge el resto). Pasada en seco: 9 s; corte forzado a 1,5 s: termina limpia. Ningún correo se perdió en esos fallos.
 
 ## En curso
 - Fase 2 hecha el 16-oct: `tjm_parte_gerente()` (0064) + función `parte-gerente` (llave GERENTE_TOKEN; GET = parte del
