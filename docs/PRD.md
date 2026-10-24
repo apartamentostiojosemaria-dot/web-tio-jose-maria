@@ -68,6 +68,6 @@ O1-O3 los decidió Jesús el 16-sep-2026 (plan de captación §13). O4-O6 son la
    y el panel dice qué falta y a quién.
 2. Una reserva que cambia de fechas: el cambio llega al Ministerio.
 3. El parte de quien entra hoy sale en la misma mañana o tarde, no al día siguiente.
-4. El día después de la salida la reserva pasa sola a «completed»; la limpieza sin marcar avisa la víspera de la siguiente entrada.
+4. El día después de la salida la reserva pasa sola a «completed»; (la limpieza la lleva la familia fuera del sistema desde el 24-oct: sin aviso).
 5. Cada tarea recurrente tiene fecha, avisa 7 días antes y al marcarla crea la siguiente.
 6. Si una tarea programada no hace su trabajo, llega un aviso el mismo día.

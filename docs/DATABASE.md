@@ -64,14 +64,14 @@
 ### Limpieza y operativa — detalle en `docs/OPERATIVA.md`
 | Tabla | Para qué | Quién la lee / escribe (RLS) |
 |---|---|---|
-| `cleaning_tasks` | limpieza por reserva (sigue a la reserva, `0017`) | staff y admin; SR |
+| `cleaning_tasks` | limpiezas sueltas que apunte la familia; desde `0069` (24-oct) la reserva ya no crea una ni hay aviso | staff y admin; SR |
 | `internal_tasks` | tareas internas y recurrentes (INE, facturas fallidas) | admin |
 | `protocols` · `internal_documents` | manual y documentos internos | admin; SR |
 | `owner_reports` | informe mensual al titular | admin |
 | `access_codes` | códigos de cerradura (sin uso: check-in en persona) | SELECT admin; SR |
 | `apartment_instructions` | instrucciones del apartamento | SELECT autenticados; admin escribe |
 
-- `tjm_revisiones` (`0061`): una fila por problema abierto de un proceso del negocio (ministerio, limpieza, mantenimiento,
+- `tjm_revisiones` (`0061`): una fila por problema abierto de un proceso del negocio (ministerio, mantenimiento,
   canales, correo, sistema), con `quien` (familia · jesus · sistema · gerente). La rellena `tjm_revisar()` cada hora (:40) y
   se cierra sola cuando el problema desaparece. Lee: staff/admin; escribe: solo el servidor. La lee el gerente cada mañana.
 - `internal_tasks.assigned_to` = familia · jesus · sistema (`0061`). La familia ve las suyas con `tjm_tareas_casa()` y las

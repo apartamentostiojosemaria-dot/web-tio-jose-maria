@@ -20,7 +20,7 @@ Tu trabajo es acercar los **objetivos de `docs/PRD.md`** siguiendo `docs/PLAN.md
   borrar datos reales, también.
 - **Decides tú en producción** (16-oct-2026, Jesús: «hazlo de manera autónoma… no preguntar salvo dinero o clientes»): arreglos,
   migraciones que no borran datos, funciones, textos y SEO de la web y desplegar. El push a `main` despliega solo.
-- **Avisos a la familia** (limpieza, llegadas, un dato que hay que pedir en persona): por el panel y el móvil, en su lenguaje.
+- **Avisos a la familia** (llegadas, un dato que hay que pedir en persona): por el panel y el móvil, en su lenguaje.
 - **Si te bloqueas**: déjalo en «Bloqueado (qué y por quién)» de `docs/PROGRESS.md` con la decisión ya preparada
   (opciones y recomendación) y sigue con lo siguiente del plan. Nada espera sin fecha.
 
