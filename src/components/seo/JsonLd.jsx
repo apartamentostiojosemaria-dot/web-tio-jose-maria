@@ -41,9 +41,15 @@ export const HomeJsonLd = ({ reviews, apartments }) => {
         checkinTime: '16:00',
         checkoutTime: '12:00',
         petsAllowed: false,
+        // same list as the static block in index.html (one entity: same @id)
         sameAs: [
             'https://www.booking.com/hotel/es/casa-rural-tio-jose-maria.es.html',
+            'https://www.airbnb.es/rooms/10697310',
             'https://www.airbnb.es/rooms/11131593',
+            'https://www.airbnb.es/rooms/22764070',
+            'https://www.airbnb.es/rooms/23316662',
+            'https://www.escapadarural.com/casa-rural/jaen/casa-rural-tio-jose-maria-tomillo',
+            'https://www.andalucia.org/listing/t%C3%ADo-jos%C3%A9-mar%C3%ADa/3889102/',
         ],
     };
 
