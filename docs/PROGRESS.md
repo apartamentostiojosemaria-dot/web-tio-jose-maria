@@ -16,6 +16,11 @@
 - Limpieza fuera del sistema (Jesús: «lo lleva bien, no hace falta que avise»; se acumulaban 10 sin marcar del 11-sep al
   20-oct): migr. `0069` aplicada; la reserva confirmada ya no crea limpieza, `tjm_revisar()` ya no avisa y las 10 se cerraron
   con nota. Comprobado en la base: 0 pendientes, 0 avisos de limpieza, `tjm_revisar()` corre (4 abiertos, todos de Jesús).
+- Copia de la base (migr. `0070`-`0071`, usuario `tjm_copia` de solo lectura): dentro de la copia nocturna cifrada del VPS,
+  restaurada con 0 errores; simulacro mensual. Token de Supabase `claude-code-tjm`: caduca el 16-dic, aviso el 2-dic.
+- SEO de marca: la portada cayó del top 20 del 12 al 19-oct («apartamentos tio jose maria hinojares») y hoy vuelve al 2.º
+  orgánico. Datos estructurados: un solo `@id`, 7 perfiles en `sameAs` comprobados, sin chimenea. El vigía cuenta ya el
+  orden orgánico (antes, la posición absoluta).
 - Mantenimiento (`internal_tasks`, plantilla del 22-jun): retiradas caldera (no hay; radiadores eléctricos), piscina y tasa
   anual del registro (no existe); extintores esperan las fechas reales de Jesús.
 

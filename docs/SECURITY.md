@@ -49,7 +49,13 @@
     marcada `gitleaks:allow`). Calendario de rotación: pendiente de confirmar.
 
 - Copias y restauración probada:
-  - Copias: las que haga el plan de Supabase; plan y PITR pendientes de confirmar. Restauración probada: **ninguna documentada**.
+  - Copias (24-oct-2026): cada noche (04:20 Madrid) la copia del VPS de agentes hace `pg_dump` 17 de `public`, `auth`,
+    `storage` y `cron` con el usuario de solo lectura `tjm_copia` (migr. 0070-0071), la cifra con el resto del VPS (gpg
+    AES256) y la sube a Drive (7 días). Los ficheros de Storage (fotos, libro-registro) NO van dentro: solo sus datos.
+    Si falla, el chivato de las 07:00 lo dice. Script: `clients/_personal/padron-ia/projects/centro-operaciones/vps-backup/`.
+  - Restauración probada: 24-oct-2026, 0 errores (52 reservas, 21 fichas, 48 clientes, 2 usuarios); se repite sola el
+    primer lunes de cada mes (`simulacro-tjm`, resultado en el parte). Restaurar de verdad = proyecto Supabase nuevo y
+    `pg_restore --no-owner --no-privileges`.
   - Retención legal aplicada por la base: partes anonimizados a los 3 años (`tjm-purgar-partes`, mensual) y borrados a 3 años +
     30 días (`prune-traveler-records`); logs del bot 12 meses; historial de cron 7 días.
 
@@ -68,4 +74,4 @@
 2. MANIFEST (10-sep): 15 funciones con `search_path` mutable, 3 `SECURITY DEFINER` ejecutables por `anon`
    (`check_is_admin`, `record_marketing_consent`, `submit_traveler_records`), extensiones en `public`.
 3. Cuenta de prueba `staff` creada el 10-sep marcada «borrar al terminar» en el MANIFEST: pendiente de confirmar que se borró.
-4. Encargos de tratamiento sin firmar (punto anterior) y ninguna restauración de copia probada.
+4. Encargos de tratamiento sin firmar (punto anterior) (la copia y su restauración se probaron el 24-oct).
