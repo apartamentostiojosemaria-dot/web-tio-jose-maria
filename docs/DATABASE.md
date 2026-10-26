@@ -29,7 +29,7 @@
 | `addons` · `booking_addons` | extras y extras por reserva | `addons` SELECT anon si `active`; escriben staff/admin · `booking_addons` admin |
 | `discount_codes` | códigos de descuento | admin; el titular lee los suyos |
 | `invoices` | facturas serie A / rectificativas R, huella Verifactu | SELECT admin, staff y el huésped de su reserva; escribe SR |
-| `customers` · `customer_notes` | ficha de cliente y notas | staff y admin |
+| `customers` · `customer_notes` | ficha de cliente y notas. Sin correo real = relleno `sin-email+…@tiojosemaria.local`; desde `0072` (26-oct) `tjm_es_relleno()` también trata como relleno una dirección tapada («n***@***.com») o no válida | staff y admin |
 
 ### Huéspedes y partes SES (RD 933/2021) — detalle en `docs/PARTE-VIAJEROS.md`
 | Tabla | Para qué | Quién la lee / escribe (RLS) |

@@ -114,6 +114,13 @@ const telefono = (s: string): string | undefined => {
     const t = m[0].replace(/\s/g, "");
     return /^\+/.test(t) ? t : (t.length === 9 ? `+34${t}` : t);
 };
+/** A real, sendable address or nothing. MisterPlan masks some guests'
+ *  addresses («n***@***.com»): kept as-is they look like an email, the
+ *  reminders send to them and Resend rejects them every day. */
+export const correoReal = (s: string | undefined): string | undefined => {
+    const t = s?.trim().replace(/[.,;:)>\]]+$/, "").replace(/^[<(\[]+/, "");
+    return t && /^[^\s@*]+@[^\s@*]+\.[a-z]{2,}$/i.test(t) ? t : undefined;
+};
 const apartamentoDe = (s: string): string | undefined => {
     const up = s.toUpperCase();
     for (const [nombre, slug] of Object.entries(APARTAMENTOS)) if (up.includes(nombre)) return slug;
@@ -278,5 +285,9 @@ export function parsearCorreoMisterPlan(asunto: string, cuerpoHtmlOTexto: string
         if (!out.checkIn || !out.checkOut) out.warnings.push("faltan fechas");
         if (!out.guestName) out.warnings.push("falta el nombre del huésped");
     }
+    if (out.guestEmail && !correoReal(out.guestEmail)) {
+        out.warnings.push("correo del huésped tapado o no válido: se descarta");
+        out.guestEmail = undefined;
+    } else if (out.guestEmail) out.guestEmail = correoReal(out.guestEmail);
     return out;
 }

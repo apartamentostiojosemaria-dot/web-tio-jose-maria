@@ -5,7 +5,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parsearCorreoMisterPlan, clasificar } from "./misterplan-correo.js";
+import { parsearCorreoMisterPlan, correoReal, clasificar } from "./misterplan-correo.js";
 
 const RESERVA_BOOKING = `<html><body><style>.x{}</style>
 <table><tr><td class="DRB_texto_nombre">APARTAMENTOS RURALES TIO JOSE MARÍA</td></tr>
@@ -148,4 +148,15 @@ test("confirmación del motor web", () => {
 test("un correo que no es de reserva sale como otro", () => {
     const p = parsearCorreoMisterPlan("Han completado una valoración en su establecimiento - MisterPlan", "<html>lo que sea</html>");
     assert.equal(p.kind, "otro");
+});
+
+test("correo tapado por el portal: se descarta y se avisa", () => {
+    const tapado = RESERVA_BOOKING.replace("ficticio.123@guest.booking.com", "n***@***.com");
+    const p = parsearCorreoMisterPlan("Sistema RuralGest - Reserva [3225-8060298]", tapado);
+    assert.equal(p.guestEmail, undefined);
+    assert.equal(p.guestPhone, "+34600000000");
+    assert.ok(p.warnings.some((w) => /tapado/.test(w)));
+    assert.equal(correoReal("ficticio.123@guest.booking.com"), "ficticio.123@guest.booking.com");
+    assert.equal(correoReal("<a@b.com>"), "a@b.com");
+    assert.equal(correoReal("n***@***.com"), undefined);
 });

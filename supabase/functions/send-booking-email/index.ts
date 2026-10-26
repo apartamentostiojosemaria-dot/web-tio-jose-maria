@@ -46,6 +46,7 @@ const esPlaceholder = (email: string) => {
     const e = email.toLowerCase();
     return PLACEHOLDER_DOMAINS.some((d) => e.endsWith(d));
 };
+const esCorreoValido = (email: string) => /^[^\s@*]+@[^\s@*]+\.[a-z]{2,}$/i.test(email.trim());
 
 function jwtRole(token: string): string | null {
     try {
@@ -136,6 +137,11 @@ Deno.serve(async (req) => {
         if (!booking.guest_email) return json(400, { error: "no_guest_email" });
         if (esPlaceholder(booking.guest_email)) {
             return json(200, { ok: true, skipped: "placeholder_email" });
+        }
+        // Masked by a portal («n***@***.com») or malformed: Resend would reject it
+        // every day (TJM-513DC3, 24/25-oct). Same as a placeholder: no mailbox.
+        if (!esCorreoValido(booking.guest_email)) {
+            return json(200, { ok: true, skipped: "invalid_email" });
         }
     }
 

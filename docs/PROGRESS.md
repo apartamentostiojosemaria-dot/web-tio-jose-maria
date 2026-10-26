@@ -12,7 +12,14 @@
 <!-- AAAA-MM-DD · Control NN (nombre) · aprobado por <persona y función> · prueba: <dónde está la evidencia> -->
 - ninguno todavía
 
-## Última sesión (2026-10-24)
+## Última sesión (2026-10-26)
+- Correos a direcciones tapadas: MisterPlan tapa algunas («n***@***.com») y el lector las guardaba tal cual; el de los 7 días
+  de TJM-513DC3 (entra el 31-oct) falló el 24 y el 25-oct (Resend 422). Lector (`tjm-jobs`) las descarta y avisa; migr.
+  `0072` aplicada (6 fichas y 6 reservas → relleno); `send-booking-email` v22 se salta lo no válido (`invalid_email`),
+  probado con una reserva de prueba ya borrada. Las 3 reservas futuras (513DC3, 1682E4, 387400) no tienen correo real:
+  tienen teléfono.
+
+## Sesión anterior (2026-10-24)
 - Limpieza fuera del sistema (Jesús: «lo lleva bien, no hace falta que avise»; se acumulaban 10 sin marcar del 11-sep al
   20-oct): migr. `0069` aplicada; la reserva confirmada ya no crea limpieza, `tjm_revisar()` ya no avisa y las 10 se cerraron
   con nota. Comprobado en la base: 0 pendientes, 0 avisos de limpieza, `tjm_revisar()` corre (4 abiertos, todos de Jesús).
@@ -24,7 +31,7 @@
 - Mantenimiento (`internal_tasks`, plantilla del 22-jun): retiradas caldera (no hay; radiadores eléctricos), piscina y tasa
   anual del registro (no existe); extintores esperan las fechas reales de Jesús.
 
-## Sesión anterior (2026-10-16)
+## Sesión de antes (2026-10-16)
 - Hecho: kit de repo instalado; PRD con objetivos O1-O6; fase 1 entera (1.1-1.6): parte cada hora, dato que falta se consigue,
   reglas M1-M7, F1, F4, cambios de reserva al Ministerio (F5), estancias y limpiezas que se cierran solas, tareas con responsable
   y «Tareas de la casa» en el panel, `tjm_revisiones` + vigilante de tareas programadas (migr. 0061-0063 aplicadas; función

@@ -276,7 +276,7 @@ async function procesar(sb: SupabaseClient, apts: Map<string, Apt>, p: CorreoPar
         // Enlazar: si la apuntaron a mano sin localizador, se le pone; y se completan correo/teléfono si faltaban.
         const cambios: Record<string, unknown> = {};
         if (p.locator && !existente.external_locator) cambios.external_locator = p.locator;
-        if (p.guestEmail && (!existente.guest_email || /@example\.invalid$|@tiojosemaria\.local$/.test(existente.guest_email))) cambios.guest_email = p.guestEmail;
+        if (p.guestEmail && (!existente.guest_email || /@example\.invalid$|@tiojosemaria\.local$|\*/.test(existente.guest_email))) cambios.guest_email = p.guestEmail;
         if (p.guestPhone && !existente.guest_phone) cambios.guest_phone = p.guestPhone;
         if (Object.keys(cambios).length === 0) return ok("ya_existia", existente.id, { nombre: existente.guest_name });
         if (!dryRun) {
