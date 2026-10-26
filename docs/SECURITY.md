@@ -27,7 +27,11 @@
   - RLS activada en las 59 tablas que crean el snapshot `0001` y las migraciones. Roles `admin` / `staff` / `cliente`; `is_staff()` exige `is_active`.
   - `traveler_records`: SELECT solo `admin`; `staff` no tiene política y ve el semáforo `v_parte_estado` sin datos del documento.
   - Escritura de logs, partes, comunicaciones y envíos: solo `service_role` (edge functions). Vistas con `security_invoker`.
-  - RPC de gestión `SECURITY DEFINER` con `search_path` fijo y guardia interna; `anon` solo en las de código de reserva.
+  - RPC de gestión `SECURITY DEFINER` con `search_path` fijo y guardia interna (`tjm_puede_gestionar()`: clave de servicio o
+    equipo); `anon` solo en las de código de reserva o token (ficha, precheckin, baja, vigía) y en `check_is_admin()`, que
+    piden las políticas de lectura pública. El linter de Supabase las sigue listando (0028/0029): es a propósito,
+    revisado una a una el 26-oct (migr. `0073`-`0075`). `pg_net` sigue en `public` (no se puede mover sin borrar su cola).
+  - Pendiente de Jesús: activar «contraseñas filtradas» en Supabase → Authentication → Sign In / Providers → Email.
   - Edge functions con `verify_jwt = false` (23 de las 25 declaradas en `config.toml`) se defienden dentro: firma HMAC de enlaces (`BOOKING_SIGN_SECRET`),
     firma de webhooks (Stripe, Resend), llave de cron en Vault, clave de servicio. Detalle por función en `docs/TRD.md`.
   - Tabla por tabla: `docs/DATABASE.md`.
@@ -71,7 +75,7 @@
 1. `portal_events`: política `staff_can_manage_events` `FOR ALL USING (true)` sin rol → abierta a `anon` para escribir.
    `client_notifications_read`: SELECT/INSERT/DELETE `USING (true)`. `materials_library`: cualquier autenticado lo edita.
    Son tablas heredadas sin uso (`docs/DATABASE.md`): candidatas a borrar o cerrar.
-2. ~~`search_path` mutable~~ cerrado el 26-oct (migr. `0073`, 20 funciones). Siguen 3 `SECURITY DEFINER` ejecutables por `anon`
+2. ~~`search_path` mutable, extensiones en `public`, `SECURITY DEFINER` sobrantes para `anon`~~ cerrado el 26-oct (migr. `0073`-`0075`); lo que queda es a propósito (arriba). Antes: 3 `SECURITY DEFINER` ejecutables por `anon`
    (`check_is_admin`, `record_marketing_consent`, `submit_traveler_records`), extensiones en `public`.
 3. Cuenta de prueba `staff` creada el 10-sep marcada «borrar al terminar» en el MANIFEST: pendiente de confirmar que se borró.
 4. Encargos de tratamiento sin firmar (punto anterior) (la copia y su restauración se probaron el 24-oct).

@@ -22,6 +22,10 @@
   ya en `public, extensions, pg_temp`. Probado antes en la base con vuelta atrás (mismos resultados y disparadores de
   reservas, clientes y precios bien); linter `function_search_path_mutable` a 0. T-10 del gerente cerrada (el obrero
   había fallado dos veces: c60c24, d1ec8b).
+- Resto de avisos de seguridad (migr. `0074`, `0075`): fuera el permiso público de 2 funciones de disparador, de
+  `tjm_ficha_reserva_viva` y de `tjm_checkin_verificar` para quien no ha entrado; `vector` y `btree_gist` a `extensions`;
+  política explícita «solo el servidor» en 5 tablas. Probado: web 200, lecturas públicas 200, ficha y factura del huésped
+  responden, reservas solapadas siguen rechazadas. Avisos del linter: de 93 a 60 (17 + 41 de funciones de huésped y de panel, a propósito; `pg_net`; contraseñas filtradas, de Jesús).
 
 ## Sesión anterior (2026-10-24)
 - Limpieza fuera del sistema (Jesús: «lo lleva bien, no hace falta que avise»; se acumulaban 10 sin marcar del 11-sep al
