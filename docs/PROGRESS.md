@@ -18,6 +18,10 @@
   `0072` aplicada (6 fichas y 6 reservas → relleno); `send-booking-email` v22 se salta lo no válido (`invalid_email`),
   probado con una reserva de prueba ya borrada. Las 3 reservas futuras (513DC3, 1682E4, 387400) no tienen correo real:
   tienen teléfono.
+- `search_path` fijo: migr. `0073` aplicada; las 20 funciones de `public` que lo tenían mutable (4 `SECURITY DEFINER`) buscan
+  ya en `public, extensions, pg_temp`. Probado antes en la base con vuelta atrás (mismos resultados y disparadores de
+  reservas, clientes y precios bien); linter `function_search_path_mutable` a 0. T-10 del gerente cerrada (el obrero
+  había fallado dos veces: c60c24, d1ec8b).
 
 ## Sesión anterior (2026-10-24)
 - Limpieza fuera del sistema (Jesús: «lo lleva bien, no hace falta que avise»; se acumulaban 10 sin marcar del 11-sep al

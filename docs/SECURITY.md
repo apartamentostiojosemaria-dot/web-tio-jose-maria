@@ -71,7 +71,7 @@
 1. `portal_events`: política `staff_can_manage_events` `FOR ALL USING (true)` sin rol → abierta a `anon` para escribir.
    `client_notifications_read`: SELECT/INSERT/DELETE `USING (true)`. `materials_library`: cualquier autenticado lo edita.
    Son tablas heredadas sin uso (`docs/DATABASE.md`): candidatas a borrar o cerrar.
-2. MANIFEST (10-sep): 15 funciones con `search_path` mutable, 3 `SECURITY DEFINER` ejecutables por `anon`
+2. ~~`search_path` mutable~~ cerrado el 26-oct (migr. `0073`, 20 funciones). Siguen 3 `SECURITY DEFINER` ejecutables por `anon`
    (`check_is_admin`, `record_marketing_consent`, `submit_traveler_records`), extensiones en `public`.
 3. Cuenta de prueba `staff` creada el 10-sep marcada «borrar al terminar» en el MANIFEST: pendiente de confirmar que se borró.
 4. Encargos de tratamiento sin firmar (punto anterior) (la copia y su restauración se probaron el 24-oct).
