@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, Calendar, Users, Search, Shield, MessageCircle, Phone, Check, ArrowRight } from 'lucide-react';
 import PageHead from '../components/seo/PageHead';
 import { supabase } from '../lib/supabase';
@@ -48,9 +48,15 @@ const PoliticaCancelacion = ({ checkIn }) => {
 
 const ReservarPage = () => {
     const [step, setStep] = useState('search');      // search | choose | guest | done
-    const [checkIn, setCheckIn] = useState('');
-    const [checkOut, setCheckOut] = useState('');
-    const [guests, setGuests] = useState(2);
+    // Dates can arrive from the homepage search: /reservar?entrada=AAAA-MM-DD&salida=AAAA-MM-DD&personas=N
+    const [params] = useSearchParams();
+    const isDate = (v) => /^\d{4}-\d{2}-\d{2}$/.test(v || '') && v >= today();
+    const pEntrada = isDate(params.get('entrada')) ? params.get('entrada') : '';
+    const pSalida = isDate(params.get('salida')) && params.get('salida') > pEntrada ? params.get('salida') : '';
+    const pPersonas = Math.min(Math.max(parseInt(params.get('personas'), 10) || 2, 1), 4);
+    const [checkIn, setCheckIn] = useState(pEntrada);
+    const [checkOut, setCheckOut] = useState(pEntrada ? pSalida : '');
+    const [guests, setGuests] = useState(pPersonas);
     const [searching, setSearching] = useState(false);
     const [searchError, setSearchError] = useState(null);
     const [available, setAvailable] = useState([]);
@@ -80,6 +86,11 @@ const ReservarPage = () => {
             setSearching(false);
         }
     };
+
+    useEffect(() => {
+        if (pEntrada && pSalida) searchAvailability();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const confirmHold = async (e) => {
         e?.preventDefault();

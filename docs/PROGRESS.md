@@ -18,6 +18,11 @@
   `GuiaCazorla.jsx` y en la base (`web_config` footer/hero/intro, Albahaca, Lavanda y el artículo
   `donde-alojarse-sierra-de-cazorla-hinojares`). La iglesia de San Marcos sí es del XVII y no se toca. Pendiente fuera de la
   web: Booking, Airbnb y la ficha de Google siguen diciendo XVII.
+- **Portada de prueba `/prueba/portada`** (noindex, sin enlaces): el diseño «La casa» del lienzo del 27-oct con movimiento
+  (arco que se abre sobre el pueblo, ramita de olivo, fotos que se destapan y rutas que se dibujan al bajar; CSS con
+  `animation-timeline: view()` y `prefers-reduced-motion`), textos de `textos-portada.md` del OS, rutas del estudio del
+  entorno. `/reservar` acepta ahora `?entrada=&salida=&personas=` y busca sola: probado de la portada a la lista de
+  libres (30-oct → 1-nov, Lavanda 120 €/noche). Pendiente: OK de Jesús para sustituir la portada.
 - `docs/GOOGLE_BUSINESS_PROFILE.md` sin chimenea (atributo, descripción y fotos), por la regla del 18-sep.
 
 ## Sesión anterior (2026-10-26)

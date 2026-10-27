@@ -54,6 +54,7 @@ const PanelPage = lazy(() => import('./pages/PanelPage'));
 const BlogPage = lazy(() => import('./pages/BlogPage'));
 const BlogPostDetail = lazy(() => import('./pages/BlogPostDetail'));
 const GuiaCazorla = lazy(() => import('./pages/GuiaCazorla'));
+const PruebaPortada = lazy(() => import('./pages/PruebaPortada'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 const PageLoader = () => (
@@ -167,6 +168,7 @@ export default function App() {
                         <Route path="/blog" element={<BlogPage />} />
                         <Route path="/blog/:slug" element={<BlogPostDetail />} />
                         <Route path="/guia-cazorla" element={<GuiaCazorla />} />
+                        <Route path="/prueba/portada" element={<PruebaPortada />} />
                         <Route
                             path="/admin"
                             element={
