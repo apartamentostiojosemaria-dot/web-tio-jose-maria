@@ -48,7 +48,6 @@ Marcar todos los que aplican:
 - [ ] Cocina equipada en la habitación
 - [ ] Calefacción
 - [ ] Aire acondicionado
-- [ ] Chimenea
 - [ ] Apto LGBTQ+ (si lo es, dilo — Google lo destaca)
 - [ ] Identifica como propiedad de mujer / familia (si aplica)
 
@@ -56,11 +55,11 @@ Marcar todos los que aplican:
 
 Sugerencia (basada en el copy real de la WP, no inventada):
 
-> Apartamentos Rurales Tío José María: una casa del siglo XVII restaurada
+> Apartamentos Rurales Tío José María: una casa del siglo XVIII restaurada
 > en el centro de Hinojares, junto a la Plaza de la Constitución, en el
 > Valle del Guadiana Menor al sur del Parque Natural de la Sierra de
 > Cazorla. Cuatro apartamentos independientes con piedra y barro en los
-> muros, madera y caña en los techos, chimenea en cada salón y vistas al
+> muros, madera y caña en los techos, calefacción y aire acondicionado, y vistas al
 > multicolor valle. Reserva directa sin comisiones. Para parejas, familias
 > y grupos pequeños que buscan silencio, naturaleza, gastronomía local y
 > ese cielo estrellado de la sierra que ya casi no se ve en otros sitios.
@@ -72,10 +71,10 @@ Google muestra MUCHO los perfiles con fotos buenas. Lo que toca subir:
 - [ ] **Logo** (cuadrado, ya tenemos uno).
 - [ ] **Foto de portada** (1024x576, panorámica del exterior o salón).
 - [ ] **Exterior**: fachada del edificio, calle, pueblo desde lejos (3-5).
-- [ ] **Interior común**: salón con chimenea, escaleras, patio (4-6).
+- [ ] **Interior común**: salón, escaleras, patio (4-6).
 - [ ] **Cada apartamento**: dormitorio, salón, cocina, baño (4 por apto =
       16 fotos).
-- [ ] **Detalles**: chimenea encendida, mesa puesta para desayuno, cama
+- [ ] **Detalles**: mesa puesta para desayuno, cama
       vestida, cesta de bienvenida (si la hay), techos de madera (5-8).
 - [ ] **Entorno**: vista del valle, calle del pueblo, plaza (3-5).
 - [ ] **Equipo**: la familia que gestiona, sonriendo. Genera confianza.

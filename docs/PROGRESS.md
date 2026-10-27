@@ -12,7 +12,15 @@
 <!-- AAAA-MM-DD · Control NN (nombre) · aprobado por <persona y función> · prueba: <dónde está la evidencia> -->
 - ninguno todavía
 
-## Última sesión (2026-10-26)
+## Última sesión (2026-10-27)
+- **La casona es del siglo XVIII** (Jesús, 27-oct, confirmando lo que dijo su padre el 17-jul; el plan del 13-sep la había
+  vuelto a XVII para cuadrar con los portales). Cambiado en `index.html` (JSON-LD), `public/llms.txt`, `HomePage.jsx`,
+  `GuiaCazorla.jsx` y en la base (`web_config` footer/hero/intro, Albahaca, Lavanda y el artículo
+  `donde-alojarse-sierra-de-cazorla-hinojares`). La iglesia de San Marcos sí es del XVII y no se toca. Pendiente fuera de la
+  web: Booking, Airbnb y la ficha de Google siguen diciendo XVII.
+- `docs/GOOGLE_BUSINESS_PROFILE.md` sin chimenea (atributo, descripción y fotos), por la regla del 18-sep.
+
+## Sesión anterior (2026-10-26)
 - Correos a direcciones tapadas: MisterPlan tapa algunas («n***@***.com») y el lector las guardaba tal cual; el de los 7 días
   de TJM-513DC3 (entra el 31-oct) falló el 24 y el 25-oct (Resend 422). Lector (`tjm-jobs`) las descarta y avisa; migr.
   `0072` aplicada (6 fichas y 6 reservas → relleno); `send-booking-email` v22 se salta lo no válido (`invalid_email`),
