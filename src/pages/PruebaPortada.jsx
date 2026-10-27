@@ -134,20 +134,20 @@ const PruebaPortada = () => {
                         <span>sobre 10 en Booking<br />más de 45 opiniones</span>
                     </div>
                 </div>
-                <div className="md:col-span-6 relative h-[250px] md:h-[640px] order-first md:order-none">
+                <div className="md:col-span-6 relative h-[230px] md:h-[600px] mt-4 md:mt-0 order-first md:order-none">
                     <div className="pp-ventana absolute top-0 right-0 w-full h-[220px] md:h-[560px] overflow-hidden">
                         <img className="pp-kb w-full h-full object-cover block" src="/assets/prueba/hinojares-panoramica.webp"
                             srcSet="/assets/prueba/hinojares-panoramica-900.webp 900w, /assets/prueba/hinojares-panoramica.webp 1920w"
                             sizes="(min-width: 768px) 50vw, 100vw" alt="Hinojares entre olivos, con la sierra detrás" fetchPriority="high" />
                     </div>
                     <img {...imgAttrs(FACHADA, { width: 460 })} alt="Fachada de la casa con el balcón de forja"
-                        className="pp-entra pp-d4 absolute right-3 md:right-auto md:left-6 bottom-0 w-[92px] h-[120px] md:w-[230px] md:h-[300px] object-cover rounded-[14px]"
-                        style={{ border: '8px solid var(--cream)', boxShadow: '0 24px 60px rgba(44,51,25,0.18)' }} />
+                        className="pp-entra pp-d4 absolute right-3 -top-4 md:right-6 md:-top-8 w-[72px] h-[94px] md:w-[160px] md:h-[210px] object-cover rounded-[12px]"
+                        style={{ border: '6px solid var(--cream)', boxShadow: '0 18px 44px rgba(44,51,25,0.20)' }} />
                 </div>
             </header>
 
             <form id="buscar" onSubmit={buscar}
-                className="pp-entra pp-d4 max-w-[1280px] mx-5 md:mx-10 xl:mx-auto mt-6 md:mt-12 p-4 md:py-4 md:pl-8 md:pr-4 bg-white border rounded-[20px] md:rounded-full flex flex-col md:flex-row md:items-center gap-3 md:gap-6"
+                className="pp-entra pp-d4 max-w-[1280px] mx-5 md:mx-auto md:w-[calc(100%-80px)] mt-6 md:mt-12 p-4 md:py-4 md:pl-8 md:pr-4 bg-white border rounded-[20px] md:rounded-full flex flex-col md:flex-row md:items-center gap-3 md:gap-6"
                 style={{ borderColor: '#E6DFCC', boxShadow: '0 18px 40px rgba(44,51,25,0.08)' }}>
                 <div className="grid grid-cols-2 md:contents gap-3">
                     <label className="md:flex-1 min-w-0 flex flex-col gap-1 text-[13px] font-bold" style={{ color: 'var(--muted)' }}>Llegada
@@ -169,7 +169,7 @@ const PruebaPortada = () => {
                     Ver apartamentos libres
                 </button>
             </form>
-            <p className="max-w-[1280px] mx-5 md:mx-10 xl:mx-auto mt-3 text-[14px] text-center md:text-left" style={{ color: 'var(--muted)' }}>
+            <p className="max-w-[1280px] mx-5 md:mx-auto md:w-[calc(100%-80px)] mt-3 text-[14px] text-center md:text-left" style={{ color: 'var(--muted)' }}>
                 Reservad aquí y pagad con tarjeta. Si encontráis el mismo apartamento más barato en otra web, os igualamos el precio. Cancelación gratis hasta 7 días antes.
             </p>
 
@@ -300,7 +300,7 @@ const PruebaPortada = () => {
                 </div>
             </section>
 
-            <section className="max-w-[1280px] mx-4 md:mx-10 xl:mx-auto mt-20 md:mt-36 p-7 md:p-16 rounded-[22px] grid md:grid-cols-12 gap-6 md:gap-8 items-center" style={{ background: 'var(--sand)' }}>
+            <section className="max-w-[1280px] mx-4 md:mx-auto md:w-[calc(100%-80px)] mt-20 md:mt-36 p-7 md:p-16 rounded-[22px] grid md:grid-cols-12 gap-6 md:gap-8 items-center" style={{ background: 'var(--sand)' }}>
                 <div className="md:col-span-5 flex flex-col gap-4">
                     <h2 className="serif m-0 text-[28px] md:text-[44px] leading-[1.12] font-semibold">Reservad <span className="italic" style={{ color: 'var(--olive)' }}>con nosotros</span></h2>
                     <p className="m-0 text-[16px] md:text-[18px] leading-[1.7]">Pagáis con tarjeta aquí mismo y habláis con nosotros desde el primer mensaje. Si encontráis el mismo apartamento más barato en otra web, os igualamos el precio.</p>
