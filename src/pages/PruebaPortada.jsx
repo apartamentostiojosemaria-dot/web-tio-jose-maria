@@ -126,7 +126,7 @@ const PruebaPortada = () => {
                         <span className="pp-l2 italic font-medium" style={{ color: 'var(--olive)' }}>en la Sierra de Cazorla</span>
                     </h1>
                     <p className="pp-entra pp-d1 m-0 text-[17px] md:text-[22px] leading-[1.55] max-w-[540px]">
-                        Cuatro apartamentos en la casona de la familia, del siglo XVIII, en el centro de Hinojares. Mari Carmen y Jesús os abren la puerta y os dan su libro de rutas.
+                        Cuatro apartamentos en la casa de la familia, del siglo XVIII, en el centro de Hinojares. Mari Carmen y Jesús os abren la puerta y os dan su libro de rutas.
                     </p>
                     <p className="pp-entra pp-d2 m-0 text-[15px] md:text-[17px]"><strong>Para dos, desde 60 € la noche</strong> · para cuatro, desde 110 €</p>
                     <div className="pp-entra pp-d3 flex gap-3 items-center text-[15px]" style={{ color: 'var(--muted)' }}>
@@ -200,7 +200,7 @@ const PruebaPortada = () => {
             <section id="apartamentos" className="max-w-[1440px] mx-auto px-5 md:px-20 pt-20 md:pt-40 flex flex-col gap-8 md:gap-11">
                 <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4 md:gap-10">
                     <h2 className="serif m-0 text-[31px] md:text-[50px] leading-[1.12] font-semibold">
-                        Cuatro apartamentos <span className="italic" style={{ color: 'var(--olive)' }}>en una casona del siglo XVIII</span>
+                        Cuatro apartamentos <span className="italic" style={{ color: 'var(--olive)' }}>en una casa de pueblo del siglo XVIII</span>
                     </h2>
                     <p className="m-0 text-[16px] md:text-[17px] leading-[1.6] max-w-[420px]">
                         Muros de piedra, vigas de madera, calefacción y aire acondicionado en cada uno. Un 10 en limpieza en Booking. «No hemos echado nada en falta», escribió Antonio.

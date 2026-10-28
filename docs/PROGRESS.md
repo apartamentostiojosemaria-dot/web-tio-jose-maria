@@ -13,6 +13,7 @@
 - ninguno todavía
 
 ## Última sesión (2026-10-27)
+- «Casona» fuera de toda la web (28-oct, Jesús: «es más del norte»): ahora «casa» / «casa de pueblo» en código, `llms.txt`, JSON-LD y base (`web_config`, apartamentos, 2 artículos, historia del pueblo).
 - **La casona es del siglo XVIII** (Jesús, 27-oct, confirmando lo que dijo su padre el 17-jul; el plan del 13-sep la había
   vuelto a XVII para cuadrar con los portales). Cambiado en `index.html` (JSON-LD), `public/llms.txt`, `HomePage.jsx`,
   `GuiaCazorla.jsx` y en la base (`web_config` footer/hero/intro, Albahaca, Lavanda y el artículo

@@ -241,7 +241,7 @@ const ApartmentsManager = () => {
                                 <textarea
                                     className="w-full p-5 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 ring-rural-300 outline-none font-serif text-[15px] leading-relaxed resize-y"
                                     rows={14}
-                                    placeholder="Ej: En la primera planta de la casona, ala derecha. Apartamento luminoso para dos, con cama de matrimonio y un balcón de forja que asoma a la Calle Baja y al Valle del Guadiana..."
+                                    placeholder="Ej: En la primera planta de la casa, ala derecha. Apartamento luminoso para dos, con cama de matrimonio y un balcón de forja que asoma a la Calle Baja y al Valle del Guadiana..."
                                     value={description}
                                     onChange={e => setEditingApt({ ...editingApt, description: e.target.value })}
                                 />
