@@ -11,13 +11,13 @@ const BotChat = lazy(() => import('./components/shared/BotChat'));
 // de navegacion de abajo en el movil.
 const PublicCookieConsent = () => {
     const { pathname } = useLocation();
-    if (pathname.startsWith('/admin') || pathname.startsWith('/clientes') || pathname.startsWith('/panel')) return null;
+    if (pathname.startsWith('/admin') || pathname.startsWith('/clientes') || pathname.startsWith('/panel') || pathname.startsWith('/datos/')) return null;
     return <CookieConsent />;
 };
 
 const PublicBotChat = () => {
     const { pathname } = useLocation();
-    if (pathname.startsWith('/admin') || pathname.startsWith('/clientes') || pathname.startsWith('/panel')) return null;
+    if (pathname.startsWith('/admin') || pathname.startsWith('/clientes') || pathname.startsWith('/panel') || pathname.startsWith('/datos/')) return null;
     // Bot deshabilitado por defecto. Activar con VITE_BOT_ENABLED=true cuando
     // AWS Bedrock + indexer KB estén configurados y verificados.
     if (import.meta.env.VITE_BOT_ENABLED !== 'true') return null;
@@ -55,6 +55,7 @@ const BlogPage = lazy(() => import('./pages/BlogPage'));
 const BlogPostDetail = lazy(() => import('./pages/BlogPostDetail'));
 const GuiaCazorla = lazy(() => import('./pages/GuiaCazorla'));
 const PruebaPortada = lazy(() => import('./pages/PruebaPortada'));
+const DatosTitular = lazy(() => import('./pages/DatosTitular'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 const PageLoader = () => (
@@ -169,6 +170,7 @@ export default function App() {
                         <Route path="/blog/:slug" element={<BlogPostDetail />} />
                         <Route path="/guia-cazorla" element={<GuiaCazorla />} />
                         <Route path="/prueba/portada" element={<PruebaPortada />} />
+                        <Route path="/datos/:token" element={<DatosTitular />} />
                         <Route
                             path="/admin"
                             element={
