@@ -39,7 +39,7 @@ const ibanOk = (v) => {
 };
 
 const VACIO = {
-    nombre: '', apellido1: '', apellido2: '', dni: '', nacimiento: '',
+    nombre: '', apellido1: '', apellido2: '', dni: '', nacimiento: '', nacionalidad: 'Española',
     calle: '', piso: '', cp: '', localidad: 'Hinojares', provincia: 'Jaén', pais: 'España',
     movil: '', correo: '', iban: '', titularCuenta: '', notas: '',
 };
@@ -78,7 +78,7 @@ const DatosTitular = () => {
 
     const validar = () => {
         const e = {};
-        const req = ['nombre', 'apellido1', 'dni', 'nacimiento', 'calle', 'cp', 'localidad', 'provincia', 'movil', 'correo', 'iban', 'titularCuenta'];
+        const req = ['nombre', 'apellido1', 'nacimiento', 'nacionalidad', 'calle', 'cp', 'localidad', 'provincia', 'movil', 'correo', 'iban', 'titularCuenta'];
         req.forEach((k) => { if (!String(d[k]).trim()) e[k] = 'Falta este dato'; });
         if (d.dni && !dniOk(d.dni)) e.dni = 'La letra no cuadra con el número. Revísalo con el DNI delante.';
         if (d.cp && !/^\d{5}$/.test(d.cp.trim())) e.cp = 'Son 5 números (el de Hinojares es 23486).';
@@ -140,7 +140,7 @@ const DatosTitular = () => {
                     Datos para cobrar las reservas con tarjeta en la web
                 </h1>
                 <p className="text-[18px] leading-relaxed m-0">
-                    Mamá, son los datos de papá, que es el titular de los apartamentos. Stripe, la empresa que cobra las tarjetas, los pide para abrir la cuenta y para saber dónde ingresar el dinero de las reservas. Yo los meto luego.
+                    Mamá, son los datos de papá, que es el titular de los apartamentos, y son justo los que pide Stripe. Stripe, la empresa que cobra las tarjetas, los pide para abrir la cuenta y para saber dónde ingresar el dinero de las reservas. Yo los meto luego.
                 </p>
                 <div className="flex gap-3 items-start rounded-xl p-4 text-[16px] leading-relaxed" style={{ background: '#EEF1E6' }}>
                     <Lock size={20} color="#556B2F" className="shrink-0 mt-0.5" />
@@ -156,8 +156,9 @@ const DatosTitular = () => {
                 <Campo label="Nombre" error={errores.nombre}><input className={inputCls} style={inputStyle} value={d.nombre} onChange={set('nombre')} autoComplete="off" /></Campo>
                 <Campo label="Primer apellido" error={errores.apellido1}><input className={inputCls} style={inputStyle} value={d.apellido1} onChange={set('apellido1')} autoComplete="off" /></Campo>
                 <Campo label="Segundo apellido" error={errores.apellido2}><input className={inputCls} style={inputStyle} value={d.apellido2} onChange={set('apellido2')} autoComplete="off" /></Campo>
-                <Campo label="DNI" ayuda="Con la letra, por ejemplo 12345678Z" error={errores.dni}><input className={inputCls} style={inputStyle} value={d.dni} onChange={set('dni')} autoComplete="off" /></Campo>
+                <Campo label="DNI (opcional)" ayuda="Solo por si Stripe lo pide luego. Con la letra, por ejemplo 12345678Z" error={errores.dni}><input className={inputCls} style={inputStyle} value={d.dni} onChange={set('dni')} autoComplete="off" /></Campo>
                 <Campo label="Fecha de nacimiento" error={errores.nacimiento}><input type="date" className={inputCls} style={inputStyle} value={d.nacimiento} onChange={set('nacimiento')} /></Campo>
+                <Campo label="Nacionalidad" error={errores.nacionalidad}><input className={inputCls} style={inputStyle} value={d.nacionalidad} onChange={set('nacionalidad')} autoComplete="off" /></Campo>
                 <Campo label="Móvil" ayuda="Stripe puede mandarle un código por SMS" error={errores.movil}><input type="tel" className={inputCls} style={inputStyle} value={d.movil} onChange={set('movil')} autoComplete="off" /></Campo>
                 <Campo label="Correo electrónico" ayuda="El que miréis, para los avisos de Stripe" error={errores.correo} ancho><input type="email" className={inputCls} style={inputStyle} value={d.correo} onChange={set('correo')} autoComplete="off" /></Campo>
             </fieldset>
