@@ -58,7 +58,10 @@ export default defineConfig({
                 // ever sees the public site. Their chunks are named with a stable
                 // admin-/client- prefix by build.rollupOptions.output below, so they can
                 // be excluded here by filename instead of enumerating every component.
-                globIgnores: ['**/admin-*.js', '**/client-*.js'],
+                globIgnores: ['**/admin-*.js', '**/client-*.js', 'maqueta/**'],
+                // /maqueta/ is a standalone page (the 3D model, ~10 MB with its aerial photos): never precached, and its
+                // address must reach the server instead of being answered with the SPA shell.
+                navigateFallbackDenylist: [/^\/maqueta/],
                 runtimeCaching: [
                     {
                         // Cache Google Fonts

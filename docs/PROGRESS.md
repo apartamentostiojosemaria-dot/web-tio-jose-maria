@@ -72,6 +72,10 @@
   recoge el resto). Pasada en seco: 9 s; corte forzado a 1,5 s: termina limpia. Ningún correo se perdió en esos fallos.
 
 ## En curso
+- 28-oct: maqueta 3D del pueblo y la casa en **`/maqueta/`**, página oculta (noindex, fuera del menú y del sitemap) para que
+  Jesús la comparta con un enlace. Se genera fuera del repo (`clients/tio-jose-maria/projects/web-portada/casa-3d`,
+  `scripts/publicar_web.py` → `public/maqueta/`); three.js va servido desde la web porque la CSP solo admite scripts propios.
+  El service worker no la precachea ni la contesta con la SPA (`vite.config.js`); nginx manda `/maqueta` a `/maqueta/`.
 - Fase 2 hecha el 16-oct: `tjm_parte_gerente()` (0064) + función `parte-gerente` (llave GERENTE_TOKEN; GET = parte del
   negocio con revisiones frescas, POST = aviso a la familia, máx. 3/día). El gerente corre en la oficina de Hermes (VPS)
   laborables 07:10 y 15:10 y fines de semana 07:10, **en sombra** hasta ~23-oct. Plazos de pg_net corregidos (0066, 0067).
