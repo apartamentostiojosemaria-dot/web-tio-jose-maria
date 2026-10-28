@@ -13,6 +13,7 @@
 - ninguno todavía
 
 ## Última sesión (2026-10-27)
+- **Stripe está en MODO PRUEBA** (28-oct, comprobado con una retención de prueba en nov-2027, ya borrada): `create-payment-session` devuelve `cs_test_…`. Ningún huésped puede pagar hoy en la web. Para activarlo: cuenta Stripe activada a nombre del titular (DNI, IBAN) → `sk_live` y `whsec` live con `pegar-clave.py` → webhook live → cobro real pequeño + devolución. Bloqueado por: datos del titular (Jesús con sus padres).
 - «Casona» fuera de toda la web (28-oct, Jesús: «es más del norte»): ahora «casa» / «casa de pueblo» en código, `llms.txt`, JSON-LD y base (`web_config`, apartamentos, 2 artículos, historia del pueblo).
 - **La casona es del siglo XVIII** (Jesús, 27-oct, confirmando lo que dijo su padre el 17-jul; el plan del 13-sep la había
   vuelto a XVII para cuadrar con los portales). Cambiado en `index.html` (JSON-LD), `public/llms.txt`, `HomePage.jsx`,

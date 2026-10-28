@@ -70,7 +70,7 @@ Solo nombres de variable; los valores no se escriben aquí. Los secretos de func
 Secrets salvo los marcados «Vault».
 | Servicio | Datos que entran/salen | Dónde vive la clave | Límite | Si falla | Quién paga |
 |---|---|---|---|---|---|
-| Stripe | Checkout, cargo, últimos 4 dígitos y titular para el parte | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | pendiente de confirmar | el webhook siempre responde 200; si falla la factura deja tarea en `internal_tasks` | pendiente de confirmar |
+| Stripe | Checkout, cargo, últimos 4 dígitos y titular para el parte | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | **MODO PRUEBA** (comprobado 28-oct-2026: la pasarela abre «Entorno de prueba de Apartamentos Tio Jose Maria»; 0 cobros reales por la web). Falta activar la cuenta con los datos del titular y poner `sk_live`/`whsec` live | el webhook siempre responde 200; si falla la factura deja tarea en `internal_tasks` | pendiente de confirmar |
 | Resend | correos transaccionales, OTP, eventos de entrega | `RESEND_API_KEY`, `RESEND_FROM`, `RESEND_WEBHOOK_SECRET` | pendiente de confirmar | `envios` guarda el estado real; `tjm-vigilar-correo` avisa | pendiente de confirmar |
 | SES.HOSPEDAJES (MIR) | reservas, anulaciones, partes (XML/SOAP) | 5 credenciales en **Vault** (`0027`); llave de cron `ses_cron_token` en Vault (`0016`) | plazo legal 24 h | reintenta y avisa en el panel; estado `aparcado` para atrasos | — |
 | Portales iCal (Airbnb, Booking, EscapadaRural, CasasRurales.net, Holidu) | ocupación entrante/saliente | URLs en `apartments.*_ical_url` | tope 150 s por pasada | vigilante horario; feed vacío no cancela (`a9b71f6`) | — |
