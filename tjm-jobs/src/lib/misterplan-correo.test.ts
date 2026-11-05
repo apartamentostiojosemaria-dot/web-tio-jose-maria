@@ -160,3 +160,22 @@ test("correo tapado por el portal: se descarta y se avisa", () => {
     assert.equal(correoReal("<a@b.com>"), "a@b.com");
     assert.equal(correoReal("n***@***.com"), undefined);
 });
+
+// 5-nov-2026: a Booking sale of TWO units (TJM-926D86, Romero + Albahaca, 6 people) was booked in Romero only.
+test("un bono de Booking con dos apartamentos los ve los dos", () => {
+    const txt = ["Reserva: 1-8113498", "-->", "Booking.com", "Localizador: 6138226741", "Carmen Toro Toro", "España", "Observaciones:", "x", "--------",
+        "Importe Total: 607,50&euro;", "APARTAMENTOS RURALES TIO JOSE MARÍA", "05/12/2026 - 3 noches - 6 personas",
+        "1", "Apartamento", "para", "4 Adultos", "(ROMERO)", "Precio habitación:", "126,00&euro;",
+        "1", "Apartamento", "para", "2 Adultos", "(ALBAHACA)", "Precio habitación:", "76,50&euro;",
+        "Establecimiento", "Dirección: calle baja 1"].join("\n");
+    const p = parsearCorreoMisterPlan("Sistema RuralGest - Reserva [3225-8113498]", txt);
+    assert.equal(p.apartment, "romero");
+    assert.deepEqual(p.otherApartments, ["albahaca"]);
+    assert.equal(p.pax, 6);
+});
+
+test("un bono de un solo apartamento no trae otros", () => {
+    const txt = ["Reserva: 1-1", "Booking.com", "Localizador: 1", "Ana", "Observaciones:", "x", "--------", "Importe Total: 229,50&euro;",
+        "04/12/2026 - 3 noches - 2 personas", "2 Adultos", "(TOMILLO)", "Establecimiento"].join("\n");
+    assert.equal(parsearCorreoMisterPlan("Sistema RuralGest - Reserva [3225-1]", txt).otherApartments, undefined);
+});

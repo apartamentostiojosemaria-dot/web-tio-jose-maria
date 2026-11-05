@@ -233,6 +233,8 @@ async function procesar(sb: SupabaseClient, apts: Map<string, Apt>, p: CorreoPar
                 internal_notes: `${viva.internal_notes ?? ""}\n${notaCancelada("booking", new Date(recibido))}`.trim(),
             }).eq("id", viva.id);
             if (error) throw new Error(error.message);
+            // A multi-unit booking also frees the other units it was holding.
+            await sb.from("blocked_dates").delete().like("external_uid", `misterplan-extra:${viva.id}:%`);
             await sb.from("channel_sync_conflicts").update({ resolved_at: new Date().toISOString(), resolution: "La reserva se canceló en Booking (aviso de MisterPlan)." }).eq("conflicting_booking_id", viva.id).is("resolved_at", null);
         }
         return ok("cancelada", viva.id, { locator: p.locator, nombre: viva.guest_name, fechas: `${viva.check_in}→${viva.check_out}` });
@@ -251,7 +253,7 @@ async function procesar(sb: SupabaseClient, apts: Map<string, Apt>, p: CorreoPar
     if (p.kind === "modificacion_booking") {
         if (!existente) {
             // Una modificación de algo que no teníamos: se apunta como nueva con lo que trae.
-            return crear(sb, apt, p, recibido, dryRun, "modificación de una reserva que no estaba: creada con los datos nuevos");
+            return crear(sb, apts, apt, p, recibido, dryRun, "modificación de una reserva que no estaba: creada con los datos nuevos");
         }
         const cambios: Record<string, unknown> = {};
         if (existente.check_in !== p.checkIn) cambios.check_in = p.checkIn;
@@ -287,14 +289,14 @@ async function procesar(sb: SupabaseClient, apts: Map<string, Apt>, p: CorreoPar
         }
         return ok("enlazada", existente.id, { cambios });
     }
-    return crear(sb, apt, p, recibido, dryRun);
+    return crear(sb, apts, apt, p, recibido, dryRun);
 }
 
 function resumen(p: CorreoParseado) {
     return { ref: p.misterplanRef, locator: p.locator, canal: p.channelLabel, nombre: p.guestName, fechas: `${p.checkIn}→${p.checkOut}`, apto: p.apartment, pax: p.pax, total: p.total, paid: p.paid };
 }
 
-async function crear(sb: SupabaseClient, apt: Apt, p: CorreoParseado, recibido: string, dryRun: boolean, nota = ""): Promise<Accion> {
+async function crear(sb: SupabaseClient, apts: Map<string, Apt>, apt: Apt, p: CorreoParseado, recibido: string, dryRun: boolean, nota = ""): Promise<Accion> {
     const choque = await solape(sb, apt.id, p.checkIn!, p.checkOut!, null);
     if (choque) return { action: "error", booking_id: null, necesita_atencion: true, detail: { motivo: "las fechas chocan con otra reserva viva del sistema (no se crea: hay que mirar cuál vale)", choque, parsed: resumen(p) } };
 
@@ -334,6 +336,7 @@ async function crear(sb: SupabaseClient, apt: Apt, p: CorreoParseado, recibido: 
             canal, locator: p.locator, misterplanRef: p.misterplanRef, total: p.total, nights: p.nights, pax: p.pax,
             paid: p.paid, vccChargeableFrom: p.vccChargeableFrom, comision, arrivalTime: p.arrivalTime,
             comments: p.comments, nota,
+            apartamentos: p.otherApartments?.length ? [apt.name, ...p.otherApartments.map((s) => apts.get(s)?.name ?? s)] : undefined,
         }),
     };
     if (esCanal) for (const f of EMAIL_FLAGS_CANAL) fila[f] = ahora;
@@ -376,7 +379,34 @@ async function crear(sb: SupabaseClient, apt: Apt, p: CorreoParseado, recibido: 
             await sb.from("guest_bookings").update({ external_uid: bloq[0].external_uid }).eq("id", id);
         }
     }
-    return { action: "creada", booking_id: id, necesita_atencion: false, detail: resumen(p) };
+    // Other units of the same booking (Booking sells several in one go): each one is closed with a block tied
+    // to this booking, so it cannot be sold twice even without MisterPlan closing it on the portals.
+    const otros = await cerrarOtrosApartamentos(sb, apts, id, fila.booking_code as string, p);
+    if (otros.choques.length) return { action: "creada", booking_id: id, necesita_atencion: true, detail: { motivo: `reserva de varios apartamentos: ${otros.choques.join(", ")} ya tenía otra reserva esas noches`, ...resumen(p) } };
+    return { action: "creada", booking_id: id, necesita_atencion: false, detail: { ...resumen(p), otros: otros.cerrados } };
+}
+
+/** external_uid of the block that holds another unit of booking `id`. */
+export const uidOtroApto = (id: number, slug: string) => `misterplan-extra:${id}:${slug}`;
+
+async function cerrarOtrosApartamentos(sb: SupabaseClient, apts: Map<string, Apt>, id: number, codigo: string, p: CorreoParseado) {
+    const cerrados: string[] = [], choques: string[] = [];
+    for (const slug of p.otherApartments ?? []) {
+        const otro = apts.get(slug);
+        if (!otro) continue;
+        const { data: ya } = await sb.from("blocked_dates").select("id").eq("external_uid", uidOtroApto(id, slug)).limit(1);
+        if (ya && ya.length) { cerrados.push(otro.name); continue; }
+        if (await solape(sb, otro.id, p.checkIn!, p.checkOut!, null)) { choques.push(otro.name); continue; }
+        const { error } = await sb.from("blocked_dates").insert({
+            apartment_id: otro.id, start_date: p.checkIn,
+            end_date: new Date(Date.parse(p.checkOut! + "T00:00:00Z") - 86400_000).toISOString().slice(0, 10),
+            source: "misterplan-correo", external_uid: uidOtroApto(id, slug), external_kind: "reserved",
+            reason: `Ocupado por la reserva ${codigo} (${p.guestName ?? "huésped"}), que es de varios apartamentos`,
+        });
+        if (error) choques.push(`${otro.name} (no se pudo cerrar: ${error.message})`);
+        else cerrados.push(otro.name);
+    }
+    return { cerrados, choques };
 }
 
 type Reserva = { id: number; apartment_id: number; guest_name: string; guest_email: string | null; guest_phone: string | null; check_in: string; check_out: string; status: string; total_price: number | string | null; pax_count: number | null; external_locator: string | null; internal_notes: string | null };

@@ -44,6 +44,8 @@ export interface CorreoParseado {
     country?: string;
     /** Slug del apartamento (albahaca | lavanda | romero | tomillo). */
     apartment?: string;
+    /** Other units in the same booking (Booking sells several in one go). */
+    otherApartments?: string[];
     checkIn?: string;    // YYYY-MM-DD
     checkOut?: string;   // YYYY-MM-DD
     nights?: number;
@@ -202,6 +204,15 @@ export function parsearCorreoMisterPlan(asunto: string, cuerpoHtmlOTexto: string
                 // «(TOMILLO)» en las líneas siguientes
                 for (const l of L.slice(iFe, iFe + 12)) { const a = apartamentoDe(l); if (a && /\(/.test(l)) { out.apartment = a; break; } }
                 if (!out.apartment) for (const l of L.slice(iFe, iFe + 12)) { const a = apartamentoDe(l); if (a) { out.apartment = a; break; } }
+                // A Booking sale can take SEVERAL units in one booking (5-nov-2026: TJM-926D86 = Romero +
+                // Albahaca, 6 people). Every «(NAME)» line up to «Establecimiento» is one unit.
+                const iEst = buscar(L, /^Establecimiento$/i, iFe);
+                const todos: string[] = [];
+                for (const l of L.slice(iFe, iEst > iFe ? iEst : iFe + 60)) {
+                    const a = /^\(([A-ZÁÉÍÓÚÑ ]+)\)$/.test(l) ? apartamentoDe(l) : undefined;
+                    if (a && !todos.includes(a)) todos.push(a);
+                }
+                if (out.apartment && todos.length > 1) out.otherApartments = todos.filter((a) => a !== out.apartment);
             } else out.warnings.push("no se encontró la línea de fechas/noches/personas");
         } else out.warnings.push("no se encontró «Importe Total»");
 

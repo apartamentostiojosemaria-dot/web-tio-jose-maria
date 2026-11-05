@@ -17,6 +17,7 @@ export type DatosNota = {
     arrivalTime?: string;
     comments?: string;
     nota?: string;                 // aviso del importador (p. ej. «modificación de una reserva que no estaba»)
+    apartamentos?: string[];       // nombres, cuando la reserva ocupa más de uno (el primero es donde se apunta)
 };
 
 const euros = (n: number) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
@@ -91,6 +92,10 @@ export function notaFamilia(d: DatosNota): string {
     const partes: string[] = [];
     const portal = NOMBRE[d.canal] || d.canal;
     partes.push(`Reserva de ${portal}${d.locator ? ` · localizador ${d.locator}` : ""}.`);
+    if (d.apartamentos && d.apartamentos.length > 1) {
+        const n = d.apartamentos;
+        partes.push(`Son ${n.length} apartamentos: ${n.slice(0, -1).join(", ")} y ${n[n.length - 1]} (todos ocupados esas noches; el importe es el de todos).`);
+    }
     if (d.total != null) {
         partes.push(euros(d.total) + (d.nights ? ` por ${plural(d.nights, "noche", "noches")}` : "") + (d.pax ? `, ${plural(d.pax, "persona", "personas")}` : "") + ".");
     }

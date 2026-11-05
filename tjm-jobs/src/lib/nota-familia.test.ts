@@ -56,3 +56,7 @@ test("recortar corta por palabras y pone «…»", () => {
     assert.ok(r.endsWith("…") && r.length <= 20 && !/\w…$/.test(r.replace(/\s\S+…$/, "")));
     assert.equal(recortar("corto", 20), "corto");
 });
+
+test("reserva de varios apartamentos lo dice en la nota", () => {
+    assert.match(notaFamilia({ canal: "booking", apartamentos: ["Romero", "Albahaca"] }), /Son 2 apartamentos: Romero y Albahaca/);
+});
