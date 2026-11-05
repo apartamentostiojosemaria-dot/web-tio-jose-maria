@@ -40,19 +40,38 @@ Deno.serve(async (req) => {
     if (!autorizado) return json(401, { error: "no_autorizado" });
     if (!s.push_vapid_public || !s.push_vapid_private) return json(503, { error: "faltan_claves_vapid" });
 
-    let body: { titulo?: string; texto?: string; url?: string } = {};
+    let body: { titulo?: string; texto?: string; url?: string; soloSuscripcion?: number } = {};
     try { body = await req.json(); } catch { /* vacío */ }
-    const titulo = String(body.titulo || "").trim().slice(0, 80);
-    const texto = String(body.texto || "").trim().slice(0, 240);
-    const url = String(body.url || "/panel").trim();
+    // 5-nov-2026: se cortaba a media palabra («…de la reserva de Booking TJM-9F0»). Ahora por palabras y con «…».
+    const recortar = (t: string, max: number) => {
+        const s = t.replace(/\s+/g, " ").trim();
+        if (s.length <= max) return s;
+        const corte = s.slice(0, max - 1);
+        const ultimo = corte.lastIndexOf(" ");
+        return (ultimo > max * 0.6 ? corte.slice(0, ultimo) : corte).replace(/[\s,.;:·—-]+$/, "") + "…";
+    };
+    const titulo = recortar(String(body.titulo || ""), 80);
+    const texto = recortar(String(body.texto || ""), 240);
+    let url = String(body.url || "/panel").trim();
     if (!titulo) return json(400, { error: "falta_titulo" });
+
+    // Si el aviso habla de una reserva (código TJM-XXXXXX) y no dice adónde ir, al pulsarlo se abre esa
+    // reserva y no el panel en general (avisos del Ministerio y del gerente).
+    if (url === "/panel" || url === "") {
+        const codigo = `${titulo} ${texto}`.match(/TJM-[A-Za-z0-9]{6}/)?.[0];
+        if (codigo) {
+            const { data: r } = await admin.from("guest_bookings").select("id").eq("booking_code", codigo.toUpperCase()).maybeSingle();
+            if (r?.id) url = `/panel?s=reserva&p=${encodeURIComponent(JSON.stringify({ reservaId: r.id }))}`;
+        }
+    }
 
     webpush.setVapidDetails("mailto:apartamentostiojosemaria@gmail.com", s.push_vapid_public, s.push_vapid_private);
 
-    const { data: subs, error } = await admin
-        .from("push_subscriptions")
-        .select("id, endpoint, p256dh, auth")
-        .is("failed_at", null);
+    // `soloSuscripcion` (5-nov-2026): para probar un aviso en un solo móvil sin molestar a la familia.
+    const solo = Number((body as { soloSuscripcion?: number }).soloSuscripcion || 0);
+    let consulta = admin.from("push_subscriptions").select("id, endpoint, p256dh, auth").is("failed_at", null);
+    if (solo > 0) consulta = consulta.eq("id", solo);
+    const { data: subs, error } = await consulta;
     if (error) return json(500, { error: error.message });
 
     const payload = JSON.stringify({ titulo, texto, url });
