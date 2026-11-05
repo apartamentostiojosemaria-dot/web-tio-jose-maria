@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
 import { supabase } from '../../lib/supabase';
 import {
-    Sun, CalendarDays, PlusCircle, BookMarked, Users, Euro, Tag, Brush, Shield,
+    Sun, CalendarDays, PlusCircle, BookMarked, Users, Euro, Tag, Shield,
     LogOut, ChevronLeft, LayoutGrid, Menu,
 } from 'lucide-react';
 import { Cargando, Hoja, Confirmar, hayHojaAbierta, soltarHojas } from './ui';
@@ -47,7 +47,6 @@ const ReservaFicha = lazy(() => import('./ReservaFicha'));
 const ClientesPanel = lazy(() => import('./ClientesPanel'));
 const DineroPanel = lazy(() => import('./DineroPanel'));
 const PreciosPanel = lazy(() => import('./PreciosPanel'));
-const LimpiezasPanel = lazy(() => import('./LimpiezasPanel'));
 const ParteViajerosPanel = lazy(() => import('./ParteViajerosPanel'));
 const CheckinPanel       = lazy(() => import('./CheckinPanel'));
 
@@ -60,7 +59,6 @@ export const SECCIONES = [
     { id: 'clientes', etiqueta: 'Clientes', icono: Users, resumen: 'Teléfonos, notas y quién ya vino' },
     { id: 'dinero', etiqueta: 'Dinero', icono: Euro, resumen: 'Lo cobrado y lo que falta' },
     { id: 'precios', etiqueta: 'Precios', icono: Tag, resumen: 'Por noche, temporadas y días cerrados' },
-    { id: 'limpiezas', etiqueta: 'Limpiezas', icono: Brush, resumen: 'Qué apartamento toca' },
     { id: 'parte', etiqueta: 'Datos de la policía', icono: Shield, resumen: 'Quién los ha rellenado y quién no' },
 ];
 
@@ -72,7 +70,7 @@ const OCULTAS = [
 
 /**
  * La barra de abajo del móvil: lo de todos los días, con «Apuntar» en el
- * centro. El resto (Clientes, Dinero, Precios, Limpiezas, Policía) va en «Más».
+ * centro. El resto (Clientes, Dinero, Precios, Policía) va en «Más».
  */
 const EN_LA_BARRA = ['inicio', 'calendario', 'nueva-reserva', 'reservas'];
 
@@ -204,7 +202,7 @@ const PanelApp = ({ perfil }) => {
         const precargar = () => {
             import('./CalendarioPanel'); import('./ReservasPanel'); import('./ReservaFicha');
             import('./NuevaReservaPanel'); import('./ClientesPanel'); import('./DineroPanel');
-            import('./PreciosPanel'); import('./LimpiezasPanel'); import('./ParteViajerosPanel');
+            import('./PreciosPanel'); import('./ParteViajerosPanel');
             import('./CheckinPanel');
         };
         const id = 'requestIdleCallback' in window
@@ -326,7 +324,6 @@ const PanelApp = ({ perfil }) => {
                         {vista.seccion === 'clientes' && <ClientesPanel {...props} />}
                         {vista.seccion === 'dinero' && <DineroPanel {...props} />}
                         {vista.seccion === 'precios' && <PreciosPanel {...props} />}
-                        {vista.seccion === 'limpiezas' && <LimpiezasPanel {...props} />}
                         {vista.seccion === 'parte' && <ParteViajerosPanel {...props} />}
                         {vista.seccion === 'checkin' && <CheckinPanel {...props} />}
                     </Suspense>

@@ -705,7 +705,7 @@ async function revisarAusencias(caps: Caps, horas = 2) {
             ? "nunca se ha sincronizado correctamente"
             : `hace ${Math.round(mins / 60)} h que no se sincroniza bien`;
         const via = await alertOnce(
-            caps, r.apartment_id as number, r.channel as string, "sin_sincronizar", 6,
+            caps, r.apartment_id as number, r.channel as string, "parado", 24,
             `${CHANNEL_LABEL[r.channel as string] || r.channel} parado en ${r.apartment_name}`,
             `El calendario de ${CHANNEL_LABEL[r.channel as string] || r.channel} de ` +
             `${r.apartment_name} ${cuanto}.\n` +
@@ -816,6 +816,18 @@ Deno.serve(async (req) => {
                 );
             }
 
+            // One outage = one notice, a daily reminder while it lasts and one «working again» (5-nov-2026:
+            // CasasRurales down on their side sent 9 mails in 24 h, two kinds every 6 h, for one single fault).
+            if (!dryRun && outcome.fetched && caps.alertDedup) {
+                const { data: caida } = await supabase.from("channel_alerts").select("id")
+                    .eq("apartment_id", apt.id).eq("channel", ch.key).in("kind", ["parado", "no_descarga", "sin_sincronizar"]);
+                if (caida && caida.length) {
+                    await supabase.from("channel_alerts").delete().in("id", caida.map((c: { id: number }) => c.id));
+                    await pushAlert(`${ch.label} vuelve a funcionar (${apt.name})`,
+                        `El calendario de ${ch.label} de ${apt.name} se vuelve a leer bien. No hay que hacer nada.`);
+                }
+            }
+
             // Un canal que no se puede descargar es un canal que deja de
             // proteger contra overbooking: se avisa, no solo se pinta.
             // Pero no al primer tropiezo: el 17-sep Holidu tardó >20 s un
@@ -823,7 +835,7 @@ Deno.serve(async (req) => {
             // anterior también falló (30 min sin poder leer el canal).
             if (!dryRun && !outcome.fetched && await fallóLaPasadaAnterior(caps, apt.id, ch.key)) {
                 await alertOnce(
-                    caps, apt.id, ch.key, "no_descarga", 6,
+                    caps, apt.id, ch.key, "parado", 24,
                     `No se pudo leer el calendario de ${ch.label} (${apt.name})`,
                     `Motivo: ${outcome.error_message}.\n\nRevisa que el enlace siga siendo válido ` +
                     `en el panel de ${ch.label}. Mientras tanto, una reserva que entre por ahí no ` +

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import AvisosMovil from './AvisosMovil';
 import TareasCasa from './TareasCasa';
-import { ArrowDownRight, ArrowUpRight, Shield, Euro, Brush, ChevronRight, Check, MailWarning, RefreshCw } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, Shield, Euro, ChevronRight, Check, MailWarning, RefreshCw } from 'lucide-react';
 import {
     Tarjeta, Aviso, Cargando, formatoEuro,
     hoyISO, aISO, aFecha, fechaEnPalabrasRelativa, fechaCorta, saludo,
@@ -77,12 +77,8 @@ const PanelHome = ({ ir, perfil, secciones = [] }) => {
                     .lt('check_out', hoy)
                     .gte('check_out', dentroDe(-DIAS_DEUDA_VIEJA))
                     .order('check_out', { ascending: false }),
-                // Limpiezas de días pasados que siguen sin marcar.
-                supabase.from('cleaning_tasks')
-                    .select('id, apartment_id, scheduled_date, status')
-                    .lt('scheduled_date', hoy)
-                    .gte('scheduled_date', dentroDe(-DIAS_DEUDA_VIEJA))
-                    .order('scheduled_date', { ascending: true }),
+                // La limpieza la lleva la familia fuera del sistema (migr. 0069): no se avisa de limpiezas.
+                Promise.resolve({ data: [] }),
                 // El parte de los que llegan pronto y de los que ya están dentro
                 // (el plazo legal corre desde la entrada: 24 h).
                 supabase.from('v_parte_estado').select('*')
@@ -438,26 +434,6 @@ async function construirAvisos(proximas, vencidas, limpiezasAtrasadas, hoy, dent
             params: { reservaId: r.id, abrir: 'cobro' },
         });
     });
-
-    // 3) Limpiezas que se han quedado atrás
-    if (limpiezasAtrasadas.length > 0) {
-        const primera = limpiezasAtrasadas[0];
-        const n = limpiezasAtrasadas.length;
-        avisos.push({
-            clave: 'limpiezas-atrasadas',
-            tono: 'atencion',
-            icono: Brush,
-            titulo: n === 1
-                ? `Queda por limpiar ${primera.apartamento}`
-                : `Quedan ${n} limpiezas por hacer`,
-            texto: n === 1
-                ? `Era del ${diaYMes(primera.scheduled_date)} y sigue sin marcar.`
-                : `La más antigua es del ${diaYMes(primera.scheduled_date)}.`,
-            accion: 'Ver las limpiezas',
-            seccion: 'limpiezas',
-            params: {},
-        });
-    }
 
     // 4) Dinero de gente que YA se fue y no ha pagado. Va al final porque no
     //    corre prisa hoy, pero tiene que estar: si no, se olvida para siempre.

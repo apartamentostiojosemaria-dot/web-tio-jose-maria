@@ -63,7 +63,7 @@
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/tomillo/tomi2-1024x683.webp</image:loc>
-      <image:caption>Dormitorio abuhardillado en lo alto de la casona, con techos de madera originales y vistas a la sierra.</image:caption>
+      <image:caption>Dormitorio abuhardillado en lo alto de la casa, con techos de madera originales y vistas a la sierra.</image:caption>
       <image:title>Apartamento Tomillo</image:title>
     </image:image>
     <image:image>
@@ -246,14 +246,14 @@
     </image:image>
   </url>
   <url>
-    <loc>https://tiojosemaria.com/blog/escapada-en-pareja-chimenea-sierra-cazorla</loc>
+    <loc>https://tiojosemaria.com/blog/escapada-en-pareja-sierra-cazorla</loc>
     <lastmod>2026-07-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <image:image>
       <image:loc>https://nmtukksbzbnuzqsksdmw.supabase.co/storage/v1/object/public/apartments/website/albahaca/00f8fcdf-a6ef-45bb-aafb-408b8679a750-1024x768.webp</image:loc>
-      <image:caption>Cuarenta y ocho horas, una casona del siglo XVIII, la chimenea encendida y el cielo más estrellado de Jaén. Así se hace una escapada de pareja en el sur de Cazorla, sin coche a todas horas ni planes apretados.</image:caption>
-      <image:title>Escapada rural en pareja con chimenea en la Sierra de Cazorla</image:title>
+      <image:caption>Cuarenta y ocho horas en una casa del siglo XVIII, rutas sin prisa y el cielo más estrellado de Jaén. Así se hace una escapada de pareja en el sur de Cazorla, sin coche a todas horas ni planes apretados.</image:caption>
+      <image:title>Escapada rural en pareja en la Sierra de Cazorla</image:title>
     </image:image>
   </url>
 </urlset>

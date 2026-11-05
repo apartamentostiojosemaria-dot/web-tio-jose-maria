@@ -115,6 +115,9 @@ const ReservarPage = () => {
             if (error) throw error;
             setAvailable(data || []);
             irAPaso('choose');
+            // From an apartment page (/reservar?…&apto=<slug>): if it is free, straight to the guest's details.
+            const elegido = !e && (data || []).find((a) => a.slug === params.get('apto'));
+            if (elegido) { setSelected(elegido); irAPaso('guest'); }
         } catch (err) {
             // eslint-disable-next-line no-console
             console.error('check_availability:', err);

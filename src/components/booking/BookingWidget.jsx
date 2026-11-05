@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Users, ChevronLeft, ChevronRight, Check, AlertCircle, ArrowRight, Phone, Mail, User, MapPin } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
@@ -9,6 +9,7 @@ const MONTH_NAMES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Jul
 const DAY_NAMES = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
 const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
+    const navigate = useNavigate();
     const [step, setStep] = useState(1);
     const [checkIn, setCheckIn] = useState(null);
     const [checkOut, setCheckOut] = useState(null);
@@ -282,12 +283,16 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
                                     </div>
                                 )}
                                 {priceBreakdown.noDisponible && <p className="text-xs text-amber-700 font-bold">Estas fechas no están libres para este apartamento: prueba otras o mira los demás en Reservar.</p>}
-                                {!priceBreakdown.hasPrices && <p className="text-xs text-gray-600 italic">El precio final te lo confirmaremos tras enviar la solicitud.</p>}
+                                {!priceBreakdown.hasPrices && <p className="text-xs text-gray-600 italic">El precio exacto lo ves en el siguiente paso.</p>}
                             </motion.div>
                         )}
                         {error && <p className="text-xs text-red-500 flex items-center gap-1" role="alert"><AlertCircle size={12} /> {error}</p>}
-                        <button disabled={!checkIn || !checkOut || priceBreakdown?.noDisponible} onClick={() => setStep(2)} className="w-full py-3.5 rounded-2xl font-bold text-white text-sm flex items-center justify-center gap-2 bg-primary transition-all hover:shadow-lg disabled:opacity-40">
-                            Continuar <ArrowRight size={16} />
+                        {/* 5-nov-2026: the old step 2-3 sent a «request» with no payment, a different path from
+                            /reservar (which holds the dates and charges the deposit). Now one single booking path. */}
+                        <button disabled={!checkIn || !checkOut || priceBreakdown?.noDisponible}
+                            onClick={() => navigate(`/reservar?entrada=${toLocalDateString(checkIn)}&salida=${toLocalDateString(checkOut)}&personas=${Math.min(form.pax || 2, apartment?.capacity_people || 4)}&apto=${apartment?.slug || ''}`)}
+                            className="w-full py-3.5 rounded-2xl font-bold text-white text-sm flex items-center justify-center gap-2 bg-primary transition-all hover:shadow-lg disabled:opacity-40">
+                            Reservar estas fechas <ArrowRight size={16} />
                         </button>
                     </motion.div>
                 )}
