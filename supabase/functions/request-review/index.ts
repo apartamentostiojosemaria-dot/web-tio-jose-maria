@@ -1,11 +1,21 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { render, type BookingPayload } from "../_shared/templates/index.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const FROM_ADDRESS = Deno.env.get("RESEND_FROM") || "Tío José María <reservas@tiojosemaria.com>";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const WA_PHONE = "34676344675";
+
+// Same filter as send-booking-email: channel bookings without a real mailbox
+// get a filler address (`example.invalid` from the importers, `tiojosemaria.local`
+// from the 11-sep sweep) or a portal-masked one («n***@***.com»). Never write there.
+const PLACEHOLDER_DOMAINS = ["@example.invalid", "@tiojosemaria.local"];
+const esPlaceholder = (email: string) => {
+  const e = email.toLowerCase().trim();
+  return PLACEHOLDER_DOMAINS.some((d) => e.endsWith(d));
+};
+const esCorreoValido = (email: string) => /^[^\s@*]+@[^\s@*]+\.[a-z]{2,}$/i.test(email.trim());
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -36,10 +46,6 @@ async function sendEmail(to: string, subject: string, html: string) {
   }
 }
 
-function whatsappLink(text: string) {
-  return `https://wa.me/${WA_PHONE}?text=${encodeURIComponent(text)}`;
-}
-
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -56,8 +62,6 @@ Deno.serve(async (req: Request) => {
   for (const r of configRows || []) config[r.key] = r.value;
   const daysAfter = parseInt(config.review_request_days || "3", 10);
   const targetHourMadrid = parseInt(config.review_request_hour_madrid || "10", 10);
-  const googleUrl = config.google_review_url || "";
-  const bookingUrl = config.booking_review_url || "";
 
   // Gate: solo procesar si estamos en la hora Madrid objetivo.
   // El cron corre a 08:00 y 09:00 UTC; verano 10:00 cae en 08:00 UTC,
@@ -78,7 +82,7 @@ Deno.serve(async (req: Request) => {
 
   const { data: bookings, error: queryErr } = await admin
     .from("guest_bookings")
-    .select("id, guest_name, guest_email, check_in, check_out, apartments(name)")
+    .select("id, booking_code, guest_name, guest_email, check_in, check_out, total_price, idioma, apartments(name, slug)")
     // completed since 0061 closes stays the day after check-out
     .in("status", ["confirmed", "completed"])
     .eq("check_out", targetDate)
@@ -91,35 +95,40 @@ Deno.serve(async (req: Request) => {
 
   const results = [];
   for (const b of bookings || []) {
-    if (!b.guest_email) continue;
-    const firstName = (b.guest_name || "").split(" ")[0] || "hola";
-    const aptName = (b as any).apartments?.name || "el apartamento";
-    const waMsg = `Hola, me hospede en ${aptName} y queria comentaros una cosa de la estancia.`;
+    const email = String(b.guest_email || "").trim();
+    if (!email) continue;
+    if (esPlaceholder(email) || !esCorreoValido(email)) {
+      results.push({ booking_id: b.id, skipped: "placeholder_or_invalid_email" });
+      continue;
+    }
+    // RGPD: the review request is legitimate interest with opt-out (same check
+    // as send-booking-email).
+    const { data: c } = await admin.from("customers").select("review_optout")
+      .eq("email", email.toLowerCase()).maybeSingle();
+    if (c?.review_optout) {
+      results.push({ booking_id: b.id, skipped: "review_opted_out" });
+      continue;
+    }
 
-    const googleBtn = googleUrl ? `
-      <a href="${googleUrl}" style="display:inline-block;background:#4285F4;color:white;text-decoration:none;padding:14px 28px;border-radius:999px;font-weight:bold;margin:6px;">Resena en Google</a>
-    ` : "";
-    const bookingBtn = bookingUrl ? `
-      <a href="${bookingUrl}" style="display:inline-block;background:#003580;color:white;text-decoration:none;padding:14px 28px;border-radius:999px;font-weight:bold;margin:6px;">Resena en Booking</a>
-    ` : "";
+    const apt = (b as { apartments?: { name?: string; slug?: string } | null }).apartments;
+    const aptName = apt?.name || "el apartamento";
+    // The approved `review_request` template, in the guest's language
+    // (guest_bookings.idioma; NULL = Spanish). It greets by first name and
+    // leaves the name out when there is none.
+    const payload: BookingPayload = {
+      booking_code: String(b.booking_code || ""),
+      guest_name: String(b.guest_name || ""),
+      guest_email: email,
+      apartment_name: aptName,
+      apartment_slug: apt?.slug || "",
+      check_in: String(b.check_in),
+      check_out: String(b.check_out),
+      total_price: Number(b.total_price) || 0,
+      idioma: (b as { idioma?: string | null }).idioma ?? null,
+    };
+    const { subject, html } = render("review_request", payload);
 
-    const html = `
-      <div style="font-family: Georgia, serif; max-width: 600px; margin: 0 auto; padding: 32px; color:#374151;">
-        <h1 style="color: #556B2F; font-size: 24px;">¿Qué tal la estancia, ${firstName}?</h1>
-        <p>Esperamos que disfrutarais mucho de Hinojares y que la vuelta a casa haya sido tranquila.</p>
-        <p>Si os apetece, nos ayudaríais muchísimo dejando una reseña corta. Para una casa pequeña y familiar como la nuestra, vuestra opinión es lo que hace que otra gente nos descubra.</p>
-        <div style="text-align:center;margin:28px 0;">
-          ${googleBtn}
-          ${bookingBtn}
-        </div>
-        <p style="color:#6b7280;font-size:14px;">Si hubo algo que no estuvo a la altura, preferíamos saberlo en privado para arreglarlo. <a href="${whatsappLink(waMsg)}" style="color:#25D366;font-weight:bold;">Escríbenos por WhatsApp</a> y lo hablamos.</p>
-        <p>Muchas gracias por elegirnos. Aquí os esperamos siempre.</p>
-        <p style="color: #556B2F; font-weight: bold; margin-top: 24px;">Mari Carmen y Jesús</p>
-        <p style="color: #888; font-size: 12px;">Apartamentos Rurales Tío José María · Calle Baja 1, Hinojares</p>
-      </div>
-    `;
-
-    const emailRes = await sendEmail(b.guest_email, `¿Qué tal tu estancia en Tío José María?`, html);
+    const emailRes = await sendEmail(email, subject, html);
 
     if ((emailRes as any).ok) {
       await admin.from("guest_bookings")
@@ -127,7 +136,7 @@ Deno.serve(async (req: Request) => {
         .eq("id", b.id);
     }
 
-    results.push({ booking_id: b.id, email: b.guest_email, apt: aptName, email_result: emailRes });
+    results.push({ booking_id: b.id, email, apt: aptName, email_result: emailRes });
   }
 
   return new Response(

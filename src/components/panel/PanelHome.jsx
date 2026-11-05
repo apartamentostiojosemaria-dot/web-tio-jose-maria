@@ -216,11 +216,12 @@ function avisosDelSistema(s) {
     const ultimos = s.envios?.ultimos_fallidos || [];
 
     if (correo && correo.ok === false) {
-        const desde = correo.comprobado_at ? fechaCorta(correo.comprobado_at.slice(0, 10)) : 'hoy';
+        const diaDesde = correo.comprobado_at ? aISO(new Date(correo.comprobado_at)) : null;
+        const desde = diaDesde && diaDesde !== hoyISO() ? fechaCorta(diaDesde) : 'hoy';
         lista.push({
             clave: 'correo-caido', tono: 'urgente', icono: MailWarning,
             titulo: 'Los correos del sistema no están saliendo',
-            texto: `Se detectó ${desde}. Jesús ya tiene el aviso. Hasta que se arregle, a quien llegue estos días escríbele tú por WhatsApp: cómo llegar, la casa y los datos de la policía.`,
+            texto: `${desde === 'hoy' ? 'Pasa desde hoy' : `Pasa desde el ${desde}`}. Jesús ya tiene el aviso. Hasta que se arregle, a quien llegue estos días escríbele tú por WhatsApp: cómo llegar, la casa y los datos de la policía.`,
         });
     } else if (fallidos > 0) {
         const quien = ultimos.slice(0, 3).map((e) => `${e.asunto || 'correo'}${e.guest_name ? ` (${e.guest_name})` : ''}`).join(' · ');
@@ -321,8 +322,8 @@ async function construirAvisos(proximas, vencidas, limpiezasAtrasadas, hoy, dent
                             tono: 'bien',
                             icono: Check,
                             titulo: `${r.guest_name || 'El huésped'} ya ha rellenado los datos de la policía`,
-                            texto: `Llega hoy a ${r.apartamento}. Cuando le des la llave, termina el check-in.`,
-                            accion: 'Terminar el check-in',
+                            texto: `Llega hoy a ${r.apartamento}. Cuando le des la llave, termina la entrada.`,
+                            accion: 'Terminar la entrada',
                             seccion: 'checkin',
                             params: { reservaId: r.id },
                         });
@@ -336,7 +337,7 @@ async function construirAvisos(proximas, vencidas, limpiezasAtrasadas, hoy, dent
                     titulo: `Faltan los datos de la policía de ${r.guest_name || 'este huésped'}`,
                     texto: (r.check_in === hoy
                         ? `Llega hoy a ${r.apartamento}.`
-                        : `Llega el ${r.check_in.slice(8, 10)} a ${r.apartamento}.`)
+                        : `Llega el ${diaYMes(r.check_in)} a ${r.apartamento}.`)
                         + (r.recordatorio_parte_at ? ` ${recordatorioEnPalabras(r.recordatorio_parte_at, r.recordatorio_parte_via)}.` : ''),
                     accion: r.recordatorio_parte_at ? 'Recordárselo otra vez' : 'Recordárselo',
                     // A «Datos de la policía»: ahí está el botón que le manda el
@@ -364,8 +365,8 @@ async function construirAvisos(proximas, vencidas, limpiezasAtrasadas, hoy, dent
                 ? `El parte de la policía de ${p.guest_name || 'este huésped'} no puede salir`
                 : `El Ministerio no ha aceptado el parte de ${p.guest_name || 'este huésped'}`,
             texto: p.estado_envio === 'faltan_datos' && p.motivo && !/INE/.test(p.motivo)
-                ? `${p.motivo}. Pídeselo al huésped${yaDentro ? ' hoy: el plazo es de 24 horas desde que entró' : ''}.`
-                : `${p.motivo ? `${p.motivo}. ` : ''}Avisa a Jesús.`,
+                ? `${String(p.motivo).trim().replace(/\.+$/, '')}. Pídeselo al huésped${yaDentro ? ' hoy: el plazo es de 24 horas desde que entró' : ''}.`
+                : conAvisoAJesus(p.motivo),
             accion: 'Ver el parte',
             seccion: 'parte',
             params: { reservaId: p.booking_id },
@@ -388,7 +389,7 @@ async function construirAvisos(proximas, vencidas, limpiezasAtrasadas, hoy, dent
                 tono: 'atencion',
                 icono: Euro,
                 titulo: `Ya se puede cobrar la tarjeta de Booking de ${r.guest_name || 'un huésped'}`,
-                texto: `${formatoEuro(netoDelPortal(r))} · llega el ${r.check_in.slice(8, 10)} a ${r.apartamento}.`,
+                texto: `${formatoEuro(netoDelPortal(r))} · llega el ${diaYMes(r.check_in)} a ${r.apartamento}.`,
                 accion: 'Cobrar la tarjeta',
                 seccion: 'reserva',
                 params: { reservaId: r.id, abrir: 'cobro' },
@@ -400,7 +401,7 @@ async function construirAvisos(proximas, vencidas, limpiezasAtrasadas, hoy, dent
             tono: 'atencion',
             icono: Euro,
             titulo: `Reserva de ${r.guest_name || 'un huésped'}${de ? ` (${de})` : ''} sin cobrar del todo`,
-            texto: `Faltan ${formatoEuro(falta)} · llega el ${r.check_in.slice(8, 10)} a ${r.apartamento}.`,
+            texto: `Faltan ${formatoEuro(falta)} · llega el ${diaYMes(r.check_in)} a ${r.apartamento}.`,
             accion: 'Cobrar',
             seccion: 'reserva',
             params: { reservaId: r.id, abrir: 'cobro' },
@@ -461,6 +462,13 @@ async function construirAvisos(proximas, vencidas, limpiezasAtrasadas, hoy, dent
     });
 
     return avisos.slice(0, 6);
+}
+
+/** «<motivo>. Avisa a Jesús.» without doubling the full stop or the request. */
+function conAvisoAJesus(motivo) {
+    const m = String(motivo || '').trim().replace(/\.+$/, '');
+    if (!m) return 'Avisa a Jesús.';
+    return /avisa a jes[uú]s/i.test(m) ? `${m}.` : `${m}. Avisa a Jesús.`;
 }
 
 /** '22 de julio' */

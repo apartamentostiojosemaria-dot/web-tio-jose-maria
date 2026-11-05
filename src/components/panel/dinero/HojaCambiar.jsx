@@ -113,7 +113,7 @@ export default function HojaCambiar({ abierta, reserva, apartamentos = [], factu
 
             {factura && factura.tipo !== 'rectificativa' && !resultado?.ok && (
                 <Aviso tono="atencion" titulo={`Esta reserva ya tiene factura (del ${diaMesYAno(factura.fecha_emision)}).`}
-                    texto="Si cambias las fechas o el apartamento, la factura se queda con lo antiguo y habrá que hacer una rectificativa. Díselo a Jesús después de cambiarla." />
+                    texto="Si cambias las fechas o el apartamento, la factura se queda con lo antiguo y habrá que hacer una factura que corrija esta. Díselo a Jesús después de cambiarla." />
             )}
 
             {resultado?.ok && (

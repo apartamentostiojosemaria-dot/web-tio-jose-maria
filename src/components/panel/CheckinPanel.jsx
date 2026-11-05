@@ -18,7 +18,7 @@ import {
 const FormularioHuesped = lazy(() => import('../../pages/PrecheckinPage'));
 
 // ============================================================
-// CheckinPanel — «Hacer el check-in»
+// CheckinPanel — «Hacer la entrada»
 // ============================================================
 // La pantalla que faltaba. Quien la usa es la madre de Jesús: recibe en
 // persona entre las 16:00 y las 20:00, entrega la llave a mano y no es nada
@@ -36,7 +36,7 @@ const FormularioHuesped = lazy(() => import('../../pages/PrecheckinPage'));
 // el documento de otro. El huésped escribe en SU móvil.
 //
 // Palabras prohibidas en pantalla: SES, MIR, RD 933/2021, XML, parte
-// telemático, servicio web, token. Se dice: datos de la policía, el check-in,
+// telemático, servicio web, token, check-in. Se dice: datos de la policía, la entrada,
 // quién ha rellenado, firmar, mandar el parte.
 // ============================================================
 
@@ -125,7 +125,7 @@ const CheckinPanel = ({ ir, volver, params = {} }) => {
         if (r.ok) {
             setMensaje({
                 tono: 'bien',
-                titulo: 'Check-in hecho',
+                titulo: 'Entrada hecha',
                 texto: `Queda apuntado que han entrado hoy a las ${hora(r.cuando)}. Ya puedes darles la llave.`,
             });
             await recargar(true);
@@ -152,7 +152,7 @@ const CheckinPanel = ({ ir, volver, params = {} }) => {
             ? { tono: 'bien', titulo: 'Apuntado que se han ido', texto: `Hoy a las ${hora(r.cuando)}.` }
             : r.motivo === 'sin_columna'
                 ? { tono: 'atencion', titulo: 'No he podido apuntar la salida', texto: 'Todavía no se puede apuntar aquí. Avisa a Jesús.' }
-                : { tono: 'atencion', titulo: 'No se ha podido apuntar', texto: r.mensaje || '' });
+                : { tono: 'atencion', titulo: 'No se ha podido apuntar', texto: `${r.mensaje || 'Prueba otra vez en un momento.'} Si sigue igual, avisa a Jesús.` });
         if (r.ok) await recargar(true);
         setTerminando(false);
     };
@@ -163,8 +163,8 @@ const CheckinPanel = ({ ir, volver, params = {} }) => {
             <div className="max-w-3xl">
                 <Aviso
                     tono="atencion"
-                    titulo="No sé de qué reserva es este check-in"
-                    texto="Entra en la reserva y toca «Hacer el check-in»."
+                    titulo="No sé de qué reserva es esta entrada"
+                    texto="Entra en la reserva y toca «Hacer la entrada»."
                     accion={{ texto: 'Ver las reservas', onClick: () => ir('reservas') }}
                 />
             </div>
@@ -182,7 +182,7 @@ const CheckinPanel = ({ ir, volver, params = {} }) => {
             </div>
         );
     }
-    if (!datos) return <Cargando texto="Abriendo el check-in…" />;
+    if (!datos) return <Cargando texto="Abriendo la entrada…" />;
 
     const { reserva, personas, rellenos, puedeVerPersonas } = datos;
     const total = plazas(datos);
@@ -325,7 +325,7 @@ const CheckinPanel = ({ ir, volver, params = {} }) => {
                 {avisoGuardado === 'aparato' && (
                     <p className="mt-4 text-sm text-gray-600 leading-snug">
                         Lo comprobado se está guardando en este aparato hasta que Jesús termine
-                        un ajuste. Si haces el check-in desde otro sitio, tendrás que volver a
+                        un ajuste. Si haces la entrada desde otro sitio, tendrás que volver a
                         marcarlo.
                     </p>
                 )}
@@ -360,13 +360,13 @@ const CheckinPanel = ({ ir, volver, params = {} }) => {
                             cargando={terminando}
                             disabled={frenado}
                         >
-                            Terminar el check-in
+                            Terminar la entrada
                         </Boton>
                         {frenado ? (
                             <>
                                 <p className="text-sm text-gray-600 leading-snug">
-                                    Esta reserva llega el {fechaEnPalabras(reserva.check_in)}. El check-in se
-                                    termina el día que entran: así queda apuntada la hora de verdad.
+                                    Esta reserva llega el {fechaEnPalabras(reserva.check_in)}. La entrada se
+                                    termina el día que llegan: así queda apuntada la hora de verdad.
                                 </p>
                                 <button
                                     type="button"

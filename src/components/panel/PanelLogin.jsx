@@ -144,7 +144,7 @@ const PanelLogin = () => {
                     <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6">
                         <h2 className="text-xl font-bold text-text-primary mb-2">Entrar</h2>
                         <p className="text-base text-gray-600 mb-6">
-                            Escribe tu correo y te mandamos un número de seis cifras para entrar.
+                            Escribe tu correo y te mandamos un código de seis cifras para entrar.
                             No hace falta contraseña.
                         </p>
 
@@ -168,7 +168,7 @@ const PanelLogin = () => {
 
                             <Boton type="submit" ancho tamano="grande" icono={ArrowRight}
                                 cargando={cargando} disabled={!correo}>
-                                {cargando ? 'Mandando…' : 'Mandarme el número'}
+                                {cargando ? 'Mandando…' : 'Mandarme el código'}
                             </Boton>
                         </form>
                     </div>
@@ -182,11 +182,11 @@ const PanelLogin = () => {
                             <ChevronLeft size={18} aria-hidden="true" /> Cambiar de correo
                         </button>
 
-                        <h2 className="text-xl font-bold text-text-primary mb-2">Escribe el número</h2>
+                        <h2 className="text-xl font-bold text-text-primary mb-2">Escribe el código</h2>
                         <p className="text-base text-gray-600 mb-1">Te lo hemos mandado a</p>
                         <p className="text-base font-bold text-text-primary mb-6 break-all">{correo}</p>
 
-                        <div className="flex justify-between gap-2 mb-4" role="group" aria-label="Número de seis cifras">
+                        <div className="flex justify-between gap-2 mb-4" role="group" aria-label="Código de seis cifras">
                             {digitos.map((d, i) => (
                                 <input
                                     key={i}
@@ -216,7 +216,7 @@ const PanelLogin = () => {
                             <button type="button" onClick={pedirCodigo} disabled={espera > 0 || cargando}
                                 className="inline-flex items-center gap-2 min-h-[44px] px-3 text-sm font-semibold text-rural-700 hover:text-rural-800 disabled:opacity-40">
                                 <RefreshCw size={15} aria-hidden="true" />
-                                {espera > 0 ? `Pedir otro número dentro de ${espera} s` : 'Pedir otro número'}
+                                {espera > 0 ? `Pedir otro código dentro de ${espera} ${espera === 1 ? 'segundo' : 'segundos'}` : 'Pedir otro código'}
                             </button>
                         </div>
 

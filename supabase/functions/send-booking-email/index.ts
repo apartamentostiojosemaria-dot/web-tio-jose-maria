@@ -237,6 +237,7 @@ Deno.serve(async (req) => {
     }
 
     const payload = {
+        booking_id: Number((booking as { id?: number }).id) || undefined,
         precheckin_nombres,
         // Idioma del huésped (NULL = castellano); las plantillas operator_* lo ignoran.
         idioma: (booking as { idioma?: string | null }).idioma ?? null,

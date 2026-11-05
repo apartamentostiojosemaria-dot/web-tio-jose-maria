@@ -154,7 +154,7 @@ const BookingWidget = ({ apartment, blockedDates = [], highSeasons = [] }) => {
 
         if (insertError) {
             logError('BookingWidget.submit', insertError);
-            setError('Ha ocurrido un error. Intentalo de nuevo o contacta por WhatsApp.');
+            setError('Ha ocurrido un error. Inténtalo de nuevo o escríbenos por WhatsApp.');
             setSubmitting(false);
         } else {
             // El bloqueo de fechas y el envio de emails los hace la edge function

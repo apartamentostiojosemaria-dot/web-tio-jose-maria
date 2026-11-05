@@ -36,6 +36,8 @@ interface BookingPayload {
     free_cancellation?: boolean;
     /** Solo reminder_24h: cuántos han rellenado los datos de la policía y cuántos se esperan. */
     precheckin?: { rellenos: number; total: number } | null;
+    /** guest_bookings.id: lets internal notices open the booking in the panel. */
+    booking_id?: number;
     /** Solo operator_precheckin_done: nombres de pila de quienes han rellenado. */
     precheckin_nombres?: string[];
     /** Solo confirmation: si el formulario de la policía ya está abierto (llegada a 7 días o menos).
@@ -72,7 +74,14 @@ const formatDate = (s: string, lang: Idioma = "es") => {
     const [y, m, d] = s.split("-");
     return `${d}/${m}/${y}`;
 };
-const formatPrice = (n: number, lang: Idioma = "es") => new Intl.NumberFormat(LOCALE[lang], { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
+// Whole euros without decimals («229 €»); otherwise always two («229,50 €»).
+const formatPrice = (n: number, lang: Idioma = "es") => {
+    const entero = Math.abs(n - Math.round(n)) < 0.005;
+    return new Intl.NumberFormat(LOCALE[lang], {
+        style: "currency", currency: "EUR",
+        minimumFractionDigits: entero ? 0 : 2, maximumFractionDigits: entero ? 0 : 2,
+    }).format(entero ? Math.round(n) : n);
+};
 const firstName = (full: string) => (full.trim().split(/\s+/)[0] || full).trim();
 // El formulario lee ?lang=; en castellano no se añade (es lo que sale por defecto).
 const precheckinUrl = (b: BookingPayload) => {
@@ -111,7 +120,7 @@ interface TextosComunes {
 }
 const UI: Record<Idioma, TextosComunes> = {
     es: {
-        rurales: "Apartamentos Rurales", necesiteis: "Para lo que necesitéis:", correo: "correo", privacidad: "Privacidad",
+        rurales: "Apartamentos Rurales", necesiteis: "Para lo que necesites:", correo: "correo", privacidad: "Privacidad",
         saludo: "Un saludo,", firmantes: "Mari Carmen y Jesús",
         tuReserva: "Tu reserva", codigo: "Código", apartamento: "Apartamento", entrada: "Entrada", salida: "Salida", total: "Total",
         policiaTitulo: "Datos para la policía",
@@ -306,7 +315,7 @@ const guardaLaGuia = (b: BookingPayload, lang: Idioma) => {
     }
 };
 const ALERGIAS: Record<Idioma, string> = {
-    es: `<p>Si alguien tiene alergia o necesitáis algo en especial, decídnoslo y lo preparamos.</p>`,
+    es: `<p>Si alguien tiene alergia o necesitas algo en especial, dínoslo y lo preparamos.</p>`,
     en: `<p>If anyone has an allergy or you need anything special, let us know and we will have it ready.</p>`,
     de: `<p>Wenn jemand eine Allergie hat oder Sie etwas Besonderes benötigen, sagen Sie uns bitte Bescheid, dann bereiten wir es vor.</p>`,
     fr: `<p>Si quelqu'un a une allergie ou si vous avez besoin de quelque chose de particulier, dites-le-nous et nous le préparerons.</p>`,
@@ -323,7 +332,7 @@ const renderConfirmation = (b: BookingPayload): RenderedEmail => {
             heading: `Hola ${fn}, tu reserva está hecha`,
             reservado: `<p>Tienes reservado el apartamento <strong>${b.apartment_name}</strong> del ${ci} al ${co}. Gracias por reservar con nosotros.`,
             quedaPoco: ` Como ya queda poco, te dejo aquí todo lo que hace falta saber.`,
-            policia: "Por ley tenemos que comunicar a la policía los datos de cada persona que se aloja. Con este enlace los rellenáis vosotros mismos antes de llegar (nombre, documento y poco más).",
+            policia: "Por ley tenemos que comunicar a la policía los datos de cada persona que se aloja. Con este enlace los rellenas antes de llegar (nombre, documento y poco más).",
             horario: `<p>La entrada es a partir de las 16:00 y la salida antes de las 12:00. Las llaves te las damos en mano cuando llegues.</p>`,
             guiaLuego: `<p>Tu reserva, cómo llegar y lo de la casa lo tienes siempre en ${enlaceGuia(b)}. Unos días antes de venir te vuelvo a escribir. Si mientras tanto necesitas algo, llámanos o escríbenos.</p>`,
         },
@@ -395,10 +404,10 @@ const renderReminder7d = (b: BookingPayload): RenderedEmail => {
     const ci = diaMes(b.check_in, lang);
     const T = {
         es: {
-            subject: `Os esperamos el ${ci} en Hinojares`,
+            subject: `Te esperamos el ${ci} en Hinojares`,
             heading: `Hola ${fn}, ya queda poco`,
-            intro: `<p>El ${ci} te esperamos en el apartamento <strong>${b.apartment_name}</strong>. Te cuento lo que hace falta saber para venir tranquilo.</p>`,
-            policia: "Ya se puede rellenar el formulario con los datos de cada persona que viene (nombre, documento y poco más). Nos lo pide la ley y lo necesitamos antes de que lleguéis.",
+            intro: `<p>El ${ci} te esperamos en el apartamento <strong>${b.apartment_name}</strong>. Te cuento lo que hace falta saber para venir sin preocupaciones.</p>`,
+            policia: "Ya se puede rellenar el formulario con los datos de cada persona que viene (nombre, documento y poco más). Nos lo pide la ley y lo necesitamos antes de que llegues.",
         },
         en: {
             subject: `We look forward to seeing you on ${ci} in Hinojares`,
@@ -480,7 +489,7 @@ const faltanEnPalabras = (p: { rellenos: number; total: number } | null | undefi
             if (p.rellenos === 0) {
                 return p.total === 1
                     ? "Todavía no tenemos tus datos para la policía."
-                    : `Todavía no tenemos los datos para la policía de ninguna de las ${p.total} personas que venís.`;
+                    : `Todavía no tenemos los datos para la policía de ninguna de las ${p.total} personas de la reserva.`;
             }
             return faltan === 1
                 ? `Ya tenemos los datos de ${p.rellenos} de ${p.total}: falta 1 persona.`
@@ -494,9 +503,9 @@ const renderReminder24h = (b: BookingPayload): RenderedEmail => {
     const faltan = faltanEnPalabras(b.precheckin, lang);
     const T = {
         es: {
-            subject: `Mañana os esperamos — nos faltan los datos para la policía`,
-            heading: `Hola ${fn}, mañana os esperamos`,
-            policia: `${faltan} Nos lo pide la ley y tiene que estar hecho antes de entrar. Si lo hacéis hoy desde el móvil, mañana os damos las llaves y ya está.`,
+            subject: `Mañana te esperamos — nos faltan los datos para la policía`,
+            heading: `Hola ${fn}, mañana te esperamos`,
+            policia: `${faltan} Nos lo pide la ley y tiene que estar hecho antes de entrar. Si se hace hoy desde el móvil, mañana te damos las llaves y ya está.`,
             cta: "Rellenar los datos que faltan",
         },
         en: {
@@ -545,15 +554,15 @@ const renderReviewRequest = (b: BookingPayload): RenderedEmail => {
     const T = {
         es: {
             subject: `¿Qué tal en Tío José María?`,
-            heading: `Hola ${fn}, ¿qué tal ha ido?`,
-            body: `<p>Esperamos que hayáis descansado. Si tenéis un momento, nos gustaría que dejarais vuestra opinión en Google: para una casa pequeña como la nuestra, lo que cuentan los que ya han venido es lo que más nos ayuda.</p>
-        <p>Y si hay algo que no os ha gustado, decídnoslo a nosotros también, que es como se arregla.</p>
-        <p>Si vinisteis por Booking o Airbnb, allí también podéis dejarla.</p>`,
+            heading: fn ? `Hola ${fn}, ¿qué tal ha ido?` : `Hola, ¿qué tal ha ido?`,
+            body: `<p>Esperamos que hayas descansado. Si tienes un momento, nos gustaría que dejaras tu opinión en Google: para una casa pequeña como la nuestra, lo que cuentan los que ya han venido es lo que más nos ayuda.</p>
+        <p>Y si hay algo que no te ha gustado, dínoslo a nosotros también, que es como se arregla.</p>
+        <p>Si viniste por Booking o Airbnb, allí también puedes dejarla.</p>`,
             cta: "Dejar una opinión en Google",
         },
         en: {
             subject: `How was your stay at Tío José María?`,
-            heading: `Hello ${fn}, how did it go?`,
+            heading: fn ? `Hello ${fn}, how did it go?` : `Hello, how did it go?`,
             body: `<p>We hope you had a good rest. If you have a moment, we would love you to leave a review on Google: for a small house like ours, what past guests say is what helps us most.</p>
         <p>And if there was anything you did not like, please tell us too — that is how things get fixed.</p>
         <p>If you came through Booking or Airbnb, you can leave one there as well.</p>`,
@@ -561,7 +570,7 @@ const renderReviewRequest = (b: BookingPayload): RenderedEmail => {
         },
         de: {
             subject: `Wie war es bei Tío José María?`,
-            heading: `Hallo ${fn}, wie war Ihr Aufenthalt?`,
+            heading: fn ? `Hallo ${fn}, wie war Ihr Aufenthalt?` : `Hallo, wie war Ihr Aufenthalt?`,
             body: `<p>Wir hoffen, Sie konnten sich gut erholen. Wenn Sie einen Moment Zeit haben, würden wir uns sehr über eine Bewertung auf Google freuen: Für ein kleines Haus wie unseres hilft nichts so sehr wie das, was frühere Gäste erzählen.</p>
         <p>Und wenn Ihnen etwas nicht gefallen hat, sagen Sie es bitte auch uns – nur so können wir es verbessern.</p>
         <p>Falls Sie über Booking oder Airbnb gebucht haben, können Sie auch dort eine Bewertung hinterlassen.</p>`,
@@ -569,7 +578,7 @@ const renderReviewRequest = (b: BookingPayload): RenderedEmail => {
         },
         fr: {
             subject: `Comment s'est passé votre séjour chez Tío José María ?`,
-            heading: `Bonjour ${fn}, comment cela s'est-il passé ?`,
+            heading: fn ? `Bonjour ${fn}, comment cela s'est-il passé ?` : `Bonjour, comment cela s'est-il passé ?`,
             body: `<p>Nous espérons que vous avez pu vous reposer. Si vous avez un instant, nous serions ravis que vous laissiez votre avis sur Google : pour une petite maison comme la nôtre, ce que racontent ceux qui sont déjà venus est ce qui nous aide le plus.</p>
         <p>Et s'il y a quelque chose qui ne vous a pas plu, dites-le-nous aussi : c'est ainsi que l'on s'améliore.</p>
         <p>Si vous êtes passés par Booking ou Airbnb, vous pouvez aussi y laisser un avis.</p>`,
@@ -598,11 +607,11 @@ const renderReactivation = (b: BookingPayload): RenderedEmail => {
     const ci = diaMes(b.check_in, lang), co = diaMes(b.check_out, lang);
     const T = {
         es: {
-            subject: `${fn}, un mes ya desde que estuvisteis en ${b.apartment_name}`,
+            subject: `${fn}, un mes ya desde que estuviste en ${b.apartment_name}`,
             heading: `Hola ${fn}`,
-            body: `<p>Hace un mes que os fuisteis de <strong>${b.apartment_name}</strong>, donde estuvisteis del ${ci} al ${co}. Preparando el apartamento para los siguientes me he acordado de vosotros, y por eso os escribo.</p>
-        <p>Espero que os llevarais buen recuerdo de Hinojares. Cada época tiene aquí lo suyo, y a quien ya conoce la casa le gusta verla en otra estación.</p>
-        <p>Si os apetece volver, nos encantaría teneros otra vez en casa.</p>`,
+            body: `<p>Hace un mes que te fuiste de <strong>${b.apartment_name}</strong>, donde estuviste del ${ci} al ${co}. Preparando el apartamento para los siguientes me he acordado de ti, y por eso te escribo.</p>
+        <p>Espero que te llevaras buen recuerdo de Hinojares. Cada época tiene aquí lo suyo, y a quien ya conoce la casa le gusta verla en otra estación.</p>
+        <p>Si te apetece volver, nos encantaría tenerte otra vez en casa.</p>`,
             cta: "Ver los días libres",
         },
         en: {
@@ -714,7 +723,7 @@ const customerAlertsBlock = (b: BookingPayload): string => {
 // 11. Aviso interno: ya han rellenado los datos de la policía. Lo dispara la
 // base (trigger de la migración 0040) cuando entra la última ficha. Al buzón
 // del negocio, no al huésped. Lo que ella tiene que hacer: darles la llave y
-// «Terminar el check-in» en el panel. Siempre en castellano.
+// «Terminar la entrada» en el panel. Siempre en castellano.
 const renderOperatorPrecheckinDone = (b: BookingPayload): RenderedEmail => {
     const nombres = (b.precheckin_nombres || []).filter(Boolean);
     const quienes = nombres.length === 0 ? "Los huéspedes" : nombres.length === 1 ? nombres[0] : `${nombres.slice(0, -1).join(", ")} y ${nombres[nombres.length - 1]}`;
@@ -725,11 +734,13 @@ const renderOperatorPrecheckinDone = (b: BookingPayload): RenderedEmail => {
         subject: `${quienes} ya ${nombres.length === 1 ? "ha" : "han"} rellenado los datos de la policía — ${b.apartment_name}, ${cuando}`,
         html: shell(
             `Datos de la policía: ya están todos`,
-            `<p><strong>${quienes}</strong> ${nombres.length === 1 ? "ha" : "han"} rellenado sus datos para la reserva de <strong>${b.apartment_name}</strong> (entra ${cuando}). En el panel el semáforo está en verde.</p>
+            `<p><strong>${quienes}</strong> ${nombres.length === 1 ? "ha" : "han"} rellenado sus datos para la reserva de <strong>${b.apartment_name}</strong> (entra ${cuando}). En el panel ya sale en verde.</p>
             ${bookingSummary(b, "es")}
-            <p>Lo que queda: darles la llave y pulsar <strong>«Terminar el check-in»</strong> en su reserva, para que quede la hora de entrada. El parte a la policía sale solo.</p>`,
-            "Abrir la reserva en el panel",
-            `${SITE_URL}/panel`
+            <p>Lo que queda: darles la llave y pulsar <strong>«Terminar la entrada»</strong> en su reserva, para que quede la hora de entrada. El parte a la policía sale solo.</p>`,
+            b.booking_id ? "Abrir la reserva en el panel" : "Abrir el panel",
+            b.booking_id
+                ? `${SITE_URL}/panel?s=reserva&p=${encodeURIComponent(JSON.stringify({ reservaId: b.booking_id }))}`
+                : `${SITE_URL}/panel`
         ),
     };
 };
@@ -830,11 +841,11 @@ const renderBookingCancelled = (b: BookingPayload): RenderedEmail => {
     const T = {
         es: {
             devolver: `<p><strong>Te devolvemos ${formatPrice(devolver)}.</strong> Si pagaste con tarjeta en la web, te llega sola a la misma tarjeta en unos días. Si fue por transferencia o Bizum, te lo ingresamos nosotros; si en una semana no lo ves, escríbenos.</p>`,
-            noDevolver: `<p>Según las condiciones de cancelación (gratis hasta 7 días antes de la llegada), lo pagado (${formatPrice(pagado)}) no se devuelve. <strong>Pero podéis cambiar de fechas una vez, sin coste, dentro de los 12 meses siguientes</strong>: escribidnos y lo miramos. Si creéis que hay un error, decídnoslo también.</p>`,
+            noDevolver: `<p>Según las condiciones de cancelación (gratis hasta 7 días antes de la llegada), lo pagado (${formatPrice(pagado)}) no se devuelve. <strong>Pero puedes cambiar de fechas una vez, sin coste, dentro de los 12 meses siguientes</strong>: escríbenos y lo miramos. Si crees que hay un error, dínoslo también.</p>`,
             subject: `Reserva cancelada — ${b.booking_code}`,
             heading: `Hola ${fn}, tu reserva queda cancelada`,
             cancelada: `<p>He cancelado tu reserva en <strong>${b.apartment_name}</strong> del ${ci} al ${co} (código ${b.booking_code}). Esos días quedan libres.</p>`,
-            despedida: `<p>Sentimos que no podáis venir esta vez. Cuando queráis, aquí estamos.</p>`,
+            despedida: `<p>Sentimos que no puedas venir esta vez. Cuando quieras, aquí estamos.</p>`,
         },
         en: {
             devolver: `<p><strong>We are refunding you ${formatPrice(devolver, lang)}.</strong> If you paid by card on the website, it will go back to the same card automatically within a few days. If you paid by bank transfer or Bizum, we will send it to you ourselves; if you do not see it within a week, write to us.</p>`,

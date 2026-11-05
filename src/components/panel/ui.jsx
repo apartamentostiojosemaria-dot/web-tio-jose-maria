@@ -86,12 +86,12 @@ export const fechaEnPalabrasRelativa = (iso) => {
     return texto.charAt(0).toUpperCase() + texto.slice(1);
 };
 
-/** '10 sep' */
+/** '10 de septiembre' · '10 de septiembre de 2027' (year only when it is not this one) */
 export const fechaCorta = (iso) => {
     const f = aFecha(iso);
     if (!f) return '';
-    return new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short',
-        ...(f && f.getFullYear() !== new Date().getFullYear() ? { year: '2-digit' } : {}) }).format(f);
+    return new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long',
+        ...(f.getFullYear() !== new Date().getFullYear() ? { year: 'numeric' } : {}) }).format(f);
 };
 
 // ---------- Dinero ----------

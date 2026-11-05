@@ -60,7 +60,7 @@ export const SECCIONES = [
 /** Pantallas que no salen en el menú porque se abren desde otra. */
 const OCULTAS = [
     { id: 'reserva', etiqueta: 'Reserva' },
-    { id: 'checkin', etiqueta: 'Hacer el check-in' },
+    { id: 'checkin', etiqueta: 'Hacer la entrada' },
 ];
 
 /**

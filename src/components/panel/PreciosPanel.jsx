@@ -31,7 +31,7 @@ const VACIO = {
 const fechaCorta = (iso) => {
     if (!iso) return '';
     const [a, m, d] = String(iso).slice(0, 10).split('-').map(Number);
-    return new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short' }).format(new Date(a, m - 1, d));
+    return new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long' }).format(new Date(a, m - 1, d));
 };
 
 const cuantos = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;

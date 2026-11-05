@@ -45,6 +45,15 @@ async function sendEmail(to: string, subject: string, html: string) {
   }
 }
 
+// «229,50 €» / «229 €»: two decimals only when there are cents.
+function formatPrice(n: number) {
+  const entero = Math.abs(n - Math.round(n)) < 0.005;
+  return new Intl.NumberFormat("es-ES", {
+    style: "currency", currency: "EUR",
+    minimumFractionDigits: entero ? 0 : 2, maximumFractionDigits: entero ? 0 : 2,
+  }).format(entero ? Math.round(n) : n);
+}
+
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
 }
@@ -116,7 +125,7 @@ Deno.serve(async (req: Request) => {
     if (!limit.allowed) {
       return new Response(JSON.stringify({
         error: "rate_limit_exceeded",
-        message: "Demasiadas reservas desde tu conexion. Espera 1 hora o escribenos por WhatsApp.",
+        message: "Demasiadas reservas desde tu conexión. Espera una hora o escríbenos por WhatsApp.",
       }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
@@ -125,7 +134,7 @@ Deno.serve(async (req: Request) => {
     if (!captchaOk) {
       return new Response(JSON.stringify({
         error: "captcha_failed",
-        message: "Verificacion de seguridad fallida. Recarga la pagina y vuelve a intentar.",
+        message: "Verificación de seguridad fallida. Recarga la página y vuelve a intentarlo.",
       }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
@@ -156,7 +165,7 @@ Deno.serve(async (req: Request) => {
     const aptName = booking.apartments?.name || "Apartamento";
     const checkIn = formatDate(booking.check_in);
     const checkOut = formatDate(booking.check_out);
-    const price = booking.total_price ? `${booking.total_price}€` : "A confirmar";
+    const price = booking.total_price ? formatPrice(Number(booking.total_price)) : "A confirmar";
 
     const confirmToken = await signAction(booking_id, "confirm");
     const rejectToken = await signAction(booking_id, "reject");
@@ -167,10 +176,11 @@ Deno.serve(async (req: Request) => {
         <a href="${confirmUrl}" style="display:inline-block;background:#16a34a;color:white;text-decoration:none;padding:14px 32px;border-radius:999px;font-weight:bold;margin:4px 6px;">✓ Confirmar reserva</a>
         <a href="${rejectUrl}" style="display:inline-block;background:white;color:#dc2626;text-decoration:none;padding:14px 32px;border-radius:999px;font-weight:bold;border:1px solid #dc2626;margin:4px 6px;">✕ Rechazar</a>
       </div>
-      <p style="text-align:center;color:#9ca3af;font-size:12px;margin:8px 0 24px;">Un solo click. El huésped recibe el aviso automático.</p>
+      <p style="text-align:center;color:#9ca3af;font-size:12px;margin:8px 0 24px;">Con un toque. El huésped recibe el aviso automático.</p>
     `;
 
-    const adminWaMsg = `Hola ${booking.guest_name}, te escribo desde Apartamentos Tío José María por tu solicitud para ${aptName} del ${checkIn} al ${checkOut}.`;
+    const nombrePila = String(booking.guest_name || "").trim().split(/\s+/)[0] || "";
+    const adminWaMsg = `${nombrePila ? `Hola ${nombrePila}` : "Hola"}, te escribo desde Apartamentos Tío José María por tu solicitud para ${aptName} del ${checkIn} al ${checkOut}.`;
     const adminPhoneRaw = (booking.guest_phone || "").replace(/\D/g, "");
     const guestPhoneCell = adminPhoneRaw
       ? `<a href="https://wa.me/${adminPhoneRaw.startsWith("34") ? adminPhoneRaw : "34" + adminPhoneRaw}?text=${encodeURIComponent(adminWaMsg)}" style="color:#25D366;font-weight:bold;text-decoration:none;">${booking.guest_phone}</a>`
@@ -182,7 +192,7 @@ Deno.serve(async (req: Request) => {
         <div style="background: #f9f8f5; border-radius: 16px; padding: 24px; margin: 16px 0;">
           <p><strong>Apartamento:</strong> ${aptName}</p>
           <p><strong>Huésped:</strong> ${booking.guest_name}</p>
-          <p><strong>Email:</strong> <a href="mailto:${booking.guest_email}" style="color:#556B2F;">${booking.guest_email}</a></p>
+          <p><strong>Correo:</strong> <a href="mailto:${booking.guest_email}" style="color:#556B2F;">${booking.guest_email}</a></p>
           <p><strong>Teléfono:</strong> ${guestPhoneCell}</p>
           <p><strong>Fechas:</strong> ${checkIn} → ${checkOut}</p>
           <p><strong>Huéspedes:</strong> ${booking.pax_count || 2}</p>
@@ -190,16 +200,16 @@ Deno.serve(async (req: Request) => {
           ${booking.notes ? `<p><strong>Notas:</strong> ${booking.notes}</p>` : ""}
         </div>
         ${actionButtons}
-        <p style="color: #888; font-size: 14px;">Tambien puedes gestionarla desde el panel admin.</p>
+        <p style="color: #888; font-size: 14px;">También puedes verla en el panel.</p>
       </div>
     `;
     const adminEmail = await sendEmail(ADMIN_EMAIL, `Nueva reserva: ${booking.guest_name} - ${aptName}`, adminHtml);
 
-    const guestWaMsg = `Hola, he enviado una solicitud de reserva para ${aptName} del ${checkIn} al ${checkOut}. Queria comentaros algo.`;
+    const guestWaMsg = `Hola, he enviado una solicitud de reserva para ${aptName} del ${checkIn} al ${checkOut}. Quería comentaros algo.`;
     const guestHtml = `
       <div style="font-family: Georgia, serif; max-width: 600px; margin: 0 auto; padding: 32px;">
         <h1 style="color: #556B2F; font-size: 24px;">Hemos recibido tu solicitud</h1>
-        <p>Hola ${booking.guest_name},</p>
+        <p>${nombrePila ? `Hola ${nombrePila},` : "Hola,"}</p>
         <p>Gracias por tu interés en alojarte con nosotros en <strong>${aptName}</strong>.</p>
         <div style="background: #f9f8f5; border-radius: 16px; padding: 24px; margin: 16px 0;">
           <p><strong>Entrada:</strong> ${checkIn}</p>
@@ -213,7 +223,7 @@ Deno.serve(async (req: Request) => {
     `;
     const guestEmail = await sendEmail(booking.guest_email, `Tu solicitud de reserva en Tío José María`, guestHtml);
 
-    const whatsappMsg = `Nueva reserva web:\n${booking.guest_name}\n${aptName}\n${checkIn} → ${checkOut}\n${price}\nTel: ${booking.guest_phone || "sin tel"}\nEmail: ${booking.guest_email}`;
+    const whatsappMsg = `Nueva reserva web:\n${booking.guest_name}\n${aptName}\n${checkIn} → ${checkOut}\n${price}\nTel: ${booking.guest_phone || "sin tel"}\nCorreo: ${booking.guest_email}`;
     const whatsappUrl = `https://api.whatsapp.com/send?phone=${ADMIN_PHONE}&text=${encodeURIComponent(whatsappMsg)}`;
 
     const responseBody: Record<string, unknown> = { success: true, whatsapp_url: whatsappUrl };

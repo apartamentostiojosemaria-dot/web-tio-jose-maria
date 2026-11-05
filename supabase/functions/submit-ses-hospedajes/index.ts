@@ -457,7 +457,7 @@ async function accionMandar(grupo: Grupo, conDocumento = true): Promise<Salida> 
             estado: ESTADO.PENDIENTE_DE_ALTA,
             enviado: false,
             payload: {
-                mensaje: "Documento preparado. Faltan credenciales del servicio web.",
+                mensaje: "Hoja de registro preparada. Falta el alta en el Ministerio para mandarla sola.",
                 faltan_secretos: secretosQueFaltan(),
                 xml, preparado_en: ahora(), libro_registro: rastroLibro,
             },
@@ -483,6 +483,7 @@ async function accionMandar(grupo: Grupo, conDocumento = true): Promise<Salida> 
             referencia: resultado.respuesta?.lote ?? null,
             payload: {
                 mensaje: resultado.mensaje,
+                detalle_tecnico: resultado.detalle || null,
                 lote: resultado.respuesta?.lote ?? null,
                 codigo: resultado.respuesta?.codigo ?? null,
                 acuse: resultado.respuesta?.crudo ?? null,
@@ -499,6 +500,7 @@ async function accionMandar(grupo: Grupo, conDocumento = true): Promise<Salida> 
         enviado: false,
         payload: {
             mensaje: resultado.mensaje,
+            detalle_tecnico: resultado.detalle || null,
             resultado: resultado.definitivo ? "rechazado" : "sin_respuesta",
             codigo: resultado.respuesta?.codigo ?? null,
             acuse: resultado.respuesta?.crudo ?? null,
@@ -551,7 +553,7 @@ async function comprobarComunicacion(
     if (r.aceptado === true) {
         await anotarComunicacion(bookingId, tipo, {
             estado: ESTADO_SES.ACEPTADO,
-            mensaje: `Aceptado por el Ministerio. Lote ${com.lote}`,
+            mensaje: "Aceptado por el Ministerio.",
             intentos: com.intentos, lote: com.lote,
             codigos: r.codigosComunicacion, acuse: r.crudo, reintentar: false,
         });
@@ -582,7 +584,7 @@ async function comprobarComunicacion(
         });
         return { estado: "error", mensaje: `El Ministerio ha RECHAZADO la ${tipo}: ${r.errores.join(" · ")}` };
     }
-    return { estado: "mandado", mensaje: `El lote de la ${tipo} sigue en proceso${r.descEstado ? ` (${r.descEstado})` : ""}. Vuelve a comprobarlo mas tarde.` };
+    return { estado: "mandado", mensaje: `El lote de la ${tipo} sigue en proceso${r.descEstado ? ` (${r.descEstado})` : ""}. Vuelve a comprobarlo más tarde.` };
 }
 
 async function accionComprobar(grupo: Grupo): Promise<Salida> {
@@ -961,7 +963,8 @@ async function accionModificacion(grupo: Grupo): Promise<Salida> {
         if (tocaAvisar(2, r.check_in)) {
             await avisar({
                 titulo: `No se ha podido comunicar el cambio de ${r.booking_code}`,
-                texto: `La reserva cambió y el Ministerio no ha aceptado anular la versión anterior: ${baja.mensaje}. Se reintenta solo.`,
+                texto: `La reserva cambió y no se ha podido anular la versión anterior en el Ministerio. ${baja.mensaje}`,
+                detalle: baja.detalle ? [baja.detalle] : undefined,
             });
         }
         return { estado: "error", mensaje: `Cambio: la anulación de la versión anterior falló. ${baja.mensaje}` };
@@ -1037,8 +1040,10 @@ async function barridoReservas(): Promise<Record<string, unknown>> {
         } catch (e) {
             fallos++;
             const msg = e instanceof Error ? e.message : String(e);
+            console.error(`[ses] ${p.booking_code} ${p.tipo}: ${msg}`);
             if (p.tipo !== "modificacion") await anotarComunicacion(p.booking_id, p.tipo as "reserva" | "anulacion", {
-                estado: ESTADO_SES.REINTENTAR, mensaje: msg,
+                estado: ESTADO_SES.REINTENTAR,
+                mensaje: "No se ha podido mandar. Se vuelve a intentar solo; si mañana sigue igual, avisa a Jesús.",
                 intentos: (fila?.intentos ?? 0) + 1, reintentar: true,
             });
             detalles.push({ reserva: p.booking_code, tipo: p.tipo, estado: "error", mensaje: msg });

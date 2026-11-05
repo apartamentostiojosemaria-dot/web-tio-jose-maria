@@ -411,7 +411,7 @@ export async function marcarCoincide(reservaId, personaId, coincide = true) {
  * Apunta la hora REAL de entrada. Ni las 16:00 ni ninguna hora inventada:
  * la de ahora mismo, que es la que pide el anexo I A.4.b.
  * Si la columna todavía no existe, devuelve `{ ok: false, motivo: 'sin_columna' }`
- * y la pantalla lo dice. No se marca el check-in como hecho a medias.
+ * y la pantalla lo dice. No se marca la entrada como hecha a medias.
  */
 export async function apuntarEntrada(reservaId, cuando = new Date()) {
     return apuntarHora(reservaId, 'checkin_at', cuando);
@@ -430,7 +430,23 @@ async function apuntarHora(reservaId, columna, cuando) {
 
     if (!error) return { ok: true, cuando: iso };
     if (faltaColumna(error)) return { ok: false, motivo: 'sin_columna', columna };
-    return { ok: false, motivo: 'error', mensaje: error.message };
+    // eslint-disable-next-line no-console
+    console.error(`apuntar ${columna} falló:`, error);
+    return { ok: false, motivo: 'error', mensaje: textoLlanoDelFallo(error) };
+}
+
+/**
+ * What the family reads when saving fails: never the raw database error.
+ * Ends with a full stop; the screen adds «Si sigue igual, avisa a Jesús.».
+ */
+export function textoLlanoDelFallo(error) {
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        return 'No hay conexión a internet. Mira la wifi o los datos del móvil y prueba otra vez.';
+    }
+    if (/fetch|network|timeout|conexi/i.test(String(error?.message || error || ''))) {
+        return 'El sistema no ha contestado. Prueba otra vez en un momento.';
+    }
+    return 'No se ha podido apuntar. Prueba otra vez en un momento.';
 }
 
 // ------------------------------------------------------------- en vivo

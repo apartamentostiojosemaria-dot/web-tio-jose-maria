@@ -81,8 +81,8 @@ function semaforoDe(fila, hoy) {
             tono: 'rojo', color: 'bg-red-500', etiqueta: 'Falta un dato',
             // The municipality code is chosen by Jesús, not by the guest.
             texto: fila.motivo && !/INE/.test(fila.motivo)
-                ? `No se puede mandar: ${fila.motivo}. Pídeselo al huésped.`
-                : `No se puede mandar${fila.motivo ? `: ${fila.motivo}` : ''}. Avisa a Jesús.`,
+                ? `No se puede mandar: ${String(fila.motivo).trim().replace(/\.+$/, '')}. Pídeselo al huésped.`
+                : `No se puede mandar${fila.motivo ? `: ${String(fila.motivo).trim().replace(/\.+$/, '')}` : ''}. Avisa a Jesús.`,
             mandado: false, listo: false, noTocaAun: false, faltan, rellenos, total,
         };
     }
@@ -245,8 +245,32 @@ const ParteViajerosPanel = ({ ir, params = {} }) => {
         const texto = await res.text();
         let cuerpoRes = {};
         try { cuerpoRes = JSON.parse(texto); } catch { /* respuesta rara */ }
-        if (!res.ok) throw new Error(cuerpoRes?.mensaje || 'No ha salido bien');
+        if (!res.ok) {
+            const fallo = new Error(cuerpoRes?.mensaje || cuerpoRes?.error || `HTTP ${res.status}`);
+            fallo.status = res.status;
+            // 4xx messages from our own function are already plain Spanish
+            // («No encuentro esa reserva.»); 5xx carry the technical error.
+            if (res.status >= 400 && res.status < 500 && ![401, 403].includes(res.status) && cuerpoRes?.mensaje) {
+                fallo.paraLaFamilia = cuerpoRes.mensaje;
+            }
+            throw fallo;
+        }
         return cuerpoRes;
+    };
+
+    // Plain text for the family. The technical error only goes to the console.
+    const textoDelFallo = (e) => {
+        // eslint-disable-next-line no-console
+        console.error('submit-ses-hospedajes:', e);
+        const coletilla = 'Si sigue igual, avisa a Jesús.';
+        if (e?.paraLaFamilia) return `${String(e.paraLaFamilia).replace(/\.?\s*$/, '.')} ${coletilla}`;
+        if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+            return `No hay conexión a internet. Mira la wifi o los datos del móvil y prueba otra vez. ${coletilla}`;
+        }
+        if (e?.status === 401 || e?.status === 403) {
+            return `Se ha cerrado la sesión. Sal del panel y vuelve a entrar. ${coletilla}`;
+        }
+        return `El sistema no ha contestado. Prueba otra vez en un momento. ${coletilla}`;
     };
 
     const descargar = (documento) => {
@@ -294,7 +318,7 @@ const ParteViajerosPanel = ({ ir, params = {} }) => {
             setMensaje({
                 tono: 'atencion',
                 titulo: 'No se ha podido mandar',
-                texto: `${e.message}. Si sigue igual, avisa a Jesús.`,
+                texto: textoDelFallo(e),
             });
         } finally {
             setOcupado(null);
@@ -313,7 +337,7 @@ const ParteViajerosPanel = ({ ir, params = {} }) => {
             });
             await cargar();
         } catch (e) {
-            setMensaje({ tono: 'atencion', titulo: 'No se ha podido apuntar', texto: e.message });
+            setMensaje({ tono: 'atencion', titulo: 'No se ha podido apuntar', texto: textoDelFallo(e) });
         } finally {
             setOcupado(null);
         }
@@ -325,7 +349,7 @@ const ParteViajerosPanel = ({ ir, params = {} }) => {
             const r = await llamarFuncion({ accion: 'documento', booking_id: fila.booking_id });
             descargar(r.documento);
         } catch (e) {
-            setMensaje({ tono: 'atencion', titulo: 'No se ha podido abrir el papel', texto: e.message });
+            setMensaje({ tono: 'atencion', titulo: 'No se ha podido abrir el papel', texto: textoDelFallo(e) });
         } finally {
             setOcupado(null);
         }
@@ -345,8 +369,8 @@ const ParteViajerosPanel = ({ ir, params = {} }) => {
                 </h1>
                 <p className="text-base text-gray-600 mt-1 leading-relaxed">
                     Cada persona que se aloja tiene que dejarnos sus datos. Aquí ves quién los
-                    ha rellenado y quién no, y desde cada reserva puedes <strong>hacer el
-                    check-in</strong> con el huésped delante.
+                    ha rellenado y quién no, y desde cada reserva puedes <strong>hacer la
+                    entrada</strong> con el huésped delante.
                 </p>
             </header>
 
@@ -524,7 +548,7 @@ const FilaReserva = ({
                         ancho
                         onClick={() => ir?.('checkin', { reservaId: fila.booking_id })}
                     >
-                        Hacer el check-in
+                        Hacer la entrada
                     </Boton>
                     <p className="mt-1.5 text-sm text-gray-600 leading-snug">
                         Enséñale el código para que rellene en su móvil y comprueba su documento.

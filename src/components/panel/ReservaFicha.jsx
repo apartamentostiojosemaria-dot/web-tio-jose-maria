@@ -165,7 +165,7 @@ const ReservaFicha = ({ ir, params = {} }) => {
                 </>
             ) : esElDia ? (
                 <Boton ancho tamano="grande" icono={parte?.completo ? Check : QrCode} onClick={() => ir('checkin', { reservaId: reserva.id })} disabled={cancelada || noSePresento}>
-                    {parte?.completo ? 'Terminar el check-in' : 'Hacer el check-in'}
+                    {parte?.completo ? 'Terminar la entrada' : 'Hacer la entrada'}
                 </Boton>
             ) : (
                 <Boton ancho tamano="grande" variante="secundario" icono={Shield} onClick={() => ir('checkin', { reservaId: reserva.id })} disabled={cancelada}>
@@ -250,7 +250,7 @@ const ReservaFicha = ({ ir, params = {} }) => {
             )}
             {cancelada && factura && (
                 <Aviso tono="atencion" titulo={`Tiene una factura hecha el ${diaMesYAno(factura.fecha_emision)} y la reserva se ha cancelado.`}
-                    texto="Una factura hecha no se borra: hay que hacer una factura rectificativa. Eso lo hace Jesús desde la vista completa; díselo." />
+                    texto="Una factura hecha no se borra: hay que hacer una factura que corrija esta. Eso lo hace Jesús desde la vista completa; díselo." />
             )}
 
             {/* ---------- EL DINERO ---------- */}

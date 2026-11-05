@@ -52,7 +52,11 @@ const AvisosMovil = () => {
             const permiso = await Notification.requestPermission();
             if (permiso !== 'granted') { setEstado('denegado'); return; }
             const { data: clave, error: e1 } = await supabase.rpc('tjm_push_clave_publica');
-            if (e1 || !clave) throw new Error('Los avisos no están configurados todavía. Avisa a Jesús.');
+            if (e1 || !clave) {
+                const sinClave = new Error(e1?.message || 'sin clave pública');
+                sinClave.paraLaFamilia = 'Los avisos no están preparados todavía. Avisa a Jesús.';
+                throw sinClave;
+            }
             const reg = await navigator.serviceWorker.ready;
             const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: base64UrlABytes(clave) });
             const { data: { user } } = await supabase.auth.getUser();
@@ -63,7 +67,17 @@ const AvisosMovil = () => {
             }, { onConflict: 'endpoint' });
             if (e2) throw e2;
             setEstado('activo');
-        } catch (e) { setError(e.message || 'No se ha podido activar.'); setEstado('error'); }
+        } catch (e) {
+            // The raw error (browser or database, often in English) is for debugging only.
+            // eslint-disable-next-line no-console
+            console.error('Activar avisos falló:', e);
+            const sinConexion = typeof navigator !== 'undefined' && navigator.onLine === false;
+            setError(e?.paraLaFamilia
+                || (sinConexion
+                    ? 'No hay conexión a internet. Mira la wifi o los datos del móvil y prueba otra vez. Si sigue igual, avisa a Jesús.'
+                    : 'No se ha podido activar en este móvil. Prueba otra vez en un momento. Si sigue igual, avisa a Jesús.'));
+            setEstado('error');
+        }
     };
 
     const quitar = async () => {

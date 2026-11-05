@@ -542,7 +542,25 @@ export interface ResultadoEnvio {
     /** El XML que se ha mandado, tal cual, para poder auditarlo. */
     xmlEnviado: string;
     intentos: number;
+    /** Lo que ve la familia, en castellano llano (sin HTTP, lotes ni inglés). */
     mensaje: string;
+    /** Technical detail (HTTP status, batch id, raw error) for debugging only. */
+    detalle: string;
+}
+
+/** Texto llano cuando el Ministerio no contesta (caída, 5xx, red). */
+export const MENSAJE_SIN_RESPUESTA =
+    "El Ministerio no ha contestado. Se vuelve a intentar solo; si mañana sigue igual, avisa a Jesús.";
+
+/** Texto llano cuando el Ministerio rechaza el envío y reintentar no sirve. */
+function mensajeRechazo(r: RespuestaMir): string {
+    if (r.httpStatus === 401 || r.httpStatus === 403 || r.codigo === 10107) {
+        return "El Ministerio no acepta el usuario o la contraseña. Avisa a Jesús.";
+    }
+    const motivo = (r.codigo != null ? ERRORES_MIR[r.codigo] : undefined) || r.descripcion || "";
+    return motivo
+        ? `El Ministerio no lo ha aceptado: ${motivo.replace(/\.$/, "")}. Avisa a Jesús.`
+        : "El Ministerio no lo ha aceptado. Avisa a Jesús.";
 }
 
 /** Códigos que no tiene sentido reintentar: hay que arreglar algo antes. */
@@ -573,7 +591,8 @@ async function mandar(
                 return {
                     ok: true, definitivo: false, respuesta: r, xmlEnviado: xml,
                     intentos: intento,
-                    mensaje: r.lote ? `Recibido. Lote ${r.lote}` : "Recibido por el Ministerio",
+                    mensaje: "Recibido por el Ministerio.",
+                    detalle: r.lote ? `Lote ${r.lote}` : "",
                 };
             }
 
@@ -581,9 +600,10 @@ async function mandar(
             ultimoError = explicaCodigo(r.codigo, r.descripcion)
                 + (r.httpStatus >= 400 ? ` · HTTP ${r.httpStatus}` : "");
             if (definitivo || r.httpStatus === 401 || r.httpStatus === 403) {
+                console.error(`[mir] ${nombreFichero} rechazado: ${ultimoError}`);
                 return {
                     ok: false, definitivo: true, respuesta: r, xmlEnviado: xml,
-                    intentos: intento, mensaje: ultimoError,
+                    intentos: intento, mensaje: mensajeRechazo(r), detalle: ultimoError,
                 };
             }
         } catch (e) {
@@ -592,9 +612,11 @@ async function mandar(
         if (intento < INTENTOS) await espera(ESPERAS_MS[intento - 1] ?? 4000);
     }
 
+    const detalle = ultimoError || "No hubo respuesta del servicio";
+    console.error(`[mir] ${nombreFichero} sin respuesta tras ${INTENTOS} intentos: ${detalle}`);
     return {
         ok: false, definitivo: false, respuesta: ultimo, xmlEnviado: xml,
-        intentos: INTENTOS, mensaje: ultimoError || "No hubo respuesta del servicio",
+        intentos: INTENTOS, mensaje: MENSAJE_SIN_RESPUESTA, detalle,
     };
 }
 
