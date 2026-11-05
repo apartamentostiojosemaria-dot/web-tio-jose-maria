@@ -143,6 +143,45 @@ async function push(aptIds: number[] | null, cfg: Record<string, any>, dryRun: b
     return { enviados: cuerpo.reduce((n, r) => n + (r.calendar?.length || 0), 0), nochesOcupadas: noches, dryRun };
 }
 
+// ---------- Cuadre (5-nov-2026): se comprueba el RESULTADO, no solo que el envío saliera ----------
+// Lee lo que Beds24 tiene de verdad y lo compara noche a noche con lo nuestro (próximos 365 días).
+//   peligro    = cerrada en TJM y abierta en Beds24 -> riesgo de vender dos veces (aviso alto).
+//   sin_precio = noche sin precio en Beds24 -> Beds24 la cierra sola: venta perdida (aviso medio).
+//   de_mas     = abierta en TJM y cerrada en Beds24 por otro motivo (informativo).
+async function cuadre() {
+    const { data: apts } = await db.from("apartments").select("id, name, beds24_room_id").not("beds24_room_id", "is", null);
+    if (!apts?.length) return { comparadas: 0 };
+    const { tramos } = await calcularDisponibilidad(apts.map((a) => a.id), 365);
+    const hoy = iso(new Date()); const fin = masDias(hoy, 364);
+    const r = await b24("GET", `/inventory/rooms/calendar?${new URLSearchParams({
+        propertyId: String((await config()).property_id || 366113), startDate: hoy, endDate: fin,
+        includeNumAvail: "true", includePrices: "true" })}`);
+    const nuestro = new Map<string, number>();
+    for (const a of apts) for (const t of tramos.get(a.id) || []) {
+        let d = t.from; while (d <= t.to) { nuestro.set(`${a.beds24_room_id}|${d}`, t.numAvail); d = masDias(d, 1); }
+    }
+    let comparadas = 0, peligro = 0, sinPrecio = 0, deMas = 0;
+    const ejemplos: string[] = [];
+    const nombre = new Map(apts.map((a) => [a.beds24_room_id, a.name]));
+    for (const room of r.data || []) {
+        for (const c of room.calendar || []) {
+            let d = c.from;
+            while (d <= c.to) {
+                const n = nuestro.get(`${room.roomId}|${d}`);
+                if (n !== undefined) {
+                    comparadas++;
+                    const suyo = Number(c.numAvail ?? 0);
+                    if (n === 0 && suyo > 0) { peligro++; if (ejemplos.length < 8) ejemplos.push(`${nombre.get(room.roomId)} ${d}: cerrada aquí, abierta en Beds24`); }
+                    else if (n === 1 && !c.price1) sinPrecio++;
+                    else if (n === 1 && suyo === 0) deMas++;
+                }
+                d = masDias(d, 1);
+            }
+        }
+    }
+    return { comparadas, peligro, sin_precio: sinPrecio, de_mas: deMas, ejemplos };
+}
+
 // ---------- Beds24 -> TJM (espejo) ----------
 async function pull(cfg: Record<string, any>, dryRun: boolean) {
     const ahora = new Date();
@@ -242,7 +281,7 @@ Deno.serve(async (req) => {
     const k = await llave();
     const autorizado = !!bearer && ((!!k && bearer === k) || bearer === SUPABASE_SERVICE_ROLE_KEY || rolDelJwt(bearer) === "service_role");
 
-    const conocido = autorizado && ["push", "pull", "all"].includes(body?.mode);
+    const conocido = autorizado && ["push", "pull", "all", "cuadre"].includes(body?.mode);
     const modo: string = conocido ? body.mode : (autorizado ? "all" : "pull");
     const origen: string = autorizado ? (body?.origen || "manual") : "aviso-beds24";
     const dryRun = autorizado && body?.dryRun === true;
@@ -258,6 +297,8 @@ Deno.serve(async (req) => {
             if (ult?.[0] && Date.now() - new Date(ult[0].ran_at).getTime() < 30_000) return json(202, { ok: true });
         }
         const cfg = await config();
+        const cfgEnvioActivo = cfg.envio_activo !== false;
+        if (modo === "cuadre") detalle.cuadre = await cuadre();   // solo comprobar, sin mandar nada
         if (modo === "pull" || modo === "all") detalle.pull = await pull(cfg, dryRun);
         if (modo === "push" && body?.pendientes === true && autorizado) {
             // Cola (0079): se manda todo lo pendiente y solo se borra lo que no ha cambiado desde que se leyó
@@ -280,6 +321,8 @@ Deno.serve(async (req) => {
         if (!dryRun && modo === "all" && autorizado) {
             // Una pasada completa correcta deja la cola al día
             await db.from("beds24_pendientes").delete().lte("desde", inicio);
+            // y se comprueba que Beds24 tiene lo que le hemos mandado (lo vigila tjm_revisar)
+            if (cfgEnvioActivo) detalle.cuadre = await cuadre();
         }
         if (!dryRun) {
             await db.from("beds24_sync_log").insert({
