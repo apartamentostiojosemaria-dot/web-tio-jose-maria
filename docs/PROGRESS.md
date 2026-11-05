@@ -15,6 +15,7 @@
 ## Última sesión (2026-11-05) · Beds24
 - **Tubería Beds24 montada y probada en la cuenta de prueba** (propiedad 366113, prueba hasta el 19-nov; migr. `0077`, función `beds24-sync` v1). TJM → Beds24: bloqueo creado/borrado → Beds24 cierra/abre en 0,6 s. Beds24 → TJM: cambio de fechas y cancelación de una reserva de prueba (95730807, ya cancelada) → espejo `beds24_bookings` en ~10 s por el aviso. Cron de repaso cada 10 min. Coste: 2,1 créditos por pasada (límite 100/5 min).
 - **Ojo**: las reservas creadas o cambiadas por la API solo avisan con `actions.allowWebhooks = true`. Beds24 cierra sola toda fecha sin precio (hoy hay precios hasta el 31-dic-2027).
+- **Batería completa** (`docs/anexos/2026-11-05-pruebas-beds24.md`): 22/22 TJM → Beds24, 16/16 Beds24 → TJM, cuadre 1.688 noches sin diferencias. Encontró y se arreglaron 6 fallos (migr. `0078` llave en Vault, `0079` cola + reintento cada minuto; token reutilizado; aviso por correo si falla).
 - **Falta para producción**: (1) promover el espejo a `guest_bookings` (canal, comisión, VCC, sin duplicar con `misterplan-correo`); (2) pagar Beds24 y conectar Booking/Airbnb (extranet: proveedor de conectividad); (3) apagar el lector de correos de MisterPlan; (4) precios y estancias mínimas de TJM → Beds24.
 
 ## Sesión anterior (2026-10-27)
