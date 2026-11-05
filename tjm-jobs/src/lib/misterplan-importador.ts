@@ -28,6 +28,7 @@ import { simpleParser } from "mailparser";
 import nodemailer from "nodemailer";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { parsearCorreoMisterPlan, type CorreoParseado } from "./misterplan-correo.js";
+import { notaFamilia } from "./nota-familia.js";
 
 export interface Opciones {
     dryRun?: boolean;
@@ -327,16 +328,13 @@ async function crear(sb: SupabaseClient, apt: Apt, p: CorreoParseado, recibido: 
         payment_status: "pending",
         booking_code: await codigoReserva(semilla),
         created_by: "importacion-misterplan-correo",
-        internal_notes: [
-            `Traída del aviso de MisterPlan del ${fecha} (leído el ${hoyEs()})${p.misterplanRef ? `, reserva ${p.misterplanRef}` : ""}, canal ${p.channelLabel || canal}${p.locator ? ` ${p.locator}` : ""}.`,
-            p.total != null ? `Importe ${p.total.toFixed(2)} €` + (p.nights ? ` por ${p.nights} noche(s)` : "") + (p.pax ? `, ${p.pax} persona(s)` : "") + "." : "",
-            canal === "booking" ? `Booking: ${p.vccChargeableFrom ? `tarjeta virtual cargable desde el ${p.vccChargeableFrom}; ` : ""}pago a través de Booking.com (comisión estimada 17 %).` : "",
-            canal === "airbnb" ? "Airbnb cobra al huésped y liquida: NO cobrar nada en persona." : "",
-            canal === "web" ? `Motor web de MisterPlan: ${p.paid != null ? `${p.paid.toFixed(2)} € pagados por transferencia (anticipo).` : "sin dato de pago."} MisterPlan no da su correo; la confirmación se la mandó MisterPlan.` : "",
-            p.arrivalTime ? `Hora de llegada indicada por el huésped: ${p.arrivalTime}.` : "",
-            p.comments && !/^Comentario del Cliente: Has recibido una tarjeta/.test(p.comments) ? `Observaciones: ${p.comments.slice(0, 300)}` : "",
-            nota,
-        ].filter(Boolean).join(" "),
+        // Nota en llano para la familia (5-nov-2026): sin «Traída del aviso… (leído el…)», sin el relleno de
+        // Booking como si fuera del huésped y sin cortar palabras. De dónde salió queda en mail_import_log.
+        internal_notes: notaFamilia({
+            canal, locator: p.locator, misterplanRef: p.misterplanRef, total: p.total, nights: p.nights, pax: p.pax,
+            paid: p.paid, vccChargeableFrom: p.vccChargeableFrom, comision, arrivalTime: p.arrivalTime,
+            comments: p.comments, nota,
+        }),
     };
     if (esCanal) for (const f of EMAIL_FLAGS_CANAL) fila[f] = ahora;
     else fila.confirmation_email_sent_at = ahora;
