@@ -94,6 +94,13 @@ const CHANNEL_LABEL: Record<string, string> = Object.fromEntries(
 );
 const ALL_CHANNEL_KEYS = CHANNELS.map((c) => c.key) as string[];
 
+/** «05/11» en hora de Madrid, para las notas de la familia. */
+const ddmmMadrid = (fecha: Date = new Date()) => {
+    const p = Object.fromEntries(new Intl.DateTimeFormat("es-ES", { timeZone: "Europe/Madrid", day: "numeric", month: "numeric" })
+        .formatToParts(fecha).map((x) => [x.type, x.value]));
+    return `${String(p.day).padStart(2, "0")}/${String(p.month).padStart(2, "0")}`;
+};
+
 /** Sin correo del canal usamos un dominio reservado (RFC 2606): nunca sale
  *  un correo a una dirección inventada que parezca buena. */
 const PLACEHOLDER_EMAIL = "sin-correo@example.invalid";
@@ -516,10 +523,10 @@ async function syncOne(
                 payment_status: "pending",
                 // Holidu cobra al huésped y abona tras la llegada: nada que cobrar en persona.
                 ...(channel === "holidu" ? { payment_method: "ota", payment_holder: "Holidu" } : {}),
-                internal_notes: `Importada del calendario de ${CHANNEL_LABEL[channel]} el ` +
-                    `${new Date().toLocaleDateString("es-ES")}. El importe no viaja por iCal: ` +
-                    `hay que ponerlo a mano.` +
-                    (channel === "holidu" ? " Lo cobra Holidu al huésped y lo abona tras la llegada: NO cobrar nada en persona." : ""),
+                // 5-nov-2026: en llano para la familia (antes «Importada del calendario… no viaja por iCal»).
+                internal_notes: `Reserva de ${CHANNEL_LABEL[channel]} (llegó por su calendario el ${ddmmMadrid()}). ` +
+                    `El importe no llega por esa vía: hay que apuntarlo a mano.` +
+                    (channel === "holidu" ? " La cobra Holidu y nos la paga después de la llegada: no hay que cobrar nada en persona." : ""),
             };
             for (const f of EMAIL_FLAGS) fila[f] = ahora;
 
@@ -576,9 +583,8 @@ async function syncOne(
             await supabase.from("guest_bookings").update({
                 status: "cancelled",
                 updated_at: new Date().toISOString(),
-                internal_notes: `${b.internal_notes ?? ""}\nDesapareció del calendario de ` +
-                    `${CHANNEL_LABEL[channel]} el ${new Date().toLocaleDateString("es-ES")}: ` +
-                    `cancelada en el canal.`.trim(),
+                internal_notes: `${b.internal_notes ?? ""}\nCancelada en ${CHANNEL_LABEL[channel]} el ${ddmmMadrid()} ` +
+                    `(ya no aparece en su calendario).`.trim(),
             }).eq("id", b.id);
         }
     }

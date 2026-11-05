@@ -1,6 +1,15 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { notaFamilia, comentarioDelHuesped, recortar } from "./nota-familia.js";
+import { notaFamilia, comentarioDelHuesped, recortar, notaCancelada, notaCambios, notaCompletada } from "./nota-familia.js";
+
+test("cambios, cancelaciones y datos añadidos, en castellano y sin nombres internos", () => {
+    const f = new Date("2026-11-05T12:00:00Z");
+    assert.equal(notaCambios("booking", { check_in: "2026-12-05", total_price: 229.5, pax_count: 3, apartment_id: 1 }, (id) => (id === 1 ? "Albahaca" : "?"), f),
+        "El 05/11 Booking la cambió: entrada el 05/12, importe 229,50 €, 3 personas, ahora en Albahaca.");
+    assert.equal(notaCancelada("booking", f), "Cancelada en Booking el 05/11. No hay nada que devolver: el cobro era de Booking.");
+    assert.equal(notaCompletada(["guest_email", "guest_phone"], f), "El 05/11 se añadió: correo, teléfono.");
+    assert.doesNotMatch(notaCambios("booking", { check_out: "2026-12-08" }, () => "", f), /check_|total_price|→/);
+});
 
 // El caso real del 5-nov-2026 (Pedro E., Tomillo 4-7 dic, Booking 5222186144)
 const OBS_REAL = "---- 05/11/2026 13:01:06 ---- Comentario del Cliente: Has recibido una tarjeta de crédito virtual para esta reserva.Puedes hacer el cargo a partir del 2026-11-27. Condiciones para la habitacion Apartamento de 1 dormitorio - General: El precio de esta habitación no incluye servicio de comidas. Condiciones de cancelación…";

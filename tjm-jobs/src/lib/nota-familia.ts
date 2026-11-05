@@ -57,6 +57,36 @@ export function comentarioDelHuesped(comments?: string): string {
     return t.length < 3 ? "" : recortar(t, 300);
 }
 
+const hoyDdmm = (fecha: Date = new Date()) => {
+    const p = Object.fromEntries(new Intl.DateTimeFormat("es-ES", { timeZone: "Europe/Madrid", day: "numeric", month: "numeric" })
+        .formatToParts(fecha).map((x) => [x.type, x.value]));
+    return `${String(p.day).padStart(2, "0")}/${String(p.month).padStart(2, "0")}`;
+};
+
+/** Línea que se añade cuando Booking cancela (5-nov-2026: antes «aviso de MisterPlan del…, leído el…»). */
+export function notaCancelada(portal: string, fecha?: Date): string {
+    return `Cancelada en ${NOMBRE[portal] || portal} el ${hoyDdmm(fecha)}. No hay nada que devolver: el cobro era de ${NOMBRE[portal] || portal}.`;
+}
+
+/** Línea que se añade cuando el portal cambia la reserva: en castellano, nunca los nombres internos de los campos. */
+export function notaCambios(portal: string, cambios: Record<string, unknown>, nombreApto: (id: number) => string, fecha?: Date): string {
+    const partes: string[] = [];
+    for (const [k, v] of Object.entries(cambios)) {
+        if (k === "check_in") partes.push(`entrada el ${ddmm(String(v))}`);
+        else if (k === "check_out") partes.push(`salida el ${ddmm(String(v))}`);
+        else if (k === "total_price") partes.push(`importe ${euros(Number(v))}`);
+        else if (k === "pax_count") partes.push(plural(Number(v), "persona", "personas"));
+        else if (k === "apartment_id") partes.push(`ahora en ${nombreApto(Number(v))}`);
+    }
+    return `El ${hoyDdmm(fecha)} ${NOMBRE[portal] || portal} la cambió: ${partes.join(", ")}.`;
+}
+
+/** Línea que se añade cuando se completan datos que faltaban. */
+export function notaCompletada(campos: string[], fecha?: Date): string {
+    const nombre: Record<string, string> = { external_locator: "localizador", guest_email: "correo", guest_phone: "teléfono" };
+    return `El ${hoyDdmm(fecha)} se añadió: ${campos.map((c) => nombre[c] || c).join(", ")}.`;
+}
+
 export function notaFamilia(d: DatosNota): string {
     const partes: string[] = [];
     const portal = NOMBRE[d.canal] || d.canal;

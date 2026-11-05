@@ -28,7 +28,7 @@ import { simpleParser } from "mailparser";
 import nodemailer from "nodemailer";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { parsearCorreoMisterPlan, type CorreoParseado } from "./misterplan-correo.js";
-import { notaFamilia } from "./nota-familia.js";
+import { notaFamilia, notaCancelada, notaCambios, notaCompletada } from "./nota-familia.js";
 
 export interface Opciones {
     dryRun?: boolean;
@@ -230,7 +230,7 @@ async function procesar(sb: SupabaseClient, apts: Map<string, Apt>, p: CorreoPar
         if (!dryRun) {
             const { error } = await sb.from("guest_bookings").update({
                 status: "cancelled", updated_at: new Date().toISOString(),
-                internal_notes: `${viva.internal_notes ?? ""}\nCancelada en Booking (aviso de MisterPlan del ${new Date(recibido).toLocaleDateString("es-ES")}, leído el ${hoyEs()}). Nada que devolver desde TJM: el cobro era de Booking.`.trim(),
+                internal_notes: `${viva.internal_notes ?? ""}\n${notaCancelada("booking", new Date(recibido))}`.trim(),
             }).eq("id", viva.id);
             if (error) throw new Error(error.message);
             await sb.from("channel_sync_conflicts").update({ resolved_at: new Date().toISOString(), resolution: "La reserva se canceló en Booking (aviso de MisterPlan)." }).eq("conflicting_booking_id", viva.id).is("resolved_at", null);
@@ -265,7 +265,7 @@ async function procesar(sb: SupabaseClient, apts: Map<string, Apt>, p: CorreoPar
             if (choque) return ojo("error", existente.id, { motivo: "las fechas nuevas chocan con otra reserva viva", choque, cambios });
             const { error } = await sb.from("guest_bookings").update({
                 ...cambios, updated_at: new Date().toISOString(),
-                internal_notes: `${existente.internal_notes ?? ""}\nModificada desde Booking (aviso de MisterPlan del ${new Date(recibido).toLocaleDateString("es-ES")}): ${Object.entries(cambios).map(([k, v]) => `${k} → ${v}`).join(", ")}.`.trim(),
+                internal_notes: `${existente.internal_notes ?? ""}\n${notaCambios("booking", cambios, (id) => [...apts.values()].find((x) => x.id === id)?.name ?? "otro apartamento", new Date(recibido))}`.trim(),
             }).eq("id", existente.id);
             if (error) throw new Error(error.message);
         }
@@ -282,7 +282,7 @@ async function procesar(sb: SupabaseClient, apts: Map<string, Apt>, p: CorreoPar
         if (Object.keys(cambios).length === 0) return ok("ya_existia", existente.id, { nombre: existente.guest_name });
         if (!dryRun) {
             const { error } = await sb.from("guest_bookings").update({ ...cambios, updated_at: new Date().toISOString(),
-                internal_notes: `${existente.internal_notes ?? ""}\nCompletada con el aviso de MisterPlan del ${new Date(recibido).toLocaleDateString("es-ES")}: ${Object.keys(cambios).join(", ")}.`.trim() }).eq("id", existente.id);
+                internal_notes: `${existente.internal_notes ?? ""}\n${notaCompletada(Object.keys(cambios), new Date(recibido))}`.trim() }).eq("id", existente.id);
             if (error) throw new Error(error.message);
         }
         return ok("enlazada", existente.id, { cambios });
