@@ -112,7 +112,7 @@ const BlogPostDetail = () => {
                         src={post.featured_image_url}
                         alt={post.title}
                         className="w-full h-full object-cover"
-                        fetchpriority="high"
+                        fetchPriority="high"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 </div>

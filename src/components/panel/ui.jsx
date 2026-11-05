@@ -425,22 +425,61 @@ export const sinPruebas = (consulta) => consulta.neq('source', 'test');
 
 // ---------- Hoja (la ventana que sube desde abajo) ----------
 
+// ---- The phone's «Atrás» closes the sheet ----
+// Each open sheet pushes one history entry (same URL, its token in
+// `state.hojas`). «Atrás» pops it and the sheet closes instead of leaving the
+// screen. Closing it with the X, Escape or a button pops that entry with a
+// history.back() that nobody else must see (see `atrasIgnorados`).
+// PanelApp asks `hayHojaAbierta()` to leave those popstates to the sheet, and
+// calls `soltarHojas()` before navigating from inside a sheet.
+const pilaHojas = [];
+let atrasIgnorados = 0;
+let siguienteHoja = 1;
+
+if (typeof window !== 'undefined') {
+    // Registered at module load, before any component listener: it swallows
+    // the popstate caused by a sheet closing itself.
+    window.addEventListener('popstate', (e) => {
+        if (atrasIgnorados > 0) {
+            atrasIgnorados -= 1;
+            e.stopImmediatePropagation();
+        }
+    });
+}
+
+/** True while some sheet is open: a popstate then belongs to the sheet. */
+export const hayHojaAbierta = () => pilaHojas.some((h) => h.enHistorial);
+
+/**
+ * The sheets let go of their history entries (navigation from inside a
+ * sheet). Returns how many entries they left on top of the history.
+ */
+export const soltarHojas = () => {
+    const encima = (window.history.state?.hojas || []).length;
+    pilaHojas.forEach((h) => { h.enHistorial = false; });
+    return encima;
+};
+
 /**
  * Una hoja que sube desde abajo en el movil y sale centrada en el ordenador.
- * Se cierra con la X, tocando fuera o con la tecla Escape.
+ * Se cierra con la X, con la tecla Escape, con el «Atrás» del movil o tocando
+ * fuera. Con `protegida` (hojas con algo que rellenar), tocar fuera NO la
+ * cierra: un roce sin querer no se lleva lo escrito.
  *
  * Vivia en `dinero/ui.jsx`; se sube aqui porque la usan el dinero, el
  * check-in, los precios y los clientes: es pieza del panel entero.
  *
- * <Hoja abierta={...} titulo="Apuntar un cobro" onCerrar={...}>…</Hoja>
+ * <Hoja abierta={...} titulo="Apuntar un cobro" onCerrar={...} protegida>…</Hoja>
  */
-export const Hoja = ({ abierta, titulo, explicacion, onCerrar, children }) => {
+export const Hoja = ({ abierta, titulo, explicacion, onCerrar, children, protegida = false }) => {
     const caja = useRef(null);
     const tituloId = React.useId();
+    const alCerrar = useRef(onCerrar);
+    useEffect(() => { alCerrar.current = onCerrar; }, [onCerrar]);
 
     useEffect(() => {
         if (!abierta) return undefined;
-        const alPulsarTecla = (e) => { if (e.key === 'Escape') onCerrar?.(); };
+        const alPulsarTecla = (e) => { if (e.key === 'Escape') alCerrar.current?.(); };
         document.addEventListener('keydown', alPulsarTecla);
         const antes = document.body.style.overflow;
         document.body.style.overflow = 'hidden';
@@ -452,13 +491,56 @@ export const Hoja = ({ abierta, titulo, explicacion, onCerrar, children }) => {
             document.body.style.overflow = antes;
             clearTimeout(t);
         };
-    }, [abierta, onCerrar]);
+    }, [abierta]);
+
+    // History entry for «Atrás». Deferred one tick so React's StrictMode
+    // mount-unmount-mount in development does not push and pop twice.
+    useEffect(() => {
+        if (!abierta) return undefined;
+        const hoja = { token: `h${siguienteHoja++}`, enHistorial: false };
+        const empujar = () => {
+            const estado = window.history.state || {};
+            const hojas = [...(estado.hojas || []), hoja.token];
+            window.history.pushState({ ...estado, hojas }, '', window.location.href);
+            hoja.enHistorial = true;
+        };
+        const alVolver = (e) => {
+            if (!hoja.enHistorial) return;
+            const arriba = [...pilaHojas].reverse().find((h) => h.enHistorial);
+            if (arriba !== hoja) return;
+            if ((e.state?.hojas || []).includes(hoja.token)) return;
+            hoja.enHistorial = false;
+            if (alCerrar.current) {
+                alCerrar.current();
+            } else {
+                // It cannot close now (saving): put its entry back.
+                empujar();
+            }
+        };
+        pilaHojas.push(hoja);
+        const t = setTimeout(empujar, 0);
+        window.addEventListener('popstate', alVolver);
+        return () => {
+            clearTimeout(t);
+            window.removeEventListener('popstate', alVolver);
+            const i = pilaHojas.indexOf(hoja);
+            if (i >= 0) pilaHojas.splice(i, 1);
+            // Closed with the X, Escape or a button: take its entry out, but
+            // only if it is still the top one (a navigation may have replaced it).
+            const hojas = window.history.state?.hojas || [];
+            if (hoja.enHistorial && hojas[hojas.length - 1] === hoja.token) {
+                hoja.enHistorial = false;
+                atrasIgnorados += 1;
+                window.history.back();
+            }
+        };
+    }, [abierta]);
 
     if (!abierta) return null;
 
     return (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center">
-            <div className="absolute inset-0 bg-black/40" onClick={onCerrar} aria-hidden="true" />
+            <div className="absolute inset-0 bg-black/40" onClick={protegida ? undefined : onCerrar} aria-hidden="true" />
             <div
                 ref={caja}
                 tabIndex={-1}

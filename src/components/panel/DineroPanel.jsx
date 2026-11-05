@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Euro, ChevronRight, ChevronDown, FileText } from 'lucide-react';
+import { Euro, ChevronRight, ChevronDown, FileText, RefreshCw } from 'lucide-react';
 import {
     Boton, Tarjeta, Aviso, Cargando, Chip,
     formatoEuro, pendienteDe, canalSiImporta, nombreCanal, fechaCorta, hoyISO,
@@ -36,7 +36,11 @@ const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
 
 const DineroPanel = ({ ir }) => {
     const [cargando, setCargando] = useState(true);
-    const [error, setError] = useState(null);
+    // Which reads failed. A failed read keeps what was already on screen and
+    // never turns into «Nadie te debe nada».
+    const [fallos, setFallos] = useState({ pendientes: false, cobros: false, sinFactura: false });
+    const [yaCargado, setYaCargado] = useState(false);
+    const [intento, setIntento] = useState(0);
     const [mes, setMes] = useState(mesDeHoy);
     const [pendientes, setPendientes] = useState([]);
     const [cobrosDelMes, setCobrosDelMes] = useState([]);
@@ -44,27 +48,48 @@ const DineroPanel = ({ ir }) => {
     const [cobrando, setCobrando] = useState(null);   // la reserva de la hoja de cobro
 
     const cargar = useCallback(async (elMes) => {
-        const [p, c, s] = await Promise.all([
+        const [p, c, s] = await Promise.allSettled([
             cargarPendientes(),
             cargarCobrosDelMes(limitesDelMes(elMes)),
             cargarSinFactura(),
         ]);
-        setPendientes(p); setCobrosDelMes(c); setSinFactura(s);
+        return { p, c, s };
     }, []);
 
     useEffect(() => {
         let cortado = false;
         setCargando(true);
         (async () => {
-            try { await cargar(mes); }
-            catch (e) { if (!cortado) setError(e.message); }
-            finally { if (!cortado) setCargando(false); }
+            const { p, c, s } = await cargar(mes);
+            if (cortado) return;
+            if (p.status === 'fulfilled') setPendientes(p.value);
+            if (c.status === 'fulfilled') setCobrosDelMes(c.value);
+            else setCobrosDelMes([]);   // another month's payments must not pass for this one
+            if (s.status === 'fulfilled') setSinFactura(s.value);
+            setFallos({
+                pendientes: p.status === 'rejected',
+                cobros: c.status === 'rejected',
+                sinFactura: s.status === 'rejected',
+            });
+            setYaCargado(true);
+            setCargando(false);
         })();
         return () => { cortado = true; };
-    }, [mes, cargar]);
+    }, [mes, cargar, intento]);
 
-    if (cargando) return <Cargando texto="Echando cuentas…" />;
-    if (error) return <Aviso tono="urgente" titulo={error} />;
+    const probarOtraVez = () => setIntento((n) => n + 1);
+    const algunFallo = fallos.pendientes || fallos.cobros || fallos.sinFactura;
+
+    // Only the first time: changing the month keeps the screen.
+    if (cargando && !yaCargado) return <Cargando texto="Echando cuentas…" />;
+    if (fallos.pendientes && fallos.cobros && fallos.sinFactura) {
+        return (
+            <Aviso tono="urgente"
+                titulo="No he podido echar las cuentas. Comprueba la conexión."
+                texto="Si sigue igual, avisa a Jesús."
+                accion={{ texto: 'Probar otra vez', icono: RefreshCw, onClick: probarOtraVez }} />
+        );
+    }
 
     const hoy = hoyISO();
     const deHuespedes = pendientes.filter((r) => !loPagaElPortal(r));
@@ -78,22 +103,33 @@ const DineroPanel = ({ ir }) => {
 
     return (
         <div className="space-y-6">
+            {algunFallo && !cargando && (
+                <Aviso tono="urgente"
+                    titulo={fallos.pendientes
+                        ? 'No he podido mirar lo que falta por cobrar.'
+                        : fallos.cobros
+                            ? 'No he podido mirar lo cobrado de ese mes.'
+                            : 'No he podido mirar qué reservas faltan por facturar.'}
+                    texto="Comprueba la conexión y prueba otra vez. Lo demás de esta pantalla sí está al día. Si sigue igual, avisa a Jesús."
+                    accion={{ texto: 'Probar otra vez', icono: RefreshCw, onClick: probarOtraVez }} />
+            )}
+
             {/* ---------- Las tres cifras ---------- */}
             <section className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <CifraGrande
                     etiqueta="Te tienen que pagar los huéspedes" importe={totalHuespedes} tono="pendiente"
-                    nota={deHuespedes.length === 0 ? 'Nadie te debe nada.' : `De ${plural(deHuespedes.length, 'reserva', 'reservas')}.`}
+                    nota={fallos.pendientes ? 'No he podido mirarlo.' : deHuespedes.length === 0 ? 'Nadie te debe nada.' : `De ${plural(deHuespedes.length, 'reserva', 'reservas')}.`}
                 />
                 <CifraGrande
                     etiqueta="Te pagarán los portales" importe={totalPortales} tono="neutro"
-                    nota={dePortales.length === 0
+                    nota={fallos.pendientes ? 'No he podido mirarlo.' : dePortales.length === 0
                         ? 'Ninguno te debe nada.'
                         : `Booking, Airbnb… · ${plural(dePortales.length, 'reserva', 'reservas')}. Al huésped no se le cobra.`}
                 />
                 <CifraGrande
                     etiqueta={esteMes ? 'Cobrado este mes' : `Cobrado en ${mesEnPalabras(mes)}`}
                     importe={totalCobrado} tono="cobrado"
-                    nota={llegados.length === 0
+                    nota={fallos.cobros ? 'No he podido mirarlo.' : llegados.length === 0
                         ? 'Todavía no ha llegado ningún pago.'
                         : `${plural(llegados.length, 'pago', 'pagos')} que ya han llegado.`}
                 />
@@ -106,7 +142,9 @@ const DineroPanel = ({ ir }) => {
                 </h2>
                 <p className="text-base text-gray-600 mb-3">Lo que llega antes, primero.</p>
 
-                {deHuespedes.length === 0 ? (
+                {fallos.pendientes && deHuespedes.length === 0 ? (
+                    <Tarjeta><p className="text-lg text-text-primary">No he podido mirarlo ahora mismo.</p></Tarjeta>
+                ) : deHuespedes.length === 0 ? (
                     <Tarjeta><p className="text-lg text-text-primary">Ningún huésped te debe nada. Todo al día.</p></Tarjeta>
                 ) : (
                     <ul className="space-y-3">
@@ -156,7 +194,13 @@ const DineroPanel = ({ ir }) => {
                     </label>
                 </div>
 
-                {llegados.length === 0 ? (
+                {cargando ? (
+                    <Cargando texto="Mirando ese mes…" className="py-8" />
+                ) : fallos.cobros ? (
+                    <Tarjeta>
+                        <p className="text-lg text-text-primary">No he podido mirar los cobros de ese mes.</p>
+                    </Tarjeta>
+                ) : llegados.length === 0 ? (
                     <Tarjeta>
                         <p className="text-lg text-text-primary">
                             {esteMes ? 'Este mes todavía no te ha llegado ningún pago.' : 'Ese mes no hubo cobros.'}
@@ -215,7 +259,7 @@ const DineroPanel = ({ ir }) => {
                 reserva={cobrando}
                 pendiente={cobrando ? pendienteDe(cobrando) : 0}
                 onCerrar={() => setCobrando(null)}
-                onCobrado={async () => { await cargar(mes); }}
+                onCobrado={() => probarOtraVez()}
             />
         </div>
     );

@@ -90,7 +90,8 @@ export async function cargarCobros(bookingId) {
         .eq('booking_id', bookingId)
         .order('paid_on', { ascending: false })
         .order('created_at', { ascending: false });
-    if (error) return [];
+    // null = could not read them (NOT "there are none"): the screen must say so.
+    if (error) return null;
     return data || [];
 }
 
@@ -128,7 +129,11 @@ function agruparFacturas(filas) {
 
 const COLUMNAS_FACTURA = 'id, booking_id, serie, numero, fecha_emision, tipo, total, pdf_url, email_sent_at, receptor_email, rectifica_invoice_id, motivo_rectificacion';
 
-/** { factura: la VIVA (o null), anuladas: las que Jesús anuló con una rectificativa }. */
+/**
+ * { factura: la VIVA (o null), anuladas: las que Jesús anuló con una rectificativa }.
+ * `fallo: true` = could not read the invoices: nobody may offer «Hacer la
+ * factura» on that, there may already be one.
+ */
 export async function cargarEstadoFactura(bookingId) {
     try {
         const { data, error } = await supabase
@@ -136,13 +141,13 @@ export async function cargarEstadoFactura(bookingId) {
             .select(COLUMNAS_FACTURA)
             .eq('booking_id', bookingId)
             .order('created_at', { ascending: true });
-        if (error) return { factura: null, anuladas: [] };
+        if (error) return { factura: null, anuladas: [], fallo: true };
         const originales = agruparFacturas(data);
         return {
             factura: originales.find((f) => !f.anulada) || null,
             anuladas: originales.filter((f) => f.anulada),
         };
-    } catch { return { factura: null, anuladas: [] }; }
+    } catch { return { factura: null, anuladas: [], fallo: true }; }
 }
 
 /** Solo la factura viva (o null). */
@@ -404,7 +409,8 @@ export async function cargarSinFactura() {
         .gt('paid_amount', 0)
         .order('check_in', { ascending: false })
         .limit(60);
-    if (error) return [];
+    // An error is not "all invoiced": the screen must say it could not look.
+    if (error) throw new Error('No se ha podido leer qué reservas faltan por facturar.');
     return (data || [])
         .filter((r) => !agruparFacturas(r.invoices || []).some((f) => !f.anulada))
         .map(({ invoices, ...r }) => r);

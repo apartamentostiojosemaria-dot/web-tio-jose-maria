@@ -153,6 +153,24 @@ function semaforoDe(fila, hoy) {
 // Tenerlos escritos dos veces era la forma segura de que un día dijeran
 // cosas distintas.
 
+// ------------------------------------------------- «Ya lo he mandado»
+// The paper report waiting for «Ya lo he mandado» is remembered on this
+// device (the database has no column for it): leaving the screen and coming
+// back keeps the button. Wrapped in try/catch: a private window has no storage.
+const CLAVE_PREPARADOS = 'tjm-parte-preparados';
+const leerPreparados = () => {
+    try { return JSON.parse(window.localStorage.getItem(CLAVE_PREPARADOS) || '{}') || {}; } catch { return {}; }
+};
+const guardarPreparados = (mapa) => {
+    try {
+        const solo = Object.fromEntries(Object.entries(mapa).filter(([, v]) => v));
+        window.localStorage.setItem(CLAVE_PREPARADOS, JSON.stringify(solo));
+    } catch { /* no storage: it lasts while the screen is open */ }
+};
+
+// «Hacer la entrada» solo para quien llega en los próximos 2 días (o ya está).
+const DIAS_HACER_ENTRADA = 2;
+
 // ---------------------------------------------------------------- pantalla
 
 const ParteViajerosPanel = ({ ir, params = {} }) => {
@@ -160,8 +178,18 @@ const ParteViajerosPanel = ({ ir, params = {} }) => {
     const [contactos, setContactos] = useState({});
     const [error, setError] = useState(null);
     const [ocupado, setOcupado] = useState(null);   // booking_id en marcha
-    const [mensaje, setMensaje] = useState(null);   // { tono, titulo, texto }
-    const [preparados, setPreparados] = useState({}); // booking_id → true
+    // { tono, titulo, texto, bookingId? }: with bookingId it shows inside that
+    // reservation's card, next to the button she pressed (not at the top,
+    // out of sight).
+    const [mensaje, setMensaje] = useState(null);
+    const [preparados, setPreparadosEstado] = useState(leerPreparados); // booking_id → true
+    const setPreparados = useCallback((cambio) => {
+        setPreparadosEstado((antes) => {
+            const nuevo = typeof cambio === 'function' ? cambio(antes) : cambio;
+            guardarPreparados(nuevo);
+            return nuevo;
+        });
+    }, []);
     const hoy = hoyISO();
     const destacada = params?.reservaId ? Number(params.reservaId) : null;
     const refDestacada = useRef(null);
@@ -181,12 +209,19 @@ const ParteViajerosPanel = ({ ir, params = {} }) => {
             .order('check_in', { ascending: true });
 
         if (err) {
-            setError('No hemos podido abrir la lista. Prueba a actualizar dentro de un momento.');
-            setFilas([]);
+            // Not an empty list: with an error nobody may read «No hay nadie alojado».
+            setError('No he podido abrir la lista. Comprueba la conexión y prueba otra vez. Si sigue igual, avisa a Jesús.');
+            setFilas((antes) => antes ?? []);
             return;
         }
         const lista = data || [];
         setFilas(lista);
+        // A paper report already marked as sent (or gone) no longer waits.
+        setPreparados((p) => {
+            const vivos = {};
+            lista.forEach((f) => { if (p[f.booking_id] && f.estado_envio !== 'enviado') vivos[f.booking_id] = true; });
+            return vivos;
+        });
 
         // Teléfono y correo para poder recordárselo. Salen de la reserva,
         // no del parte: aquí no se toca ningún dato de documento.
@@ -207,7 +242,7 @@ const ParteViajerosPanel = ({ ir, params = {} }) => {
                 }));
             setContactos(mapa);
         }
-    }, [hoy]);
+    }, [hoy, setPreparados]);
 
     useEffect(() => { cargar(); }, [cargar]);
 
@@ -294,6 +329,7 @@ const ParteViajerosPanel = ({ ir, params = {} }) => {
             const r = await llamarFuncion({ accion: 'mandar', booking_id: fila.booking_id });
             if (r.estado === 'mandado') {
                 setMensaje({
+                    bookingId: fila.booking_id,
                     tono: 'bien',
                     titulo: `Parte de ${fila.guest_name || 'la reserva'} mandado`,
                     texto: 'Ya está. No tienes que hacer nada más.',
@@ -303,12 +339,14 @@ const ParteViajerosPanel = ({ ir, params = {} }) => {
                 descargar(r.documento);
                 setPreparados((p) => ({ ...p, [fila.booking_id]: true }));
                 setMensaje({
+                    bookingId: fila.booking_id,
                     tono: 'info',
                     titulo: 'Te lo he preparado en un papel',
                     texto: 'Se te acaba de descargar la hoja con los datos de la reserva. Mándala como la mandas siempre y, cuando lo hayas hecho, dale a «Ya lo he mandado».',
                 });
             } else {
                 setMensaje({
+                    bookingId: fila.booking_id,
                     tono: 'atencion',
                     titulo: 'No se ha podido mandar',
                     texto: r.mensaje || 'Vuelve a probar en un rato. Si sigue igual, avisa a Jesús.',
@@ -316,6 +354,7 @@ const ParteViajerosPanel = ({ ir, params = {} }) => {
             }
         } catch (e) {
             setMensaje({
+                bookingId: fila.booking_id,
                 tono: 'atencion',
                 titulo: 'No se ha podido mandar',
                 texto: textoDelFallo(e),
@@ -327,17 +366,19 @@ const ParteViajerosPanel = ({ ir, params = {} }) => {
 
     const confirmarMandado = async (fila) => {
         setOcupado(fila.booking_id);
+        setMensaje(null);
         try {
             await llamarFuncion({ accion: 'ya-lo-he-mandado', booking_id: fila.booking_id });
             setPreparados((p) => ({ ...p, [fila.booking_id]: false }));
             setMensaje({
+                bookingId: fila.booking_id,
                 tono: 'bien',
                 titulo: 'Apuntado',
                 texto: `Queda guardado que mandaste el parte hoy, ${fechaEnPalabras(hoy)}.`,
             });
             await cargar();
         } catch (e) {
-            setMensaje({ tono: 'atencion', titulo: 'No se ha podido apuntar', texto: textoDelFallo(e) });
+            setMensaje({ bookingId: fila.booking_id, tono: 'atencion', titulo: 'No se ha podido apuntar', texto: textoDelFallo(e) });
         } finally {
             setOcupado(null);
         }
@@ -345,11 +386,12 @@ const ParteViajerosPanel = ({ ir, params = {} }) => {
 
     const verDocumento = async (fila) => {
         setOcupado(fila.booking_id);
+        setMensaje(null);
         try {
             const r = await llamarFuncion({ accion: 'documento', booking_id: fila.booking_id });
             descargar(r.documento);
         } catch (e) {
-            setMensaje({ tono: 'atencion', titulo: 'No se ha podido abrir el papel', texto: textoDelFallo(e) });
+            setMensaje({ bookingId: fila.booking_id, tono: 'atencion', titulo: 'No se ha podido abrir el papel', texto: textoDelFallo(e) });
         } finally {
             setOcupado(null);
         }
@@ -360,36 +402,40 @@ const ParteViajerosPanel = ({ ir, params = {} }) => {
     if (filas === null) return <Cargando texto="Mirando quién ha rellenado…" />;
 
     const hayAlgo = filas.length > 0;
+    const mensajeArriba = mensaje && !mensaje.bookingId ? mensaje : null;
 
     return (
         <div className="max-w-3xl">
+            {/* The title «Datos de la policía» is already in the panel header. */}
             <header className="mb-5">
-                <h1 className="font-serif text-2xl sm:text-3xl font-bold text-text-primary">
-                    Datos de la policía
-                </h1>
-                <p className="text-base text-gray-600 mt-1 leading-relaxed">
+                <p className="text-base text-gray-600 leading-relaxed">
                     Cada persona que se aloja tiene que dejarnos sus datos. Aquí ves quién los
                     ha rellenado y quién no, y desde cada reserva puedes <strong>hacer la
                     entrada</strong> con el huésped delante.
                 </p>
             </header>
 
-            {mensaje && (
+            {mensajeArriba && (
                 <Aviso
                     className="mb-5"
-                    tono={mensaje.tono}
-                    titulo={mensaje.titulo}
-                    texto={mensaje.texto}
+                    tono={mensajeArriba.tono}
+                    titulo={mensajeArriba.titulo}
+                    texto={mensajeArriba.texto}
                 />
             )}
 
-            {error && <Aviso className="mb-5" tono="atencion" titulo={error} />}
+            {error && (
+                <Aviso className="mb-5" tono="urgente" titulo={error}
+                    accion={{ texto: 'Probar otra vez', icono: RefreshCw, onClick: cargar }} />
+            )}
 
-            <div className="mb-6">
-                <Boton variante="suave" icono={RefreshCw} onClick={cargar}>Actualizar</Boton>
-            </div>
+            {!error && (
+                <div className="mb-6">
+                    <Boton variante="suave" icono={RefreshCw} onClick={cargar}>Actualizar</Boton>
+                </div>
+            )}
 
-            {!hayAlgo ? (
+            {error && !hayAlgo ? null : !hayAlgo ? (
                 <Vacio
                     icono={Shield}
                     mensaje={`No hay nadie alojado ni que llegue en los próximos ${HORIZONTE_DIAS} días. Las reservas más lejanas aparecen aquí solas cuando se acerca la fecha.`}
@@ -397,15 +443,15 @@ const ParteViajerosPanel = ({ ir, params = {} }) => {
             ) : (
                 <>
                     <Grupo titulo="Hoy y los que ya están" filas={grupos.dentro} vacio="Ahora mismo no hay nadie alojado."
-                        {...{ ir, hoy, contactos, ocupado, preparados, destacada, refDestacada, mandarParte, confirmarMandado, verDocumento }} />
+                        {...{ ir, hoy, contactos, ocupado, preparados, destacada, refDestacada, mandarParte, confirmarMandado, verDocumento, mensaje }} />
                     <Grupo titulo="Llegan en los próximos días" filas={grupos.pronto} vacio="Nadie llega esta quincena."
-                        {...{ ir, hoy, contactos, ocupado, preparados, destacada, refDestacada, mandarParte, confirmarMandado, verDocumento }} />
+                        {...{ ir, hoy, contactos, ocupado, preparados, destacada, refDestacada, mandarParte, confirmarMandado, verDocumento, mensaje }} />
                     {/* Lo de dentro de meses, plegado: todavía no hay nada que
                         hacer y alargaba la pantalla (auditoría 23-sep). Si se
                         llega aquí desde un aviso de una de ellas, se abre. */}
                     <Grupo titulo="Más adelante" filas={grupos.luego} vacio={null}
                         plegado={!grupos.luego.some((f) => f.booking_id === destacada)}
-                        {...{ ir, hoy, contactos, ocupado, preparados, destacada, refDestacada, mandarParte, confirmarMandado, verDocumento }} />
+                        {...{ ir, hoy, contactos, ocupado, preparados, destacada, refDestacada, mandarParte, confirmarMandado, verDocumento, mensaje }} />
                 </>
             )}
         </div>
@@ -451,9 +497,16 @@ const Grupo = ({ titulo, filas, vacio, plegado = false, ...resto }) => {
 
 const FilaReserva = ({
     fila, ir, hoy, contactos, ocupado, preparados, destacada, refDestacada,
-    mandarParte, confirmarMandado, verDocumento,
+    mandarParte, confirmarMandado, verDocumento, mensaje,
 }) => {
     const s = semaforoDe(fila, hoy);
+    const miMensaje = mensaje && mensaje.bookingId === fila.booking_id ? mensaje : null;
+    const cajaMensaje = useRef(null);
+    useEffect(() => {
+        if (miMensaje) cajaMensaje.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }, [miMensaje]);
+    // Opening WhatsApp or the mail app is not having sent it: she says so.
+    const [preguntarSiMandado, setPreguntarSiMandado] = useState(null);   // 'whatsapp' | 'correo' | null
     const contacto = contactos[fila.booking_id] || {};
     const tel = telefonoParaWhatsapp(contacto.guest_phone);
     // Un correo de relleno no es un buzón: sin él, no se ofrece «Por correo».
@@ -466,9 +519,14 @@ const FilaReserva = ({
     useEffect(() => {
         setRecordado({ at: contacto.recordatorio_parte_at, via: contacto.recordatorio_parte_via });
     }, [contacto.recordatorio_parte_at, contacto.recordatorio_parte_via]);
+    const [apuntando, setApuntando] = useState(false);
+    const [falloApunte, setFalloApunte] = useState(false);
     const apuntar = async (via) => {
+        setApuntando(true); setFalloApunte(false);
         const at = await apuntarRecordatorio(fila.booking_id, via);
-        if (at) setRecordado({ at, via });
+        setApuntando(false);
+        if (at) { setRecordado({ at, via }); setPreguntarSiMandado(null); }
+        else setFalloApunte(true);
     };
     const enMarcha = ocupado === fila.booking_id;
     const esDestacada = destacada === fila.booking_id;
@@ -485,14 +543,16 @@ const FilaReserva = ({
     const abrirWhatsapp = () => {
         window.open(`https://wa.me/${tel}?text=${encodeURIComponent(textoRecordatorio(conIdioma, { yaDentro, faltan }))}`,
             '_blank', 'noopener');
-        apuntar('whatsapp');
+        setPreguntarSiMandado('whatsapp');
     };
     const abrirCorreo = () => {
         const asunto = asuntoRecordatorio(contacto.idioma, { yaDentro });
         window.location.href =
             `mailto:${encodeURIComponent(correo)}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(textoRecordatorio(conIdioma, { yaDentro, faltan }))}`;
-        apuntar('correo');
+        setPreguntarSiMandado('correo');
     };
+    const fHoy = aFecha(hoy);
+    const tocaHacerEntrada = String(fila.check_in) <= aISO(new Date(fHoy.getFullYear(), fHoy.getMonth(), fHoy.getDate() + DIAS_HACER_ENTRADA));
 
     return (
         <div
@@ -539,8 +599,9 @@ const FilaReserva = ({
                 </p>
             )}
 
-            {/* Lo primero: hacer el check-in con el huésped delante */}
-            {!s.mandado && (
+            {/* Lo primero: hacer el check-in con el huésped delante (solo si
+                llegan en 2 días o ya están: antes no hay nada que hacer). */}
+            {!s.mandado && tocaHacerEntrada && (
                 <div className="mt-4">
                     <Boton
                         icono={QrCode}
@@ -592,6 +653,34 @@ const FilaReserva = ({
                     </Boton>
                 ) : null}
             </div>
+
+            {preguntarSiMandado && !s.listo && (
+                <div className="mt-3 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                    <p className="text-base font-bold text-text-primary">
+                        ¿Se lo has mandado {preguntarSiMandado === 'correo' ? 'por correo' : 'por WhatsApp'}?
+                    </p>
+                    <p className="text-sm text-gray-600 mt-0.5">Si lo has mandado, tócalo para que quede apuntado.</p>
+                    {falloApunte && (
+                        <p className="text-sm font-semibold text-red-700 mt-2">
+                            No he podido apuntarlo. Prueba otra vez y, si sigue igual, avisa a Jesús.
+                        </p>
+                    )}
+                    <div className="mt-3 flex flex-col sm:flex-row gap-2.5">
+                        <Boton icono={Check} onClick={() => apuntar(preguntarSiMandado)} cargando={apuntando} ancho>
+                            Sí, se lo he mandado
+                        </Boton>
+                        <Boton variante="secundario" onClick={() => { setPreguntarSiMandado(null); setFalloApunte(false); }} disabled={apuntando} ancho>
+                            No, todavía no
+                        </Boton>
+                    </div>
+                </div>
+            )}
+
+            {miMensaje && (
+                <div ref={cajaMensaje} className="mt-4 scroll-mt-24">
+                    <Aviso tono={miMensaje.tono} titulo={miMensaje.titulo} texto={miMensaje.texto} />
+                </div>
+            )}
 
             {esperandoConfirmar && (
                 <p className="mt-3 text-sm text-gray-600 flex items-start gap-1.5">

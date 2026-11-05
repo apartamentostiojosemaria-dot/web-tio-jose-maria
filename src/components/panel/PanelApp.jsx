@@ -4,7 +4,7 @@ import {
     Sun, CalendarDays, PlusCircle, BookMarked, Users, Euro, Tag, Brush, Shield,
     LogOut, ChevronLeft, LayoutGrid, Menu,
 } from 'lucide-react';
-import { Cargando, Hoja } from './ui';
+import { Cargando, Hoja, Confirmar, hayHojaAbierta, soltarHojas } from './ui';
 
 // ============================================================
 // PanelApp — el armazón del panel sencillo (/panel)
@@ -28,7 +28,14 @@ import { Cargando, Hoja } from './ui';
 //   params                 → lo que le pasó quien la abrió (objeto, nunca null)
 //   protegerSalida(aviso)  → con un texto, pregunta antes de salir de la
 //                            pantalla (también con el «Atrás» del móvil);
-//                            con null, deja salir sin preguntar.
+//                            con null, deja salir sin preguntar. La pregunta
+//                            sale con la ventana propia del panel (Confirmar).
+//   recordarEnDireccion(obj) → guarda algo pequeño en la dirección (p. ej. la
+//                            búsqueda de Reservas) sin cambiar de pantalla.
+//   pasoAtras(fn)          → con una función, el «Atrás» (del móvil o de la
+//                            cabecera) la llama antes de salir; si devuelve
+//                            true, la pantalla se lo ha quedado (p. ej. volver
+//                            al paso anterior). Con null, «Atrás» normal.
 // Secciones registradas abajo en SECCIONES (visibles) y OCULTAS (fichas).
 // ============================================================
 
@@ -105,25 +112,40 @@ const PanelApp = ({ perfil }) => {
     // Una pantalla a medias (apuntar reserva) pone aquí qué se pierde si se va.
     const salidaProtegida = useRef(null);
     const protegerSalida = useCallback((aviso) => { salidaProtegida.current = aviso || null; }, []);
-    const puedeIrse = () => {
+    // Una pantalla con pasos se queda el «Atrás» para volver al paso anterior.
+    const atrasPropio = useRef(null);
+    const pasoAtras = useCallback((fn) => { atrasPropio.current = fn || null; }, []);
+    // The leave question uses the panel's own window, not window.confirm.
+    // `seguir` is what to do if she says yes.
+    const [preguntaSalida, setPreguntaSalida] = useState(null);
+    const pedirPermiso = (seguir) => {
         if (!salidaProtegida.current) return true;
-        // eslint-disable-next-line no-alert
-        const si = window.confirm(salidaProtegida.current);
-        if (si) salidaProtegida.current = null;
-        return si;
+        setPreguntaSalida({ texto: salidaProtegida.current, seguir });
+        return false;
+    };
+    const atrasDeVerdad = () => {
+        const encima = soltarHojas();
+        window.history.go(-(1 + encima));
     };
 
+    // Updated during render (not in an effect): the new screen's own effects
+    // run before the shell's, and must already see the new screen here.
     const vistaActual = useRef(vista);
-    useEffect(() => { vistaActual.current = vista; }, [vista]);
+    const ultimaVista = useRef(vista);
+    if (ultimaVista.current !== vista) {
+        ultimaVista.current = vista;
+        vistaActual.current = vista;
+    }
 
     useEffect(() => {
         window.history.replaceState({ panel: true, vista, profundidad: 0 }, '', direccionDe(vista));
         const alVolver = (e) => {
-            if (!puedeIrse()) {
-                // Se queda: se deshace el paso atrás del navegador.
-                window.history.pushState({ panel: true, vista: vistaActual.current, profundidad: (e.state?.profundidad ?? 0) + 1 }, '', direccionDe(vistaActual.current));
-                return;
-            }
+            // With a sheet open, «Atrás» closes the sheet (ui.jsx handles it).
+            if (hayHojaAbierta()) return;
+            // Se queda: se deshace el paso atrás del navegador.
+            const quedarse = () => window.history.pushState({ panel: true, vista: vistaActual.current, profundidad: (e.state?.profundidad ?? 0) + 1 }, '', direccionDe(vistaActual.current));
+            if (atrasPropio.current && atrasPropio.current()) { quedarse(); return; }
+            if (!pedirPermiso(atrasDeVerdad)) { quedarse(); return; }
             setVista(e.state?.vista || leerDeLaDireccion());
             window.scrollTo({ top: 0 });
         };
@@ -133,27 +155,41 @@ const PanelApp = ({ perfil }) => {
     }, []);
 
     const ir = useCallback((seccion, params = {}) => {
-        if (!puedeIrse()) return;
-        const nueva = { seccion, params: params || {} };
-        const profundidad = (window.history.state?.profundidad ?? 0) + 1;
-        window.history.pushState({ panel: true, vista: nueva, profundidad }, '', direccionDe(nueva));
-        setVista(nueva);
-        window.scrollTo({ top: 0 });
+        const hacer = () => {
+            // From inside a sheet: its history entry is replaced, so «Atrás»
+            // from the new screen goes straight to the old one.
+            const encima = soltarHojas();
+            const nueva = { seccion, params: params || {} };
+            const profundidad = (window.history.state?.profundidad ?? 0) + 1;
+            const estado = { panel: true, vista: nueva, profundidad };
+            if (encima > 0) window.history.replaceState(estado, '', direccionDe(nueva));
+            else window.history.pushState(estado, '', direccionDe(nueva));
+            setVista(nueva);
+            window.scrollTo({ top: 0 });
+        };
+        if (!pedirPermiso(hacer)) return;
+        hacer();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const volver = useCallback(() => {
+        // Una pantalla con pasos vuelve primero al paso anterior.
+        if (atrasPropio.current && atrasPropio.current()) return;
         // Si hay pantalla anterior dentro del panel, es el mismo «Atrás» del
         // navegador; si se entró directo aquí, a «Hoy».
         if ((window.history.state?.profundidad ?? 0) > 0) {
-            window.history.back();
+            atrasDeVerdad();
             return;
         }
-        if (!puedeIrse()) return;
-        const inicio = { seccion: 'inicio', params: {} };
-        window.history.replaceState({ panel: true, vista: inicio, profundidad: 0 }, '', direccionDe(inicio));
-        setVista(inicio);
-        window.scrollTo({ top: 0 });
+        const aInicio = () => {
+            soltarHojas();
+            const inicio = { seccion: 'inicio', params: {} };
+            window.history.replaceState({ panel: true, vista: inicio, profundidad: 0 }, '', direccionDe(inicio));
+            setVista(inicio);
+            window.scrollTo({ top: 0 });
+        };
+        if (!pedirPermiso(aInicio)) return;
+        aInicio();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -184,7 +220,19 @@ const PanelApp = ({ perfil }) => {
     };
 
     const actual = buscarSeccion(vista.seccion);
-    const props = { ir, volver, perfil, params: vista.params || {}, protegerSalida };
+    // A screen keeps something small in the address (e.g. the Reservas
+    // search) without changing screen: «Atrás» from the next one brings it back.
+    const recordarEnDireccion = useCallback((extra) => {
+        const v = vistaActual.current;
+        const juntos = { ...(v.params || {}), ...extra };
+        Object.keys(juntos).forEach((k) => { if (juntos[k] === undefined) delete juntos[k]; });
+        const nueva = { ...v, params: juntos };
+        vistaActual.current = nueva;
+        // Only the panel's own entry (not a sheet's) is rewritten.
+        if (window.history.state?.hojas?.length) return;
+        window.history.replaceState({ ...(window.history.state || {}), panel: true, vista: nueva }, '', direccionDe(nueva));
+    }, []);
+    const props = { ir, volver, perfil, params: vista.params || {}, protegerSalida, pasoAtras, recordarEnDireccion };
     const nombre = (perfil?.full_name || perfil?.email || '').split(' ')[0];
     // Cambiar de vista: solo quien tiene el panel completo. La madre (staff) no lo ve.
     const esAdmin = perfil?.role === 'admin';
@@ -377,6 +425,23 @@ const PanelApp = ({ perfil }) => {
                     </button>
                 </div>
             </Hoja>
+
+            {/* ---------- «¿Seguro que sales?» con la ventana del panel ---------- */}
+            <Confirmar
+                abierta={!!preguntaSalida}
+                titulo="¿Seguro que quieres salir?"
+                texto={preguntaSalida?.texto}
+                textoSi="Sí, salir"
+                textoNo="No, me quedo"
+                onSi={() => {
+                    const seguir = preguntaSalida?.seguir;
+                    salidaProtegida.current = null;
+                    atrasPropio.current = null;
+                    setPreguntaSalida(null);
+                    seguir?.();
+                }}
+                onNo={() => setPreguntaSalida(null)}
+            />
         </div>
     );
 };

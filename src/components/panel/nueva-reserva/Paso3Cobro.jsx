@@ -14,7 +14,7 @@ import { nochesEntre } from './datos';
 
 const Paso3Cobro = ({ valores, apartamento, alCambiar, alGuardar, alAtras, guardando, fallo }) => {
     const {
-        entrada, salida, personas, precio, nombre, telefono, email, canal,
+        entrada, salida, personas, precio, nombre, apellidos, telefono, email, canal,
         localizador, comision, yaPago, senal, forma, fechaCobro, notas,
     } = valores;
 
@@ -123,7 +123,7 @@ const Paso3Cobro = ({ valores, apartamento, alCambiar, alGuardar, alAtras, guard
                     Antes de guardar, mira que está bien
                 </h3>
 
-                <Linea etiqueta="Quién">{nombre || 'Sin nombre'}</Linea>
+                <Linea etiqueta="Quién">{[nombre, apellidos].map((t) => String(t || '').trim()).filter(Boolean).join(' ') || 'Sin nombre'}</Linea>
                 {telefono && <Linea etiqueta="Teléfono">{telefono}</Linea>}
                 <Linea etiqueta="Correo">{email || 'No ha dado'}</Linea>
                 <Linea etiqueta="Entra">{fechaEnPalabras(entrada)}</Linea>

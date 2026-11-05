@@ -12,7 +12,7 @@ import { Linea } from './piezas';
 // ============================================================
 
 const Guardada = ({ resultado, alVerReserva, alApuntarOtra }) => {
-    const { codigo, nombre, apartamento, entrada, salida, total, cobrado, correo, enlace } = resultado;
+    const { codigo, nombre, apartamento, entrada, salida, total, cobrado, cobroFallido, correo, enlace } = resultado;
     const [copiado, setCopiado] = useState(false);
     const pendiente = Math.max(0, total - cobrado);
 
@@ -48,21 +48,28 @@ const Guardada = ({ resultado, alVerReserva, alApuntarOtra }) => {
                 <Linea etiqueta="Queda por cobrar" fuerte>{formatoEuro(pendiente)}</Linea>
             </div>
 
+            {/* ---------- El cobro, si no se ha podido apuntar ---------- */}
+            {cobroFallido && (
+                <Aviso tono="urgente" className="mb-4"
+                    titulo="La reserva está guardada, pero el cobro no se ha apuntado: apúntalo desde la ficha."
+                    texto="Toca «Ver la reserva» y luego «Cobrar». Si sigue igual, avisa a Jesús." />
+            )}
+
             {/* ---------- El correo ---------- */}
             {correo === 'enviado' && (
                 <Aviso tono="bien" className="mb-4"
                     titulo="Le hemos mandado la confirmación por correo"
-                    texto="El enlace para que rellene sus datos le llegará solo la víspera de entrar. Si quieres dárselo antes, está en «Hacer la entrada»." />
+                    texto="El enlace para que rellene sus datos le llegará solo la víspera de entrar. Si quieres dárselo antes (se puede desde 7 días antes de entrar), abre la reserva y toca «Datos de la policía»: ahí puedes mandárselo por WhatsApp." />
             )}
             {correo === 'sin-correo' && (
                 <Aviso tono="info" className="mb-4"
                     titulo="No se le ha mandado ningún correo"
-                    texto="No pusiste su dirección. Puedes añadirla en su ficha y mandárselo desde ahí." />
+                    texto="No pusiste su dirección. Si te la da más tarde, apúntala en su ficha de cliente: así le llegará el correo de la víspera con el enlace para sus datos." />
             )}
             {correo === 'fallo' && (
                 <Aviso tono="atencion" className="mb-4"
                     titulo="No se ha podido mandar el correo"
-                    texto="La reserva está guardada, tranquila. Puedes volver a mandarlo desde la ficha de la reserva." />
+                    texto="La reserva está guardada, tranquila. Para que tenga la confirmación, mándale los datos por WhatsApp y avisa a Jesús para que mire el correo." />
             )}
 
             {/* ---------- El enlace de pago ---------- */}
@@ -84,7 +91,7 @@ const Guardada = ({ resultado, alVerReserva, alApuntarOtra }) => {
             {enlace?.fallo && (
                 <Aviso tono="atencion" className="mb-4"
                     titulo="El enlace para pagar no se ha podido hacer"
-                    texto="La reserva está guardada y el dinero pendiente apuntado. Cóbralo por transferencia o Bizum, o inténtalo desde la ficha más tarde." />
+                    texto="La reserva está guardada y el dinero pendiente apuntado. Cóbralo por transferencia o Bizum, o vuelve a pedir el enlace más tarde: en la ficha de la reserva, toca «Cobrar» y luego «Mandarle un enlace para pagar»." />
             )}
 
             <div className="flex flex-col gap-3 mt-6">

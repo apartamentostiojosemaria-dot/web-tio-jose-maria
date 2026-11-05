@@ -14,7 +14,7 @@ import { CANALES, buscarCanal } from './textos';
 // ============================================================
 
 const Paso2Quien = ({ valores, alCambiar, alSeguir, alAtras }) => {
-    const { nombre, telefono, email, canal, localizador, comision, precio } = valores;
+    const { nombre, apellidos = '', telefono, email, canal, localizador, comision, precio } = valores;
 
     const [conocida, setConocida] = useState(null);
     const [intentado, setIntentado] = useState(false);
@@ -43,7 +43,13 @@ const Paso2Quien = ({ valores, alCambiar, alSeguir, alAtras }) => {
 
     const rellenarConLoQueSabemos = () => {
         const cambios = {};
-        if (conocida.nombre && !nombre.trim()) cambios.nombre = conocida.nombre;
+        // What we know is one full name: the first word to «Nombre», the rest
+        // to «Apellidos» (she can fix it if it is a compound first name).
+        if (conocida.nombre && !nombre.trim() && !apellidos.trim()) {
+            const [primero, ...resto] = String(conocida.nombre).trim().split(/\s+/);
+            cambios.nombre = primero || '';
+            cambios.apellidos = resto.join(' ');
+        }
         if (conocida.telefono && !String(telefono).trim()) cambios.telefono = conocida.telefono;
         if (conocida.email && !String(email).trim()) cambios.email = conocida.email;
         alCambiar(cambios);
@@ -63,9 +69,10 @@ const Paso2Quien = ({ valores, alCambiar, alSeguir, alAtras }) => {
     const deFuera = Boolean(canalElegido?.deFuera);
     const comisionNum = Number(comision) || 0;
     const nombreLimpio = String(nombre || '').trim();
+    const apellidosLimpios = String(apellidos || '').trim();
     const correoLimpio = String(email || '').trim();
     const correoMal = correoLimpio !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correoLimpio);
-    const puedeSeguir = nombreLimpio.length >= 2 && Boolean(canal) && !correoMal;
+    const puedeSeguir = nombreLimpio.length >= 2 && apellidosLimpios.length >= 2 && Boolean(canal) && !correoMal;
 
     return (
         <div>
@@ -82,7 +89,7 @@ const Paso2Quien = ({ valores, alCambiar, alSeguir, alAtras }) => {
                     }
                     texto={[conocida.nombre, conocida.telefono, conocida.email].filter(Boolean).join(' · ')}
                     accion={
-                        (conocida.nombre && !nombreLimpio) || (conocida.telefono && !String(telefono).trim()) || (conocida.email && !correoLimpio)
+                        (conocida.nombre && !nombreLimpio && !apellidosLimpios) || (conocida.telefono && !String(telefono).trim()) || (conocida.email && !correoLimpio)
                             ? { texto: 'Poner sus datos', onClick: rellenarConLoQueSabemos }
                             : undefined
                     }
@@ -93,15 +100,26 @@ const Paso2Quien = ({ valores, alCambiar, alSeguir, alAtras }) => {
             )}
 
             {/* ---------- Datos ---------- */}
-            <Campo etiqueta="Nombre y apellidos" htmlFor="nombre" obligatorio>
-                <input
-                    id="nombre" type="text" className={claseInput}
-                    autoComplete="name" maxLength={120}
-                    value={nombre}
-                    onChange={(e) => alCambiar({ nombre: e.target.value })}
-                    placeholder="Carmen García López"
-                />
-            </Campo>
+            <div className="grid sm:grid-cols-2 gap-x-4">
+                <Campo etiqueta="Nombre" htmlFor="nombre" obligatorio>
+                    <input
+                        id="nombre" type="text" className={claseInput}
+                        autoComplete="given-name" maxLength={60}
+                        value={nombre}
+                        onChange={(e) => alCambiar({ nombre: e.target.value })}
+                        placeholder="Carmen"
+                    />
+                </Campo>
+                <Campo etiqueta="Apellidos" htmlFor="apellidos" obligatorio>
+                    <input
+                        id="apellidos" type="text" className={claseInput}
+                        autoComplete="family-name" maxLength={80}
+                        value={apellidos}
+                        onChange={(e) => alCambiar({ apellidos: e.target.value })}
+                        placeholder="García López"
+                    />
+                </Campo>
+            </div>
 
             <Campo etiqueta="Teléfono" htmlFor="telefono"
                 ayuda="Para poder llamarla o escribirle por WhatsApp.">
@@ -198,7 +216,7 @@ const Paso2Quien = ({ valores, alCambiar, alSeguir, alAtras }) => {
             </div>
             {!puedeSeguir && (
                 <p className="mt-2 text-center text-base text-gray-600">
-                    Pon el nombre y di por dónde te ha llegado.
+                    Pon el nombre y los apellidos, y di por dónde te ha llegado.
                 </p>
             )}
         </div>

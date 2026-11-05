@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Pencil, Lock, Users } from 'lucide-react';
-import { Boton, Campo, claseInput, Aviso, Cargando, formatoEuro, hoyISO } from '../ui';
+import { Boton, Campo, claseInput, Aviso, Cargando, Confirmar, formatoEuro, hoyISO } from '../ui';
 import { Opcion } from './piezas';
 import { buscarApartamentos, nochesEntre, masUnDia } from './datos';
 import { noCabenAqui } from './textos';
@@ -22,6 +22,10 @@ const Paso1Cuando = ({ valores, alCambiar, alSeguir }) => {
     const [fallo, setFallo] = useState('');
     const [resultado, setResultado] = useState(null);
     const [cambiandoPrecio, setCambiandoPrecio] = useState(false);
+    // The box can be emptied while typing (it used to jump to 0 at once).
+    const [precioVacio, setPrecioVacio] = useState(false);
+    // 0 € by mistake is a free stay: asked before going on.
+    const [preguntarCero, setPreguntarCero] = useState(false);
 
     const noches = nochesEntre(entrada, salida);
 
@@ -227,15 +231,19 @@ const Paso1Cuando = ({ valores, alCambiar, alSeguir }) => {
                                 <input
                                     id="precio" type="number" inputMode="decimal" min="0" step="1"
                                     className={claseInput} autoFocus
-                                    value={precio != null ? precio : elegido.total}
-                                    onChange={(e) => alCambiar({ precio: e.target.value === '' ? 0 : Number(e.target.value) })}
+                                    value={precioVacio ? '' : (precio != null ? precio : elegido.total)}
+                                    onChange={(e) => {
+                                        const vacio = e.target.value === '';
+                                        setPrecioVacio(vacio);
+                                        alCambiar({ precio: vacio ? 0 : Number(e.target.value) });
+                                    }}
                                 />
                             </Campo>
                             <div className="flex gap-2">
                                 <Boton variante="secundario" onClick={() => setCambiandoPrecio(false)}>
                                     Dejarlo así
                                 </Boton>
-                                <Boton variante="suave" onClick={() => { alCambiar({ precio: null }); setCambiandoPrecio(false); }}>
+                                <Boton variante="suave" onClick={() => { setPrecioVacio(false); alCambiar({ precio: null }); setCambiandoPrecio(false); }}>
                                     Volver al precio de siempre
                                 </Boton>
                             </div>
@@ -247,9 +255,24 @@ const Paso1Cuando = ({ valores, alCambiar, alSeguir }) => {
             {/* ---------- Seguir ---------- */}
             <div className="mt-8">
                 <Boton ancho tamano="grande" disabled={!puedeSeguir}
-                    onClick={() => alSeguir({ precio: precioFinal })}>
+                    onClick={() => {
+                        if (!(Number(precioFinal) > 0)) { setPreguntarCero(true); return; }
+                        alSeguir({ precio: precioFinal });
+                    }}>
                     Seguir
                 </Boton>
+                <Confirmar
+                    abierta={preguntarCero}
+                    titulo="¿Seguro que es gratis?"
+                    texto={precioVacio
+                        ? 'Has dejado el precio vacío: la reserva se apuntaría a 0 € y no se le cobraría nada.'
+                        : 'El precio es 0 €: no se le cobraría nada. Si le has dicho un precio, escríbelo antes de seguir.'}
+                    textoSi="Sí, es a 0 €"
+                    textoNo="No, pongo el precio"
+                    tono="principal"
+                    onSi={() => { setPreguntarCero(false); alSeguir({ precio: 0 }); }}
+                    onNo={() => { setPreguntarCero(false); setCambiandoPrecio(true); }}
+                />
                 {!puedeSeguir && (
                     <p className="mt-2 text-center text-base text-gray-600">
                         Elige las fechas y un apartamento para seguir.

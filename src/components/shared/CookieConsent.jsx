@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Settings2, X } from 'lucide-react';
@@ -35,14 +35,30 @@ const saveConsent = (consent) => {
 const CookieConsent = () => {
     const [visible, setVisible] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
+    // Taps are ignored while it is still fading in: it used to slide up 1.5 s
+    // after load, right under the finger that was about to tap something else.
+    const [listo, setListo] = useState(false);
+    const barra = useRef(null);
 
     useEffect(() => {
-        const existing = getConsent();
-        if (!existing) {
-            const timer = setTimeout(() => setVisible(true), 1500);
-            return () => clearTimeout(timer);
-        }
+        // The prerender (Puppeteer) must not bake the notice into the static
+        // HTML: whoever already accepted would see it flash before React loads.
+        if (typeof navigator !== 'undefined' && navigator.webdriver) return;
+        // No delay: it is there from the first moment, not later under the finger.
+        if (!getConsent()) setVisible(true);
     }, []);
+
+    // The page gets room at the bottom for the bar, so it never covers the
+    // last button (the «Reservar y pagar» of /reservar, for example).
+    useEffect(() => {
+        if (!visible || !barra.current) return undefined;
+        const antes = document.body.style.paddingBottom;
+        const medir = () => { document.body.style.paddingBottom = `${barra.current?.offsetHeight || 0}px`; };
+        medir();
+        const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(medir) : null;
+        ro?.observe(barra.current);
+        return () => { ro?.disconnect(); document.body.style.paddingBottom = antes; };
+    }, [visible, showSettings]);
 
     // AEPD: retirar el consentimiento debe ser tan fácil como darlo. Cualquier
     // sitio (footer, política de privacidad…) puede reabrir el aviso disparando
@@ -70,67 +86,64 @@ const CookieConsent = () => {
         <AnimatePresence>
             {visible && (
                 <motion.div
-                    initial={{ y: 100, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: 100, opacity: 0 }}
-                    transition={{ type: 'spring', damping: 25 }}
-                    className="fixed bottom-0 inset-x-0 z-[60] p-4 md:p-6"
+                    ref={barra}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    onAnimationStart={() => setListo(false)}
+                    onAnimationComplete={() => setListo(true)}
+                    className={`fixed bottom-0 inset-x-0 z-[60] bg-white border-t border-gray-200 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] ${listo ? '' : 'pointer-events-none'}`}
                     role="dialog"
                     aria-modal="false"
                     aria-labelledby="cookie-title"
                     aria-describedby="cookie-desc"
                 >
-                    <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-2xl border border-gray-100 p-5 md:p-6">
+                    <div className="max-w-5xl mx-auto">
                         {!showSettings ? (
-                            <>
-                                <h2 id="cookie-title" className="font-serif text-lg md:text-xl font-bold text-text-primary mb-2">
-                                    Tu privacidad importa
-                                </h2>
-                                <p id="cookie-desc" className="text-sm text-gray-700 leading-relaxed mb-4">
-                                    Esta web solo usa cookies técnicas necesarias para funcionar (sesión, preferencias,
-                                    seguridad). No usamos cookies de analítica ni de marketing. Los mapas de Google Maps
-                                    incrustados en algunas páginas son opcionales: solo se cargan si tú lo decides.{' '}
-                                    <Link to="/privacidad" className="underline text-rural-700 font-medium">
-                                        Política de privacidad
-                                    </Link>{' '}
+                            // Thin bar: about 130 px high on a 375 px phone (well under a quarter of the screen).
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                                <p id="cookie-desc" className="flex-1 text-[13px] leading-snug text-gray-700">
+                                    <span id="cookie-title" className="font-bold text-text-primary">Cookies: </span>
+                                    solo usamos las técnicas, necesarias para que la web funcione. Nada de analítica
+                                    ni publicidad.{' '}
+                                    <button type="button" onClick={() => setShowSettings(true)}
+                                        className="inline-flex items-center gap-1 underline text-rural-700 font-medium min-h-[32px]">
+                                        <Settings2 size={13} aria-hidden="true" /> Más detalles
+                                    </button>{' '}
                                     ·{' '}
-                                    <Link to="/aviso-legal" className="underline text-rural-700 font-medium">
-                                        Aviso legal
-                                    </Link>
+                                    <Link to="/privacidad" className="underline text-rural-700 font-medium">Privacidad</Link>
                                 </p>
-                                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch">
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowSettings(true)}
-                                        className="px-5 py-2.5 bg-white border-2 border-rural-700 text-rural-700 rounded-full text-sm font-bold hover:bg-rural-50 transition-colors flex items-center justify-center gap-2 flex-1"
-                                    >
-                                        <Settings2 size={16} aria-hidden="true" /> Más detalles
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={acknowledge}
-                                        className="px-5 py-2.5 bg-rural-700 border-2 border-rural-700 text-white rounded-full text-sm font-bold hover:bg-rural-800 transition-colors flex-1"
-                                    >
-                                        Entendido
-                                    </button>
-                                </div>
-                            </>
+                                <button
+                                    type="button"
+                                    onClick={acknowledge}
+                                    className="shrink-0 min-h-[44px] px-6 bg-rural-700 border-2 border-rural-700 text-white rounded-full text-sm font-bold hover:bg-rural-800 transition-colors"
+                                >
+                                    Entendido
+                                </button>
+                            </div>
                         ) : (
-                            <>
-                                <div className="flex items-start justify-between mb-4">
-                                    <h2 className="font-serif text-lg md:text-xl font-bold text-text-primary">
+                            <div className="max-h-[70vh] overflow-y-auto py-1">
+                                <div className="flex items-start justify-between mb-3">
+                                    <h2 id="cookie-title" className="font-serif text-lg font-bold text-text-primary">
                                         Cookies de este sitio
                                     </h2>
                                     <button
                                         type="button"
                                         onClick={() => setShowSettings(false)}
-                                        className="text-gray-400 hover:text-gray-700"
+                                        className="w-11 h-11 -mr-2 -mt-2 flex items-center justify-center text-gray-400 hover:text-gray-700"
                                         aria-label="Cerrar configuración"
                                     >
                                         <X size={20} aria-hidden="true" />
                                     </button>
                                 </div>
-                                <div className="space-y-3 mb-5">
+                                <p id="cookie-desc" className="text-sm text-gray-700 leading-relaxed mb-3">
+                                    Esta web solo usa cookies técnicas necesarias para funcionar (sesión, preferencias,
+                                    seguridad). No usamos cookies de analítica ni de marketing. Los mapas de Google Maps
+                                    incrustados en algunas páginas son opcionales: solo se cargan si tú lo decides.{' '}
+                                    <Link to="/aviso-legal" className="underline text-rural-700 font-medium">Aviso legal</Link>
+                                </p>
+                                <div className="space-y-3 mb-4">
                                     <CookieRow
                                         label="Necesarias"
                                         desc="Imprescindibles para el funcionamiento del sitio (sesión, preferencias técnicas, seguridad, la cookie __cf_bm anti-bot del CDN de imágenes). No se pueden desactivar."
@@ -147,7 +160,7 @@ const CookieConsent = () => {
                                         <button
                                             type="button"
                                             onClick={resetMapsConsent}
-                                            className="text-xs font-bold text-rural-700 underline hover:text-rural-800"
+                                            className="text-xs font-bold text-rural-700 underline hover:text-rural-800 min-h-[32px]"
                                         >
                                             Olvidar mi decisión sobre los mapas
                                         </button>
@@ -160,11 +173,11 @@ const CookieConsent = () => {
                                 <button
                                     type="button"
                                     onClick={acknowledge}
-                                    className="w-full px-5 py-2.5 bg-rural-700 text-white rounded-full text-sm font-bold hover:bg-rural-800 transition-colors"
+                                    className="w-full min-h-[44px] px-5 bg-rural-700 text-white rounded-full text-sm font-bold hover:bg-rural-800 transition-colors"
                                 >
                                     Entendido
                                 </button>
-                            </>
+                            </div>
                         )}
                     </div>
                 </motion.div>

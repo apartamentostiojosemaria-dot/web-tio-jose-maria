@@ -26,7 +26,7 @@ const HeroSection = ({ title, subtitle, config = {} }) => {
                 <img
                     {...imgAttrs(heroImage, { width: 1600, quality: 78 })}
                     alt="Vista panorámica de Casa Rural Tío José María en Hinojares"
-                    fetchpriority="high"
+                    fetchPriority="high"
                     decoding="async"
                     className="w-full h-full object-cover"
                 />

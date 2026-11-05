@@ -60,7 +60,7 @@ export default function HojaCancelar({ abierta, reserva, onCerrar, onCancelada }
     };
 
     return (
-        <Hoja abierta={abierta} titulo="Cancelar esta reserva" onCerrar={onCerrar}
+        <Hoja abierta={abierta} titulo="Cancelar esta reserva" onCerrar={onCerrar} protegida
             explicacion={reserva?.guest_name ? `De ${reserva.guest_name}.` : undefined}>
 
             {hecho ? (

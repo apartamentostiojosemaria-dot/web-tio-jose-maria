@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Progreso } from './nueva-reserva/piezas';
 import Paso1Cuando from './nueva-reserva/Paso1Cuando';
 import Paso2Quien from './nueva-reserva/Paso2Quien';
@@ -48,6 +48,7 @@ const VALORES_INICIALES = {
     precio: null,          // null = el que calcula la base; un número = el que ella ha dicho
     // paso 2
     nombre: '',
+    apellidos: '',         // regla del dueño: nombre y apellidos en casillas separadas
     telefono: '',
     email: '',
     canal: '',
@@ -61,7 +62,7 @@ const VALORES_INICIALES = {
     notas: '',
 };
 
-const NuevaReservaPanel = ({ ir, volver, params = {}, protegerSalida }) => {
+const NuevaReservaPanel = ({ ir, volver, params = {}, protegerSalida, pasoAtras }) => {
     const [paso, setPaso] = useState(1);
     const [valores, setValores] = useState(() => ({
         ...VALORES_INICIALES,
@@ -82,9 +83,9 @@ const NuevaReservaPanel = ({ ir, volver, params = {}, protegerSalida }) => {
     // guardada. Entonces, salir de aquí (menú, «Atrás» del móvil, cerrar la
     // pestaña) pregunta antes: con el teléfono en la oreja es fácil tocar
     // otra cosa y perderlo todo (23-sep).
-    const aMedias = !resultado && (paso > 1 || !!(valores.nombre || valores.telefono || valores.email));
+    const aMedias = !resultado && (paso > 1 || !!(valores.nombre || valores.apellidos || valores.telefono || valores.email));
     useEffect(() => {
-        protegerSalida?.(aMedias ? 'Tienes una reserva a medio apuntar. Si sales ahora, se pierde lo que has escrito. ¿Salir de todas formas?' : null);
+        protegerSalida?.(aMedias ? 'Tienes una reserva a medio apuntar. Si sales ahora, se pierde lo que has escrito.' : null);
         if (!aMedias) return undefined;
         const alCerrar = (e) => { e.preventDefault(); e.returnValue = ''; };
         window.addEventListener('beforeunload', alCerrar);
@@ -103,6 +104,29 @@ const NuevaReservaPanel = ({ ir, volver, params = {}, protegerSalida }) => {
         else setPaso((p) => p - 1);
     };
 
+    // El «Atrás» del móvil (y el de la cabecera) vuelve al paso anterior en
+    // vez de preguntar si quiere salir. En el paso 1, «Atrás» normal.
+    const pasoActual = useRef(paso);
+    pasoActual.current = paso;
+    const hayResultado = useRef(false);
+    hayResultado.current = !!resultado;
+    useEffect(() => {
+        pasoAtras?.(() => {
+            if (hayResultado.current || pasoActual.current <= 1) return false;
+            setFallo('');
+            setPaso((p) => Math.max(1, p - 1));
+            return true;
+        });
+        return () => pasoAtras?.(null);
+    }, [pasoAtras]);
+
+    // Al cambiar de paso, a lo alto: el paso nuevo empieza arriba.
+    const primerPaso = useRef(true);
+    useEffect(() => {
+        if (primerPaso.current) { primerPaso.current = false; return; }
+        window.scrollTo({ top: 0 });
+    }, [paso, resultado]);
+
     // ------------------------------------------------------------
     // Guardar de verdad
     // ------------------------------------------------------------
@@ -115,6 +139,8 @@ const NuevaReservaPanel = ({ ir, volver, params = {}, protegerSalida }) => {
             valores.yaPago === 'todo' ? total :
             valores.yaPago === 'senal' ? Math.min(Number(valores.senal) || 0, total) : 0;
         const correoLimpio = String(valores.email || '').trim().toLowerCase();
+        // Two boxes on screen, one field in the database (guest_name).
+        const nombreCompleto = [valores.nombre, valores.apellidos].map((t) => String(t || '').trim()).filter(Boolean).join(' ');
 
         // 1) La reserva
         const creada = await crearReserva({
@@ -122,7 +148,7 @@ const NuevaReservaPanel = ({ ir, volver, params = {}, protegerSalida }) => {
             entrada: valores.entrada,
             salida: valores.salida,
             personas: valores.personas,
-            nombre: String(valores.nombre || '').trim(),
+            nombre: nombreCompleto,
             email: correoLimpio,
             telefono: String(valores.telefono || '').trim(),
             canal: valores.canal,
@@ -145,6 +171,7 @@ const NuevaReservaPanel = ({ ir, volver, params = {}, protegerSalida }) => {
         // 2) El cobro, si lo hay. Si esto fallara, la reserva ya está guardada:
         //    se avisa, pero no se pierde nada.
         let cobradoDeVerdad = 0;
+        let cobroFallido = false;
         if (cobrado > 0) {
             const apunte = await apuntarCobro({
                 reservaId: creada.booking_id,
@@ -154,6 +181,7 @@ const NuevaReservaPanel = ({ ir, volver, params = {}, protegerSalida }) => {
                 nota: 'Apuntado al crear la reserva',
             });
             if (apunte?.ok) cobradoDeVerdad = Number(apunte.paid_amount) || cobrado;
+            else cobroFallido = true;
         }
 
         // 3) El correo de confirmación (el enlace de sus datos va en el de la víspera)
@@ -179,12 +207,13 @@ const NuevaReservaPanel = ({ ir, volver, params = {}, protegerSalida }) => {
         setResultado({
             reservaId: creada.booking_id,
             codigo: creada.booking_code,
-            nombre: String(valores.nombre || '').trim() || 'Sin nombre',
+            nombre: nombreCompleto || 'Sin nombre',
             apartamento: apartamento?.nombre || 'Apartamento',
             entrada: valores.entrada,
             salida: valores.salida,
             total,
             cobrado: cobradoDeVerdad,
+            cobroFallido,
             correo: estadoCorreo,
             enlace,
         });

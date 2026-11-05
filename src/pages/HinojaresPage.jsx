@@ -145,7 +145,7 @@ export default function HinojaresPage() {
                     <img
                         {...imgAttrs(`${WP}/hinojaresPueblo.jpg`, { width: 1600, quality: 78 })}
                         alt="Hinojares pueblo blanco"
-                        fetchpriority="high"
+                        fetchPriority="high"
                         decoding="async"
                         className="w-full h-full object-cover"
                     />

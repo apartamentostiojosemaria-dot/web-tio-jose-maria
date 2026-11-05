@@ -103,7 +103,7 @@ const EventsPage = () => {
             <div className="relative h-[340px] md:h-[420px] overflow-hidden">
                 <AnimatePresence mode="wait">
                     <motion.div key={heroImage} initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.8 }} className="absolute inset-0">
-                        <img src={heroImage} alt="Sierra de Cazorla" fetchpriority="high" decoding="async" className="w-full h-full object-cover" />
+                        <img src={heroImage} alt="Sierra de Cazorla" fetchPriority="high" decoding="async" className="w-full h-full object-cover" />
                         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/60" />
                     </motion.div>
                 </AnimatePresence>

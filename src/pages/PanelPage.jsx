@@ -24,13 +24,29 @@ const PanelPage = () => {
     const [sesion, setSesion] = useState(null);
     const [perfil, setPerfil] = useState(null);
     const [comprobando, setComprobando] = useState(true);
+    // A network failure reading the profile is NOT "no permission": she stays
+    // signed in and gets a retry button instead of being told she can't enter.
+    const [sinConexion, setSinConexion] = useState(false);
+    const [reintento, setReintento] = useState(0);
 
     useEffect(() => {
         let cortado = false;
 
         const cargarPerfil = async (idUsuario) => {
-            const { data } = await supabase.from('profiles').select('*').eq('id', idUsuario).maybeSingle();
+            let data = null;
+            let error = null;
+            try {
+                ({ data, error } = await supabase.from('profiles').select('*').eq('id', idUsuario).maybeSingle());
+            } catch (e) {
+                error = e;
+            }
             if (cortado) return;
+            if (error) {
+                setSinConexion(true);
+                setComprobando(false);
+                return;
+            }
+            setSinConexion(false);
             setPerfil(data || null);
             setComprobando(false);
         };
@@ -60,7 +76,7 @@ const PanelPage = () => {
         });
 
         return () => { cortado = true; sub.subscription.unsubscribe(); };
-    }, []);
+    }, [reintento]);
 
     if (comprobando) {
         return (
@@ -72,11 +88,35 @@ const PanelPage = () => {
 
     if (!sesion) return <PanelLogin />;
 
+    if (sinConexion) {
+        return (
+            <SinConexion onProbar={() => { setSinConexion(false); setComprobando(true); setReintento((n) => n + 1); }} />
+        );
+    }
+
     const puede = perfil && perfil.is_active !== false && CON_PERMISO.includes(perfil.role);
     if (!puede) return <SinPermiso correo={sesion?.user?.email} hayPerfil={!!perfil} />;
 
     return <PanelApp perfil={perfil} />;
 };
+
+const SinConexion = ({ onProbar }) => (
+    <div className="min-h-screen bg-rural-50 flex items-center justify-center p-5">
+        <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-7 max-w-md w-full text-center" role="alert">
+            <h1 className="font-serif text-2xl font-bold text-text-primary mb-3">
+                No hay conexión
+            </h1>
+            <p className="text-base text-gray-600">
+                No he podido abrir la gestión de los apartamentos. Comprueba que el móvil tiene internet
+                (wifi o datos) y prueba otra vez. No hace falta volver a entrar.
+            </p>
+            <p className="text-base text-gray-600 mt-3">Si sigue igual, avisa a Jesús.</p>
+            <div className="mt-6 flex justify-center">
+                <Boton tamano="grande" onClick={onProbar}>Probar otra vez</Boton>
+            </div>
+        </div>
+    </div>
+);
 
 const SinPermiso = ({ correo, hayPerfil }) => (
     <div className="min-h-screen bg-rural-50 flex items-center justify-center p-5">

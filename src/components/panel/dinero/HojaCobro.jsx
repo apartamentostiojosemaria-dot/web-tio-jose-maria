@@ -73,7 +73,11 @@ export default function HojaCobro({ abierta, reserva, pendiente, onCerrar, onCob
             setCopiado(true);
             setTimeout(() => setCopiado(false), 2500);
         } catch {
-            setAvisoEnlace('No he podido copiarlo. Mantén el dedo sobre el enlace y cópialo tú.');
+            // The link is not shown on screen (see below), so there is nothing to
+            // long-press: send her to the WhatsApp button instead.
+            setAvisoEnlace(reserva?.guest_phone
+                ? 'No he podido copiarlo. Toca «Mandarlo por WhatsApp» y el enlace va dentro del mensaje.'
+                : 'No he podido copiarlo. Prueba otra vez y, si sigue igual, avisa a Jesús.');
         }
     };
 
@@ -93,6 +97,7 @@ export default function HojaCobro({ abierta, reserva, pendiente, onCerrar, onCob
             titulo="Apuntar un cobro"
             explicacion={reserva?.guest_name ? `De ${reserva.guest_name}.` : undefined}
             onCerrar={onCerrar}
+            protegida
         >
             {falta > 0 && (
                 <p className="text-base text-gray-700">

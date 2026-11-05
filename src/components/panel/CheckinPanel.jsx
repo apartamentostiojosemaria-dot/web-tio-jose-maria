@@ -4,7 +4,7 @@ import {
 } from 'lucide-react';
 import {
     Boton, Tarjeta, Chip, Aviso, Cargando,
-    hoyISO, fechaEnPalabras, HORA_ENTRADA, Hoja,
+    hoyISO, fechaEnPalabras, HORA_ENTRADA, Hoja, Confirmar,
 } from './ui';
 import CodigoQR from './checkin/CodigoQR';
 import Persona from './checkin/Persona';
@@ -54,6 +54,17 @@ const CheckinPanel = ({ ir, volver, params = {} }) => {
     const [terminando, setTerminando] = useState(false);
     const [adelantar, setAdelantar] = useState(false);   // han llegado antes del día
     const [ultimaLectura, setUltimaLectura] = useState(null);
+    // «Terminar la entrada» y «Se han ido» no tienen vuelta atrás desde aquí:
+    // la hora apuntada es la que va al parte. Se pregunta antes.
+    const [preguntar, setPreguntar] = useState(null);       // 'entrada' | 'salida' | null
+    const cajaMensaje = useRef(null);
+    const mirarMensaje = useRef(false);
+    useEffect(() => {
+        if (mensaje && mirarMensaje.current) {
+            mirarMensaje.current = false;
+            cajaMensaje.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, [mensaje]);
 
     const cuantosAntes = useRef(0);
     const hoy = hoyISO();
@@ -121,6 +132,7 @@ const CheckinPanel = ({ ir, volver, params = {} }) => {
     const terminar = async () => {
         setTerminando(true);
         setMensaje(null);
+        mirarMensaje.current = true;
         const r = await apuntarEntrada(reservaId);
         if (r.ok) {
             setMensaje({
@@ -147,6 +159,7 @@ const CheckinPanel = ({ ir, volver, params = {} }) => {
 
     const marcharse = async () => {
         setTerminando(true);
+        mirarMensaje.current = true;
         const r = await apuntarSalida(reservaId);
         setMensaje(r.ok
             ? { tono: 'bien', titulo: 'Apuntado que se han ido', texto: `Hoy a las ${hora(r.cuando)}.` }
@@ -250,12 +263,14 @@ const CheckinPanel = ({ ir, volver, params = {} }) => {
             </Tarjeta>
 
             {mensaje && (
+                <div ref={cajaMensaje} className="scroll-mt-24">
                 <Aviso
                     className="mb-5"
                     tono={mensaje.tono}
                     titulo={mensaje.titulo}
                     texto={mensaje.texto}
                 />
+                </div>
             )}
 
             {/* ---------- Lo primero que hace: enseñar el código ---------- */}
@@ -356,7 +371,7 @@ const CheckinPanel = ({ ir, volver, params = {} }) => {
                             icono={Check}
                             tamano="grande"
                             ancho
-                            onClick={terminar}
+                            onClick={() => setPreguntar('entrada')}
                             cargando={terminando}
                             disabled={frenado}
                         >
@@ -391,7 +406,7 @@ const CheckinPanel = ({ ir, volver, params = {} }) => {
                         icono={LogOut}
                         tamano="grande"
                         ancho
-                        onClick={marcharse}
+                        onClick={() => setPreguntar('salida')}
                         cargando={terminando}
                         disabled={yaSalieron}
                     >
@@ -403,6 +418,28 @@ const CheckinPanel = ({ ir, volver, params = {} }) => {
                     Ver los datos de la policía
                 </Boton>
             </section>
+
+            {/* ---------- «¿Seguro?» antes de apuntar la hora ---------- */}
+            <Confirmar
+                abierta={preguntar === 'entrada'}
+                titulo="¿Terminar la entrada?"
+                texto={`Se apunta que han entrado hoy, ahora. Esa hora es la que va a la policía.${faltan > 0 ? ` Todavía falta${faltan === 1 ? '' : 'n'} ${faltan} por rellenar: lo que falte se queda avisado.` : ''}`}
+                textoSi="Sí, han entrado"
+                textoNo="Todavía no"
+                tono="principal"
+                onSi={() => { setPreguntar(null); terminar(); }}
+                onNo={() => setPreguntar(null)}
+            />
+            <Confirmar
+                abierta={preguntar === 'salida'}
+                titulo="¿Se han ido ya?"
+                texto="Se apunta que se han ido hoy, ahora."
+                textoSi="Sí, se han ido"
+                textoNo="Todavía no"
+                tono="principal"
+                onSi={() => { setPreguntar(null); marcharse(); }}
+                onNo={() => setPreguntar(null)}
+            />
 
             {/* ---------- El cuadrado ---------- */}
             <Hoja
@@ -423,6 +460,7 @@ const CheckinPanel = ({ ir, volver, params = {} }) => {
                 titulo="Rellenarlo tú"
                 explicacion="Mejor que lo haga el huésped en su móvil: es su documento y sus datos. Pero si no puede, aquí lo tienes."
                 onCerrar={() => { setVerFormulario(false); recargar(false); }}
+                protegida
             >
                 {/* El MISMO formulario del huésped, aquí dentro. No una copia
                     ni un marco aparte: dos formularios distintos acabarían

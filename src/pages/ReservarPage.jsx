@@ -13,6 +13,22 @@ const addDays = (date, n) => {
     return d.toISOString().slice(0, 10);
 };
 
+// '2026-11-20' → '20 nov' (the year only when it is not this one).
+const fechaCortaWeb = (iso) => {
+    if (!iso) return '';
+    const [a, m, d] = String(iso).slice(0, 10).split('-').map(Number);
+    const f = new Date(a, m - 1, d);
+    const otroAno = a !== new Date().getFullYear();
+    return f.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', ...(otroAno ? { year: 'numeric' } : {}) })
+        .replace(/\./g, '');
+};
+
+// Largest apartment sleeps 4: offering 5–8 only led to «no hay nada libre».
+const MAX_PERSONAS = 4;
+
+const MENSAJE_ERROR_BUSQUEDA = 'No hemos podido mirar qué apartamentos están libres. Comprueba la conexión y vuelve a intentarlo, o escríbenos por WhatsApp.';
+const MENSAJE_ERROR_RESERVA = 'No hemos podido apartar el apartamento. Vuelve a intentarlo en un momento o escríbenos por WhatsApp y te lo reservamos nosotros.';
+
 const formatPrice = (p) => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(Number(p));
 
 // Política de cancelación (condiciones, punto 8): gratis hasta 7 días antes de la
@@ -53,7 +69,7 @@ const ReservarPage = () => {
     const isDate = (v) => /^\d{4}-\d{2}-\d{2}$/.test(v || '') && v >= today();
     const pEntrada = isDate(params.get('entrada')) ? params.get('entrada') : '';
     const pSalida = isDate(params.get('salida')) && params.get('salida') > pEntrada ? params.get('salida') : '';
-    const pPersonas = Math.min(Math.max(parseInt(params.get('personas'), 10) || 2, 1), 4);
+    const pPersonas = Math.min(Math.max(parseInt(params.get('personas'), 10) || 2, 1), MAX_PERSONAS);
     const [checkIn, setCheckIn] = useState(pEntrada);
     const [checkOut, setCheckOut] = useState(pEntrada ? pSalida : '');
     const [guests, setGuests] = useState(pPersonas);
@@ -61,10 +77,29 @@ const ReservarPage = () => {
     const [searchError, setSearchError] = useState(null);
     const [available, setAvailable] = useState([]);
     const [selected, setSelected] = useState(null);
-    const [guestForm, setGuestForm] = useState({ name: '', email: '', phone: '', accept: false, marketing: false });
+    const [guestForm, setGuestForm] = useState({ name: '', surname: '', email: '', phone: '', accept: false, marketing: false });
     const [holdResult, setHoldResult] = useState(null);
     const [holdError, setHoldError] = useState(null);
     const [holding, setHolding] = useState(false);
+
+    // Each step is a history entry: the phone's «Atrás» and «Volver» go to the
+    // previous step (keeping what was typed) instead of leaving the page.
+    const irAPaso = (nuevo) => {
+        const estado = window.history.state || {};
+        if (nuevo === 'done') window.history.replaceState({ ...estado, pasoReserva: nuevo }, '');
+        else window.history.pushState({ ...estado, pasoReserva: nuevo }, '');
+        setStep(nuevo);
+    };
+    useEffect(() => {
+        const alVolver = (e) => {
+            const paso = e.state?.pasoReserva;
+            setStep(['choose', 'guest'].includes(paso) ? paso : 'search');
+        };
+        window.addEventListener('popstate', alVolver);
+        return () => window.removeEventListener('popstate', alVolver);
+    }, []);
+    useEffect(() => { window.scrollTo({ top: 0 }); }, [step]);
+    const pasoAnterior = () => window.history.back();
 
     const searchAvailability = async (e) => {
         e?.preventDefault();
@@ -79,9 +114,11 @@ const ReservarPage = () => {
             });
             if (error) throw error;
             setAvailable(data || []);
-            setStep('choose');
+            irAPaso('choose');
         } catch (err) {
-            setSearchError(err.message || 'No hemos podido comprobar disponibilidad. Vuelve a intentarlo o escríbenos por WhatsApp.');
+            // eslint-disable-next-line no-console
+            console.error('check_availability:', err);
+            setSearchError(MENSAJE_ERROR_BUSQUEDA);
         } finally {
             setSearching(false);
         }
@@ -104,7 +141,8 @@ const ReservarPage = () => {
                 p_check_in: checkIn,
                 p_check_out: checkOut,
                 p_pax: guests,
-                p_guest_name: guestForm.name.trim(),
+                // Two boxes on screen, one field in the database.
+                p_guest_name: `${guestForm.name.trim()} ${guestForm.surname.trim()}`.trim(),
                 p_guest_email: guestForm.email.trim(),
                 p_guest_phone: guestForm.phone.trim() || null,
             });
@@ -147,16 +185,19 @@ const ReservarPage = () => {
                     if (url) { window.location.href = url; return; }
                 }
                 // Stripe no configurado o error → fallback a pantalla WhatsApp
-                setStep('done');
+                irAPaso('done');
             } catch {
-                setStep('done');
+                irAPaso('done');
             }
         } catch (err) {
             const msg = err.message || '';
             if (msg.includes('apartment_not_available') || msg.includes('no_overlap_bookings')) {
                 setHoldError('Justo ese apartamento ya no está libre para esas fechas. Vuelve atrás y elige otro.');
             } else {
-                setHoldError(msg || 'No hemos podido reservar. Vuelve a intentarlo en un momento.');
+                // The technical message goes to the console, never to the guest.
+                // eslint-disable-next-line no-console
+                console.error('create_booking_hold:', err);
+                setHoldError(MENSAJE_ERROR_RESERVA);
             }
         } finally {
             setHolding(false);
@@ -164,9 +205,9 @@ const ReservarPage = () => {
     };
 
     const reset = () => {
-        setStep('search'); setAvailable([]); setSelected(null);
+        irAPaso('search'); setAvailable([]); setSelected(null);
         setHoldResult(null); setHoldError(null); setSearchError(null);
-        setGuestForm({ name: '', email: '', phone: '', accept: false, marketing: false });
+        setGuestForm({ name: '', surname: '', email: '', phone: '', accept: false, marketing: false });
     };
 
     return (
@@ -179,9 +220,16 @@ const ReservarPage = () => {
 
             <nav className="fixed top-0 inset-x-0 z-50 bg-white/85 backdrop-blur-md border-b border-gray-100 px-6 py-4">
                 <div className="max-w-5xl mx-auto flex items-center justify-between">
-                    <Link to="/" className="flex items-center gap-2 text-rural-700 font-bold hover:gap-3 transition-all">
-                        <ChevronLeft size={20} aria-hidden="true" /> Volver
-                    </Link>
+                    {step === 'choose' || step === 'guest' ? (
+                        <button type="button" onClick={pasoAnterior}
+                            className="flex items-center gap-2 min-h-[44px] text-rural-700 font-bold hover:gap-3 transition-all">
+                            <ChevronLeft size={20} aria-hidden="true" /> Volver
+                        </button>
+                    ) : (
+                        <Link to="/" className="flex items-center gap-2 min-h-[44px] text-rural-700 font-bold hover:gap-3 transition-all">
+                            <ChevronLeft size={20} aria-hidden="true" /> Volver
+                        </Link>
+                    )}
                     <div className="hidden sm:flex items-center gap-4 text-xs text-gray-600">
                         <span className="inline-flex items-center gap-1.5">
                             <Shield size={14} aria-hidden="true" className="text-rural-700" />
@@ -213,8 +261,8 @@ const ReservarPage = () => {
                         <ChooseApartment
                             checkIn={checkIn} checkOut={checkOut} guests={guests}
                             available={available}
-                            onBack={() => setStep('search')}
-                            onSelect={(apt) => { setSelected(apt); setStep('guest'); }}
+                            onBack={pasoAnterior}
+                            onSelect={(apt) => { setSelected(apt); irAPaso('guest'); }}
                         />
                     )}
 
@@ -223,7 +271,7 @@ const ReservarPage = () => {
                             selected={selected} checkIn={checkIn} checkOut={checkOut} guests={guests}
                             form={guestForm} setForm={setGuestForm}
                             holding={holding} error={holdError}
-                            onBack={() => setStep('choose')}
+                            onBack={pasoAnterior}
                             onSubmit={confirmHold}
                         />
                     )}
@@ -282,7 +330,7 @@ const SearchForm = ({ checkIn, setCheckIn, checkOut, setCheckOut, guests, setGue
         <Field icon={Users} label="Personas">
             <select value={guests} onChange={(e) => setGuests(Number(e.target.value))} aria-label="Número de personas"
                 className="w-full bg-transparent outline-none text-text-primary font-medium appearance-none cursor-pointer">
-                {[1, 2, 3, 4, 5, 6, 7, 8].map(n => <option key={n} value={n}>{n} {n === 1 ? 'persona' : 'personas'}</option>)}
+                {Array.from({ length: MAX_PERSONAS }, (_, i) => i + 1).map(n => <option key={n} value={n}>{n} {n === 1 ? 'persona' : 'personas'}</option>)}
             </select>
         </Field>
 
@@ -304,7 +352,7 @@ const ChooseApartment = ({ checkIn, checkOut, guests, available, onBack, onSelec
         </button>
         <h2 className="font-serif text-2xl md:text-3xl font-bold text-text-primary mb-1">Apartamentos disponibles</h2>
         <p className="text-sm text-gray-600 mb-6">
-            {checkIn} → {checkOut} · {guests} {guests === 1 ? 'persona' : 'personas'}
+            {fechaCortaWeb(checkIn)} → {fechaCortaWeb(checkOut)} · {guests} {guests === 1 ? 'persona' : 'personas'}
         </p>
 
         {available.length === 0 ? (
@@ -368,7 +416,7 @@ const GuestForm = ({ selected, checkIn, checkOut, guests, form, setForm, holding
         <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-6">
             <p className="text-xs uppercase tracking-widest font-bold text-primary mb-1">Tu selección</p>
             <p className="font-serif text-lg font-bold text-text-primary">{selected.name}</p>
-            <p className="text-sm text-gray-600">{checkIn} → {checkOut} · {guests} {guests === 1 ? 'persona' : 'personas'} · {selected.nights} {selected.nights === 1 ? 'noche' : 'noches'}</p>
+            <p className="text-sm text-gray-600">{fechaCortaWeb(checkIn)} → {fechaCortaWeb(checkOut)} · {guests} {guests === 1 ? 'persona' : 'personas'} · {selected.nights} {selected.nights === 1 ? 'noche' : 'noches'}</p>
             <p className="font-serif text-2xl font-bold text-primary mt-2">{formatPrice(selected.total_price)}</p>
             {selected.price_breakdown?.discount && (
                 <p className="text-xs text-green-700 font-bold">Incluye −{selected.price_breakdown.discount.pct} % por reservar a última hora ({formatPrice(selected.price_breakdown.discount.amount)} menos)</p>
@@ -378,12 +426,20 @@ const GuestForm = ({ selected, checkIn, checkOut, guests, form, setForm, holding
         <h2 className="font-serif text-2xl md:text-3xl font-bold text-text-primary mb-4">Tus datos</h2>
 
         <div className="space-y-4">
-            <Field icon={null} label="Nombre y apellidos">
-                <input type="text" required minLength={2} maxLength={120} value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    aria-label="Nombre y apellidos"
-                    className="w-full bg-transparent outline-none text-text-primary font-medium" />
-            </Field>
+            <div className="grid sm:grid-cols-2 gap-4">
+                <Field icon={null} label="Nombre">
+                    <input type="text" required minLength={2} maxLength={60} value={form.name}
+                        onChange={(e) => setForm({ ...form, name: e.target.value })}
+                        aria-label="Nombre" autoComplete="given-name"
+                        className="w-full bg-transparent outline-none text-text-primary font-medium" />
+                </Field>
+                <Field icon={null} label="Apellidos">
+                    <input type="text" required minLength={2} maxLength={80} value={form.surname}
+                        onChange={(e) => setForm({ ...form, surname: e.target.value })}
+                        aria-label="Apellidos" autoComplete="family-name"
+                        className="w-full bg-transparent outline-none text-text-primary font-medium" />
+                </Field>
+            </div>
             <Field icon={null} label="Email">
                 <input type="email" required maxLength={200} value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -438,7 +494,14 @@ const GuestForm = ({ selected, checkIn, checkOut, guests, form, setForm, holding
 
         {error && <p className="mt-4 text-sm text-amber-900 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">{error}</p>}
 
+        {!form.accept && !holding && (
+            <p className="mt-6 text-sm text-amber-900 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3" id="falta-aceptar">
+                Para reservar, marca la casilla «He leído y acepto las condiciones de reserva».
+            </p>
+        )}
+
         <button type="submit" disabled={holding || !form.accept}
+            aria-describedby={!form.accept ? 'falta-aceptar' : undefined}
             className="mt-6 w-full inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full font-bold text-white bg-primary shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0">
             {holding ? 'Reservando…' : <>Reservar y pagar {formatPrice(selected.total_price)} <ArrowRight size={18} aria-hidden="true" /></>}
         </button>

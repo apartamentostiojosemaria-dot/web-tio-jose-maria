@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
     Phone, MessageCircle, Euro, Shield, FileText, CalendarDays, XCircle,
-    Users, Home, Check, NotebookPen, QrCode, UserX, Clock, LogOut, UserRound } from 'lucide-react';
+    Users, Home, Check, NotebookPen, QrCode, UserX, Clock, LogOut, UserRound, RefreshCw } from 'lucide-react';
 import {
     Boton, Tarjeta, Aviso, Cargando, Vacio, Chip, claseInput,
     formatoEuro, cobradoDe, pendienteDe, canalSiImporta, nombreCanal,
@@ -41,7 +41,7 @@ import { recordatorioEnPalabras } from './checkin/datos';
 // inglés. Si algo de eso aparece en pantalla, está mal.
 // ============================================================
 
-const ReservaFicha = ({ ir, params = {} }) => {
+const ReservaFicha = ({ ir, params = {}, protegerSalida }) => {
     const reservaId = params.reservaId;
 
     const [cargando, setCargando] = useState(true);
@@ -53,6 +53,11 @@ const ReservaFicha = ({ ir, params = {} }) => {
     const [factura, setFactura] = useState(null);       // la VIVA
     const [anuladas, setAnuladas] = useState([]);       // anuladas por rectificativa (Jesús)
     const [hoja, setHoja] = useState(null);   // cobro | factura | cambiar | cancelar | noshow
+    // A failed read is not "nothing there": no «no hay cobros» and no
+    // «Hacer la factura» on top of a load that did not arrive.
+    const [falloCobros, setFalloCobros] = useState(false);
+    const [falloFactura, setFalloFactura] = useState(false);
+    const [reintentando, setReintentando] = useState(false);
 
     const refrescar = useCallback(async () => {
         const [r, c, p, f] = await Promise.all([
@@ -61,7 +66,8 @@ const ReservaFicha = ({ ir, params = {} }) => {
             cargarParte(reservaId),
             cargarEstadoFactura(reservaId),
         ]);
-        setReserva(r); setCobros(c); setParte(p); setFactura(f.factura); setAnuladas(f.anuladas);
+        setReserva(r); setCobros(c || []); setParte(p); setFactura(f.factura); setAnuladas(f.anuladas);
+        setFalloCobros(c === null); setFalloFactura(!!f.fallo);
         return r;
     }, [reservaId]);
 
@@ -120,7 +126,12 @@ const ReservaFicha = ({ ir, params = {} }) => {
 
     // Falta hacerla si no hay una válida, no se ha dicho «no hace falta» y la
     // reserva sigue viva. Con una anulada y sin sustituta, también falta.
-    const faltaFactura = !factura && !reserva.invoice_not_needed && !cancelada && !noSePresento;
+    const faltaFactura = !falloFactura && !factura && !reserva.invoice_not_needed && !cancelada && !noSePresento;
+    const falloLectura = falloCobros || falloFactura;
+    const probarOtraVez = async () => {
+        setReintentando(true);
+        try { await refrescar(); } catch { /* the notice stays */ } finally { setReintentando(false); }
+    };
 
     // Lo que paga el portal no se le cobra al huésped (auditoría 23-sep:
     // salía «Cobrar 229,50 €» en reservas de Booking).
@@ -135,8 +146,12 @@ const ReservaFicha = ({ ir, params = {} }) => {
     // decir que son varios, o el detalle del último parecería el total.
     const ultimoCobro = cobros.find((c) => Number(c.amount) > 0);
     const cuantosCobros = cobros.filter((c) => Number(c.amount) > 0).length;
-    const detalleCobrado = cobrado <= 0
+    const detalleCobrado = falloCobros
+        ? null
+        : cobrado <= 0
         ? 'Todavía no ha pagado nada'
+        : !ultimoCobro
+        ? null
         : cuantosCobros > 1
             ? `En ${cuantosCobros} veces · la última, ${nombreForma(ultimoCobro.method)} el ${diaMesYAno(ultimoCobro.paid_on)}`
             : cobroEnPalabras(ultimoCobro);
@@ -281,9 +296,23 @@ const ReservaFicha = ({ ir, params = {} }) => {
                 )}
             </Tarjeta>
 
+            {falloLectura && (
+                <Aviso tono="urgente"
+                    titulo={falloCobros && falloFactura
+                        ? 'No he podido mirar los cobros ni la factura de esta reserva.'
+                        : falloCobros
+                            ? 'No he podido mirar los cobros de esta reserva.'
+                            : 'No he podido mirar si esta reserva ya tiene factura.'}
+                    texto={`Comprueba la conexión y prueba otra vez.${falloFactura ? ' Hasta entonces, no hagas la factura: puede que ya esté hecha.' : ''}${falloCobros ? ' Falta la lista de cobros; el total cobrado y lo pendiente de arriba sí están al día.' : ''} Si sigue igual, avisa a Jesús.`}
+                    accion={{ texto: reintentando ? 'Mirando…' : 'Probar otra vez', icono: RefreshCw, onClick: probarOtraVez }}
+                />
+            )}
+
             {/* ---------- Cobros apuntados y factura ---------- */}
             <Tarjeta titulo="Cobros apuntados">
-                {cobros.length === 0 ? (
+                {falloCobros ? (
+                    <p className="text-base text-gray-600">No he podido mirarlos ahora mismo.</p>
+                ) : cobros.length === 0 ? (
                     <p className="text-base text-gray-600">Todavía no hay ningún cobro apuntado.</p>
                 ) : (
                     <ul className="divide-y divide-gray-100 -mx-5">
@@ -311,7 +340,9 @@ const ReservaFicha = ({ ir, params = {} }) => {
                     <span className="text-base font-bold text-text-primary">Factura:</span>
                     {/* Lo resuelto se enseña como dato y se pulsa para verlo; el
                         botón grande de abajo solo sale cuando falta hacerla. */}
-                    {factura ? (
+                    {falloFactura ? (
+                        <Chip tono="neutro">No he podido mirarla</Chip>
+                    ) : factura ? (
                         <Chip tono="verde" icono={Check} onClick={() => setHoja('factura')} aria-label="Ver la factura">
                             Hecha el {diaMesYAno(factura.fecha_emision)} · ver
                         </Chip>
@@ -368,7 +399,8 @@ const ReservaFicha = ({ ir, params = {} }) => {
             </section>
 
             {/* ---------- Apuntes suyos ---------- */}
-            <NotasInternas reserva={reserva} onGuardado={(txt) => setReserva({ ...reserva, internal_notes: txt })} />
+            <NotasInternas reserva={reserva} protegerSalida={protegerSalida}
+                onGuardado={(txt) => setReserva({ ...reserva, internal_notes: txt })} />
 
             {/* ---------- A la vista, pero sin gritar ---------- */}
             {/* Cambiar o cancelar solo mientras la estancia no ha terminado:
@@ -423,7 +455,7 @@ const ReservaFicha = ({ ir, params = {} }) => {
 // Apuntes suyos sobre esta reserva. No los ve el huésped.
 // ============================================================
 
-const NotasInternas = ({ reserva, onGuardado }) => {
+const NotasInternas = ({ reserva, onGuardado, protegerSalida }) => {
     const [texto, setTexto] = useState(reserva.internal_notes || '');
     const [guardando, setGuardando] = useState(false);
     const [guardado, setGuardado] = useState(false);
@@ -432,6 +464,16 @@ const NotasInternas = ({ reserva, onGuardado }) => {
     useEffect(() => { setTexto(reserva.internal_notes || ''); }, [reserva.internal_notes]);
 
     const cambiado = (texto || '') !== (reserva.internal_notes || '');
+
+    // Apuntes escritos y sin guardar: salir pregunta antes (la ventana del panel).
+    useEffect(() => {
+        protegerSalida?.(cambiado ? 'Has escrito apuntes en esta reserva y no los has guardado. Si sales ahora, se pierden.' : null);
+        if (!cambiado) return undefined;
+        const alCerrar = (e) => { e.preventDefault(); e.returnValue = ''; };
+        window.addEventListener('beforeunload', alCerrar);
+        return () => window.removeEventListener('beforeunload', alCerrar);
+    }, [cambiado, protegerSalida]);
+    useEffect(() => () => protegerSalida?.(null), [protegerSalida]);
 
     const guardar = async () => {
         setGuardando(true); setError(null); setGuardado(false);

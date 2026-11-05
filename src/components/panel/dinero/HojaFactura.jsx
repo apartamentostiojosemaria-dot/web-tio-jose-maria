@@ -62,7 +62,7 @@ export default function HojaFactura({ abierta, reserva, factura, anuladas = [], 
     };
 
     return (
-        <Hoja abierta={abierta} titulo="Factura" onCerrar={onCerrar}
+        <Hoja abierta={abierta} titulo="Factura" onCerrar={onCerrar} protegida
             explicacion={reserva?.guest_name ? `De la reserva de ${reserva.guest_name}.` : undefined}>
 
             {factura ? (

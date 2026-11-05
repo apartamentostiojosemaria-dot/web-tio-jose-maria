@@ -88,7 +88,7 @@ export default function HojaCambiar({ abierta, reserva, apartamentos = [], factu
     const idAptos = React.useId();
 
     return (
-        <Hoja abierta={abierta} titulo="Cambiar fechas o apartamento" onCerrar={onCerrar}
+        <Hoja abierta={abierta} titulo="Cambiar fechas o apartamento" onCerrar={onCerrar} protegida
             explicacion="Compruebo que esté libre antes de cambiar nada.">
 
             <div className="mb-5">

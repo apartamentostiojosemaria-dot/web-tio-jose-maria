@@ -85,7 +85,7 @@ const TARJETAS = [
     },
 ];
 
-export default function PreciosPanel({ ir, params = {} }) {
+export default function PreciosPanel({ ir, params = {}, protegerSalida }) {
     const [datos, setDatos] = useState(VACIO);
     const [cargando, setCargando] = useState(true);
     const [fallo, setFallo] = useState('');
@@ -122,7 +122,7 @@ export default function PreciosPanel({ ir, params = {} }) {
                 </button>
                 {fallo && <Aviso tono="mal">{fallo}</Aviso>}
                 {abierto === 'apartamentos' && (
-                    <BloqueApartamentos apartamentos={datos.apartamentos} onActualizar={actualiza('apartamentos')} />
+                    <BloqueApartamentos apartamentos={datos.apartamentos} onActualizar={actualiza('apartamentos')} protegerSalida={protegerSalida} />
                 )}
                 {abierto === 'temporadas' && (
                     <BloqueTemporadas temporadas={datos.temporadas} onActualizar={actualiza('temporadas')} />

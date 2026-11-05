@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import AvisosMovil from './AvisosMovil';
 import TareasCasa from './TareasCasa';
-import { ArrowDownRight, ArrowUpRight, Shield, Euro, Brush, ChevronRight, Check, MailWarning } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, Shield, Euro, Brush, ChevronRight, Check, MailWarning, RefreshCw } from 'lucide-react';
 import {
     Tarjeta, Aviso, Cargando, formatoEuro,
     hoyISO, aISO, aFecha, fechaEnPalabrasRelativa, fechaCorta, saludo,
@@ -44,11 +44,17 @@ const PanelHome = ({ ir, perfil, secciones = [] }) => {
     // «El sistema»: correos que no llegan, dominio caído, partes rechazados
     // (migración 0043). Solo se enseña cuando hay algo mal.
     const [sistema, setSistema] = useState([]);
+    // If any read fails, the screen must NOT say «Hoy no llega ni se va nadie».
+    const [fallo, setFallo] = useState(false);
+    const [intento, setIntento] = useState(0);
 
     useEffect(() => {
         let cortado = false;
+        setCargando(true);
+        setFallo(false);
 
         (async () => {
+          try {
             const dentroDe = (dias) => aISO(sumarDias(hoy, dias));
 
             // Todo a la vez (23-sep): el estado del sistema y el parte salían
@@ -86,6 +92,12 @@ const PanelHome = ({ ir, perfil, secciones = [] }) => {
 
             if (cortado) return;
 
+            if ([apart, delDia, proximas, vencidas, limpiezas, parte].some((x) => x?.error)) {
+                setFallo(true);
+                setCargando(false);
+                return;
+            }
+
             const nombreApto = {};
             (apart.data || []).forEach((a) => { nombreApto[a.id] = a.name; });
             const conApto = (r) => ({ ...r, apartamento: nombreApto[r.apartment_id] || 'Apartamento' });
@@ -98,18 +110,37 @@ const PanelHome = ({ ir, perfil, secciones = [] }) => {
                 (proximas.data || []).map(conApto),
                 (vencidas.data || []).map(conApto),
                 (limpiezas.data || []).filter((t) => !HECHAS.includes(t.status)).map(conApto),
-                hoy, dentroDe, parte.error ? null : (parte.data || []),
+                hoy, dentroDe, parte.data || [],
             ));
             setCargando(false);
+          } catch {
+            if (!cortado) { setFallo(true); setCargando(false); }
+          }
         })();
 
         return () => { cortado = true; };
-    }, [hoy]);
+    }, [hoy, intento]);
 
     const tarjetas = secciones.filter((s) => s.id !== 'inicio');
     const nombre = (perfil?.full_name || '').split(' ')[0];
 
     if (cargando) return <Cargando texto="Mirando cómo va el día…" />;
+
+    if (fallo) {
+        return (
+            <div className="space-y-6">
+                <section>
+                    <h2 className="font-serif text-2xl md:text-3xl font-bold text-text-primary">
+                        {fechaEnPalabrasRelativa(hoy)}
+                    </h2>
+                </section>
+                <Aviso tono="urgente"
+                    titulo="No he podido mirar el día. Comprueba la conexión."
+                    texto="Todavía no sé quién llega ni quién se va. Si sigue igual, avisa a Jesús."
+                    accion={{ texto: 'Probar otra vez', icono: RefreshCw, onClick: () => setIntento((n) => n + 1) }} />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
@@ -228,7 +259,7 @@ function avisosDelSistema(s) {
         lista.push({
             clave: 'correos-fallidos', tono: 'atencion', icono: MailWarning,
             titulo: fallidos === 1 ? 'Un correo no ha llegado hoy' : `${fallidos} correos no han llegado hoy`,
-            texto: `${quien}. Puede ser una dirección mal escrita: mira el correo del huésped en su reserva y, si está mal, corrígelo y escríbele por WhatsApp.`,
+            texto: `${quien}. Puede ser una dirección mal escrita: abre su reserva, toca «Ver su ficha de cliente» y mira el correo. Si está mal, corrígelo ahí y escríbele por WhatsApp.`,
             seccion: 'reservas', accion: 'Ver reservas',
         });
     }

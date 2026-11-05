@@ -58,12 +58,17 @@ const soloNumeros = (t) => String(t || '').replace(/\D/g, '');
 
 // ============================================================
 
-const ReservasPanel = ({ ir }) => {
+const ReservasPanel = ({ ir, params = {}, recordarEnDireccion }) => {
     const hoy = useMemo(hoyISO, []);
     const [cargando, setCargando] = useState(true);
     const [fallo, setFallo] = useState(null);
     const [reservas, setReservas] = useState([]);
-    const [busqueda, setBusqueda] = useState('');
+    // The search lives in the page address: back from a reservation, it is
+    // still written (before, it came back empty).
+    const [busqueda, setBusqueda] = useState(() => (typeof params.q === 'string' ? params.q : ''));
+    useEffect(() => {
+        recordarEnDireccion?.({ q: busqueda.trim() ? busqueda : undefined });
+    }, [busqueda, recordarEnDireccion]);
     const [verCanceladas, setVerCanceladas] = useState(false);
 
     useEffect(() => {

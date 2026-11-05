@@ -492,7 +492,7 @@ const Hueco = ({ apartamento, dia, info, ir }) => {
 
     const cuerpo = (
         <>
-            <span className="block text-xs font-bold uppercase tracking-wide text-gray-500 truncate">
+            <span className="block text-[13px] font-bold uppercase tracking-wide text-gray-500 truncate">
                 {apartamento.name}
             </span>
             {/* El nombre del huésped NO se recorta: a 375 px cabe en dos
@@ -501,12 +501,14 @@ const Hueco = ({ apartamento, dia, info, ir }) => {
                 {info.titulo}
             </span>
             {info.pie && (
-                <span className={`block text-xs leading-tight truncate ${p.pie}`}>{info.pie}</span>
+                <span className={`block text-[13px] leading-tight truncate ${p.pie}`}>{info.pie}</span>
             )}
         </>
     );
 
-    if (info.estado === 'libre') {
+    // A day that has already gone cannot be booked: it is shown, not offered.
+    const yaPaso = dia < hoyISO();
+    if (info.estado === 'libre' && !yaPaso) {
         return (
             <button
                 type="button"
@@ -532,9 +534,9 @@ const Hueco = ({ apartamento, dia, info, ir }) => {
         );
     }
 
-    // Ocupado por otra web o cerrado a mano: se ve, no se toca.
+    // Ocupado por otra web, cerrado a mano o un día ya pasado: se ve, no se toca.
     return (
-        <div className={base} aria-label={`${apartamento.name}: ${info.titulo} ${info.pie}`}>
+        <div className={base} aria-label={`${apartamento.name}: ${info.titulo}${info.pie ? ` ${info.pie}` : ''}${yaPaso && info.estado === 'libre' ? ' (día ya pasado)' : ''}`}>
             {cuerpo}
         </div>
     );
@@ -580,7 +582,7 @@ const VistaMes = ({ ancla, hoy, apartamentos, queHay, alElegirDia }) => {
                         >
                             <span className={`text-sm font-bold leading-none ${esHoy ? 'text-rural-700' : 'text-text-primary'}`}>
                                 {aFecha(dia).getDate()}
-                                {esHoy && <span className="ml-1 text-[10px] font-bold uppercase text-rural-700">hoy</span>}
+                                {esHoy && <span className="ml-1 text-[13px] font-bold uppercase text-rural-700">hoy</span>}
                             </span>
 
                             <span className="flex flex-col gap-0.5">
@@ -591,8 +593,8 @@ const VistaMes = ({ ancla, hoy, apartamentos, queHay, alElegirDia }) => {
                                         // en una rejilla de mes las abreviaturas se leen a medias y
                                         // esta pantalla es justo la que se mira de un vistazo.
                                         <span key={a.id} className={`flex items-center gap-1 rounded-md border px-1 py-[3px] ${p.caja.replace(/hover:[^\s]+/g, '')}`}>
-                                            <span className="text-[10px] font-bold text-gray-600 shrink-0">{a.name}</span>
-                                            <span className={`text-[10px] leading-none truncate ${p.titulo}`}>
+                                            <span className="text-[13px] leading-none font-bold text-gray-600 shrink-0">{a.name}</span>
+                                            <span className={`text-[13px] leading-none truncate ${p.titulo}`}>
                                                 {info.estado === 'libre' ? 'libre' : info.titulo}
                                             </span>
                                         </span>
