@@ -42,6 +42,9 @@ verify_jwt = false
 [functions.ical-export]
 verify_jwt = false
 
+[functions.beds24-sync]
+verify_jwt = false   # cron, disparador de la base y aviso de Beds24; no se fía del cuerpo: relee por la API
+
 [functions.create-payment-session]
 verify_jwt = false
 

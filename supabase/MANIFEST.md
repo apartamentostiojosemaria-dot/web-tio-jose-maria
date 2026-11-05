@@ -17,6 +17,7 @@ Leyenda repo: ✅ código en `supabase/functions/<slug>/` · ⬇️ desplegada p
 
 | Función | Live | verify_jwt | Repo | Qué hace |
 |---|---|---|---|---|
+| `beds24-sync` | v1 | false | ✅ | **5-nov-2026 · tubería Beds24 (migr. `0077`)**. `push`: manda a Beds24 `numAvail` 0/1 por tramos (730 días) desde reservas hold/pending/confirmed y bloqueos, sin lo que vino de Beds24. `pull`: lee reservas cambiadas (`modifiedFrom`, cursor con 5 min de solape) al espejo `beds24_bookings`. `all`: las dos (cron `tjm-beds24-repaso` cada 10 min y el aviso de Beds24, que solo dispara la relectura). Freno de 5 s a pasadas no-cron. Secreto `BEDS24_REFRESH_TOKEN`. Probado 5-nov: bloqueo → Beds24 en 0,6 s; cambio y cancelación en Beds24 → espejo en ~10 s; 2,1 créditos por pasada |
 | `notify-booking` | v14 | false | ✅ | Aviso de nueva solicitud + email con botones confirmar/rechazar 1-click (firma HMAC), rate-limit por IP, Turnstile opcional |
 | `booking-status-update` | v12 | false | ✅ | Confirmar/rechazar reserva desde el enlace firmado del email; sugiere apartamentos alternativos |
 | `upload-from-url` | v6 | false | ✅ | Sube una imagen desde una URL al storage |

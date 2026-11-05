@@ -25,6 +25,8 @@
 | `booking_payments` | un apunte por cobro (negativo = devolución), recalcula `paid_amount` | staff, admin, SR |
 | `apartments` | los 4 apartamentos, precios, URLs iCal de cada canal | SELECT público; escribe admin |
 | `datos_titular_envio` | envíos cifrados del formulario `/datos/:token` (datos del titular para Stripe; migr. `0076`). Solo cifrado RSA-OAEP + AES-GCM; enlace de un uso, caduca a 7 días; se borra al leer (`clients/tio-jose-maria/scripts/datos-titular.py` del OS) o por el cron `tjm-purgar-datos-titular` | sin políticas: solo service role |
+| `beds24_bookings` | **espejo** de las reservas de Beds24 (migr. `0077`): una fila por reserva de Beds24 (`beds24_id`), con fechas, estado, canal y huésped. No entra en `guest_bookings` mientras `beds24_config.promover_reservas` = false | sin políticas: solo service role |
+| `beds24_config` / `beds24_sync_log` | ajustes de la tubería Beds24 (propiedad, envío activo, promover, cursor) y una fila por pasada (enviados, leídas, créditos, error) | sin políticas: solo service role |
 | `blocked_dates` | días cerrados y bloqueos de canal (`external_kind` reserved/closed) | SELECT público; staff y admin escriben |
 | `high_seasons` · `pricing_rules` | temporadas y reglas de precio (`special_price`, última hora) | SELECT público (`pricing_rules`: `active`); staff y admin escriben |
 | `addons` · `booking_addons` | extras y extras por reserva | `addons` SELECT anon si `active`; escriben staff/admin · `booking_addons` admin |
